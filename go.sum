@@ -6,3 +6,5 @@ github.com/dogmatiq/iago v0.1.0 h1:rlm0vDX2Y09WsTwNqf41my0kjaesDIrLD5rGRSsksBk=
 github.com/dogmatiq/iago v0.1.0/go.mod h1:pFfZnnNmOS99/jQ4KzTw92sZXKqBVlYLLHpNk82F4jM=
 github.com/dogmatiq/iago v0.1.1-0.20190117041728-8d5ad4213eaf h1:gKY0j5/FyWyePttp0Nx7zTKoceup+oXJ4NVBLLcVdoM=
 github.com/dogmatiq/iago v0.1.1-0.20190117041728-8d5ad4213eaf/go.mod h1:pFfZnnNmOS99/jQ4KzTw92sZXKqBVlYLLHpNk82F4jM=
+github.com/sergi/go-diff v1.0.0 h1:Kpca3qRNrduNnOQeazBd0ysaKrUJiIuISHxogkT9RPQ=
+github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
