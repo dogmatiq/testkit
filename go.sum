@@ -1,0 +1,8 @@
+github.com/dogmatiq/dapper v0.1.1 h1:DyvsJArJ9o3U1W62peE43MWjs++kw3zO/Rw/ixXB9nk=
+github.com/dogmatiq/dapper v0.1.1/go.mod h1:jmqlMjWRjHJDMz/9gtNlMYxJvuH8pu6tPmmX4cxetJk=
+github.com/dogmatiq/dogma v0.0.0-20190110022518-25bb3e4523dc h1:yk2rSPGwdclYNGYUzVZXoB7x4yF7+z7y0CXrAkljdW8=
+github.com/dogmatiq/dogma v0.0.0-20190110022518-25bb3e4523dc/go.mod h1:kzDxrkzdgrJattEUoLmoFdyHZtib4H5oa98VcewQEI8=
+github.com/dogmatiq/iago v0.1.0 h1:rlm0vDX2Y09WsTwNqf41my0kjaesDIrLD5rGRSsksBk=
+github.com/dogmatiq/iago v0.1.0/go.mod h1:pFfZnnNmOS99/jQ4KzTw92sZXKqBVlYLLHpNk82F4jM=
+github.com/dogmatiq/iago v0.1.1-0.20190117041728-8d5ad4213eaf h1:gKY0j5/FyWyePttp0Nx7zTKoceup+oXJ4NVBLLcVdoM=
+github.com/dogmatiq/iago v0.1.1-0.20190117041728-8d5ad4213eaf/go.mod h1:pFfZnnNmOS99/jQ4KzTw92sZXKqBVlYLLHpNk82F4jM=
