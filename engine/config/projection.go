@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"context"
 	"reflect"
 	"strings"
 
@@ -16,7 +16,7 @@ type ProjectionConfig struct {
 }
 
 // NewProjectionConfig returns an ProjectionConfig for the given handler.
-func NewProjectionConfig(h dogma.ProjectionMessageHandler) *ProjectionConfig {
+func NewProjectionConfig(h dogma.ProjectionMessageHandler) (*ProjectionConfig, error) {
 	cfg := &ProjectionConfig{
 		Handler:    h,
 		EventTypes: map[reflect.Type]struct{}{},
@@ -26,23 +26,27 @@ func NewProjectionConfig(h dogma.ProjectionMessageHandler) *ProjectionConfig {
 		cfg: cfg,
 	}
 
-	h.Configure(c)
+	if err := catch(func() {
+		h.Configure(c)
+	}); err != nil {
+		return nil, err
+	}
 
 	if c.cfg.HandlerName == "" {
-		panic(fmt.Sprintf(
+		return nil, errorf(
 			"%T.Configure() did not call ProjectionConfigurer.Name()",
 			h,
-		))
+		)
 	}
 
 	if len(c.cfg.EventTypes) == 0 {
-		panic(fmt.Sprintf(
+		return nil, errorf(
 			"%T.Configure() did not call ProjectionConfigurer.RouteEventType()",
 			h,
-		))
+		)
 	}
 
-	return cfg
+	return cfg, nil
 }
 
 // Name returns the projection name.
@@ -50,9 +54,9 @@ func (c *ProjectionConfig) Name() string {
 	return c.HandlerName
 }
 
-// Accept calls v.VisitProjectionConfig(c).
-func (c *ProjectionConfig) Accept(v Visitor) {
-	v.VisitProjectionConfig(c)
+// Accept calls v.VisitProjectionConfig(ctx, c).
+func (c *ProjectionConfig) Accept(ctx context.Context, v Visitor) error {
+	return v.VisitProjectionConfig(ctx, c)
 }
 
 // projectionConfigurer is an implementation of dogma.ProjectionConfigurer
@@ -63,19 +67,19 @@ type projectionConfigurer struct {
 
 func (c *projectionConfigurer) Name(n string) {
 	if c.cfg.HandlerName != "" {
-		panic(fmt.Sprintf(
-			`%T.Configure() has already called ProjectionConfigurer.Name(#%v)`,
+		panicf(
+			`%T.Configure() has already called ProjectionConfigurer.Name(%#v)`,
 			c.cfg.Handler,
 			c.cfg.HandlerName,
-		))
+		)
 	}
 
 	if strings.TrimSpace(n) == "" {
-		panic(fmt.Sprintf(
-			`%T.Configure() called ProjectionConfigurer.Name(#%v) with an invalid name`,
+		panicf(
+			`%T.Configure() called ProjectionConfigurer.Name(%#v) with an invalid name`,
 			c.cfg.Handler,
 			n,
-		))
+		)
 	}
 
 	c.cfg.HandlerName = n
@@ -85,11 +89,11 @@ func (c *projectionConfigurer) RouteEventType(m dogma.Message) {
 	t := reflect.TypeOf(m)
 
 	if _, ok := c.cfg.EventTypes[t]; ok {
-		panic(fmt.Sprintf(
+		panicf(
 			`%T.Configure() has already called ProjectionConfigurer.RouteEventType(%T)`,
 			c.cfg.Handler,
 			m,
-		))
+		)
 	}
 
 	c.cfg.EventTypes[t] = struct{}{}

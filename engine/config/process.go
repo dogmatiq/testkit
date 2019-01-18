@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"context"
 	"reflect"
 	"strings"
 
@@ -16,7 +16,7 @@ type ProcessConfig struct {
 }
 
 // NewProcessConfig returns an ProcessConfig for the given handler.
-func NewProcessConfig(h dogma.ProcessMessageHandler) *ProcessConfig {
+func NewProcessConfig(h dogma.ProcessMessageHandler) (*ProcessConfig, error) {
 	cfg := &ProcessConfig{
 		Handler:    h,
 		EventTypes: map[reflect.Type]struct{}{},
@@ -26,23 +26,27 @@ func NewProcessConfig(h dogma.ProcessMessageHandler) *ProcessConfig {
 		cfg: cfg,
 	}
 
-	h.Configure(c)
+	if err := catch(func() {
+		h.Configure(c)
+	}); err != nil {
+		return nil, err
+	}
 
 	if c.cfg.HandlerName == "" {
-		panic(fmt.Sprintf(
+		return nil, errorf(
 			"%T.Configure() did not call ProcessConfigurer.Name()",
 			h,
-		))
+		)
 	}
 
 	if len(c.cfg.EventTypes) == 0 {
-		panic(fmt.Sprintf(
+		return nil, errorf(
 			"%T.Configure() did not call ProcessConfigurer.RouteEventType()",
 			h,
-		))
+		)
 	}
 
-	return cfg
+	return cfg, nil
 }
 
 // Name returns the process name.
@@ -50,9 +54,9 @@ func (c *ProcessConfig) Name() string {
 	return c.HandlerName
 }
 
-// Accept calls v.VisitProcessConfig(c).
-func (c *ProcessConfig) Accept(v Visitor) {
-	v.VisitProcessConfig(c)
+// Accept calls v.VisitProcessConfig(ctx, c).
+func (c *ProcessConfig) Accept(ctx context.Context, v Visitor) error {
+	return v.VisitProcessConfig(ctx, c)
 }
 
 // processConfigurer is an implementation of dogma.ProcessConfigurer
@@ -63,19 +67,19 @@ type processConfigurer struct {
 
 func (c *processConfigurer) Name(n string) {
 	if c.cfg.HandlerName != "" {
-		panic(fmt.Sprintf(
-			`%T.Configure() has already called ProcessConfigurer.Name(#%v)`,
+		panicf(
+			`%T.Configure() has already called ProcessConfigurer.Name(%#v)`,
 			c.cfg.Handler,
 			c.cfg.HandlerName,
-		))
+		)
 	}
 
 	if strings.TrimSpace(n) == "" {
-		panic(fmt.Sprintf(
-			`%T.Configure() called ProcessConfigurer.Name(#%v) with an invalid name`,
+		panicf(
+			`%T.Configure() called ProcessConfigurer.Name(%#v) with an invalid name`,
 			c.cfg.Handler,
 			n,
-		))
+		)
 	}
 
 	c.cfg.HandlerName = n
@@ -85,11 +89,11 @@ func (c *processConfigurer) RouteEventType(m dogma.Message) {
 	t := reflect.TypeOf(m)
 
 	if _, ok := c.cfg.EventTypes[t]; ok {
-		panic(fmt.Sprintf(
+		panicf(
 			`%T.Configure() has already called ProcessConfigurer.RouteEventType(%T)`,
 			c.cfg.Handler,
 			m,
-		))
+		)
 	}
 
 	c.cfg.EventTypes[t] = struct{}{}
