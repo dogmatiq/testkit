@@ -10,8 +10,14 @@ import (
 
 // AggregateConfig represents the configuration of an aggregate message handler.
 type AggregateConfig struct {
-	Handler      dogma.AggregateMessageHandler
-	HandlerName  string
+	// Handler is the handler that the configuration applies to.
+	Handler dogma.AggregateMessageHandler
+
+	// HandlerName is the handler's name, as specified by its Configure() method.
+	HandlerName string
+
+	// CommandTypes is the set of command message types that are routed to this
+	// handler, as specified by its Configure() method.
 	CommandTypes map[reflect.Type]struct{}
 }
 

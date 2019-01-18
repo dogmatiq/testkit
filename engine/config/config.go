@@ -12,11 +12,20 @@ type Config interface {
 	Accept(ctx context.Context, v Visitor) error
 }
 
-// Visitor is an interface for visitors to configuration values.
+// Visitor is an interface for walking application configurations.
 type Visitor interface {
+	// VisitAppConfig is called by AppConfig.Accept().
 	VisitAppConfig(context.Context, *AppConfig) error
+
+	// VisitAggregateConfig is called by AggregateConfig.Accept().
 	VisitAggregateConfig(context.Context, *AggregateConfig) error
+
+	// VisitProcessConfig is called by ProcessConfig.Accept().
 	VisitProcessConfig(context.Context, *ProcessConfig) error
+
+	// VisitIntegrationConfig is called by IntegrationConfig.Accept().
 	VisitIntegrationConfig(context.Context, *IntegrationConfig) error
+
+	// VisitProjectionConfig is called by ProjectionConfig.Accept().
 	VisitProjectionConfig(context.Context, *ProjectionConfig) error
 }

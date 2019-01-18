@@ -8,13 +8,25 @@ import (
 	"github.com/dogmatiq/dogma"
 )
 
-// AppConfig represents the configuration of an entire Dogma application.Config.
+// AppConfig represents the configuration of an entire Dogma application.
 type AppConfig struct {
-	AppName       string
-	Handlers      map[string]Config
-	Routes        map[reflect.Type][]string
+	// AppName is the application's name, as specified in the dogma.App struct.
+	AppName string
+
+	// Handlers is a map of handler name to their respective configuration.
+	Handlers map[string]Config
+
+	// Routes is map of message type to the names of the handlers that receive
+	// messages of that type.
+	Routes map[reflect.Type][]string
+
+	// CommandRoutes is map of command message type to the names of the handler
+	// that receives that command type.
 	CommandRoutes map[reflect.Type]string
-	EventRoutes   map[reflect.Type][]string
+
+	// EventRoutes is map of event message type to the names of the handlers that
+	// receive events of that type.
+	EventRoutes map[reflect.Type][]string
 }
 
 // NewAppConfig returns a new application config for the given application.

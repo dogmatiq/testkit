@@ -10,9 +10,15 @@ import (
 
 // ProjectionConfig represents the configuration of an aggregate message handler.
 type ProjectionConfig struct {
-	Handler     dogma.ProjectionMessageHandler
+	// Handler is the handler that the configuration applies to.
+	Handler dogma.ProjectionMessageHandler
+
+	// HandlerName is the handler's name, as specified by its Configure() method.
 	HandlerName string
-	EventTypes  map[reflect.Type]struct{}
+
+	// EventTypes is the set of event message types that are routed to this
+	// handler, as specified by its Configure() method.
+	EventTypes map[reflect.Type]struct{}
 }
 
 // NewProjectionConfig returns an ProjectionConfig for the given handler.
