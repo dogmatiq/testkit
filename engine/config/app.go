@@ -12,9 +12,9 @@ import (
 type AppConfig struct {
 	AppName       string
 	Handlers      map[string]Config
-	Routes        map[reflect.Type][]Config
-	CommandRoutes map[reflect.Type]Config
-	EventRoutes   map[reflect.Type][]Config
+	Routes        map[reflect.Type][]string
+	CommandRoutes map[reflect.Type]string
+	EventRoutes   map[reflect.Type][]string
 }
 
 // NewAppConfig returns a new application config for the given application.
@@ -26,9 +26,9 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 	cfg := &AppConfig{
 		AppName:       app.Name,
 		Handlers:      map[string]Config{},
-		Routes:        map[reflect.Type][]Config{},
-		CommandRoutes: map[reflect.Type]Config{},
-		EventRoutes:   map[reflect.Type][]Config{},
+		Routes:        map[reflect.Type][]string{},
+		CommandRoutes: map[reflect.Type]string{},
+		EventRoutes:   map[reflect.Type][]string{},
 	}
 
 	ctx := context.Background()
@@ -113,7 +113,7 @@ func (c *AppConfig) registerHandlerConfig(
 				"can not route commands of type %s to %#v because they are already routed to %#v",
 				t,
 				cfg.Name(),
-				x.Name(),
+				x,
 			)
 		}
 
@@ -122,7 +122,7 @@ func (c *AppConfig) registerHandlerConfig(
 				"can not route messages of type %s to %#v as commands because they are already routed to %#v and %d other handlers as events",
 				t,
 				cfg.Name(),
-				x[0].Name(),
+				x[0],
 				len(x)-1,
 			)
 		}
@@ -134,7 +134,7 @@ func (c *AppConfig) registerHandlerConfig(
 				"can not route messages of type %s to %#v as events because they are already routed to %#v as commands",
 				t,
 				cfg.Name(),
-				x.Name(),
+				x,
 			)
 		}
 	}
@@ -142,13 +142,13 @@ func (c *AppConfig) registerHandlerConfig(
 	c.Handlers[n] = cfg
 
 	for t := range commandTypes {
-		c.Routes[t] = append(c.Routes[t], cfg)
-		c.CommandRoutes[t] = cfg
+		c.Routes[t] = append(c.Routes[t], cfg.Name())
+		c.CommandRoutes[t] = cfg.Name()
 	}
 
 	for t := range eventTypes {
-		c.Routes[t] = append(c.Routes[t], cfg)
-		c.EventRoutes[t] = append(c.EventRoutes[t], cfg)
+		c.Routes[t] = append(c.Routes[t], cfg.Name())
+		c.EventRoutes[t] = append(c.EventRoutes[t], cfg.Name())
 	}
 
 	return nil
