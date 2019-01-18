@@ -26,7 +26,7 @@ var _ = Describe("type IntegrationConfig", func() {
 			}
 		})
 
-		When("the configuration is successfully created", func() {
+		When("the configuration is valid", func() {
 			var cfg *IntegrationConfig
 
 			BeforeEach(func() {

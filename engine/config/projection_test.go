@@ -26,7 +26,7 @@ var _ = Describe("type ProjectionConfig", func() {
 			}
 		})
 
-		When("the configuration is successfully created", func() {
+		When("the configuration is valid", func() {
 			var cfg *ProjectionConfig
 
 			BeforeEach(func() {
