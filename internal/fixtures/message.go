@@ -27,10 +27,22 @@ type MessageE struct {
 	Value interface{}
 }
 
+// MessageF is a test implementation of dogma.Message.
+type MessageF struct {
+	Value interface{}
+}
+
+// MessageG is a test implementation of dogma.Message.
+type MessageG struct {
+	Value interface{}
+}
+
 var (
 	_ dogma.Message = MessageA{}
 	_ dogma.Message = MessageB{}
 	_ dogma.Message = MessageC{}
 	_ dogma.Message = MessageD{}
 	_ dogma.Message = MessageE{}
+	_ dogma.Message = MessageF{}
+	_ dogma.Message = MessageG{}
 )
