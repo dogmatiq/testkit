@@ -14,8 +14,8 @@ type Comparator interface {
 	// AggregateRootIsEqual returns true if a and b are equal.
 	AggregateRootIsEqual(a, b dogma.AggregateRoot) bool
 
-	// CompareProcessRoot returns true if a and b are equal.
-	CompareProcessRoot(a, b dogma.ProcessRoot) bool
+	// ProcessRootIsEqual returns true if a and b are equal.
+	ProcessRootIsEqual(a, b dogma.ProcessRoot) bool
 }
 
 // DefaultComparator is the default comparator implementation.

@@ -7,6 +7,8 @@ import (
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 )
 
+var _ Comparator = DefaultComparator{}
+
 func TestDefaultComparator_MessageIsEqual(t *testing.T) {
 	c := DefaultComparator{}
 

@@ -9,6 +9,8 @@ import (
 	"github.com/dogmatiq/iago/iotest"
 )
 
+var _ Renderer = DefaultRenderer{}
+
 func TestDefaultRenderer_WriteMessage(t *testing.T) {
 	iotest.TestWrite(
 		t,
