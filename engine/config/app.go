@@ -20,7 +20,10 @@ type AppConfig struct {
 // NewAppConfig returns a new application config for the given application.
 func NewAppConfig(app dogma.App) (*AppConfig, error) {
 	if strings.TrimSpace(app.Name) == "" {
-		panic("application name must not be empty")
+		return nil, errorf(
+			"application name %#v is invalid",
+			app.Name,
+		)
 	}
 
 	cfg := &AppConfig{

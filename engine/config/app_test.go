@@ -107,7 +107,118 @@ var _ = Describe("type AppConfig", func() {
 					Expect(cfg.Name()).To(Equal("<app>"))
 				})
 			})
+		})
 
+		When("the app name is invalid", func() {
+			BeforeEach(func() {
+				app.Name = "\t \n"
+			})
+
+			It("returns a descriptive error", func() {
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`application name "\t \n" is invalid`,
+					),
+				))
+			})
+		})
+
+		When("the app contains an invalid handler configurations", func() {
+			It("returns an error when an aggregate is misconfigured", func() {
+				aggregate.ConfigureFunc = nil
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).Should(HaveOccurred())
+			})
+
+			It("returns an error when a process is misconfigured", func() {
+				process.ConfigureFunc = nil
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).Should(HaveOccurred())
+			})
+
+			It("returns an error when an integration is misconfigured", func() {
+				integration.ConfigureFunc = nil
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).Should(HaveOccurred())
+			})
+
+			It("returns an error when a projection is misconfigured", func() {
+				projection.ConfigureFunc = nil
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+
+		When("the app contains conflicting handler names", func() {
+			It("returns an error when an aggregate name is in conflict", func() {
+				// Note that aggregates are processed before everything else, so in order to
+				// induce a conflict we need to have two aggregate names in conflict. For
+				// the other tests, we will test conflicts across differing handler types.
+				app.Aggregates = append(app.Aggregates, aggregate)
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`*fixtures.AggregateMessageHandler can not use the handler name "<aggregate>", because it is already used by *fixtures.AggregateMessageHandler`,
+					),
+				))
+			})
+
+			It("returns an error when a process name is in conflict", func() {
+				process.ConfigureFunc = func(c dogma.ProcessConfigurer) {
+					c.Name("<aggregate>") // conflict!
+					c.RouteEventType(fixtures.MessageB{})
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`*fixtures.ProcessMessageHandler can not use the handler name "<aggregate>", because it is already used by *fixtures.AggregateMessageHandler`,
+					),
+				))
+			})
+
+			It("returns an error when an integration name is in conflict", func() {
+				integration.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+					c.Name("<process>") // conflict!
+					c.RouteCommandType(fixtures.MessageC{})
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`*fixtures.IntegrationMessageHandler can not use the handler name "<process>", because it is already used by *fixtures.ProcessMessageHandler`,
+					),
+				))
+			})
+
+			It("returns an error when a projection name is in conflict", func() {
+				projection.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+					c.Name("<integration>") // conflict!
+					c.RouteEventType(fixtures.MessageD{})
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`*fixtures.ProjectionMessageHandler can not use the handler name "<integration>", because it is already used by *fixtures.IntegrationMessageHandler`,
+					),
+				))
+			})
 		})
 	})
 })
