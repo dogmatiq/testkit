@@ -1,4 +1,4 @@
-package engine
+package envelope
 
 import "github.com/dogmatiq/dogma"
 

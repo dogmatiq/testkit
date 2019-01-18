@@ -1,4 +1,4 @@
-package engine
+package envelope
 
 // MessageRole is an enumeration of the roles a message can perform within the
 // engine.

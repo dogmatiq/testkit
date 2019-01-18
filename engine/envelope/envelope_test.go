@@ -1,8 +1,8 @@
-package engine_test
+package envelope_test
 
 import (
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/engine"
+	. "github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
