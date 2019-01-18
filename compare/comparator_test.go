@@ -8,21 +8,26 @@ import (
 )
 
 func TestDefaultComparator_MessageIsEqual(t *testing.T) {
-	a := fixtures.Message{
-		Value: "<foo>",
-	}
-
-	b := fixtures.Message{
-		Value: "<bar>",
-	}
-
 	c := DefaultComparator{}
 
-	if c.MessageIsEqual(a, b) {
-		t.Fatal("different messages compare as equal")
+	if c.MessageIsEqual(
+		fixtures.MessageA{Value: "<foo>"},
+		fixtures.MessageB{Value: "<foo>"},
+	) {
+		t.Fatal("messages of different types compare as equal")
 	}
 
-	if !c.MessageIsEqual(a, a) {
+	if c.MessageIsEqual(
+		fixtures.MessageA{Value: "<foo>"},
+		fixtures.MessageA{Value: "<bar>"},
+	) {
+		t.Fatal("messages of the same type with different content compare as equal")
+	}
+
+	if !c.MessageIsEqual(
+		fixtures.MessageA{Value: "<foo>"},
+		fixtures.MessageA{Value: "<foo>"},
+	) {
 		t.Fatal("identical messages compare as inequal")
 	}
 }

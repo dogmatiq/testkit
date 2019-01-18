@@ -11,7 +11,7 @@ import (
 var _ = Describe("type Envelope", func() {
 	Describe("func NewEnvelope", func() {
 		It("returns the expected envelope", func() {
-			m := fixtures.Message{Value: "<value>"}
+			m := fixtures.MessageA{Value: "<value>"}
 			env := NewEnvelope(m, CommandRole)
 
 			Expect(env).To(Equal(
@@ -31,11 +31,11 @@ var _ = Describe("type Envelope", func() {
 
 		BeforeEach(func() {
 			parent = NewEnvelope(
-				fixtures.Message{Value: "<parent>"},
+				fixtures.MessageA{Value: "<parent>"},
 				CommandRole,
 			)
 
-			message = fixtures.Message{Value: "<parent>"}
+			message = fixtures.MessageA{Value: "<parent>"}
 		})
 
 		It("returns the expected envelope", func() {
@@ -62,37 +62,37 @@ var _ = Describe("type Envelope", func() {
 
 		BeforeEach(func() {
 			root = NewEnvelope(
-				fixtures.Message{Value: "<root>"},
+				fixtures.MessageA{Value: "<root>"},
 				CommandRole,
 			)
 
 			child1 := root.NewChild(
-				fixtures.Message{Value: "<child-1>"},
+				fixtures.MessageA{Value: "<child-1>"},
 				CommandRole,
 			)
 
 			child1.NewChild(
-				fixtures.Message{Value: "<grandchild-1a>"},
+				fixtures.MessageA{Value: "<grandchild-1a>"},
 				CommandRole,
 			)
 
 			child1.NewChild(
-				fixtures.Message{Value: "<grandchild-1b>"},
+				fixtures.MessageA{Value: "<grandchild-1b>"},
 				CommandRole,
 			)
 
 			child2 := root.NewChild(
-				fixtures.Message{Value: "<child-1>"},
+				fixtures.MessageA{Value: "<child-1>"},
 				CommandRole,
 			)
 
 			child2.NewChild(
-				fixtures.Message{Value: "<grandchild-2a>"},
+				fixtures.MessageA{Value: "<grandchild-2a>"},
 				CommandRole,
 			)
 
 			child2.NewChild(
-				fixtures.Message{Value: "<grandchild-2a>"},
+				fixtures.MessageA{Value: "<grandchild-2a>"},
 				CommandRole,
 			)
 		})
@@ -101,7 +101,7 @@ var _ = Describe("type Envelope", func() {
 			var values []string
 
 			root.Walk(func(env *Envelope) bool {
-				v := env.Message.(fixtures.Message).Value.(string)
+				v := env.Message.(fixtures.MessageA).Value.(string)
 				values = append(values, v)
 				return true
 			})
@@ -122,7 +122,7 @@ var _ = Describe("type Envelope", func() {
 			var values []string
 
 			root.Walk(func(env *Envelope) bool {
-				v := env.Message.(fixtures.Message).Value.(string)
+				v := env.Message.(fixtures.MessageA).Value.(string)
 				values = append(values, v)
 
 				if v == "<grandchild-1b>" {

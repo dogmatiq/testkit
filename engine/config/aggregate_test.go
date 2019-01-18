@@ -20,7 +20,8 @@ var _ = Describe("type AggregateConfig", func() {
 			handler = &fixtures.AggregateMessageHandler{
 				ConfigureFunc: func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
-					c.RouteCommandType(fixtures.Message{})
+					c.RouteCommandType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageB{})
 				},
 			}
 		})
@@ -39,8 +40,11 @@ var _ = Describe("type AggregateConfig", func() {
 			})
 
 			It("the message types are in the set", func() {
-				Expect(cfg.CommandTypes).To(HaveKey(
-					reflect.TypeOf(fixtures.Message{}),
+				Expect(cfg.CommandTypes).To(Equal(
+					map[reflect.Type]struct{}{
+						reflect.TypeOf(fixtures.MessageA{}): struct{}{},
+						reflect.TypeOf(fixtures.MessageB{}): struct{}{},
+					},
 				))
 			})
 
@@ -65,7 +69,7 @@ var _ = Describe("type AggregateConfig", func() {
 		When("the handler does not configure a name", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
-					c.RouteCommandType(fixtures.Message{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
@@ -85,7 +89,7 @@ var _ = Describe("type AggregateConfig", func() {
 				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 					c.Name("<other>")
-					c.RouteCommandType(fixtures.Message{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
@@ -104,7 +108,7 @@ var _ = Describe("type AggregateConfig", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("\t \n")
-					c.RouteCommandType(fixtures.Message{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
@@ -141,8 +145,8 @@ var _ = Describe("type AggregateConfig", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
-					c.RouteCommandType(fixtures.Message{})
-					c.RouteCommandType(fixtures.Message{})
+					c.RouteCommandType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
@@ -151,7 +155,7 @@ var _ = Describe("type AggregateConfig", func() {
 
 				Expect(err).To(Equal(
 					ConfigurationError(
-						"*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.RouteCommandType(fixtures.Message)",
+						"*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.RouteCommandType(fixtures.MessageA)",
 					),
 				))
 			})

@@ -20,7 +20,8 @@ var _ = Describe("type ProjectionConfig", func() {
 			handler = &fixtures.ProjectionMessageHandler{
 				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 					c.Name("<name>")
-					c.RouteEventType(fixtures.Message{})
+					c.RouteEventType(fixtures.MessageA{})
+					c.RouteEventType(fixtures.MessageB{})
 				},
 			}
 		})
@@ -39,8 +40,11 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("the message types are in the set", func() {
-				Expect(cfg.EventTypes).To(HaveKey(
-					reflect.TypeOf(fixtures.Message{}),
+				Expect(cfg.EventTypes).To(Equal(
+					map[reflect.Type]struct{}{
+						reflect.TypeOf(fixtures.MessageA{}): struct{}{},
+						reflect.TypeOf(fixtures.MessageB{}): struct{}{},
+					},
 				))
 			})
 
@@ -65,7 +69,7 @@ var _ = Describe("type ProjectionConfig", func() {
 		When("the handler does not configure a name", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
-					c.RouteEventType(fixtures.Message{})
+					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
@@ -85,7 +89,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
 					c.Name("<name>")
 					c.Name("<other>")
-					c.RouteEventType(fixtures.Message{})
+					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
@@ -104,7 +108,7 @@ var _ = Describe("type ProjectionConfig", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
 					c.Name("\t \n")
-					c.RouteEventType(fixtures.Message{})
+					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
@@ -141,8 +145,8 @@ var _ = Describe("type ProjectionConfig", func() {
 			BeforeEach(func() {
 				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
 					c.Name("<name>")
-					c.RouteEventType(fixtures.Message{})
-					c.RouteEventType(fixtures.Message{})
+					c.RouteEventType(fixtures.MessageA{})
+					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
@@ -151,7 +155,7 @@ var _ = Describe("type ProjectionConfig", func() {
 
 				Expect(err).To(Equal(
 					ConfigurationError(
-						"*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.RouteEventType(fixtures.Message)",
+						"*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.RouteEventType(fixtures.MessageA)",
 					),
 				))
 			})

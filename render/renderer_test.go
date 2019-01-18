@@ -16,11 +16,11 @@ func TestDefaultRenderer_WriteMessage(t *testing.T) {
 			return iago.Must(
 				DefaultRenderer{}.WriteMessage(
 					w,
-					fixtures.Message{Value: "<value>"},
+					fixtures.MessageA{Value: "<value>"},
 				),
 			)
 		},
-		"fixtures.Message{",
+		"fixtures.MessageA{",
 		`    Value: "<value>"`,
 		"}",
 	)
