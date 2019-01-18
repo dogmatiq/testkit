@@ -8,12 +8,6 @@ import (
 
 // Controller orchestrates the handling of a message by Dogma message handler.
 type Controller interface {
-	// Name returns the name of the handler.
-	Name() string
-
-	// Handler returns the application's underlying handler.
-	Handler() interface{}
-
 	// Handle handles a message.
 	Handle(ctx context.Context, env *envelope.Envelope) error
 
