@@ -77,7 +77,7 @@ var _ = Describe("type ProcessConfig", func() {
 				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProcessMessageHandler.Configure() did not call ProcessConfigurer.Name()",
 					),
 				))
@@ -97,7 +97,7 @@ var _ = Describe("type ProcessConfig", func() {
 				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProcessMessageHandler.Configure() has already called ProcessConfigurer.Name("<name>")`,
 					),
 				))
@@ -116,7 +116,7 @@ var _ = Describe("type ProcessConfig", func() {
 				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProcessMessageHandler.Configure() called ProcessConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
@@ -134,7 +134,7 @@ var _ = Describe("type ProcessConfig", func() {
 				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProcessMessageHandler.Configure() did not call ProcessConfigurer.RouteEventType()",
 					),
 				))
@@ -154,7 +154,7 @@ var _ = Describe("type ProcessConfig", func() {
 				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProcessMessageHandler.Configure() has already called ProcessConfigurer.RouteEventType(fixtures.MessageA)",
 					),
 				))

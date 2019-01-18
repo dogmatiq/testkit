@@ -77,7 +77,7 @@ var _ = Describe("type IntegrationConfig", func() {
 				_, err := NewIntegrationConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.IntegrationMessageHandler.Configure() did not call IntegrationConfigurer.Name()",
 					),
 				))
@@ -97,7 +97,7 @@ var _ = Describe("type IntegrationConfig", func() {
 				_, err := NewIntegrationConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.IntegrationMessageHandler.Configure() has already called IntegrationConfigurer.Name("<name>")`,
 					),
 				))
@@ -116,7 +116,7 @@ var _ = Describe("type IntegrationConfig", func() {
 				_, err := NewIntegrationConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.IntegrationMessageHandler.Configure() called IntegrationConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
@@ -134,7 +134,7 @@ var _ = Describe("type IntegrationConfig", func() {
 				_, err := NewIntegrationConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.IntegrationMessageHandler.Configure() did not call IntegrationConfigurer.RouteCommandType()",
 					),
 				))
@@ -154,7 +154,7 @@ var _ = Describe("type IntegrationConfig", func() {
 				_, err := NewIntegrationConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.IntegrationMessageHandler.Configure() has already called IntegrationConfigurer.RouteCommandType(fixtures.MessageA)",
 					),
 				))

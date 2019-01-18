@@ -122,7 +122,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`application name "\t \n" is invalid`,
 					),
 				))
@@ -181,7 +181,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.AggregateMessageHandler can not use the handler name "<aggregate>", because it is already used by *fixtures.AggregateMessageHandler`,
 					),
 				))
@@ -196,7 +196,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProcessMessageHandler can not use the handler name "<aggregate>", because it is already used by *fixtures.AggregateMessageHandler`,
 					),
 				))
@@ -211,7 +211,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.IntegrationMessageHandler can not use the handler name "<process>", because it is already used by *fixtures.ProcessMessageHandler`,
 					),
 				))
@@ -226,7 +226,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProjectionMessageHandler can not use the handler name "<integration>", because it is already used by *fixtures.IntegrationMessageHandler`,
 					),
 				))
@@ -243,7 +243,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`can not route commands of type fixtures.MessageA to "<integration>" because they are already routed to "<aggregate>"`,
 					),
 				))
@@ -258,7 +258,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`can not route messages of type fixtures.MessageA to "<process>" as events because they are already routed to "<aggregate>" as commands`,
 					),
 				))
@@ -273,7 +273,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`can not route messages of type fixtures.MessageB to "<integration>" as commands because they are already routed to "<process>" as events`,
 					),
 				))
@@ -301,7 +301,7 @@ var _ = Describe("type AppConfig", func() {
 				_, err := NewAppConfig(app)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`can not route messages of type fixtures.MessageE to "<integration>" as commands because they are already routed to "<process>" and 1 other handler(s) as events`,
 					),
 				))

@@ -77,7 +77,7 @@ var _ = Describe("type AggregateConfig", func() {
 				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.Name()",
 					),
 				))
@@ -97,7 +97,7 @@ var _ = Describe("type AggregateConfig", func() {
 				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.Name("<name>")`,
 					),
 				))
@@ -116,7 +116,7 @@ var _ = Describe("type AggregateConfig", func() {
 				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.AggregateMessageHandler.Configure() called AggregateConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
@@ -134,7 +134,7 @@ var _ = Describe("type AggregateConfig", func() {
 				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.RouteCommandType()",
 					),
 				))
@@ -154,7 +154,7 @@ var _ = Describe("type AggregateConfig", func() {
 				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.RouteCommandType(fixtures.MessageA)",
 					),
 				))

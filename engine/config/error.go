@@ -7,7 +7,7 @@ import "fmt"
 func catch(fn func()) (err error) {
 	defer func() {
 		switch r := recover().(type) {
-		case ConfigurationError:
+		case Error:
 			err = r
 		case nil:
 			return
@@ -21,22 +21,22 @@ func catch(fn func()) (err error) {
 	return
 }
 
-// panicf panics with a new ConfigurationError.
+// panicf panics with a new configuration error.
 func panicf(f string, v ...interface{}) {
 	panic(errorf(f, v...))
 }
 
-// errorf returns a new ConfigurationError.
-func errorf(f string, v ...interface{}) ConfigurationError {
-	return ConfigurationError(
+// errorf returns a new configuration error.
+func errorf(f string, v ...interface{}) Error {
+	return Error(
 		fmt.Sprintf(f, v...),
 	)
 }
 
-// ConfigurationError is an error representing a fault in an application's
+// Error is an error representing a fault in an application's
 // configuration.
-type ConfigurationError string
+type Error string
 
-func (e ConfigurationError) Error() string {
+func (e Error) Error() string {
 	return string(e)
 }

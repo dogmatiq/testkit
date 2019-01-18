@@ -77,7 +77,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				_, err := NewProjectionConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.Name()",
 					),
 				))
@@ -97,7 +97,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				_, err := NewProjectionConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.Name("<name>")`,
 					),
 				))
@@ -116,7 +116,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				_, err := NewProjectionConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						`*fixtures.ProjectionMessageHandler.Configure() called ProjectionConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
@@ -134,7 +134,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				_, err := NewProjectionConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.RouteEventType()",
 					),
 				))
@@ -154,7 +154,7 @@ var _ = Describe("type ProjectionConfig", func() {
 				_, err := NewProjectionConfig(handler)
 
 				Expect(err).To(Equal(
-					ConfigurationError(
+					Error(
 						"*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.RouteEventType(fixtures.MessageA)",
 					),
 				))
