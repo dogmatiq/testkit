@@ -121,8 +121,17 @@ func (c *AppConfig) registerHandlerConfig(
 		}
 
 		if x, ok := c.EventRoutes[t]; ok {
+			if len(x) == 1 {
+				return errorf(
+					"can not route messages of type %s to %#v as commands because they are already routed to %#v as events",
+					t,
+					cfg.Name(),
+					x[0],
+				)
+			}
+
 			return errorf(
-				"can not route messages of type %s to %#v as commands because they are already routed to %#v and %d other handlers as events",
+				"can not route messages of type %s to %#v as commands because they are already routed to %#v and %d other handler(s) as events",
 				t,
 				cfg.Name(),
 				x[0],

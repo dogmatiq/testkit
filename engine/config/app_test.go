@@ -34,6 +34,7 @@ var _ = Describe("type AppConfig", func() {
 				ConfigureFunc: func(c dogma.ProcessConfigurer) {
 					c.Name("<process>")
 					c.RouteEventType(fixtures.MessageB{})
+					c.RouteEventType(fixtures.MessageE{}) // shared with <projection>
 				},
 			}
 
@@ -48,6 +49,7 @@ var _ = Describe("type AppConfig", func() {
 				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 					c.Name("<projection>")
 					c.RouteEventType(fixtures.MessageD{})
+					c.RouteEventType(fixtures.MessageE{}) // shared with <process>
 				},
 			}
 
@@ -80,6 +82,7 @@ var _ = Describe("type AppConfig", func() {
 						reflect.TypeOf(fixtures.MessageB{}): {"<process>"},
 						reflect.TypeOf(fixtures.MessageC{}): {"<integration>"},
 						reflect.TypeOf(fixtures.MessageD{}): {"<projection>"},
+						reflect.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
 					},
 				))
 			})
@@ -98,6 +101,7 @@ var _ = Describe("type AppConfig", func() {
 					map[reflect.Type][]string{
 						reflect.TypeOf(fixtures.MessageB{}): {"<process>"},
 						reflect.TypeOf(fixtures.MessageD{}): {"<projection>"},
+						reflect.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
 					},
 				))
 			})
@@ -164,7 +168,15 @@ var _ = Describe("type AppConfig", func() {
 				// Note that aggregates are processed before everything else, so in order to
 				// induce a conflict we need to have two aggregate names in conflict. For
 				// the other tests, we will test conflicts across differing handler types.
-				app.Aggregates = append(app.Aggregates, aggregate)
+				app.Aggregates = append(
+					app.Aggregates,
+					&fixtures.AggregateMessageHandler{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Name("<aggregate>") // conflict!
+							c.RouteCommandType(fixtures.MessageG{})
+						},
+					},
+				)
 
 				_, err := NewAppConfig(app)
 
@@ -216,6 +228,81 @@ var _ = Describe("type AppConfig", func() {
 				Expect(err).To(Equal(
 					ConfigurationError(
 						`*fixtures.ProjectionMessageHandler can not use the handler name "<integration>", because it is already used by *fixtures.IntegrationMessageHandler`,
+					),
+				))
+			})
+		})
+
+		When("the app contains conflicting routes", func() {
+			It("returns an error when a route is in conflict because two handlers intend to receive the same command", func() {
+				integration.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+					c.Name("<integration>")
+					c.RouteCommandType(fixtures.MessageA{}) // conflict with <aggregate>
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`can not route commands of type fixtures.MessageA to "<integration>" because they are already routed to "<aggregate>"`,
+					),
+				))
+			})
+
+			It("returns an error when a process route is in conflict because a command is reclassified as an event", func() {
+				process.ConfigureFunc = func(c dogma.ProcessConfigurer) {
+					c.Name("<process>")
+					c.RouteEventType(fixtures.MessageA{}) // conflict with <aggregate>
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`can not route messages of type fixtures.MessageA to "<process>" as events because they are already routed to "<aggregate>" as commands`,
+					),
+				))
+			})
+
+			It("returns an error when a process route is in conflict because an event with a single handler is reclassified as a command", func() {
+				integration.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+					c.Name("<integration>")
+					c.RouteCommandType(fixtures.MessageB{}) // conflict with <process>
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`can not route messages of type fixtures.MessageB to "<integration>" as commands because they are already routed to "<process>" as events`,
+					),
+				))
+			})
+
+			It("returns an error when a process route is in conflict because an event with multiple handlers is reclassified as a command", func() {
+				// Note that integrations are the last handler that accepts commands to be
+				// processed, so in order to induce a conflict we need to have two processes
+				// that are routed the same event.
+				app.Processes = append(
+					app.Processes,
+					&fixtures.ProcessMessageHandler{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Name("<another-process>")
+							c.RouteEventType(fixtures.MessageE{}) // shared with <process> (and <projection>, but that wont have been registered yet)
+						},
+					},
+				)
+
+				integration.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+					c.Name("<integration>")
+					c.RouteCommandType(fixtures.MessageE{}) // conflict with <process> and <another-process>
+				}
+
+				_, err := NewAppConfig(app)
+
+				Expect(err).To(Equal(
+					ConfigurationError(
+						`can not route messages of type fixtures.MessageE to "<integration>" as commands because they are already routed to "<process>" and 1 other handler(s) as events`,
 					),
 				))
 			})
