@@ -21,7 +21,7 @@ type Engine struct {
 func New(
 	cfg *config.AppConfig,
 	options ...Option,
-) *Engine {
+) (*Engine, error) {
 	e := &Engine{
 		roles:  map[reflect.Type]envelope.MessageRole{},
 		routes: map[reflect.Type][]controller.Controller{},
@@ -36,22 +36,26 @@ func New(
 	ctx := context.Background()
 
 	for _, opt := range options {
-		if err := opt(cfgr, true); err != nil {
-			panic(err)
+		if opt.beforeApp != nil {
+			if err := opt.beforeApp(cfgr); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	if err := cfg.Accept(ctx, cfgr); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for _, opt := range options {
-		if err := opt(cfgr, false); err != nil {
-			panic(err)
+		if opt.afterApp != nil {
+			if err := opt.afterApp(cfgr); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return e
+	return e, nil
 }
 
 // Reset clears the state of the engine.
