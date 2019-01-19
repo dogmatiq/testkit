@@ -21,6 +21,7 @@ var _ = Describe("type Envelope", func() {
 					Message: m,
 					Type:    reflect.TypeOf(m),
 					Role:    CommandRole,
+					IsRoot:  true,
 				},
 			))
 		})
@@ -48,6 +49,7 @@ var _ = Describe("type Envelope", func() {
 					Message: message,
 					Type:    reflect.TypeOf(message),
 					Role:    EventRole,
+					IsRoot:  false,
 				},
 			))
 

@@ -20,6 +20,9 @@ type Envelope struct {
 	// Role is the message's role.
 	Role MessageRole
 
+	// IsRoot is true if this message is at the root of an envelope tree.
+	IsRoot bool
+
 	// IsHandled is true if the message in the envelope has already been handled.
 	IsHandled bool
 
@@ -36,6 +39,7 @@ func New(m dogma.Message, r MessageRole) *Envelope {
 		Message: m,
 		Type:    reflect.TypeOf(m),
 		Role:    r,
+		IsRoot:  true,
 	}
 }
 
@@ -48,6 +52,7 @@ func (e *Envelope) NewChild(m dogma.Message, r MessageRole) *Envelope {
 		Message: m,
 		Type:    reflect.TypeOf(m),
 		Role:    r,
+		IsRoot:  false,
 	}
 
 	e.Children = append(e.Children, env)
