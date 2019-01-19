@@ -1,17 +1,17 @@
 package engine
 
 import (
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"context"
 	"reflect"
 
 	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/aggregate"
 	"github.com/dogmatiq/dogmatest/engine/config"
+	"github.com/dogmatiq/dogmatest/engine/controller"
+	"github.com/dogmatiq/dogmatest/engine/controller/aggregate"
+	"github.com/dogmatiq/dogmatest/engine/controller/integration"
+	"github.com/dogmatiq/dogmatest/engine/controller/process"
+	"github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/engine/integration"
-	"github.com/dogmatiq/dogmatest/engine/process"
-	"github.com/dogmatiq/dogmatest/engine/projection"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
