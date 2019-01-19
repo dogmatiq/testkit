@@ -3,6 +3,8 @@ package aggregate
 import (
 	"context"
 
+	"github.com/dogmatiq/dogmatest/engine/envelope"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/render"
@@ -30,8 +32,13 @@ func NewController(
 	}
 }
 
+// Name returns the name of the handler that managed by this controller.
+func (c *Controller) Name() string {
+	return c.name
+}
+
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, s controller.Scope) error {
+func (c *Controller) Handle(ctx context.Context, s controller.Scope) ([]*envelope.Envelope, error) {
 	panic("not implemented")
 }
 
