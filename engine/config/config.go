@@ -8,7 +8,7 @@ type Config interface {
 	// For example, the application or handler name.
 	Name() string
 
-	// Accept calls the appropriate method on for this configuration type.
+	// Accept calls the appropriate method on v for this configuration type.
 	Accept(ctx context.Context, v Visitor) error
 }
 
