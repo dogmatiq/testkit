@@ -1,6 +1,8 @@
 package envelope_test
 
 import (
+	"reflect"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
@@ -9,14 +11,15 @@ import (
 )
 
 var _ = Describe("type Envelope", func() {
-	Describe("func NewEnvelope", func() {
+	Describe("func New", func() {
 		It("returns the expected envelope", func() {
 			m := fixtures.MessageA{Value: "<value>"}
-			env := NewEnvelope(m, CommandRole)
+			env := New(m, CommandRole)
 
 			Expect(env).To(Equal(
 				&Envelope{
 					Message: m,
+					Type:    reflect.TypeOf(m),
 					Role:    CommandRole,
 				},
 			))
@@ -30,7 +33,7 @@ var _ = Describe("type Envelope", func() {
 		)
 
 		BeforeEach(func() {
-			parent = NewEnvelope(
+			parent = New(
 				fixtures.MessageA{Value: "<parent>"},
 				CommandRole,
 			)
@@ -43,6 +46,7 @@ var _ = Describe("type Envelope", func() {
 			Expect(env).To(Equal(
 				&Envelope{
 					Message: message,
+					Type:    reflect.TypeOf(message),
 					Role:    EventRole,
 				},
 			))
@@ -61,7 +65,7 @@ var _ = Describe("type Envelope", func() {
 		var root *Envelope
 
 		BeforeEach(func() {
-			root = NewEnvelope(
+			root = New(
 				fixtures.MessageA{Value: "<root>"},
 				CommandRole,
 			)

@@ -1,6 +1,10 @@
 package envelope
 
-import "github.com/dogmatiq/dogma"
+import (
+	"reflect"
+
+	"github.com/dogmatiq/dogma"
+)
 
 // Envelope is a container for a message that is handled by the test engine.
 //
@@ -9,6 +13,9 @@ import "github.com/dogmatiq/dogma"
 type Envelope struct {
 	// Message is the application-defined message that the envelope represents.
 	Message dogma.Message
+
+	// Type is the type of the message.
+	Type reflect.Type
 
 	// Role is the message's role.
 	Role MessageRole
@@ -21,12 +28,13 @@ type Envelope struct {
 	Children []*Envelope
 }
 
-// NewEnvelope constructs a new envelope containing the given message.
-func NewEnvelope(m dogma.Message, r MessageRole) *Envelope {
+// New constructs a new envelope containing the given message.
+func New(m dogma.Message, r MessageRole) *Envelope {
 	r.MustValidate()
 
 	return &Envelope{
 		Message: m,
+		Type:    reflect.TypeOf(m),
 		Role:    r,
 	}
 }
@@ -38,6 +46,7 @@ func (e *Envelope) NewChild(m dogma.Message, r MessageRole) *Envelope {
 
 	env := &Envelope{
 		Message: m,
+		Type:    reflect.TypeOf(m),
 		Role:    r,
 	}
 
