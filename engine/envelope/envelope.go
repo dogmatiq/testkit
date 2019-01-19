@@ -23,9 +23,6 @@ type Envelope struct {
 	// IsRoot is true if this message is at the root of an envelope tree.
 	IsRoot bool
 
-	// IsHandled is true if the message in the envelope has already been handled.
-	IsHandled bool
-
 	// Children is a slice of the envelopes that were caused by this envelope's
 	// message when it was handled.
 	Children []*Envelope
