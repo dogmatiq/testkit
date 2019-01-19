@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/config"
+	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/render"
 )
@@ -13,7 +14,7 @@ import (
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
 	roles  map[reflect.Type]envelope.MessageRole
-	routes map[reflect.Type][]Controller
+	routes map[reflect.Type][]controller.Controller
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -23,7 +24,7 @@ func New(
 ) *Engine {
 	e := &Engine{
 		roles:  map[reflect.Type]envelope.MessageRole{},
-		routes: map[reflect.Type][]Controller{},
+		routes: map[reflect.Type][]controller.Controller{},
 	}
 
 	cfgr := &configurer{

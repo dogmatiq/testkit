@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
@@ -30,7 +30,7 @@ func NewController(
 }
 
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, env *envelope.Envelope) error {
+func (c *Controller) Handle(ctx context.Context, s controller.Scope) error {
 	panic("not implemented")
 }
 

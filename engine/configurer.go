@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"github.com/dogmatiq/dogmatest/engine/controller"
 	"context"
 	"reflect"
 
@@ -87,7 +88,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 }
 
 func (c *configurer) registerController(
-	ctrl Controller,
+	ctrl controller.Controller,
 	r envelope.MessageRole,
 	types map[reflect.Type]struct{},
 ) {
