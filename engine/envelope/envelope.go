@@ -18,7 +18,7 @@ type Envelope struct {
 	Type message.Type
 
 	// Role is the message's role.
-	Role MessageRole
+	Role message.Role
 
 	// IsRoot is true if this message is at the root of an envelope tree.
 	IsRoot bool
@@ -29,7 +29,7 @@ type Envelope struct {
 }
 
 // New constructs a new envelope containing the given message.
-func New(m dogma.Message, r MessageRole) *Envelope {
+func New(m dogma.Message, r message.Role) *Envelope {
 	r.MustValidate()
 
 	return &Envelope{
@@ -42,7 +42,7 @@ func New(m dogma.Message, r MessageRole) *Envelope {
 
 // NewChild constructs a new envelope as a child of e, indicating that m is
 // caused by e.Message.
-func (e *Envelope) NewChild(m dogma.Message, r MessageRole) *Envelope {
+func (e *Envelope) NewChild(m dogma.Message, r message.Role) *Envelope {
 	r.MustValidate()
 
 	env := &Envelope{

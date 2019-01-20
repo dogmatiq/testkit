@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/controller/projection"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
@@ -38,7 +37,7 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 			cfg.Handler,
 			c.renderer,
 		),
-		envelope.CommandRole,
+		message.CommandRole,
 		cfg.CommandTypes,
 	)
 
@@ -52,7 +51,7 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 			cfg.Handler,
 			c.renderer,
 		),
-		envelope.EventRole,
+		message.EventRole,
 		cfg.EventTypes,
 	)
 
@@ -66,7 +65,7 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 			cfg.Handler,
 			c.renderer,
 		),
-		envelope.CommandRole,
+		message.CommandRole,
 		cfg.CommandTypes,
 	)
 
@@ -80,7 +79,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 			cfg.Handler,
 			c.renderer,
 		),
-		envelope.EventRole,
+		message.EventRole,
 		cfg.EventTypes,
 	)
 
@@ -89,7 +88,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 
 func (c *configurer) registerController(
 	ctrl controller.Controller,
-	r envelope.MessageRole,
+	r message.Role,
 	types map[message.Type]struct{},
 ) {
 	for t := range types {

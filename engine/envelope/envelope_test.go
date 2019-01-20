@@ -13,13 +13,13 @@ var _ = Describe("type Envelope", func() {
 	Describe("func New", func() {
 		It("returns the expected envelope", func() {
 			m := fixtures.MessageA{Value: "<value>"}
-			env := New(m, CommandRole)
+			env := New(m, message.CommandRole)
 
 			Expect(env).To(Equal(
 				&Envelope{
 					Message: m,
 					Type:    message.TypeOf(m),
-					Role:    CommandRole,
+					Role:    message.CommandRole,
 					IsRoot:  true,
 				},
 			))
@@ -35,19 +35,19 @@ var _ = Describe("type Envelope", func() {
 		BeforeEach(func() {
 			parent = New(
 				fixtures.MessageA{Value: "<parent>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			m = fixtures.MessageA{Value: "<parent>"}
 		})
 
 		It("returns the expected envelope", func() {
-			env := parent.NewChild(m, EventRole)
+			env := parent.NewChild(m, message.EventRole)
 			Expect(env).To(Equal(
 				&Envelope{
 					Message: m,
 					Type:    message.TypeOf(m),
-					Role:    EventRole,
+					Role:    message.EventRole,
 					IsRoot:  false,
 				},
 			))
@@ -55,7 +55,7 @@ var _ = Describe("type Envelope", func() {
 		})
 
 		It("adds the child envelope to the parent", func() {
-			env := parent.NewChild(m, EventRole)
+			env := parent.NewChild(m, message.EventRole)
 			Expect(parent.Children).To(Equal(
 				[]*Envelope{env},
 			))
@@ -68,37 +68,37 @@ var _ = Describe("type Envelope", func() {
 		BeforeEach(func() {
 			root = New(
 				fixtures.MessageA{Value: "<root>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child1 := root.NewChild(
 				fixtures.MessageA{Value: "<child-1>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child1.NewChild(
 				fixtures.MessageA{Value: "<grandchild-1a>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child1.NewChild(
 				fixtures.MessageA{Value: "<grandchild-1b>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child2 := root.NewChild(
 				fixtures.MessageA{Value: "<child-1>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child2.NewChild(
 				fixtures.MessageA{Value: "<grandchild-2a>"},
-				CommandRole,
+				message.CommandRole,
 			)
 
 			child2.NewChild(
 				fixtures.MessageA{Value: "<grandchild-2a>"},
-				CommandRole,
+				message.CommandRole,
 			)
 		})
 
