@@ -10,13 +10,13 @@ import (
 
 // commandScope is an implementation of dogma.AggregateCommandScope.
 type commandScope struct {
-	id      string
-	name    string
-	parent  controller.Scope
-	root    dogma.AggregateRoot
-	exists  bool
-	command *envelope.Envelope
-	events  []*envelope.Envelope
+	id       string
+	name     string
+	parent   controller.Scope
+	root     dogma.AggregateRoot
+	exists   bool
+	command  *envelope.Envelope
+	children []*envelope.Envelope
 }
 
 func (s *commandScope) InstanceID() string {
@@ -71,7 +71,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	s.root.ApplyEvent(m)
 
 	env := s.command.NewChild(m, message.EventRole)
-	s.events = append(s.events, env)
+	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.EventRecordedByAggregate{
 		HandlerName: s.name,
@@ -82,7 +82,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 }
 
 func (s *commandScope) Log(f string, v ...interface{}) {
-	s.parent.RecordFacts(fact.AggregateLoggedMessage{
+	s.parent.RecordFacts(fact.MessageLoggedByAggregate{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,

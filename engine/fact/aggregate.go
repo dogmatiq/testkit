@@ -50,9 +50,9 @@ type EventRecordedByAggregate struct {
 	EventEnvelope *envelope.Envelope
 }
 
-// AggregateLoggedMessage indicates that an aggregate wrote a log message while
-// handling a command.
-type AggregateLoggedMessage struct {
+// MessageLoggedByAggregate indicates that an aggregate wrote a log message
+// while handling a command.
+type MessageLoggedByAggregate struct {
 	HandlerName  string
 	InstanceID   string
 	Root         dogma.AggregateRoot

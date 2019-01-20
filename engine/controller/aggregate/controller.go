@@ -94,7 +94,7 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 		delete(c.instances, id)
 	}
 
-	return s.events, nil
+	return s.children, nil
 }
 
 // Reset clears the state of the controller.
