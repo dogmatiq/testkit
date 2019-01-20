@@ -39,15 +39,13 @@ func (h *IntegrationMessageHandler) Configure(c dogma.IntegrationConfigurer) {
 // If h.HandleCommandFunc is non-nil it calls h.HandleCommandFunc(s, m),
 // otherwise it panics.
 func (h *IntegrationMessageHandler) HandleCommand(
+	ctx context.Context,
 	s dogma.IntegrationCommandScope,
 	m dogma.Message,
-) {
+) error {
 	if h.HandleCommandFunc == nil {
 		panic(dogma.UnexpectedMessage)
 	}
 
-	// See https://github.com/dogmatiq/dogma/issues/52
-	if err := h.HandleCommandFunc(context.TODO(), s, m); err != nil {
-		panic(err)
-	}
+	return h.HandleCommandFunc(ctx, s, m)
 }

@@ -39,15 +39,13 @@ func (h *ProjectionMessageHandler) Configure(c dogma.ProjectionConfigurer) {
 // If h.HandleEventFunc is non-nil it calls h.HandleEventFunc(s, m),
 // otherwise it panics.
 func (h *ProjectionMessageHandler) HandleEvent(
+	ctx context.Context,
 	s dogma.ProjectionEventScope,
 	m dogma.Message,
-) {
+) error {
 	if h.HandleEventFunc == nil {
 		panic(dogma.UnexpectedMessage)
 	}
 
-	// See https://github.com/dogmatiq/dogma/issues/52
-	if err := h.HandleEventFunc(context.TODO(), s, m); err != nil {
-		panic(err)
-	}
+	return h.HandleEventFunc(context.TODO(), s, m)
 }
