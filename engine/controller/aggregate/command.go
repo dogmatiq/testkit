@@ -31,10 +31,10 @@ func (s *commandScope) Create() bool {
 	s.exists = true
 
 	s.parent.RecordFacts(fact.AggregateInstanceCreated{
-		HandlerName:     s.name,
-		InstanceID:      s.id,
-		Root:            s.root,
-		CommandEnvelope: s.command,
+		HandlerName: s.name,
+		InstanceID:  s.id,
+		Root:        s.root,
+		Envelope:    s.command,
 	})
 
 	return true
@@ -48,10 +48,10 @@ func (s *commandScope) Destroy() {
 	s.exists = false
 
 	s.parent.RecordFacts(fact.AggregateInstanceDestroyed{
-		HandlerName:     s.name,
-		InstanceID:      s.id,
-		Root:            s.root,
-		CommandEnvelope: s.command,
+		HandlerName: s.name,
+		InstanceID:  s.id,
+		Root:        s.root,
+		Envelope:    s.command,
 	})
 }
 
@@ -74,20 +74,20 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.parent.RecordFacts(fact.EventRecordedByAggregate{
-		HandlerName:     s.name,
-		InstanceID:      s.id,
-		Root:            s.root,
-		CommandEnvelope: s.command,
+		HandlerName: s.name,
+		InstanceID:  s.id,
+		Root:        s.root,
+		Envelope:    s.command,
 	})
 }
 
 func (s *commandScope) Log(f string, v ...interface{}) {
 	s.parent.RecordFacts(fact.AggregateLoggedMessage{
-		HandlerName:     s.name,
-		InstanceID:      s.id,
-		Root:            s.root,
-		CommandEnvelope: s.command,
-		LogFormat:       f,
-		LogArguments:    v,
+		HandlerName:  s.name,
+		InstanceID:   s.id,
+		Root:         s.root,
+		Envelope:     s.command,
+		LogFormat:    f,
+		LogArguments: v,
 	})
 }

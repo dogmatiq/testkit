@@ -53,16 +53,16 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 
 	if exists {
 		cs.RecordFacts(fact.AggregateInstanceLoaded{
-			HandlerName:     c.name,
-			InstanceID:      id,
-			Root:            r,
-			CommandEnvelope: env,
+			HandlerName: c.name,
+			InstanceID:  id,
+			Root:        r,
+			Envelope:    env,
 		})
 	} else {
 		cs.RecordFacts(fact.AggregateInstanceNotFound{
-			HandlerName:     c.name,
-			InstanceID:      id,
-			CommandEnvelope: env,
+			HandlerName: c.name,
+			InstanceID:  id,
+			Envelope:    env,
 		})
 	}
 
