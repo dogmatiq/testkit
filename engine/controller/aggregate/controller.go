@@ -60,13 +60,13 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 			InstanceID:  id,
 			Envelope:    env,
 		})
-	}
 
-	r = c.handler.New()
+		r = c.handler.New()
 
-	if r == nil {
-		return nil, errors.NilRoot{
-			Handler: c.name,
+		if r == nil {
+			return nil, errors.NilRoot{
+				Handler: c.name,
+			}
 		}
 	}
 
