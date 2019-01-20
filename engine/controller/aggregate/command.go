@@ -8,8 +8,8 @@ import (
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
-// scope is an implementation of dogma.AggregateCommandScope.
-type scope struct {
+// commandScope is an implementation of dogma.AggregateCommandScope.
+type commandScope struct {
 	id      string
 	name    string
 	parent  controller.Scope
@@ -19,11 +19,11 @@ type scope struct {
 	events  []*envelope.Envelope
 }
 
-func (s *scope) InstanceID() string {
+func (s *commandScope) InstanceID() string {
 	return s.id
 }
 
-func (s *scope) Create() bool {
+func (s *commandScope) Create() bool {
 	if s.exists {
 		return false
 	}
@@ -40,7 +40,7 @@ func (s *scope) Create() bool {
 	return true
 }
 
-func (s *scope) Destroy() {
+func (s *commandScope) Destroy() {
 	if !s.exists {
 		panic("can not destroy non-existent instance")
 	}
@@ -55,7 +55,7 @@ func (s *scope) Destroy() {
 	})
 }
 
-func (s *scope) Root() dogma.AggregateRoot {
+func (s *commandScope) Root() dogma.AggregateRoot {
 	if !s.exists {
 		panic("can not access aggregate root of non-existent instance")
 	}
@@ -63,7 +63,7 @@ func (s *scope) Root() dogma.AggregateRoot {
 	return s.root
 }
 
-func (s *scope) RecordEvent(m dogma.Message) {
+func (s *commandScope) RecordEvent(m dogma.Message) {
 	if !s.exists {
 		panic("can not record event against non-existent instance")
 	}
@@ -81,7 +81,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	})
 }
 
-func (s *scope) Log(f string, v ...interface{}) {
+func (s *commandScope) Log(f string, v ...interface{}) {
 	s.parent.RecordFacts(fact.AggregateLoggedMessage{
 		HandlerName:     s.name,
 		InstanceID:      s.id,

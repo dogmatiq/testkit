@@ -74,7 +74,7 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 		}
 	}
 
-	s := &scope{
+	s := &commandScope{
 		id:      id,
 		name:    c.name,
 		parent:  cs,
