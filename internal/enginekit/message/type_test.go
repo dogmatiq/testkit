@@ -1,7 +1,6 @@
 package message_test
 
 import (
-	"fmt"
 	"reflect"
 
 	. "github.com/dogmatiq/dogmatest/internal/enginekit/message"
@@ -29,6 +28,17 @@ var _ = Describe("type MessageType", func() {
 		})
 	})
 
+	Describe("func ReflectType", func() {
+		It("returns the reflect.Type for the message", func() {
+			m := fixtures.MessageA{}
+			t := TypeOf(m)
+
+			Expect(t.ReflectType()).To(BeIdenticalTo(
+				reflect.TypeOf(m),
+			))
+		})
+	})
+
 	Describe("func String", func() {
 		It("returns the package-qualified type name and the pointer address", func() {
 			m := fixtures.MessageA{}
@@ -43,12 +53,7 @@ var _ = Describe("type MessageType", func() {
 			m := struct{ inner fixtures.MessageA }{}
 			t := TypeOf(m)
 
-			Expect(t.String()).To(Equal(
-				fmt.Sprintf(
-					"<anonymous %d>",
-					reflect.ValueOf(reflect.TypeOf(m)).Pointer(),
-				),
-			))
+			Expect(t.String()).To(Equal("<anonymous>"))
 		})
 	})
 })

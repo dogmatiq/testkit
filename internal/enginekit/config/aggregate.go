@@ -19,14 +19,14 @@ type AggregateConfig struct {
 
 	// CommandTypes is the set of command message types that are routed to this
 	// handler, as specified by its Configure() method.
-	CommandTypes map[*message.Type]struct{}
+	CommandTypes map[message.Type]struct{}
 }
 
 // NewAggregateConfig returns an AggregateConfig for the given handler.
 func NewAggregateConfig(h dogma.AggregateMessageHandler) (*AggregateConfig, error) {
 	cfg := &AggregateConfig{
 		Handler:      h,
-		CommandTypes: map[*message.Type]struct{}{},
+		CommandTypes: map[message.Type]struct{}{},
 	}
 
 	c := &aggregateConfigurer{

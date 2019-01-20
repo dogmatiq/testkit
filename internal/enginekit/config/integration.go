@@ -18,14 +18,14 @@ type IntegrationConfig struct {
 
 	// CommandTypes is the set of command message types that are routed to this
 	// handler, as specified by its Configure() method.
-	CommandTypes map[*message.Type]struct{}
+	CommandTypes map[message.Type]struct{}
 }
 
 // NewIntegrationConfig returns an IntegrationConfig for the given handler.
 func NewIntegrationConfig(h dogma.IntegrationMessageHandler) (*IntegrationConfig, error) {
 	cfg := &IntegrationConfig{
 		Handler:      h,
-		CommandTypes: map[*message.Type]struct{}{},
+		CommandTypes: map[message.Type]struct{}{},
 	}
 
 	c := &integrationConfigurer{

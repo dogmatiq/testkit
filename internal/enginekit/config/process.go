@@ -18,14 +18,14 @@ type ProcessConfig struct {
 
 	// EventTypes is the set of event message types that are routed to this
 	// handler, as specified by its Configure() method.
-	EventTypes map[*message.Type]struct{}
+	EventTypes map[message.Type]struct{}
 }
 
 // NewProcessConfig returns an ProcessConfig for the given handler.
 func NewProcessConfig(h dogma.ProcessMessageHandler) (*ProcessConfig, error) {
 	cfg := &ProcessConfig{
 		Handler:    h,
-		EventTypes: map[*message.Type]struct{}{},
+		EventTypes: map[message.Type]struct{}{},
 	}
 
 	c := &processConfigurer{

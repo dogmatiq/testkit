@@ -18,15 +18,15 @@ type AppConfig struct {
 
 	// Routes is map of message type to the names of the handlers that receive
 	// messages of that type.
-	Routes map[*message.Type][]string
+	Routes map[message.Type][]string
 
 	// CommandRoutes is map of command message type to the names of the handler
 	// that receives that command type.
-	CommandRoutes map[*message.Type]string
+	CommandRoutes map[message.Type]string
 
 	// EventRoutes is map of event message type to the names of the handlers that
 	// receive events of that type.
-	EventRoutes map[*message.Type][]string
+	EventRoutes map[message.Type][]string
 }
 
 // NewAppConfig returns a new application config for the given application.
@@ -41,9 +41,9 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 	cfg := &AppConfig{
 		AppName:       app.Name,
 		Handlers:      map[string]Config{},
-		Routes:        map[*message.Type][]string{},
-		CommandRoutes: map[*message.Type]string{},
-		EventRoutes:   map[*message.Type][]string{},
+		Routes:        map[message.Type][]string{},
+		CommandRoutes: map[message.Type]string{},
+		EventRoutes:   map[message.Type][]string{},
 	}
 
 	ctx := context.Background()
@@ -108,8 +108,8 @@ func (c *AppConfig) Accept(ctx context.Context, v Visitor) error {
 
 func (c *AppConfig) registerHandlerConfig(
 	cfg Config,
-	commandTypes map[*message.Type]struct{},
-	eventTypes map[*message.Type]struct{},
+	commandTypes map[message.Type]struct{},
+	eventTypes map[message.Type]struct{},
 ) error {
 	n := cfg.Name()
 

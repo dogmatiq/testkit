@@ -90,7 +90,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 func (c *configurer) registerController(
 	ctrl controller.Controller,
 	r envelope.MessageRole,
-	types map[*message.Type]struct{},
+	types map[message.Type]struct{},
 ) {
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

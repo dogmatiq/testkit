@@ -16,8 +16,8 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	roles  map[*message.Type]envelope.MessageRole
-	routes map[*message.Type][]controller.Controller
+	roles  map[message.Type]envelope.MessageRole
+	routes map[message.Type][]controller.Controller
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -26,8 +26,8 @@ func New(
 	options ...Option,
 ) (*Engine, error) {
 	e := &Engine{
-		roles:  map[*message.Type]envelope.MessageRole{},
-		routes: map[*message.Type][]controller.Controller{},
+		roles:  map[message.Type]envelope.MessageRole{},
+		routes: map[message.Type][]controller.Controller{},
 	}
 
 	cfgr := &configurer{

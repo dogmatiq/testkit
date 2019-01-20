@@ -15,7 +15,7 @@ type Envelope struct {
 	Message dogma.Message
 
 	// Type is the type of the message.
-	Type *message.Type
+	Type message.Type
 
 	// Role is the message's role.
 	Role MessageRole
