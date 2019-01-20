@@ -33,7 +33,19 @@ func (c *Controller) Name() string {
 
 // Handle handles a message.
 func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelope.Envelope, error) {
-	panic("not implemented")
+	env := cs.Envelope()
+
+	s := &commandScope{
+		name:    c.name,
+		parent:  cs,
+		command: env,
+	}
+
+	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {
+		return nil, err
+	}
+
+	return s.children, nil
 }
 
 // Reset clears the state of the controller.
