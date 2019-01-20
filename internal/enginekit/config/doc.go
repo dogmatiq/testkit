@@ -1,3 +1,2 @@
-// Package config builds a representation of a Dogma application's configuration
-// that can be consumed by the engine.
+// Package config builds and validates Dogma application configurations.
 package config

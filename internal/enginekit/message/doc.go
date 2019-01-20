@@ -1,2 +1,2 @@
-// Package message provides tools for representing, querying and Dogma messages.
+// Package message provides tools for manipulating Dogma messages.
 package message
