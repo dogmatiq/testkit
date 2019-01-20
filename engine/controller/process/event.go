@@ -74,10 +74,11 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.CommandExecutedByProcess{
-		HandlerName: s.name,
-		InstanceID:  s.id,
-		Root:        s.root,
-		Envelope:    s.event,
+		HandlerName:     s.name,
+		InstanceID:      s.id,
+		Root:            s.root,
+		Envelope:        s.event,
+		CommandEnvelope: env,
 	})
 }
 
@@ -90,10 +91,11 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.TimeoutScheduledByProcess{
-		HandlerName: s.name,
-		InstanceID:  s.id,
-		Root:        s.root,
-		Envelope:    s.event,
+		HandlerName:     s.name,
+		InstanceID:      s.id,
+		Root:            s.root,
+		Envelope:        s.event,
+		TimeoutEnvelope: env,
 	})
 }
 

@@ -76,10 +76,11 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.EventRecordedByAggregate{
-		HandlerName: s.name,
-		InstanceID:  s.id,
-		Root:        s.root,
-		Envelope:    s.command,
+		HandlerName:   s.name,
+		InstanceID:    s.id,
+		Root:          s.root,
+		Envelope:      s.command,
+		EventEnvelope: env,
 	})
 }
 

@@ -64,7 +64,7 @@ type TimeoutScheduledByProcess struct {
 	InstanceID      string
 	Root            dogma.ProcessRoot
 	Envelope        *envelope.Envelope
-	CommandEnvelope *envelope.Envelope
+	TimeoutEnvelope *envelope.Envelope
 }
 
 // MessageLoggedByProcess indicates that a process wrote a log message while
