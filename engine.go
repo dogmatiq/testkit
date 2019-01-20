@@ -6,8 +6,11 @@ import (
 	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
 )
 
+// Engine is an alias for engine.Engine.
+type Engine = engine.Engine
+
 // NewEngine returns a new test engine.
-func NewEngine(app dogma.App, options ...engine.Option) *engine.Engine {
+func NewEngine(app dogma.App, options ...engine.Option) *Engine {
 	cfg, err := config.NewAppConfig(app)
 	if err != nil {
 		panic(err)
