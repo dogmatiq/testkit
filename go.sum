@@ -2,6 +2,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dogmatiq/dapper v0.2.0 h1:eamJJbvGGORHhwHqQo+VvVe+/QtEC1iAQJyJ4w2s9+k=
 github.com/dogmatiq/dapper v0.2.0/go.mod h1:jmqlMjWRjHJDMz/9gtNlMYxJvuH8pu6tPmmX4cxetJk=
+github.com/dogmatiq/dapper v0.3.0 h1:xBD/brqNIj75p/EQD4gn20K7c24uLJKpwRSEcS5hxdg=
+github.com/dogmatiq/dapper v0.3.0/go.mod h1:jmqlMjWRjHJDMz/9gtNlMYxJvuH8pu6tPmmX4cxetJk=
 github.com/dogmatiq/dogma v0.0.0-20190118032722-c29afc227652 h1:VZnwIZQG+gOSIG8c/FDkXPhl4WaYpIN6rmZwDaiN17I=
 github.com/dogmatiq/dogma v0.0.0-20190118032722-c29afc227652/go.mod h1:kzDxrkzdgrJattEUoLmoFdyHZtib4H5oa98VcewQEI8=
 github.com/dogmatiq/iago v0.1.0 h1:rlm0vDX2Y09WsTwNqf41my0kjaesDIrLD5rGRSsksBk=

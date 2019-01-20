@@ -1,7 +1,7 @@
 module github.com/dogmatiq/dogmatest
 
 require (
-	github.com/dogmatiq/dapper v0.2.0
+	github.com/dogmatiq/dapper v0.3.0
 	github.com/dogmatiq/dogma v0.0.0-20190118032722-c29afc227652
 	github.com/dogmatiq/iago v0.1.1-0.20190119001403-79da75e79c71
 	github.com/kr/pretty v0.1.0 // indirect
