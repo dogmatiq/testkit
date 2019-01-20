@@ -8,7 +8,6 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/errors"
-	"github.com/dogmatiq/dogmatest/render"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -16,7 +15,6 @@ import (
 type Controller struct {
 	name      string
 	handler   dogma.ProcessMessageHandler
-	renderer  render.Renderer
 	instances map[string]dogma.ProcessRoot
 }
 
@@ -24,12 +22,10 @@ type Controller struct {
 func NewController(
 	n string,
 	h dogma.ProcessMessageHandler,
-	r render.Renderer,
 ) *Controller {
 	return &Controller{
-		name:     n,
-		handler:  h,
-		renderer: r,
+		name:    n,
+		handler: h,
 	}
 }
 

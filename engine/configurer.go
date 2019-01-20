@@ -35,7 +35,6 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 		aggregate.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
-			c.renderer,
 		),
 		message.CommandRole,
 		cfg.CommandTypes,
@@ -49,7 +48,6 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 		process.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
-			c.renderer,
 		),
 		message.EventRole,
 		cfg.EventTypes,
@@ -63,7 +61,6 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 		integration.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
-			c.renderer,
 		),
 		message.CommandRole,
 		cfg.CommandTypes,
@@ -77,7 +74,6 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 		projection.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
-			c.renderer,
 		),
 		message.EventRole,
 		cfg.EventTypes,

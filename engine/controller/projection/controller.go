@@ -6,27 +6,23 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/render"
 )
 
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	name     string
-	handler  dogma.ProjectionMessageHandler
-	renderer render.Renderer
+	name    string
+	handler dogma.ProjectionMessageHandler
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
 	n string,
 	h dogma.ProjectionMessageHandler,
-	r render.Renderer,
 ) *Controller {
 	return &Controller{
-		name:     n,
-		handler:  h,
-		renderer: r,
+		name:    n,
+		handler: h,
 	}
 }
 
