@@ -126,15 +126,14 @@ func (e *Engine) dispatch(
 		for _, c := range e.routes[env.Type] {
 			n := c.Name()
 
-			envs, herr := c.Handle(ctx, s)
-
 			do.observers.Notify(
-				fact.MessageHandled{
+				fact.MessageHandlingBegun{
 					Envelope: env,
 					Handler:  n,
-					Error:    herr,
 				},
 			)
+
+			envs, herr := c.Handle(ctx, s)
 
 			if herr != nil {
 				err = multierr.Append(err, herr)
@@ -149,6 +148,14 @@ func (e *Engine) dispatch(
 					},
 				)
 			}
+
+			do.observers.Notify(
+				fact.MessageHandlingCompleted{
+					Envelope: env,
+					Handler:  n,
+					Error:    herr,
+				},
+			)
 		}
 	}
 
