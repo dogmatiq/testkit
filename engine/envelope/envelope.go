@@ -22,31 +22,40 @@ type Envelope struct {
 	IsRoot bool
 
 	// TimeoutTime holds the time at which the timeout is scheduled.
-	// This value is nil unless Role is message.TimeoutRole.
-	TimeoutTime *time.Time
+	// If the Role is not message.TimeoutRole, this value is zero.
+	TimeoutTime time.Time
 }
 
 // New constructs a new envelope containing the given message.
-func New(m dogma.Message, r message.Role) *Envelope {
+func New(m dogma.Message, r message.Role, t time.Time) *Envelope {
 	r.MustValidate()
 
+	if r == message.TimeoutRole {
+		if t.IsZero() {
+			panic("t must be non-zero for timeouts")
+		}
+	} else {
+		if !t.IsZero() {
+			panic("t must be zero for non-timeouts")
+		}
+	}
+
 	return &Envelope{
-		Message: m,
-		Type:    message.TypeOf(m),
-		Role:    r,
-		IsRoot:  true,
+		Message:     m,
+		Type:        message.TypeOf(m),
+		Role:        r,
+		IsRoot:      true,
+		TimeoutTime: t,
 	}
 }
 
 // NewChild constructs a new envelope as a child of e, indicating that m is
 // caused by e.Message.
-func (e *Envelope) NewChild(m dogma.Message, r message.Role) *Envelope {
+func (e *Envelope) NewChild(m dogma.Message, r message.Role, t time.Time) *Envelope {
 	r.MustValidate()
 
-	return &Envelope{
-		Message: m,
-		Type:    message.TypeOf(m),
-		Role:    r,
-		IsRoot:  false,
-	}
+	env := New(m, r, t)
+	env.IsRoot = false
+
+	return env
 }

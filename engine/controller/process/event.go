@@ -70,7 +70,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 		panic("can not execute command against non-existent instance")
 	}
 
-	env := s.event.NewChild(m, message.EventRole)
+	env := s.event.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.CommandExecutedByProcess{
@@ -86,17 +86,15 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		panic("can not schedule timeout against non-existent instance")
 	}
 
-	panic("not implemented")
+	env := s.event.NewChild(m, message.TimeoutRole, t)
+	s.children = append(s.children, env)
 
-	// env := s.event.NewTimeout(m, t)
-	// s.children = append(s.children, env)
-
-	// s.parent.RecordFacts(fact.TimeoutScheduledByProcess{
-	// 	HandlerName: s.name,
-	// 	InstanceID:  s.id,
-	// 	Root:        s.root,
-	// 	Envelope:    s.event,
-	// })
+	s.parent.RecordFacts(fact.TimeoutScheduledByProcess{
+		HandlerName: s.name,
+		InstanceID:  s.id,
+		Root:        s.root,
+		Envelope:    s.event,
+	})
 }
 
 func (s *eventScope) Log(f string, v ...interface{}) {

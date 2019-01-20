@@ -1,6 +1,8 @@
 package aggregate
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -70,7 +72,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 
 	s.root.ApplyEvent(m)
 
-	env := s.command.NewChild(m, message.EventRole)
+	env := s.command.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
 	s.parent.RecordFacts(fact.EventRecordedByAggregate{
