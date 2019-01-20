@@ -1,17 +1,17 @@
 package message
 
 // Role is an enumeration of the roles a message can perform within an engine.
-type Role int
+type Role string
 
 const (
 	// CommandRole is the role for command messages.
-	CommandRole Role = iota
+	CommandRole Role = "command"
 
 	// EventRole is the class for event messages.
-	EventRole
+	EventRole Role = "event"
 
 	// TimeoutRole is the class for timeout messages.
-	TimeoutRole
+	TimeoutRole Role = "timeout"
 )
 
 // MustValidate panics if r is not a valid message role.
