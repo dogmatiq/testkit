@@ -128,8 +128,8 @@ func (e *Engine) dispatch(
 
 			do.observers.Notify(
 				fact.MessageHandlingBegun{
-					Envelope: env,
-					Handler:  n,
+					HandlerName: n,
+					Envelope:    env,
 				},
 			)
 
@@ -140,20 +140,13 @@ func (e *Engine) dispatch(
 				continue
 			}
 
-			for _, env := range envs {
-				do.observers.Notify(
-					fact.MessageProduced{
-						Envelope: env,
-						Handler:  n,
-					},
-				)
-			}
+			queue = append(queue, envs...)
 
 			do.observers.Notify(
 				fact.MessageHandlingCompleted{
-					Envelope: env,
-					Handler:  n,
-					Error:    herr,
+					HandlerName: n,
+					Envelope:    env,
+					Error:       herr,
 				},
 			)
 		}

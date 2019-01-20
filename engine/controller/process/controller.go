@@ -3,10 +3,9 @@ package process
 import (
 	"context"
 
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
+	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
@@ -38,7 +37,7 @@ func (c *Controller) Name() string {
 }
 
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, s controller.Scope) ([]*envelope.Envelope, error) {
+func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelope.Envelope, error) {
 	panic("not implemented")
 }
 

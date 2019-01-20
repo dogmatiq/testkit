@@ -1,5 +1,7 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davecheney/graphpkg v0.0.0-20160907084000-658e86e77795 h1:fPZdU+UZU/CN7FCOcQlQQl9Jw2Wr085WkX411nD2InE=
+github.com/davecheney/graphpkg v0.0.0-20160907084000-658e86e77795/go.mod h1:yd/lfnnx15gLpN70DPDtJxHwOU+TORg+Bhr4VPoRD+U=
 github.com/dogmatiq/dapper v0.3.0 h1:xBD/brqNIj75p/EQD4gn20K7c24uLJKpwRSEcS5hxdg=
 github.com/dogmatiq/dapper v0.3.0/go.mod h1:jmqlMjWRjHJDMz/9gtNlMYxJvuH8pu6tPmmX4cxetJk=
 github.com/dogmatiq/dogma v0.0.0-20190118032722-c29afc227652 h1:VZnwIZQG+gOSIG8c/FDkXPhl4WaYpIN6rmZwDaiN17I=
@@ -23,6 +25,8 @@ github.com/onsi/ginkgo v1.6.0 h1:Ix8l273rp3QzYgXSR+c8d1fTG7UPgYkOSELPhiY/YGw=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3 h1:RE1xgDvH7imwFD45h+u2SgIfERHlS2yNG4DObb5BSKU=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
+github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 h1:49lOXmGaUpV9Fz3gd7TFZY106KVlPVa5jcYD1gaQf98=
+github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4/go.mod h1:4OwLy04Bl9Ef3GJJCoec+30X3LQs/0/m4HFRt/2LUSA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sergi/go-diff v1.0.0 h1:Kpca3qRNrduNnOQeazBd0ysaKrUJiIuISHxogkT9RPQ=
