@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	. "github.com/dogmatiq/dogmatest/engine/config"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -1,7 +1,7 @@
 package envelope
 
 import (
-	"reflect"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 
 	"github.com/dogmatiq/dogma"
 )
@@ -15,7 +15,7 @@ type Envelope struct {
 	Message dogma.Message
 
 	// Type is the type of the message.
-	Type reflect.Type
+	Type *message.Type
 
 	// Role is the message's role.
 	Role MessageRole
@@ -34,7 +34,7 @@ func New(m dogma.Message, r MessageRole) *Envelope {
 
 	return &Envelope{
 		Message: m,
-		Type:    reflect.TypeOf(m),
+		Type:    message.TypeOf(m),
 		Role:    r,
 		IsRoot:  true,
 	}
@@ -47,7 +47,7 @@ func (e *Envelope) NewChild(m dogma.Message, r MessageRole) *Envelope {
 
 	env := &Envelope{
 		Message: m,
-		Type:    reflect.TypeOf(m),
+		Type:    message.TypeOf(m),
 		Role:    r,
 		IsRoot:  false,
 	}

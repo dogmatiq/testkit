@@ -3,7 +3,7 @@ package dogmatest
 import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine"
-	"github.com/dogmatiq/dogmatest/engine/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
 )
 
 // NewEngine returns a new test engine.

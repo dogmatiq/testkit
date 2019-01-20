@@ -1,24 +1,23 @@
 package config_test
 
 import (
-	"reflect"
-
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/engine/config"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ Config = &ProjectionConfig{}
+var _ Config = &ProcessConfig{}
 
-var _ = Describe("type ProjectionConfig", func() {
-	Describe("func NewProjectionConfig", func() {
-		var handler *fixtures.ProjectionMessageHandler
+var _ = Describe("type ProcessConfig", func() {
+	Describe("func NewProcessConfig", func() {
+		var handler *fixtures.ProcessMessageHandler
 
 		BeforeEach(func() {
-			handler = &fixtures.ProjectionMessageHandler{
-				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+			handler = &fixtures.ProcessMessageHandler{
+				ConfigureFunc: func(c dogma.ProcessConfigurer) {
 					c.Name("<name>")
 					c.RouteEventType(fixtures.MessageA{})
 					c.RouteEventType(fixtures.MessageB{})
@@ -27,11 +26,11 @@ var _ = Describe("type ProjectionConfig", func() {
 		})
 
 		When("the configuration is valid", func() {
-			var cfg *ProjectionConfig
+			var cfg *ProcessConfig
 
 			BeforeEach(func() {
 				var err error
-				cfg, err = NewProjectionConfig(handler)
+				cfg, err = NewProcessConfig(handler)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
@@ -41,9 +40,9 @@ var _ = Describe("type ProjectionConfig", func() {
 
 			It("the message types are in the set", func() {
 				Expect(cfg.EventTypes).To(Equal(
-					map[reflect.Type]struct{}{
-						reflect.TypeOf(fixtures.MessageA{}): struct{}{},
-						reflect.TypeOf(fixtures.MessageB{}): struct{}{},
+					map[*message.Type]struct{}{
+						message.TypeOf(fixtures.MessageB{}): struct{}{},
+						message.TypeOf(fixtures.MessageA{}): struct{}{},
 					},
 				))
 			})
@@ -61,24 +60,24 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("returns an error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
 
 		When("the handler does not configure a name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.ProcessConfigurer) {
 					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.Name()",
+						"*fixtures.ProcessMessageHandler.Configure() did not call ProcessConfigurer.Name()",
 					),
 				))
 			})
@@ -86,7 +85,7 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler configures multiple names", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.ProcessConfigurer) {
 					c.Name("<name>")
 					c.Name("<other>")
 					c.RouteEventType(fixtures.MessageA{})
@@ -94,11 +93,11 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.Name("<name>")`,
+						`*fixtures.ProcessMessageHandler.Configure() has already called ProcessConfigurer.Name("<name>")`,
 					),
 				))
 			})
@@ -106,18 +105,18 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler configures an invalid name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.ProcessConfigurer) {
 					c.Name("\t \n")
 					c.RouteEventType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.ProjectionMessageHandler.Configure() called ProjectionConfigurer.Name("\t \n") with an invalid name`,
+						`*fixtures.ProcessMessageHandler.Configure() called ProcessConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
 			})
@@ -125,17 +124,17 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler does not configure any routes", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.ProcessConfigurer) {
 					c.Name("<name>")
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.RouteEventType()",
+						"*fixtures.ProcessMessageHandler.Configure() did not call ProcessConfigurer.RouteEventType()",
 					),
 				))
 			})
@@ -143,7 +142,7 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler does configures multiple routes for the same message type", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.ProcessConfigurer) {
 					c.Name("<name>")
 					c.RouteEventType(fixtures.MessageA{})
 					c.RouteEventType(fixtures.MessageA{})
@@ -151,11 +150,11 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewProcessConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.RouteEventType(fixtures.MessageA)",
+						"*fixtures.ProcessMessageHandler.Configure() has already called ProcessConfigurer.RouteEventType(fixtures.MessageA)",
 					),
 				))
 			})

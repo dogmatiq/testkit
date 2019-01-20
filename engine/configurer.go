@@ -2,16 +2,16 @@ package engine
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/config"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/controller/aggregate"
 	"github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
@@ -90,7 +90,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 func (c *configurer) registerController(
 	ctrl controller.Controller,
 	r envelope.MessageRole,
-	types map[reflect.Type]struct{},
+	types map[*message.Type]struct{},
 ) {
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

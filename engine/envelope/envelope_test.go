@@ -1,10 +1,9 @@
 package envelope_test
 
 import (
-	"reflect"
-
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,7 +18,7 @@ var _ = Describe("type Envelope", func() {
 			Expect(env).To(Equal(
 				&Envelope{
 					Message: m,
-					Type:    reflect.TypeOf(m),
+					Type:    message.TypeOf(m),
 					Role:    CommandRole,
 					IsRoot:  true,
 				},
@@ -29,8 +28,8 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewChild", func() {
 		var (
-			parent  *Envelope
-			message dogma.Message
+			parent *Envelope
+			m      dogma.Message
 		)
 
 		BeforeEach(func() {
@@ -39,15 +38,15 @@ var _ = Describe("type Envelope", func() {
 				CommandRole,
 			)
 
-			message = fixtures.MessageA{Value: "<parent>"}
+			m = fixtures.MessageA{Value: "<parent>"}
 		})
 
 		It("returns the expected envelope", func() {
-			env := parent.NewChild(message, EventRole)
+			env := parent.NewChild(m, EventRole)
 			Expect(env).To(Equal(
 				&Envelope{
-					Message: message,
-					Type:    reflect.TypeOf(message),
+					Message: m,
+					Type:    message.TypeOf(m),
 					Role:    EventRole,
 					IsRoot:  false,
 				},
@@ -56,7 +55,7 @@ var _ = Describe("type Envelope", func() {
 		})
 
 		It("adds the child envelope to the parent", func() {
-			env := parent.NewChild(message, EventRole)
+			env := parent.NewChild(m, EventRole)
 			Expect(parent.Children).To(Equal(
 				[]*Envelope{env},
 			))

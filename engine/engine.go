@@ -2,22 +2,22 @@ package engine
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/config"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
 	"go.uber.org/multierr"
 )
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	roles  map[reflect.Type]envelope.MessageRole
-	routes map[reflect.Type][]controller.Controller
+	roles  map[*message.Type]envelope.MessageRole
+	routes map[*message.Type][]controller.Controller
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -26,8 +26,8 @@ func New(
 	options ...Option,
 ) (*Engine, error) {
 	e := &Engine{
-		roles:  map[reflect.Type]envelope.MessageRole{},
-		routes: map[reflect.Type][]controller.Controller{},
+		roles:  map[*message.Type]envelope.MessageRole{},
+		routes: map[*message.Type][]controller.Controller{},
 	}
 
 	cfgr := &configurer{
@@ -73,7 +73,7 @@ func (e *Engine) Dispatch(
 		opt(&do)
 	}
 
-	t := reflect.TypeOf(m)
+	t := message.TypeOf(m)
 	r, ok := e.roles[t]
 
 	if !ok {

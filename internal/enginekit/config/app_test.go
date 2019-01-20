@@ -1,10 +1,9 @@
 package config_test
 
 import (
-	"reflect"
-
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/engine/config"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -77,31 +76,31 @@ var _ = Describe("type AppConfig", func() {
 
 			It("the routes are present", func() {
 				Expect(cfg.Routes).To(Equal(
-					map[reflect.Type][]string{
-						reflect.TypeOf(fixtures.MessageA{}): {"<aggregate>"},
-						reflect.TypeOf(fixtures.MessageB{}): {"<process>"},
-						reflect.TypeOf(fixtures.MessageC{}): {"<integration>"},
-						reflect.TypeOf(fixtures.MessageD{}): {"<projection>"},
-						reflect.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
+					map[*message.Type][]string{
+						message.TypeOf(fixtures.MessageA{}): {"<aggregate>"},
+						message.TypeOf(fixtures.MessageB{}): {"<process>"},
+						message.TypeOf(fixtures.MessageC{}): {"<integration>"},
+						message.TypeOf(fixtures.MessageD{}): {"<projection>"},
+						message.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
 					},
 				))
 			})
 
 			It("the command routes are present", func() {
 				Expect(cfg.CommandRoutes).To(Equal(
-					map[reflect.Type]string{
-						reflect.TypeOf(fixtures.MessageA{}): "<aggregate>",
-						reflect.TypeOf(fixtures.MessageC{}): "<integration>",
+					map[*message.Type]string{
+						message.TypeOf(fixtures.MessageA{}): "<aggregate>",
+						message.TypeOf(fixtures.MessageC{}): "<integration>",
 					},
 				))
 			})
 
 			It("the event routes are present", func() {
 				Expect(cfg.EventRoutes).To(Equal(
-					map[reflect.Type][]string{
-						reflect.TypeOf(fixtures.MessageB{}): {"<process>"},
-						reflect.TypeOf(fixtures.MessageD{}): {"<projection>"},
-						reflect.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
+					map[*message.Type][]string{
+						message.TypeOf(fixtures.MessageB{}): {"<process>"},
+						message.TypeOf(fixtures.MessageD{}): {"<projection>"},
+						message.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
 					},
 				))
 			})

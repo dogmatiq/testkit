@@ -2,10 +2,10 @@ package config
 
 import (
 	"context"
-	"reflect"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // ProjectionConfig represents the configuration of an aggregate message handler.
@@ -18,14 +18,14 @@ type ProjectionConfig struct {
 
 	// EventTypes is the set of event message types that are routed to this
 	// handler, as specified by its Configure() method.
-	EventTypes map[reflect.Type]struct{}
+	EventTypes map[*message.Type]struct{}
 }
 
 // NewProjectionConfig returns an ProjectionConfig for the given handler.
 func NewProjectionConfig(h dogma.ProjectionMessageHandler) (*ProjectionConfig, error) {
 	cfg := &ProjectionConfig{
 		Handler:    h,
-		EventTypes: map[reflect.Type]struct{}{},
+		EventTypes: map[*message.Type]struct{}{},
 	}
 
 	c := &projectionConfigurer{
@@ -92,7 +92,7 @@ func (c *projectionConfigurer) Name(n string) {
 }
 
 func (c *projectionConfigurer) RouteEventType(m dogma.Message) {
-	t := reflect.TypeOf(m)
+	t := message.TypeOf(m)
 
 	if _, ok := c.cfg.EventTypes[t]; ok {
 		panicf(

@@ -2,10 +2,10 @@ package config
 
 import (
 	"context"
-	"reflect"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // IntegrationConfig represents the configuration of an integration message handler.
@@ -18,14 +18,14 @@ type IntegrationConfig struct {
 
 	// CommandTypes is the set of command message types that are routed to this
 	// handler, as specified by its Configure() method.
-	CommandTypes map[reflect.Type]struct{}
+	CommandTypes map[*message.Type]struct{}
 }
 
 // NewIntegrationConfig returns an IntegrationConfig for the given handler.
 func NewIntegrationConfig(h dogma.IntegrationMessageHandler) (*IntegrationConfig, error) {
 	cfg := &IntegrationConfig{
 		Handler:      h,
-		CommandTypes: map[reflect.Type]struct{}{},
+		CommandTypes: map[*message.Type]struct{}{},
 	}
 
 	c := &integrationConfigurer{
@@ -92,7 +92,7 @@ func (c *integrationConfigurer) Name(n string) {
 }
 
 func (c *integrationConfigurer) RouteCommandType(m dogma.Message) {
-	t := reflect.TypeOf(m)
+	t := message.TypeOf(m)
 
 	if _, ok := c.cfg.CommandTypes[t]; ok {
 		panicf(

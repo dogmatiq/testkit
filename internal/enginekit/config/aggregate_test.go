@@ -1,24 +1,23 @@
 package config_test
 
 import (
-	"reflect"
-
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/engine/config"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ Config = &IntegrationConfig{}
+var _ Config = &AggregateConfig{}
 
-var _ = Describe("type IntegrationConfig", func() {
-	Describe("func NewIntegrationConfig", func() {
-		var handler *fixtures.IntegrationMessageHandler
+var _ = Describe("type AggregateConfig", func() {
+	Describe("func NewAggregateConfig", func() {
+		var handler *fixtures.AggregateMessageHandler
 
 		BeforeEach(func() {
-			handler = &fixtures.IntegrationMessageHandler{
-				ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+			handler = &fixtures.AggregateMessageHandler{
+				ConfigureFunc: func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 					c.RouteCommandType(fixtures.MessageA{})
 					c.RouteCommandType(fixtures.MessageB{})
@@ -27,11 +26,11 @@ var _ = Describe("type IntegrationConfig", func() {
 		})
 
 		When("the configuration is valid", func() {
-			var cfg *IntegrationConfig
+			var cfg *AggregateConfig
 
 			BeforeEach(func() {
 				var err error
-				cfg, err = NewIntegrationConfig(handler)
+				cfg, err = NewAggregateConfig(handler)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
@@ -41,9 +40,9 @@ var _ = Describe("type IntegrationConfig", func() {
 
 			It("the message types are in the set", func() {
 				Expect(cfg.CommandTypes).To(Equal(
-					map[reflect.Type]struct{}{
-						reflect.TypeOf(fixtures.MessageA{}): struct{}{},
-						reflect.TypeOf(fixtures.MessageB{}): struct{}{},
+					map[*message.Type]struct{}{
+						message.TypeOf(fixtures.MessageA{}): struct{}{},
+						message.TypeOf(fixtures.MessageB{}): struct{}{},
 					},
 				))
 			})
@@ -61,24 +60,24 @@ var _ = Describe("type IntegrationConfig", func() {
 			})
 
 			It("returns an error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
 
 		When("the handler does not configure a name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.IntegrationMessageHandler.Configure() did not call IntegrationConfigurer.Name()",
+						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.Name()",
 					),
 				))
 			})
@@ -86,7 +85,7 @@ var _ = Describe("type IntegrationConfig", func() {
 
 		When("the handler configures multiple names", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 					c.Name("<other>")
 					c.RouteCommandType(fixtures.MessageA{})
@@ -94,11 +93,11 @@ var _ = Describe("type IntegrationConfig", func() {
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.IntegrationMessageHandler.Configure() has already called IntegrationConfigurer.Name("<name>")`,
+						`*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.Name("<name>")`,
 					),
 				))
 			})
@@ -106,18 +105,18 @@ var _ = Describe("type IntegrationConfig", func() {
 
 		When("the handler configures an invalid name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("\t \n")
 					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.IntegrationMessageHandler.Configure() called IntegrationConfigurer.Name("\t \n") with an invalid name`,
+						`*fixtures.AggregateMessageHandler.Configure() called AggregateConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
 			})
@@ -125,17 +124,17 @@ var _ = Describe("type IntegrationConfig", func() {
 
 		When("the handler does not configure any routes", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.IntegrationMessageHandler.Configure() did not call IntegrationConfigurer.RouteCommandType()",
+						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.RouteCommandType()",
 					),
 				))
 			})
@@ -143,7 +142,7 @@ var _ = Describe("type IntegrationConfig", func() {
 
 		When("the handler does configures multiple routes for the same message type", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 					c.RouteCommandType(fixtures.MessageA{})
 					c.RouteCommandType(fixtures.MessageA{})
@@ -151,11 +150,11 @@ var _ = Describe("type IntegrationConfig", func() {
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewIntegrationConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.IntegrationMessageHandler.Configure() has already called IntegrationConfigurer.RouteCommandType(fixtures.MessageA)",
+						"*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.RouteCommandType(fixtures.MessageA)",
 					),
 				))
 			})
