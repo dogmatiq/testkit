@@ -30,7 +30,7 @@ func (s *scope) Create() bool {
 
 	s.exists = true
 
-	s.parent.RecordFacts(fact.AggregateInstanceDestroyed{
+	s.parent.RecordFacts(fact.AggregateInstanceCreated{
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
