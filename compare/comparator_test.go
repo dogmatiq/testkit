@@ -1,75 +1,83 @@
 package compare_test
 
 import (
-	"testing"
-
 	. "github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ Comparator = DefaultComparator{}
 
-func TestDefaultComparator_MessageIsEqual(t *testing.T) {
-	c := DefaultComparator{}
+var _ = Describe("type DefaultComparator", func() {
+	comparator := DefaultComparator{}
 
-	if c.MessageIsEqual(
-		fixtures.MessageA{Value: "<foo>"},
-		fixtures.MessageB{Value: "<foo>"},
-	) {
-		t.Fatal("messages of different types compare as equal")
-	}
+	Describe("func MessageIsEqual", func() {
+		It("returns true if the values have the same type and value", func() {
+			Expect(comparator.MessageIsEqual(
+				fixtures.MessageA1,
+				fixtures.MessageA1,
+			)).To(BeTrue())
+		})
 
-	if c.MessageIsEqual(
-		fixtures.MessageA{Value: "<foo>"},
-		fixtures.MessageA{Value: "<bar>"},
-	) {
-		t.Fatal("messages of the same type with different content compare as equal")
-	}
+		It("returns false if the values have the same type with different values", func() {
+			Expect(comparator.MessageIsEqual(
+				fixtures.MessageA1,
+				fixtures.MessageA2,
+			)).To(BeFalse())
+		})
 
-	if !c.MessageIsEqual(
-		fixtures.MessageA{Value: "<foo>"},
-		fixtures.MessageA{Value: "<foo>"},
-	) {
-		t.Fatal("identical messages compare as inequal")
-	}
-}
+		It("returns false if the values are different types", func() {
+			Expect(comparator.MessageIsEqual(
+				fixtures.MessageA1,
+				fixtures.MessageA2,
+			)).To(BeFalse())
+		})
+	})
 
-func TestDefaultComparator_AggregateRootIsEqual(t *testing.T) {
-	a := &fixtures.AggregateRoot{
-		Value: "<foo>",
-	}
+	Describe("func AggregateRootIsEqual", func() {
+		It("returns true if tlues have the same type and value", func() {
+			Expect(comparator.AggregateRootIsEqual(
+				&fixtures.AggregateRoot{Value: "<foo>"},
+				&fixtures.AggregateRoot{Value: "<foo>"},
+			)).To(BeTrue())
+		})
 
-	b := &fixtures.AggregateRoot{
-		Value: "<bar>",
-	}
+		It("returns false if the values have the same type with different values", func() {
+			Expect(comparator.AggregateRootIsEqual(
+				&fixtures.AggregateRoot{Value: "<foo>"},
+				&fixtures.AggregateRoot{Value: "<bar>"},
+			)).To(BeFalse())
+		})
 
-	c := DefaultComparator{}
+		It("returns false if the values are different types", func() {
+			Expect(comparator.AggregateRootIsEqual(
+				&fixtures.AggregateRoot{Value: "<foo>"},
+				&struct{ fixtures.AggregateRoot }{},
+			)).To(BeFalse())
+		})
+	})
 
-	if c.AggregateRootIsEqual(a, b) {
-		t.Fatal("different aggregate roots compare as equal")
-	}
+	Describe("func ProcessRootIsEqual", func() {
+		It("returns true if tlues have the same type and value", func() {
+			Expect(comparator.ProcessRootIsEqual(
+				&fixtures.ProcessRoot{Value: "<foo>"},
+				&fixtures.ProcessRoot{Value: "<foo>"},
+			)).To(BeTrue())
+		})
 
-	if !c.AggregateRootIsEqual(a, a) {
-		t.Fatal("identical aggregate roots compare as inequal")
-	}
-}
+		It("returns false if the values have the same type with different values", func() {
+			Expect(comparator.ProcessRootIsEqual(
+				&fixtures.ProcessRoot{Value: "<foo>"},
+				&fixtures.ProcessRoot{Value: "<bar>"},
+			)).To(BeFalse())
+		})
 
-func TestDefaultComparator_ProcessRootIsEqual(t *testing.T) {
-	a := &fixtures.ProcessRoot{
-		Value: "<foo>",
-	}
-
-	b := &fixtures.ProcessRoot{
-		Value: "<bar>",
-	}
-
-	c := DefaultComparator{}
-
-	if c.ProcessRootIsEqual(a, b) {
-		t.Fatal("different Process roots compare as equal")
-	}
-
-	if !c.ProcessRootIsEqual(a, a) {
-		t.Fatal("identical Process roots compare as inequal")
-	}
-}
+		It("returns false if the values are different types", func() {
+			Expect(comparator.ProcessRootIsEqual(
+				&fixtures.ProcessRoot{Value: "<foo>"},
+				&struct{ fixtures.ProcessRoot }{},
+			)).To(BeFalse())
+		})
+	})
+})
