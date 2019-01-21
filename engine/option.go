@@ -57,7 +57,7 @@ func WithObserver(o fact.Observer) DispatchOption {
 //
 // By default, aggregates and processes are enabled, and integrations and
 // projections are disabled.
-func EnableHandlerType(t handler.Type, enable bool) DispatchOption {
+func EnableHandlerType(t HandlerType, enable bool) DispatchOption {
 	t.MustValidate()
 
 	return func(do *dispatchOptions) error {
@@ -91,3 +91,20 @@ func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
 
 	return do, nil
 }
+
+// HandlerType is an enumeration of the types of messages handlers.
+type HandlerType = handler.Type
+
+const (
+	// AggregateType is the handler type for dogma.AggregateMessageHandler.
+	AggregateType = handler.AggregateType
+
+	// ProcessType is the handler type for dogma.ProcessMessageHandler.
+	ProcessType = handler.ProcessType
+
+	// IntegrationType is the handler type for dogma.IntegrationMessageHandler.
+	IntegrationType = handler.IntegrationType
+
+	// ProjectionType is the handler type for dogma.ProjectionMessageHandler.
+	ProjectionType = handler.ProjectionType
+)
