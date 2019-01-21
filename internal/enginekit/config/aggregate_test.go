@@ -2,36 +2,36 @@ package config_test
 
 import (
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/enginekit/config"
-	handlerkit "github.com/dogmatiq/dogmatest/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/enginekit/message"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ HandlerConfig = &ProjectionConfig{}
+var _ HandlerConfig = &AggregateConfig{}
 
-var _ = Describe("type ProjectionConfig", func() {
-	Describe("func NewProjectionConfig", func() {
-		var handler *fixtures.ProjectionMessageHandler
+var _ = Describe("type AggregateConfig", func() {
+	Describe("func NewAggregateConfig", func() {
+		var handler *fixtures.AggregateMessageHandler
 
 		BeforeEach(func() {
-			handler = &fixtures.ProjectionMessageHandler{
-				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+			handler = &fixtures.AggregateMessageHandler{
+				ConfigureFunc: func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
-					c.RouteEventType(fixtures.MessageA{})
-					c.RouteEventType(fixtures.MessageB{})
+					c.RouteCommandType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageB{})
 				},
 			}
 		})
 
 		When("the configuration is valid", func() {
-			var cfg *ProjectionConfig
+			var cfg *AggregateConfig
 
 			BeforeEach(func() {
 				var err error
-				cfg, err = NewProjectionConfig(handler)
+				cfg, err = NewAggregateConfig(handler)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
@@ -40,7 +40,7 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("the message types are in the set", func() {
-				Expect(cfg.EventTypes).To(Equal(
+				Expect(cfg.CommandTypes).To(Equal(
 					map[message.Type]struct{}{
 						message.TypeOf(fixtures.MessageA{}): struct{}{},
 						message.TypeOf(fixtures.MessageB{}): struct{}{},
@@ -55,8 +55,8 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			Describe("func HandlerType()", func() {
-				It("returns handler.ProjectionType", func() {
-					Expect(cfg.HandlerType()).To(Equal(handlerkit.ProjectionType))
+				It("returns handler.AggregateType", func() {
+					Expect(cfg.HandlerType()).To(Equal(handlerkit.AggregateType))
 				})
 			})
 		})
@@ -67,24 +67,24 @@ var _ = Describe("type ProjectionConfig", func() {
 			})
 
 			It("returns an error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
 
 		When("the handler does not configure a name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
-					c.RouteEventType(fixtures.MessageA{})
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.Name()",
+						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.Name()",
 					),
 				))
 			})
@@ -92,19 +92,19 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler configures multiple names", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 					c.Name("<other>")
-					c.RouteEventType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.Name("<name>")`,
+						`*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.Name("<name>")`,
 					),
 				))
 			})
@@ -112,18 +112,18 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler configures an invalid name", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("\t \n")
-					c.RouteEventType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.ProjectionMessageHandler.Configure() called ProjectionConfigurer.Name("\t \n") with an invalid name`,
+						`*fixtures.AggregateMessageHandler.Configure() called AggregateConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
 			})
@@ -131,17 +131,17 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler does not configure any routes", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() did not call ProjectionConfigurer.RouteEventType()",
+						"*fixtures.AggregateMessageHandler.Configure() did not call AggregateConfigurer.RouteCommandType()",
 					),
 				))
 			})
@@ -149,19 +149,19 @@ var _ = Describe("type ProjectionConfig", func() {
 
 		When("the handler does configures multiple routes for the same message type", func() {
 			BeforeEach(func() {
-				handler.ConfigureFunc = func(c dogma.ProjectionConfigurer) {
+				handler.ConfigureFunc = func(c dogma.AggregateConfigurer) {
 					c.Name("<name>")
-					c.RouteEventType(fixtures.MessageA{})
-					c.RouteEventType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageA{})
+					c.RouteCommandType(fixtures.MessageA{})
 				}
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewProjectionConfig(handler)
+				_, err := NewAggregateConfig(handler)
 
 				Expect(err).To(Equal(
 					Error(
-						"*fixtures.ProjectionMessageHandler.Configure() has already called ProjectionConfigurer.RouteEventType(fixtures.MessageA)",
+						"*fixtures.AggregateMessageHandler.Configure() has already called AggregateConfigurer.RouteCommandType(fixtures.MessageA)",
 					),
 				))
 			})

@@ -3,7 +3,7 @@ package engine
 import (
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/render"
 )
 

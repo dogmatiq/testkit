@@ -9,8 +9,8 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/enginekit/config"
-	"github.com/dogmatiq/dogmatest/enginekit/message"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
 	"go.uber.org/multierr"
 )

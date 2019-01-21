@@ -1,7 +1,7 @@
 package message_test
 
 import (
-	. "github.com/dogmatiq/dogmatest/enginekit/message"
+	. "github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

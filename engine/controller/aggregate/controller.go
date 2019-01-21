@@ -7,8 +7,8 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/enginekit/errors"
-	"github.com/dogmatiq/dogmatest/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/errors"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // Controller is an implementation of engine.Controller for

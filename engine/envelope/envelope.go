@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/enginekit/message"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // Envelope is a container for a message that is handled by the test engine.

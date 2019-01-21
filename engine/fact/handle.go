@@ -2,7 +2,7 @@ package fact
 
 import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // MessageHandlingBegun indicates that a message is about to be handled by a
