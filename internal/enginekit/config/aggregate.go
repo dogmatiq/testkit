@@ -2,12 +2,12 @@ package config
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
-
-	"github.com/dogmatiq/dogma"
 )
 
 // AggregateConfig represents the configuration of an aggregate message handler.
@@ -65,6 +65,11 @@ func (c *AggregateConfig) Name() string {
 // HandlerType returns handler.AggregateType.
 func (c *AggregateConfig) HandlerType() handler.Type {
 	return handler.AggregateType
+}
+
+// HandlerReflectType returns the reflect.Type of the handler.
+func (c *AggregateConfig) HandlerReflectType() reflect.Type {
+	return reflect.TypeOf(c.Handler)
 }
 
 // Accept calls v.VisitAggregateConfig(ctx, c).

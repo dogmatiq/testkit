@@ -14,7 +14,7 @@ type AppConfig struct {
 	AppName string
 
 	// Handlers is a map of handler name to their respective configuration.
-	Handlers map[string]Config
+	Handlers map[string]HandlerConfig
 
 	// Routes is map of message type to the names of the handlers that receive
 	// messages of that type.
@@ -40,7 +40,7 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 
 	cfg := &AppConfig{
 		AppName:       app.Name,
-		Handlers:      map[string]Config{},
+		Handlers:      map[string]HandlerConfig{},
 		Routes:        map[message.Type][]string{},
 		CommandRoutes: map[message.Type]string{},
 		EventRoutes:   map[message.Type][]string{},
@@ -107,7 +107,7 @@ func (c *AppConfig) Accept(ctx context.Context, v Visitor) error {
 }
 
 func (c *AppConfig) registerHandlerConfig(
-	cfg Config,
+	cfg HandlerConfig,
 	commandTypes map[message.Type]struct{},
 	eventTypes map[message.Type]struct{},
 ) error {
@@ -116,9 +116,9 @@ func (c *AppConfig) registerHandlerConfig(
 	if x, ok := c.Handlers[n]; ok {
 		return errorf(
 			"%s can not use the handler name %#v, because it is already used by %s",
-			handlerType(cfg),
+			cfg.HandlerReflectType(),
 			n,
-			handlerType(x),
+			x.HandlerReflectType(),
 		)
 	}
 

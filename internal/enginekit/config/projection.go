@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
@@ -64,6 +65,11 @@ func (c *ProjectionConfig) Name() string {
 // HandlerType returns handler.ProjectionType.
 func (c *ProjectionConfig) HandlerType() handler.Type {
 	return handler.ProjectionType
+}
+
+// HandlerReflectType returns the reflect.Type of the handler.
+func (c *ProjectionConfig) HandlerReflectType() reflect.Type {
+	return reflect.TypeOf(c.Handler)
 }
 
 // Accept calls v.VisitProjectionConfig(ctx, c).

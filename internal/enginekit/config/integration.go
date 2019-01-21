@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
@@ -64,6 +65,11 @@ func (c *IntegrationConfig) Name() string {
 // HandlerType returns handler.IntegrationType.
 func (c *IntegrationConfig) HandlerType() handler.Type {
 	return handler.IntegrationType
+}
+
+// HandlerReflectType returns the reflect.Type of the handler.
+func (c *IntegrationConfig) HandlerReflectType() reflect.Type {
+	return reflect.TypeOf(c.Handler)
 }
 
 // Accept calls v.VisitIntegrationConfig(ctx, c).

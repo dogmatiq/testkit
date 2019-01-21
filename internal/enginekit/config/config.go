@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
@@ -22,6 +23,10 @@ type HandlerConfig interface {
 
 	// HandleType returns the type of handler that the config applies to.
 	HandlerType() handler.Type
+
+	// HandlerReflectType returns the reflect.Type of the handler that the config
+	// applies to.
+	HandlerReflectType() reflect.Type
 }
 
 // Visitor is an interface for walking application configurations.

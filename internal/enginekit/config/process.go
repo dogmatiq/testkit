@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
@@ -64,6 +65,11 @@ func (c *ProcessConfig) Name() string {
 // HandlerType returns handler.ProcessType.
 func (c *ProcessConfig) HandlerType() handler.Type {
 	return handler.ProcessType
+}
+
+// HandlerReflectType returns the reflect.Type of the handler.
+func (c *ProcessConfig) HandlerReflectType() reflect.Type {
+	return reflect.TypeOf(c.Handler)
 }
 
 // Accept calls v.VisitProcessConfig(ctx, c).
