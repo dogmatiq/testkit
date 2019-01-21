@@ -29,7 +29,7 @@ func NewController(
 	}
 }
 
-// Name returns the name of the handler that managed by this controller.
+// Name returns the name of the handler that is managed by this controller.
 func (c *Controller) Name() string {
 	return c.name
 }

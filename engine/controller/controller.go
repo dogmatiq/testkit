@@ -8,7 +8,7 @@ import (
 
 // Controller orchestrates the handling of a message by Dogma message handler.
 type Controller interface {
-	// Name returns the name of the handler that managed by this controller.
+	// Name returns the name of the handler that is managed by this controller.
 	Name() string
 
 	// Handle handles a message.
