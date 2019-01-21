@@ -13,13 +13,12 @@ import (
 var _ = Describe("type Envelope", func() {
 	Describe("func New", func() {
 		It("returns the expected envelope", func() {
-			m := fixtures.MessageA{Value: "<value>"}
-			env := New(m, message.CommandRole)
+			env := New(fixtures.MessageC1, message.CommandRole)
 
 			Expect(env).To(Equal(
 				&Envelope{
-					Message: m,
-					Type:    message.TypeOf(m),
+					Message: fixtures.MessageC1,
+					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
 					IsRoot:  true,
 				},
@@ -29,7 +28,7 @@ var _ = Describe("type Envelope", func() {
 		It("panics if called with the timeout role", func() {
 			Expect(func() {
 				New(
-					fixtures.MessageA{Value: "<value>"},
+					fixtures.MessageA1,
 					message.TimeoutRole,
 				)
 			}).To(Panic())
@@ -39,16 +38,17 @@ var _ = Describe("type Envelope", func() {
 	Describe("func NewCommand", func() {
 		It("returns the expected envelope", func() {
 			parent := New(
-				fixtures.MessageA{Value: "<parent>"},
+				fixtures.MessageP1,
 				message.EventRole,
 			)
-			m := fixtures.MessageA{Value: "<child>"}
-			env := parent.NewCommand(m)
+			child := parent.NewCommand(
+				fixtures.MessageC1,
+			)
 
-			Expect(env).To(Equal(
+			Expect(child).To(Equal(
 				&Envelope{
-					Message: m,
-					Type:    message.TypeOf(m),
+					Message: fixtures.MessageC1,
+					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
 					IsRoot:  false,
 				},
@@ -59,16 +59,17 @@ var _ = Describe("type Envelope", func() {
 	Describe("func NewEvent", func() {
 		It("returns the expected envelope", func() {
 			parent := New(
-				fixtures.MessageA{Value: "<parent>"},
+				fixtures.MessageP1,
 				message.CommandRole,
 			)
-			m := fixtures.MessageA{Value: "<child>"}
-			env := parent.NewEvent(m)
+			child := parent.NewEvent(
+				fixtures.MessageE1,
+			)
 
-			Expect(env).To(Equal(
+			Expect(child).To(Equal(
 				&Envelope{
-					Message: m,
-					Type:    message.TypeOf(m),
+					Message: fixtures.MessageE1,
+					Type:    fixtures.MessageEType,
 					Role:    message.EventRole,
 					IsRoot:  false,
 				},
@@ -78,18 +79,20 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewTimeout", func() {
 		It("returns the expected envelope", func() {
+			t := time.Now()
 			parent := New(
-				fixtures.MessageA{Value: "<parent>"},
+				fixtures.MessageP1,
 				message.CommandRole,
 			)
-			m := fixtures.MessageA{Value: "<child>"}
-			t := time.Now()
-			env := parent.NewTimeout(m, t)
+			child := parent.NewTimeout(
+				fixtures.MessageT1,
+				t,
+			)
 
-			Expect(env).To(Equal(
+			Expect(child).To(Equal(
 				&Envelope{
-					Message:     m,
-					Type:        message.TypeOf(m),
+					Message:     fixtures.MessageT1,
+					Type:        fixtures.MessageTType,
 					Role:        message.TimeoutRole,
 					IsRoot:      false,
 					TimeoutTime: &t,
