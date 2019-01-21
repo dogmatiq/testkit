@@ -7,10 +7,10 @@ const (
 	// CommandRole is the role for command messages.
 	CommandRole Role = "command"
 
-	// EventRole is the class for event messages.
+	// EventRole is the role for event messages.
 	EventRole Role = "event"
 
-	// TimeoutRole is the class for timeout messages.
+	// TimeoutRole is the role for timeout messages.
 	TimeoutRole Role = "timeout"
 )
 
