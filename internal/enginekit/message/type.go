@@ -42,6 +42,17 @@ func TypeOf(m dogma.Message) Type {
 // TypeSet is a collection of distinct message types.
 type TypeSet map[Type]struct{}
 
+// NewTypeSet returns a TypeSet containing the given types.
+func NewTypeSet(types ...Type) TypeSet {
+	s := TypeSet{}
+
+	for _, t := range types {
+		s[t] = struct{}{}
+	}
+
+	return s
+}
+
 // TypesOf returns a type set containing the types of the given messages.
 func TypesOf(messages ...dogma.Message) TypeSet {
 	s := TypeSet{}
@@ -59,24 +70,51 @@ func (s TypeSet) Has(t Type) bool {
 	return ok
 }
 
-// Add adds t to s.
-func (s TypeSet) Add(t Type) {
-	s[t] = struct{}{}
+// HasM returns true if s contains TypeOf(m).
+func (s TypeSet) HasM(m dogma.Message) bool {
+	return s.Has(TypeOf(m))
 }
 
-// Remove removes t from s.
-func (s TypeSet) Remove(t Type) {
-	delete(s, t)
+// Add adds t to s.
+//
+// It returns true if the type was added, or false if the set already contained
+// the type.
+func (s TypeSet) Add(t Type) bool {
+	if _, ok := s[t]; ok {
+		return false
+	}
+
+	s[t] = struct{}{}
+	return true
 }
 
 // AddM adds TypeOf(m) to s.
-func (s TypeSet) AddM(m dogma.Message) {
-	s[TypeOf(m)] = struct{}{}
+//
+// It returns true if the type was added, or false if the set already contained
+// the type.
+func (s TypeSet) AddM(m dogma.Message) bool {
+	return s.Add(TypeOf(m))
+}
+
+// Remove removes t from s.
+//
+// It returns true if the type was removed, or false if the set did not contain
+// the type.
+func (s TypeSet) Remove(t Type) bool {
+	if _, ok := s[t]; ok {
+		delete(s, t)
+		return true
+	}
+
+	return false
 }
 
 // RemoveM removes TypeOf(m) from s.
-func (s TypeSet) RemoveM(m dogma.Message) {
-	delete(s, TypeOf(m))
+//
+// It returns true if the type was removed, or false if the set did not contain
+// the type.
+func (s TypeSet) RemoveM(m dogma.Message) bool {
+	return s.Remove(TypeOf(m))
 }
 
 var mtypes, rtypes sync.Map

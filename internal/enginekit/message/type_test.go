@@ -55,6 +55,18 @@ var _ = Describe("type Type", func() {
 })
 
 var _ = Describe("type TypeSet", func() {
+	Describe("func NewTypeSet", func() {
+		It("returns a set containing the given types", func() {
+			Expect(NewTypeSet(
+				fixtures.MessageAType,
+				fixtures.MessageBType,
+			)).To(Equal(TypeSet{
+				fixtures.MessageAType: struct{}{},
+				fixtures.MessageBType: struct{}{},
+			}))
+		})
+	})
+
 	Describe("func TypesOf", func() {
 		It("returns a set containing the types of the given messages", func() {
 			Expect(TypesOf(
@@ -86,6 +98,25 @@ var _ = Describe("type TypeSet", func() {
 		})
 	})
 
+	Describe("func HasM", func() {
+		set := TypesOf(
+			fixtures.MessageA1,
+			fixtures.MessageB1,
+		)
+
+		It("returns true if the type is in the set", func() {
+			Expect(
+				set.HasM(fixtures.MessageA1),
+			).To(BeTrue())
+		})
+
+		It("returns false if the type is not in the set", func() {
+			Expect(
+				set.HasM(fixtures.MessageC1),
+			).To(BeFalse())
+		})
+	})
+
 	Describe("func Add", func() {
 		It("adds the type to the set", func() {
 			s := TypesOf()
@@ -95,15 +126,21 @@ var _ = Describe("type TypeSet", func() {
 				s.Has(fixtures.MessageAType),
 			).To(BeTrue())
 		})
-	})
 
-	Describe("func Remove", func() {
-		It("removes the type from the set", func() {
-			s := TypesOf(fixtures.MessageA1)
-			s.Remove(fixtures.MessageAType)
+		It("returns true if the type is not already in the set", func() {
+			s := TypesOf()
 
 			Expect(
-				s.Has(fixtures.MessageAType),
+				s.Add(fixtures.MessageAType),
+			).To(BeTrue())
+		})
+
+		It("returns false if the type is already in the set", func() {
+			s := TypesOf()
+			s.Add(fixtures.MessageAType)
+
+			Expect(
+				s.Add(fixtures.MessageAType),
 			).To(BeFalse())
 		})
 	})
@@ -117,6 +154,51 @@ var _ = Describe("type TypeSet", func() {
 				s.Has(fixtures.MessageAType),
 			).To(BeTrue())
 		})
+
+		It("returns true if the type is not already in the set", func() {
+			s := TypesOf()
+
+			Expect(
+				s.AddM(fixtures.MessageA1),
+			).To(BeTrue())
+		})
+
+		It("returns false if the type is already in the set", func() {
+			s := TypesOf()
+			s.Add(fixtures.MessageAType)
+
+			Expect(
+				s.AddM(fixtures.MessageA1),
+			).To(BeFalse())
+		})
+	})
+
+	Describe("func Remove", func() {
+		It("removes the type from the set", func() {
+			s := TypesOf(fixtures.MessageA1)
+			s.Remove(fixtures.MessageAType)
+
+			Expect(
+				s.Has(fixtures.MessageAType),
+			).To(BeFalse())
+		})
+
+		It("returns true if the type is already in the set", func() {
+			s := TypesOf()
+			s.Add(fixtures.MessageAType)
+
+			Expect(
+				s.Remove(fixtures.MessageAType),
+			).To(BeTrue())
+		})
+
+		It("returns false if the type is not already in the set", func() {
+			s := TypesOf()
+
+			Expect(
+				s.Remove(fixtures.MessageAType),
+			).To(BeFalse())
+		})
 	})
 
 	Describe("func RemoveM", func() {
@@ -126,6 +208,23 @@ var _ = Describe("type TypeSet", func() {
 
 			Expect(
 				s.Has(fixtures.MessageAType),
+			).To(BeFalse())
+		})
+
+		It("returns true if the type is already in the set", func() {
+			s := TypesOf()
+			s.Add(fixtures.MessageAType)
+
+			Expect(
+				s.RemoveM(fixtures.MessageA1),
+			).To(BeTrue())
+		})
+
+		It("returns false if the type is not already in the set", func() {
+			s := TypesOf()
+
+			Expect(
+				s.RemoveM(fixtures.MessageA1),
 			).To(BeFalse())
 		})
 	})
