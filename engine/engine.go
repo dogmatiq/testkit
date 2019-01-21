@@ -130,6 +130,7 @@ func (e *Engine) dispatch(
 			do.observers.Notify(
 				fact.MessageHandlingBegun{
 					HandlerName: n,
+					HandlerType: c.Type(),
 					Envelope:    env,
 				},
 			)
@@ -145,6 +146,7 @@ func (e *Engine) dispatch(
 			do.observers.Notify(
 				fact.MessageHandlingCompleted{
 					HandlerName: n,
+					HandlerType: c.Type(),
 					Envelope:    env,
 					Error:       herr,
 				},
