@@ -2,140 +2,156 @@ package render
 
 import (
 	"io"
-	"testing"
 
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
+	. "github.com/onsi/ginkgo"
 )
 
 var _ Renderer = DefaultRenderer{}
 
-func TestDefaultRenderer_WriteMessage(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteMessage(
-					w,
-					fixtures.MessageA{Value: "<value>"},
-				),
+var _ = Describe("type DefaultRenderer", func() {
+	Describe("func WriteMessage", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteMessage(
+							w,
+							fixtures.MessageA1,
+						),
+					)
+				},
+				"fixtures.MessageA{",
+				`    Value: "A1"`,
+				"}",
 			)
-		},
-		"fixtures.MessageA{",
-		`    Value: "<value>"`,
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteAggregateRoot(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteAggregateRoot(
-					w,
-					&fixtures.AggregateRoot{Value: "<value>"},
-				),
+	Describe("func WriteAggregateRoot", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteAggregateRoot(
+							w,
+							&fixtures.AggregateRoot{Value: "<value>"},
+						),
+					)
+				},
+				"*fixtures.AggregateRoot{",
+				`    Value:          "<value>"`,
+				`    ApplyEventFunc: nil`,
+				"}",
 			)
-		},
-		"*fixtures.AggregateRoot{",
-		`    Value:          "<value>"`,
-		`    ApplyEventFunc: nil`,
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteProcessRoot(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteProcessRoot(
-					w,
-					&fixtures.ProcessRoot{Value: "<value>"},
-				),
+	Describe("func WriteProcessRoot", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteProcessRoot(
+							w,
+							&fixtures.ProcessRoot{Value: "<value>"},
+						),
+					)
+				},
+				"*fixtures.ProcessRoot{",
+				`    Value: "<value>"`,
+				"}",
 			)
-		},
-		"*fixtures.ProcessRoot{",
-		`    Value: "<value>"`,
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteAggregateMessageHandler(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteAggregateMessageHandler(
-					w,
-					&fixtures.AggregateMessageHandler{},
-				),
+	Describe("func WriteAggregateMessageHandler", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteAggregateMessageHandler(
+							w,
+							&fixtures.AggregateMessageHandler{},
+						),
+					)
+				},
+				"*fixtures.AggregateMessageHandler{",
+				"    NewFunc:                    nil",
+				"    ConfigureFunc:              nil",
+				"    RouteCommandToInstanceFunc: nil",
+				"    HandleCommandFunc:          nil",
+				"}",
 			)
-		},
-		"*fixtures.AggregateMessageHandler{",
-		"    NewFunc:                    nil",
-		"    ConfigureFunc:              nil",
-		"    RouteCommandToInstanceFunc: nil",
-		"    HandleCommandFunc:          nil",
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteProcessMessageHandler(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteProcessMessageHandler(
-					w,
-					&fixtures.ProcessMessageHandler{},
-				),
+	Describe("func WriteProcessMessageHandler", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteProcessMessageHandler(
+							w,
+							&fixtures.ProcessMessageHandler{},
+						),
+					)
+				},
+				"*fixtures.ProcessMessageHandler{",
+				"    NewFunc:                  nil",
+				"    ConfigureFunc:            nil",
+				"    RouteEventToInstanceFunc: nil",
+				"    HandleEventFunc:          nil",
+				"    HandleTimeoutFunc:        nil",
+				"}",
 			)
-		},
-		"*fixtures.ProcessMessageHandler{",
-		"    NewFunc:                  nil",
-		"    ConfigureFunc:            nil",
-		"    RouteEventToInstanceFunc: nil",
-		"    HandleEventFunc:          nil",
-		"    HandleTimeoutFunc:        nil",
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteIntegrationMessageHandler(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteIntegrationMessageHandler(
-					w,
-					&fixtures.IntegrationMessageHandler{},
-				),
+	Describe("func WriteIntegrationMessageHandler", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteIntegrationMessageHandler(
+							w,
+							&fixtures.IntegrationMessageHandler{},
+						),
+					)
+				},
+				"*fixtures.IntegrationMessageHandler{",
+				"    ConfigureFunc:     nil",
+				"    HandleCommandFunc: nil",
+				"}",
 			)
-		},
-		"*fixtures.IntegrationMessageHandler{",
-		"    ConfigureFunc:     nil",
-		"    HandleCommandFunc: nil",
-		"}",
-	)
-}
+		})
+	})
 
-func TestDefaultRenderer_WriteProjectionMessageHandler(t *testing.T) {
-	iotest.TestWrite(
-		t,
-		func(w io.Writer) int {
-			return iago.Must(
-				DefaultRenderer{}.WriteProjectionMessageHandler(
-					w,
-					&fixtures.ProjectionMessageHandler{},
-				),
+	Describe("func WriteProjectionMessageHandler", func() {
+		It("writes a suitable representation", func() {
+			iotest.TestWrite(
+				GinkgoT(),
+				func(w io.Writer) int {
+					return iago.Must(
+						DefaultRenderer{}.WriteProjectionMessageHandler(
+							w,
+							&fixtures.ProjectionMessageHandler{},
+						),
+					)
+				},
+				"*fixtures.ProjectionMessageHandler{",
+				"    ConfigureFunc:   nil",
+				"    HandleEventFunc: nil",
+				"}",
 			)
-		},
-		"*fixtures.ProjectionMessageHandler{",
-		"    ConfigureFunc:   nil",
-		"    HandleEventFunc: nil",
-		"}",
-	)
-}
+		})
+	})
+})
