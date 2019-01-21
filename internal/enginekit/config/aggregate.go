@@ -18,16 +18,16 @@ type AggregateConfig struct {
 	// HandlerName is the handler's name, as specified by its Configure() method.
 	HandlerName string
 
-	// CommandTypes is the set of command message types that are routed to this
+	// MessageTypes is the set of command message types that are routed to this
 	// handler, as specified by its Configure() method.
-	CommandTypes map[message.Type]struct{}
+	MessageTypes message.TypeSet
 }
 
 // NewAggregateConfig returns an AggregateConfig for the given handler.
 func NewAggregateConfig(h dogma.AggregateMessageHandler) (*AggregateConfig, error) {
 	cfg := &AggregateConfig{
 		Handler:      h,
-		CommandTypes: map[message.Type]struct{}{},
+		MessageTypes: message.TypeSet{},
 	}
 
 	c := &aggregateConfigurer{
@@ -47,7 +47,7 @@ func NewAggregateConfig(h dogma.AggregateMessageHandler) (*AggregateConfig, erro
 		)
 	}
 
-	if len(c.cfg.CommandTypes) == 0 {
+	if len(c.cfg.MessageTypes) == 0 {
 		return nil, errorf(
 			"%T.Configure() did not call AggregateConfigurer.RouteCommandType()",
 			h,
@@ -70,6 +70,16 @@ func (c *AggregateConfig) HandlerType() handler.Type {
 // HandlerReflectType returns the reflect.Type of the handler.
 func (c *AggregateConfig) HandlerReflectType() reflect.Type {
 	return reflect.TypeOf(c.Handler)
+}
+
+// CommandTypes returns the types of command messages that are routed to the handler.
+func (c *AggregateConfig) CommandTypes() message.TypeSet {
+	return c.MessageTypes
+}
+
+// EventTypes returns the types of event messages that are routed to the handler.
+func (c *AggregateConfig) EventTypes() message.TypeSet {
+	return nil
 }
 
 // Accept calls v.VisitAggregateConfig(ctx, c).
@@ -106,7 +116,7 @@ func (c *aggregateConfigurer) Name(n string) {
 func (c *aggregateConfigurer) RouteCommandType(m dogma.Message) {
 	t := message.TypeOf(m)
 
-	if _, ok := c.cfg.CommandTypes[t]; ok {
+	if _, ok := c.cfg.MessageTypes[t]; ok {
 		panicf(
 			`%T.Configure() has already called AggregateConfigurer.RouteCommandType(%T)`,
 			c.cfg.Handler,
@@ -114,5 +124,5 @@ func (c *aggregateConfigurer) RouteCommandType(m dogma.Message) {
 		)
 	}
 
-	c.cfg.CommandTypes[t] = struct{}{}
+	c.cfg.MessageTypes[t] = struct{}{}
 }

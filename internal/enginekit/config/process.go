@@ -18,16 +18,16 @@ type ProcessConfig struct {
 	// HandlerName is the handler's name, as specified by its Configure() method.
 	HandlerName string
 
-	// EventTypes is the set of event message types that are routed to this
+	// MessageTypes is the set of event message types that are routed to this
 	// handler, as specified by its Configure() method.
-	EventTypes map[message.Type]struct{}
+	MessageTypes message.TypeSet
 }
 
 // NewProcessConfig returns an ProcessConfig for the given handler.
 func NewProcessConfig(h dogma.ProcessMessageHandler) (*ProcessConfig, error) {
 	cfg := &ProcessConfig{
-		Handler:    h,
-		EventTypes: map[message.Type]struct{}{},
+		Handler:      h,
+		MessageTypes: message.TypeSet{},
 	}
 
 	c := &processConfigurer{
@@ -47,7 +47,7 @@ func NewProcessConfig(h dogma.ProcessMessageHandler) (*ProcessConfig, error) {
 		)
 	}
 
-	if len(c.cfg.EventTypes) == 0 {
+	if len(c.cfg.MessageTypes) == 0 {
 		return nil, errorf(
 			"%T.Configure() did not call ProcessConfigurer.RouteEventType()",
 			h,
@@ -70,6 +70,16 @@ func (c *ProcessConfig) HandlerType() handler.Type {
 // HandlerReflectType returns the reflect.Type of the handler.
 func (c *ProcessConfig) HandlerReflectType() reflect.Type {
 	return reflect.TypeOf(c.Handler)
+}
+
+// CommandTypes returns the types of command messages that are routed to the handler.
+func (c *ProcessConfig) CommandTypes() message.TypeSet {
+	return nil
+}
+
+// EventTypes returns the types of event messages that are routed to the handler.
+func (c *ProcessConfig) EventTypes() message.TypeSet {
+	return c.MessageTypes
 }
 
 // Accept calls v.VisitProcessConfig(ctx, c).
@@ -106,7 +116,7 @@ func (c *processConfigurer) Name(n string) {
 func (c *processConfigurer) RouteEventType(m dogma.Message) {
 	t := message.TypeOf(m)
 
-	if _, ok := c.cfg.EventTypes[t]; ok {
+	if _, ok := c.cfg.MessageTypes[t]; ok {
 		panicf(
 			`%T.Configure() has already called ProcessConfigurer.RouteEventType(%T)`,
 			c.cfg.Handler,
@@ -114,5 +124,5 @@ func (c *processConfigurer) RouteEventType(m dogma.Message) {
 		)
 	}
 
-	c.cfg.EventTypes[t] = struct{}{}
+	c.cfg.MessageTypes[t] = struct{}{}
 }

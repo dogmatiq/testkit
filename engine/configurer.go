@@ -37,7 +37,7 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 			cfg.Handler,
 		),
 		message.CommandRole,
-		cfg.CommandTypes,
+		cfg.MessageTypes,
 	)
 
 	return nil
@@ -50,7 +50,7 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 			cfg.Handler,
 		),
 		message.EventRole,
-		cfg.EventTypes,
+		cfg.MessageTypes,
 	)
 
 	return nil
@@ -63,7 +63,7 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 			cfg.Handler,
 		),
 		message.CommandRole,
-		cfg.CommandTypes,
+		cfg.MessageTypes,
 	)
 
 	return nil
@@ -76,7 +76,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 			cfg.Handler,
 		),
 		message.EventRole,
-		cfg.EventTypes,
+		cfg.MessageTypes,
 	)
 
 	return nil
@@ -85,7 +85,7 @@ func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.Projec
 func (c *configurer) registerController(
 	ctrl controller.Controller,
 	r message.Role,
-	types map[message.Type]struct{},
+	types message.TypeSet,
 ) {
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

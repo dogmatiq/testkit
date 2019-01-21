@@ -46,16 +46,13 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 		EventRoutes:   map[message.Type][]string{},
 	}
 
-	ctx := context.Background()
-	v := &registerer{cfg}
-
 	for _, h := range app.Aggregates {
 		c, err := NewAggregateConfig(h)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := c.Accept(ctx, v); err != nil {
+		if err := cfg.register(c); err != nil {
 			return nil, err
 		}
 	}
@@ -66,7 +63,7 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 			return nil, err
 		}
 
-		if err := c.Accept(ctx, v); err != nil {
+		if err := cfg.register(c); err != nil {
 			return nil, err
 		}
 	}
@@ -77,7 +74,7 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 			return nil, err
 		}
 
-		if err := c.Accept(ctx, v); err != nil {
+		if err := cfg.register(c); err != nil {
 			return nil, err
 		}
 	}
@@ -88,7 +85,7 @@ func NewAppConfig(app dogma.App) (*AppConfig, error) {
 			return nil, err
 		}
 
-		if err := c.Accept(ctx, v); err != nil {
+		if err := cfg.register(c); err != nil {
 			return nil, err
 		}
 	}
@@ -106,11 +103,8 @@ func (c *AppConfig) Accept(ctx context.Context, v Visitor) error {
 	return v.VisitAppConfig(ctx, c)
 }
 
-func (c *AppConfig) registerHandlerConfig(
-	cfg HandlerConfig,
-	commandTypes map[message.Type]struct{},
-	eventTypes map[message.Type]struct{},
-) error {
+// register adds the given handler configuration to the app configuration.
+func (c *AppConfig) register(cfg HandlerConfig) error {
 	n := cfg.Name()
 
 	if x, ok := c.Handlers[n]; ok {
@@ -122,7 +116,7 @@ func (c *AppConfig) registerHandlerConfig(
 		)
 	}
 
-	for t := range commandTypes {
+	for t := range cfg.CommandTypes() {
 		if x, ok := c.CommandRoutes[t]; ok {
 			return errorf(
 				"can not route commands of type %s to %#v because they are already routed to %#v",
@@ -152,7 +146,7 @@ func (c *AppConfig) registerHandlerConfig(
 		}
 	}
 
-	for t := range eventTypes {
+	for t := range cfg.EventTypes() {
 		if x, ok := c.CommandRoutes[t]; ok {
 			return errorf(
 				"can not route messages of type %s to %#v as events because they are already routed to %#v as commands",
@@ -165,40 +159,15 @@ func (c *AppConfig) registerHandlerConfig(
 
 	c.Handlers[n] = cfg
 
-	for t := range commandTypes {
+	for t := range cfg.CommandTypes() {
 		c.Routes[t] = append(c.Routes[t], cfg.Name())
 		c.CommandRoutes[t] = cfg.Name()
 	}
 
-	for t := range eventTypes {
+	for t := range cfg.EventTypes() {
 		c.Routes[t] = append(c.Routes[t], cfg.Name())
 		c.EventRoutes[t] = append(c.EventRoutes[t], cfg.Name())
 	}
 
 	return nil
-}
-
-// registerer is a visitor that registers handler configs with the app config.
-type registerer struct {
-	cfg *AppConfig
-}
-
-func (r *registerer) VisitAppConfig(context.Context, *AppConfig) error {
-	panic("not implemented")
-}
-
-func (r *registerer) VisitAggregateConfig(_ context.Context, cfg *AggregateConfig) error {
-	return r.cfg.registerHandlerConfig(cfg, cfg.CommandTypes, nil)
-}
-
-func (r *registerer) VisitProcessConfig(_ context.Context, cfg *ProcessConfig) error {
-	return r.cfg.registerHandlerConfig(cfg, nil, cfg.EventTypes)
-}
-
-func (r *registerer) VisitIntegrationConfig(_ context.Context, cfg *IntegrationConfig) error {
-	return r.cfg.registerHandlerConfig(cfg, cfg.CommandTypes, nil)
-}
-
-func (r *registerer) VisitProjectionConfig(_ context.Context, cfg *ProjectionConfig) error {
-	return r.cfg.registerHandlerConfig(cfg, nil, cfg.EventTypes)
 }
