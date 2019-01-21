@@ -29,7 +29,7 @@ var _ dogma.ProcessMessageHandler = &ProcessMessageHandler{}
 // If h.NewFunc is nil, it returns a new empty fixtures.ProcessRoot, otherwise
 // it calls h.NewFunc().
 func (h *ProcessMessageHandler) New() dogma.ProcessRoot {
-	if h.NewFunc == nil {
+	if h.NewFunc != nil {
 		return h.NewFunc()
 	}
 

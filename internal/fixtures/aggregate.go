@@ -15,7 +15,9 @@ var _ dogma.AggregateRoot = &AggregateRoot{}
 //
 // It calls v.ApplyEventFunc(m, v.Value)
 func (v *AggregateRoot) ApplyEvent(m dogma.Message) {
-	v.ApplyEventFunc(m, v.Value)
+	if v.ApplyEventFunc != nil {
+		v.ApplyEventFunc(m, v.Value)
+	}
 }
 
 // AggregateMessageHandler is a test implementation of dogma.AggregateMessageHandler.
@@ -33,7 +35,7 @@ var _ dogma.AggregateMessageHandler = &AggregateMessageHandler{}
 // If h.NewFunc is nil, it returns a new empty fixtures.AggregateRoot, otherwise
 // it calls h.NewFunc().
 func (h *AggregateMessageHandler) New() dogma.AggregateRoot {
-	if h.NewFunc == nil {
+	if h.NewFunc != nil {
 		return h.NewFunc()
 	}
 
