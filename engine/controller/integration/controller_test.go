@@ -166,4 +166,10 @@ var _ = Describe("type Controller", func() {
 			})
 		})
 	})
+
+	Describe("func Reset()", func() {
+		It("does nothing", func() {
+			controller.Reset()
+		})
+	})
 })
