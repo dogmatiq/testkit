@@ -138,10 +138,9 @@ func (e *Engine) dispatch(
 
 			if herr != nil {
 				err = multierr.Append(err, herr)
-				continue
+			} else {
+				queue = append(queue, envs...)
 			}
-
-			queue = append(queue, envs...)
 
 			do.observers.Notify(
 				fact.MessageHandlingCompleted{
