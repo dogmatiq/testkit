@@ -69,9 +69,9 @@ func (e *Engine) Dispatch(
 	m dogma.Message,
 	options ...DispatchOption,
 ) error {
-	var do dispatchOptions
-	for _, opt := range options {
-		opt(&do)
+	do, err := newDispatchOptions(options)
+	if err != nil {
+		return err
 	}
 
 	t := message.TypeOf(m)
@@ -80,7 +80,8 @@ func (e *Engine) Dispatch(
 	if !ok {
 		do.observers.Notify(
 			fact.UnroutableMessageDispatched{
-				Message: m,
+				Message:         m,
+				EnabledHandlers: do.enabledHandlers,
 			},
 		)
 
@@ -91,16 +92,18 @@ func (e *Engine) Dispatch(
 
 	do.observers.Notify(
 		fact.MessageDispatchBegun{
-			Envelope: env,
+			Envelope:        env,
+			EnabledHandlers: do.enabledHandlers,
 		},
 	)
 
-	err := e.dispatch(ctx, &do, env)
+	err = e.dispatch(ctx, do, env)
 
 	do.observers.Notify(
 		fact.MessageDispatchCompleted{
-			Envelope: env,
-			Error:    err,
+			Envelope:        env,
+			Error:           err,
+			EnabledHandlers: do.enabledHandlers,
 		},
 	)
 
@@ -126,11 +129,24 @@ func (e *Engine) dispatch(
 
 		for _, c := range e.routes[env.Type] {
 			n := c.Name()
+			t := c.Type()
+
+			if !do.enabledHandlers[t] {
+				do.observers.Notify(
+					fact.MessageHandlingSkipped{
+						HandlerName: n,
+						HandlerType: c.Type(),
+						Envelope:    env,
+					},
+				)
+
+				continue
+			}
 
 			do.observers.Notify(
 				fact.MessageHandlingBegun{
 					HandlerName: n,
-					HandlerType: c.Type(),
+					HandlerType: t,
 					Envelope:    env,
 				},
 			)
@@ -146,7 +162,7 @@ func (e *Engine) dispatch(
 			do.observers.Notify(
 				fact.MessageHandlingCompleted{
 					HandlerName: n,
-					HandlerType: c.Type(),
+					HandlerType: t,
 					Envelope:    env,
 					Error:       herr,
 				},

@@ -3,6 +3,7 @@ package engine
 import (
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
@@ -36,10 +37,6 @@ func WithRenderer(r render.Renderer) Option {
 // DispatchOption applies optional settings while dispatching a message.
 type DispatchOption func(*dispatchOptions) error
 
-type dispatchOptions struct {
-	observers fact.ObserverSet
-}
-
 // WithObserver returns a dispatch option that registers the given observer
 // while the message is being dispatched.
 //
@@ -53,4 +50,44 @@ func WithObserver(o fact.Observer) DispatchOption {
 		do.observers = append(do.observers, o)
 		return nil
 	}
+}
+
+// EnableHandlerType returns a dispatch option that enables or disables handlers
+// of the given type.
+//
+// By default, aggregates and processes are enabled, and integrations and
+// projections are disabled.
+func EnableHandlerType(t handler.Type, enable bool) DispatchOption {
+	t.MustValidate()
+
+	return func(do *dispatchOptions) error {
+		do.enabledHandlers[t] = enable
+		return nil
+	}
+}
+
+// dispatchOptions is a container for the options set via DispatchOption values.
+type dispatchOptions struct {
+	observers       fact.ObserverSet
+	enabledHandlers map[handler.Type]bool
+}
+
+// newDispatchOptions returns a new dispatchOptions with the given options.
+func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
+	do := &dispatchOptions{
+		enabledHandlers: map[handler.Type]bool{
+			handler.AggregateType:   true,
+			handler.ProcessType:     true,
+			handler.IntegrationType: false,
+			handler.ProjectionType:  false,
+		},
+	}
+
+	for _, opt := range options {
+		if err := opt(do); err != nil {
+			return nil, err
+		}
+	}
+
+	return do, nil
 }
