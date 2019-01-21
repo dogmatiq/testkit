@@ -25,3 +25,12 @@ type Buffer struct {
 func (b *Buffer) Notify(f Fact) {
 	b.Facts = append(b.Facts, f)
 }
+
+// Ignore is an observer that ignores facts.
+var Ignore ignorer
+
+type ignorer struct{}
+
+// Notify does nothing.
+func (ignorer) Notify(Fact) {
+}
