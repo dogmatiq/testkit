@@ -36,16 +36,15 @@ func (h *ProjectionMessageHandler) Configure(c dogma.ProjectionConfigurer) {
 // It panics with the UnexpectedMessage value if m is not one of the event
 // types that is routed to this handler via Configure().
 //
-// If h.HandleEventFunc is non-nil it calls h.HandleEventFunc(s, m),
-// otherwise it panics.
+// If h.HandleEventFunc is non-nil it calls h.HandleEventFunc(s, m).
 func (h *ProjectionMessageHandler) HandleEvent(
 	ctx context.Context,
 	s dogma.ProjectionEventScope,
 	m dogma.Message,
 ) error {
-	if h.HandleEventFunc == nil {
-		panic(dogma.UnexpectedMessage)
+	if h.HandleEventFunc != nil {
+		return h.HandleEventFunc(ctx, s, m)
 	}
 
-	return h.HandleEventFunc(context.TODO(), s, m)
+	return nil
 }

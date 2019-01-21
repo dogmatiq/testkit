@@ -86,18 +86,17 @@ func (h *ProcessMessageHandler) RouteEventToInstance(
 // It panics with the UnexpectedMessage value if m is not one of the event
 // types that is routed to this handler via Configure().
 //
-// If h.HandleEventFunc is non-nil it calls h.HandleEventFunc(ctx, s, m),
-// otherwise it panics.
+// If h.HandleEventFunc is non-nil it calls h.HandleEventFunc(ctx, s, m).
 func (h *ProcessMessageHandler) HandleEvent(
 	ctx context.Context,
 	s dogma.ProcessEventScope,
 	m dogma.Message,
 ) error {
-	if h.HandleEventFunc == nil {
-		panic(dogma.UnexpectedMessage)
+	if h.HandleEventFunc != nil {
+		return h.HandleEventFunc(ctx, s, m)
 	}
 
-	return h.HandleEventFunc(ctx, s, m)
+	return nil
 }
 
 // HandleTimeout handles a timeout message that has been scheduled with
@@ -115,16 +114,15 @@ func (h *ProcessMessageHandler) HandleEvent(
 // If m was not expected by the handler the implementation must panic with an
 // UnexpectedMessage value.
 //
-// If h.HandleTimeoutFunc is non-nil it calls h.HandleTimeoutFunc(ctx, s, m),
-// otherwise it panics.
+// If h.HandleTimeoutFunc is non-nil it calls h.HandleTimeoutFunc(ctx, s, m).
 func (h *ProcessMessageHandler) HandleTimeout(
 	ctx context.Context,
 	s dogma.ProcessTimeoutScope,
 	m dogma.Message,
 ) error {
-	if h.HandleTimeoutFunc == nil {
-		panic(dogma.UnexpectedMessage)
+	if h.HandleTimeoutFunc != nil {
+		return h.HandleTimeoutFunc(ctx, s, m)
 	}
 
-	return h.HandleTimeoutFunc(ctx, s, m)
+	return nil
 }

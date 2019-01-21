@@ -89,12 +89,9 @@ func (h *AggregateMessageHandler) RouteCommandToInstance(m dogma.Message) string
 // It panics with the UnexpectedMessage value if m is not one of the domain
 // command types that is routed to this handler via Configure().
 //
-// If h.HandleCommandFunc is non-nil it calls h.HandleCommandFunc(s, m),
-// otherwise it panics.
+// If h.HandleCommandFunc is non-nil it calls h.HandleCommandFunc(s, m).
 func (h *AggregateMessageHandler) HandleCommand(s dogma.AggregateCommandScope, m dogma.Message) {
-	if h.HandleCommandFunc == nil {
-		panic(dogma.UnexpectedMessage)
+	if h.HandleCommandFunc != nil {
+		h.HandleCommandFunc(s, m)
 	}
-
-	h.HandleCommandFunc(s, m)
 }

@@ -36,16 +36,15 @@ func (h *IntegrationMessageHandler) Configure(c dogma.IntegrationConfigurer) {
 // It panics with the UnexpectedMessage value if m is not one of the
 // integration command types that is routed to this handler via Configure().
 //
-// If h.HandleCommandFunc is non-nil it calls h.HandleCommandFunc(s, m),
-// otherwise it panics.
+// If h.HandleCommandFunc is non-nil it calls h.HandleCommandFunc(s, m).
 func (h *IntegrationMessageHandler) HandleCommand(
 	ctx context.Context,
 	s dogma.IntegrationCommandScope,
 	m dogma.Message,
 ) error {
-	if h.HandleCommandFunc == nil {
-		panic(dogma.UnexpectedMessage)
+	if h.HandleCommandFunc != nil {
+		return h.HandleCommandFunc(ctx, s, m)
 	}
 
-	return h.HandleCommandFunc(ctx, s, m)
+	return nil
 }
