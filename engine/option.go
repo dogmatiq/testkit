@@ -9,8 +9,8 @@ import (
 // Option applies optional settings to an engine.
 type Option func(*configurer) error
 
-// Comparator is an engine option that specifies the comparator to use.
-func Comparator(c compare.Comparator) Option {
+// WithComparator returns an engine option that specifies the comparator to use.
+func WithComparator(c compare.Comparator) Option {
 	if c == nil {
 		panic("comparator must not be nil")
 	}
@@ -21,8 +21,8 @@ func Comparator(c compare.Comparator) Option {
 	}
 }
 
-// Renderer is an engine option that specifies the renderer to use.
-func Renderer(r render.Renderer) Option {
+// WithRenderer returns an engine option that specifies the renderer to use.
+func WithRenderer(r render.Renderer) Option {
 	if r == nil {
 		panic("renderer must not be nil")
 	}
@@ -40,9 +40,11 @@ type dispatchOptions struct {
 	observers fact.ObserverSet
 }
 
-// Observe is a dispatch option that registers the given observer while the
-// message is being dispatched.
-func Observe(o fact.Observer) DispatchOption {
+// WithObserver returns a dispatch option that registers the given observer
+// while the message is being dispatched.
+//
+// Multiple observers can be registered during a single dispatch.
+func WithObserver(o fact.Observer) DispatchOption {
 	if o == nil {
 		panic("observer must not be nil")
 	}
