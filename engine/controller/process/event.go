@@ -6,7 +6,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // eventScope is an implementation of dogma.ProcessEventScope.
@@ -69,7 +68,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 		panic("can not execute command against non-existent instance")
 	}
 
-	env := s.event.NewChild(m, message.EventRole, time.Time{})
+	env := s.event.NewEvent(m)
 	s.children = append(s.children, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
@@ -86,7 +85,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		panic("can not schedule timeout against non-existent instance")
 	}
 
-	env := s.event.NewChild(m, message.TimeoutRole, t)
+	env := s.event.NewTimeout(m, t)
 	s.children = append(s.children, env)
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{

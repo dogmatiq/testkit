@@ -1,12 +1,9 @@
 package integration
 
 import (
-	"time"
-
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // commandScope is an implementation of dogma.IntegrationCommandScope.
@@ -19,7 +16,7 @@ type commandScope struct {
 }
 
 func (s *commandScope) RecordEvent(m dogma.Message) {
-	env := s.command.NewChild(m, message.EventRole, time.Time{})
+	env := s.command.NewEvent(m)
 	s.children = append(s.children, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{

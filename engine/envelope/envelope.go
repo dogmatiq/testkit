@@ -22,40 +22,56 @@ type Envelope struct {
 	IsRoot bool
 
 	// TimeoutTime holds the time at which the timeout is scheduled.
-	// If the Role is not message.TimeoutRole, this value is zero.
-	TimeoutTime time.Time
+	// If the Role is not message.TimeoutRole, this value is nil.
+	TimeoutTime *time.Time
 }
 
 // New constructs a new envelope containing the given message.
-func New(m dogma.Message, r message.Role, t time.Time) *Envelope {
+func New(m dogma.Message, r message.Role) *Envelope {
 	r.MustValidate()
 
 	if r == message.TimeoutRole {
-		if t.IsZero() {
-			panic("t must be non-zero for timeouts")
-		}
-	} else {
-		if !t.IsZero() {
-			panic("t must be zero for non-timeouts")
-		}
+		panic("the root message can not be a timeout")
 	}
 
 	return &Envelope{
-		Message:     m,
-		Type:        message.TypeOf(m),
-		Role:        r,
-		IsRoot:      true,
-		TimeoutTime: t,
+		Message: m,
+		Type:    message.TypeOf(m),
+		Role:    r,
+		IsRoot:  true,
 	}
 }
 
-// NewChild constructs a new envelope as a child of e, indicating that m is
-// caused by e.Message.
-func (e *Envelope) NewChild(m dogma.Message, r message.Role, t time.Time) *Envelope {
-	r.MustValidate()
+// NewCommand constructs a new command envelope as a child of e, indicating that
+// m is caused by e.Message.
+func (e *Envelope) NewCommand(m dogma.Message) *Envelope {
+	return &Envelope{
+		Message: m,
+		Type:    message.TypeOf(m),
+		Role:    message.CommandRole,
+		IsRoot:  false,
+	}
+}
 
-	env := New(m, r, t)
-	env.IsRoot = false
+// NewEvent constructs a new event envelope as a child of e, indicating that
+// m is caused by e.Message.
+func (e *Envelope) NewEvent(m dogma.Message) *Envelope {
+	return &Envelope{
+		Message: m,
+		Type:    message.TypeOf(m),
+		Role:    message.EventRole,
+		IsRoot:  false,
+	}
+}
 
-	return env
+// NewTimeout constructs a new event envelope as a child of e, indicating that
+// m is caused by e.Message.
+func (e *Envelope) NewTimeout(m dogma.Message, t time.Time) *Envelope {
+	return &Envelope{
+		Message:     m,
+		Type:        message.TypeOf(m),
+		Role:        message.TimeoutRole,
+		IsRoot:      false,
+		TimeoutTime: &t,
+	}
 }

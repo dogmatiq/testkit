@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
@@ -88,7 +87,7 @@ func (e *Engine) Dispatch(
 		return nil
 	}
 
-	env := envelope.New(m, r, time.Time{})
+	env := envelope.New(m, r)
 
 	do.observers.Notify(
 		fact.MessageDispatchBegun{
