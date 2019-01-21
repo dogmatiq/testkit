@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/errors"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
@@ -59,9 +58,10 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 	}
 
 	if id == "" {
-		return nil, errors.EmptyInstanceID{
-			Handler: c.name,
-		}
+		panic(handler.EmptyInstanceIDError{
+			HandlerName: c.name,
+			HandlerType: c.Type(),
+		})
 	}
 
 	r, exists := c.instances[id]
@@ -83,9 +83,10 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 		r = c.handler.New()
 
 		if r == nil {
-			return nil, errors.NilRoot{
-				Handler: c.name,
-			}
+			panic(handler.NilRootError{
+				HandlerName: c.name,
+				HandlerType: c.Type(),
+			})
 		}
 	}
 
