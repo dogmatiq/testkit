@@ -3,7 +3,7 @@ package dogmatest
 import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	"github.com/dogmatiq/dogmatest/enginekit/config"
 )
 
 // Engine is an alias for engine.Engine.

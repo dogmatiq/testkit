@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/dogmatest/enginekit/message"
 )
 
 // AppConfig represents the configuration of an entire Dogma application.

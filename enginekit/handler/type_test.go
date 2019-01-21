@@ -1,7 +1,7 @@
 package handler_test
 
 import (
-	. "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	. "github.com/dogmatiq/dogmatest/enginekit/handler"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

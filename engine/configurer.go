@@ -9,8 +9,8 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/controller/projection"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/dogmatest/enginekit/config"
+	"github.com/dogmatiq/dogmatest/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
 )
 

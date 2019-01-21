@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/dogmatest/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/enginekit/message"
 )
 
 // ProcessConfig represents the configuration of an process message handler.

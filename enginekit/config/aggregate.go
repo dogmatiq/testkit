@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/dogmatest/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/enginekit/message"
 
 	"github.com/dogmatiq/dogma"
 )

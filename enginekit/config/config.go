@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/enginekit/handler"
 )
 
 // Config is an interface for all configuration values.

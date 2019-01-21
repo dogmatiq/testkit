@@ -6,7 +6,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/enginekit/handler"
 )
 
 // Controller is an implementation of engine.Controller for

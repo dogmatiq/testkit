@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/enginekit/handler"
 )
 
 // Controller orchestrates the handling of a message by Dogma message handler.
