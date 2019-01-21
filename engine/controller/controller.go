@@ -19,7 +19,7 @@ type Controller interface {
 	// Handle handles a message.
 	Handle(
 		ctx context.Context,
-		obs fact.ObserverSet,
+		obs fact.Observer,
 		env *envelope.Envelope,
 	) ([]*envelope.Envelope, error)
 

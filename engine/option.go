@@ -68,7 +68,7 @@ func EnableHandlerType(t HandlerType, enable bool) DispatchOption {
 
 // dispatchOptions is a container for the options set via DispatchOption values.
 type dispatchOptions struct {
-	observers       fact.ObserverSet
+	observers       fact.ObserverGroup
 	enabledHandlers map[handler.Type]bool
 }
 

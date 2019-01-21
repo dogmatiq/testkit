@@ -11,18 +11,18 @@ import (
 
 // commandScope is an implementation of dogma.IntegrationCommandScope.
 type commandScope struct {
-	id        string
-	name      string
-	observers fact.ObserverSet
-	command   *envelope.Envelope
-	children  []*envelope.Envelope
+	id       string
+	name     string
+	observer fact.Observer
+	command  *envelope.Envelope
+	children []*envelope.Envelope
 }
 
 func (s *commandScope) RecordEvent(m dogma.Message) {
 	env := s.command.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
-	s.observers.Notify(fact.EventRecordedByIntegration{
+	s.observer.Notify(fact.EventRecordedByIntegration{
 		HandlerName:   s.name,
 		Envelope:      s.command,
 		EventEnvelope: env,
@@ -30,7 +30,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 }
 
 func (s *commandScope) Log(f string, v ...interface{}) {
-	s.observers.Notify(fact.MessageLoggedByIntegration{
+	s.observer.Notify(fact.MessageLoggedByIntegration{
 		HandlerName:  s.name,
 		Envelope:     s.command,
 		LogFormat:    f,

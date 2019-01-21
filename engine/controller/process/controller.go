@@ -41,7 +41,7 @@ func (c *Controller) Type() handler.Type {
 // Handle handles a message.
 func (c *Controller) Handle(
 	ctx context.Context,
-	obs fact.ObserverSet,
+	obs fact.Observer,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	id, ok, err := c.handler.RouteEventToInstance(ctx, env.Message)
@@ -92,12 +92,12 @@ func (c *Controller) Handle(
 	}
 
 	s := &eventScope{
-		id:        id,
-		name:      c.name,
-		observers: obs,
-		root:      r,
-		exists:    exists,
-		event:     env,
+		id:       id,
+		name:     c.name,
+		observer: obs,
+		root:     r,
+		exists:   exists,
+		event:    env,
 	}
 
 	if err := c.handler.HandleEvent(ctx, s, env.Message); err != nil {

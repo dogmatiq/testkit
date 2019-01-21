@@ -41,7 +41,7 @@ func (c *Controller) Type() handler.Type {
 // Handle handles a message.
 func (c *Controller) Handle(
 	ctx context.Context,
-	obs fact.ObserverSet,
+	obs fact.Observer,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	id := c.handler.RouteCommandToInstance(env.Message)
@@ -79,12 +79,12 @@ func (c *Controller) Handle(
 	}
 
 	s := &commandScope{
-		id:        id,
-		name:      c.name,
-		observers: obs,
-		root:      r,
-		exists:    exists,
-		command:   env,
+		id:       id,
+		name:     c.name,
+		observer: obs,
+		root:     r,
+		exists:   exists,
+		command:  env,
 	}
 
 	c.handler.HandleCommand(s, env.Message)

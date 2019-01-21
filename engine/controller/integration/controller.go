@@ -40,13 +40,13 @@ func (c *Controller) Type() handler.Type {
 // Handle handles a message.
 func (c *Controller) Handle(
 	ctx context.Context,
-	obs fact.ObserverSet,
+	obs fact.Observer,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	s := &commandScope{
-		name:      c.name,
-		observers: obs,
-		command:   env,
+		name:     c.name,
+		observer: obs,
+		command:  env,
 	}
 
 	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {

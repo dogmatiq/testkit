@@ -11,13 +11,13 @@ import (
 
 // eventScope is an implementation of dogma.ProcessEventScope.
 type eventScope struct {
-	id        string
-	name      string
-	observers fact.ObserverSet
-	root      dogma.ProcessRoot
-	exists    bool
-	event     *envelope.Envelope
-	children  []*envelope.Envelope
+	id       string
+	name     string
+	observer fact.Observer
+	root     dogma.ProcessRoot
+	exists   bool
+	event    *envelope.Envelope
+	children []*envelope.Envelope
 }
 
 func (s *eventScope) InstanceID() string {
@@ -31,7 +31,7 @@ func (s *eventScope) Begin() bool {
 
 	s.exists = true
 
-	s.observers.Notify(fact.ProcessInstanceBegun{
+	s.observer.Notify(fact.ProcessInstanceBegun{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -48,7 +48,7 @@ func (s *eventScope) End() {
 
 	s.exists = false
 
-	s.observers.Notify(fact.ProcessInstanceEnded{
+	s.observer.Notify(fact.ProcessInstanceEnded{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -72,7 +72,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 	env := s.event.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
-	s.observers.Notify(fact.CommandExecutedByProcess{
+	s.observer.Notify(fact.CommandExecutedByProcess{
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
@@ -89,7 +89,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	env := s.event.NewChild(m, message.TimeoutRole, t)
 	s.children = append(s.children, env)
 
-	s.observers.Notify(fact.TimeoutScheduledByProcess{
+	s.observer.Notify(fact.TimeoutScheduledByProcess{
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
@@ -99,7 +99,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 }
 
 func (s *eventScope) Log(f string, v ...interface{}) {
-	s.observers.Notify(fact.MessageLoggedByProcess{
+	s.observer.Notify(fact.MessageLoggedByProcess{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,

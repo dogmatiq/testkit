@@ -11,13 +11,13 @@ import (
 
 // commandScope is an implementation of dogma.AggregateCommandScope.
 type commandScope struct {
-	id        string
-	name      string
-	observers fact.ObserverSet
-	root      dogma.AggregateRoot
-	exists    bool
-	command   *envelope.Envelope
-	children  []*envelope.Envelope
+	id       string
+	name     string
+	observer fact.Observer
+	root     dogma.AggregateRoot
+	exists   bool
+	command  *envelope.Envelope
+	children []*envelope.Envelope
 }
 
 func (s *commandScope) InstanceID() string {
@@ -31,7 +31,7 @@ func (s *commandScope) Create() bool {
 
 	s.exists = true
 
-	s.observers.Notify(fact.AggregateInstanceCreated{
+	s.observer.Notify(fact.AggregateInstanceCreated{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -48,7 +48,7 @@ func (s *commandScope) Destroy() {
 
 	s.exists = false
 
-	s.observers.Notify(fact.AggregateInstanceDestroyed{
+	s.observer.Notify(fact.AggregateInstanceDestroyed{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -74,7 +74,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	env := s.command.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
-	s.observers.Notify(fact.EventRecordedByAggregate{
+	s.observer.Notify(fact.EventRecordedByAggregate{
 		HandlerName:   s.name,
 		InstanceID:    s.id,
 		Root:          s.root,
@@ -84,7 +84,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 }
 
 func (s *commandScope) Log(f string, v ...interface{}) {
-	s.observers.Notify(fact.MessageLoggedByAggregate{
+	s.observer.Notify(fact.MessageLoggedByAggregate{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,

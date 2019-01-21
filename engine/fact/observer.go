@@ -1,16 +1,27 @@
 package fact
 
-// Observer is a function is called when a fact is recorded.
-type Observer func(Fact)
+// Observer is an interface that is notified when facts are recorded.
+type Observer interface {
+	// Notify the observer of a fact.
+	Notify(Fact)
+}
 
-// ObserverSet is a collection of observers that can be notified as a group.
-type ObserverSet []Observer
+// ObserverGroup is a collection of observers that can be notified as a group.
+type ObserverGroup []Observer
 
-// Notify notifies all of the observers in the set of each of the given facts.
-func (s ObserverSet) Notify(facts ...Fact) {
-	for _, f := range facts {
-		for _, o := range s {
-			o(f)
-		}
+// Notify notifies all of the observers in the set of each of the given fact.
+func (s ObserverGroup) Notify(f Fact) {
+	for _, o := range s {
+		o.Notify(f)
 	}
+}
+
+// Buffer is an Observer that buffers facts in-memory.
+type Buffer struct {
+	Facts []Fact
+}
+
+// Notify appends f to b.Facts.
+func (b *Buffer) Notify(f Fact) {
+	b.Facts = append(b.Facts, f)
 }
