@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
@@ -12,13 +11,13 @@ import (
 
 // eventScope is an implementation of dogma.ProcessEventScope.
 type eventScope struct {
-	id       string
-	name     string
-	parent   controller.Scope
-	root     dogma.ProcessRoot
-	exists   bool
-	event    *envelope.Envelope
-	children []*envelope.Envelope
+	id        string
+	name      string
+	observers fact.ObserverSet
+	root      dogma.ProcessRoot
+	exists    bool
+	event     *envelope.Envelope
+	children  []*envelope.Envelope
 }
 
 func (s *eventScope) InstanceID() string {
@@ -32,7 +31,7 @@ func (s *eventScope) Begin() bool {
 
 	s.exists = true
 
-	s.parent.RecordFacts(fact.ProcessInstanceBegun{
+	s.observers.Notify(fact.ProcessInstanceBegun{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -49,7 +48,7 @@ func (s *eventScope) End() {
 
 	s.exists = false
 
-	s.parent.RecordFacts(fact.ProcessInstanceEnded{
+	s.observers.Notify(fact.ProcessInstanceEnded{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -73,7 +72,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 	env := s.event.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
-	s.parent.RecordFacts(fact.CommandExecutedByProcess{
+	s.observers.Notify(fact.CommandExecutedByProcess{
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
@@ -90,7 +89,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	env := s.event.NewChild(m, message.TimeoutRole, t)
 	s.children = append(s.children, env)
 
-	s.parent.RecordFacts(fact.TimeoutScheduledByProcess{
+	s.observers.Notify(fact.TimeoutScheduledByProcess{
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
@@ -100,7 +99,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 }
 
 func (s *eventScope) Log(f string, v ...interface{}) {
-	s.parent.RecordFacts(fact.MessageLoggedByProcess{
+	s.observers.Notify(fact.MessageLoggedByProcess{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,

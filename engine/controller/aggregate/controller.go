@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
@@ -40,9 +39,11 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelope.Envelope, error) {
-	env := cs.Envelope()
-
+func (c *Controller) Handle(
+	ctx context.Context,
+	obs fact.ObserverSet,
+	env *envelope.Envelope,
+) ([]*envelope.Envelope, error) {
 	id := c.handler.RouteCommandToInstance(env.Message)
 	if id == "" {
 		panic(handler.EmptyInstanceIDError{
@@ -54,14 +55,14 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 	r, exists := c.instances[id]
 
 	if exists {
-		cs.RecordFacts(fact.AggregateInstanceLoaded{
+		obs.Notify(fact.AggregateInstanceLoaded{
 			HandlerName: c.name,
 			InstanceID:  id,
 			Root:        r,
 			Envelope:    env,
 		})
 	} else {
-		cs.RecordFacts(fact.AggregateInstanceNotFound{
+		obs.Notify(fact.AggregateInstanceNotFound{
 			HandlerName: c.name,
 			InstanceID:  id,
 			Envelope:    env,
@@ -78,12 +79,12 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 	}
 
 	s := &commandScope{
-		id:      id,
-		name:    c.name,
-		parent:  cs,
-		root:    r,
-		exists:  exists,
-		command: env,
+		id:        id,
+		name:      c.name,
+		observers: obs,
+		root:      r,
+		exists:    exists,
+		command:   env,
 	}
 
 	c.handler.HandleCommand(s, env.Message)

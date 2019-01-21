@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
@@ -16,7 +17,11 @@ type Controller interface {
 	Type() handler.Type
 
 	// Handle handles a message.
-	Handle(ctx context.Context, s Scope) ([]*envelope.Envelope, error)
+	Handle(
+		ctx context.Context,
+		obs fact.ObserverSet,
+		env *envelope.Envelope,
+	) ([]*envelope.Envelope, error)
 
 	// Reset clears the state of the controller.
 	Reset()

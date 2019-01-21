@@ -122,11 +122,6 @@ func (e *Engine) dispatch(
 		env := queue[0]
 		queue = queue[1:]
 
-		s := &scope{
-			env:       env,
-			observers: do.observers,
-		}
-
 		for _, c := range e.routes[env.Type] {
 			n := c.Name()
 			t := c.Type()
@@ -151,7 +146,7 @@ func (e *Engine) dispatch(
 				},
 			)
 
-			envs, herr := c.Handle(ctx, s)
+			envs, herr := c.Handle(ctx, do.observers, env)
 
 			if herr != nil {
 				err = multierr.Append(err, herr)

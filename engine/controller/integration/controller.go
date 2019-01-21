@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
@@ -38,13 +38,15 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelope.Envelope, error) {
-	env := cs.Envelope()
-
+func (c *Controller) Handle(
+	ctx context.Context,
+	obs fact.ObserverSet,
+	env *envelope.Envelope,
+) ([]*envelope.Envelope, error) {
 	s := &commandScope{
-		name:    c.name,
-		parent:  cs,
-		command: env,
+		name:      c.name,
+		observers: obs,
+		command:   env,
 	}
 
 	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {

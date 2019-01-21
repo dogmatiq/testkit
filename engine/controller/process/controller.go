@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
@@ -40,16 +39,18 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Handle handles a message.
-func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelope.Envelope, error) {
-	env := cs.Envelope()
-
+func (c *Controller) Handle(
+	ctx context.Context,
+	obs fact.ObserverSet,
+	env *envelope.Envelope,
+) ([]*envelope.Envelope, error) {
 	id, ok, err := c.handler.RouteEventToInstance(ctx, env.Message)
 	if err != nil {
 		return nil, err
 	}
 
 	if !ok {
-		cs.RecordFacts(fact.ProcessEventIgnored{
+		obs.Notify(fact.ProcessEventIgnored{
 			HandlerName: c.name,
 			Envelope:    env,
 		})
@@ -67,14 +68,14 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 	r, exists := c.instances[id]
 
 	if exists {
-		cs.RecordFacts(fact.ProcessInstanceLoaded{
+		obs.Notify(fact.ProcessInstanceLoaded{
 			HandlerName: c.name,
 			InstanceID:  id,
 			Root:        r,
 			Envelope:    env,
 		})
 	} else {
-		cs.RecordFacts(fact.ProcessInstanceNotFound{
+		obs.Notify(fact.ProcessInstanceNotFound{
 			HandlerName: c.name,
 			InstanceID:  id,
 			Envelope:    env,
@@ -91,12 +92,12 @@ func (c *Controller) Handle(ctx context.Context, cs controller.Scope) ([]*envelo
 	}
 
 	s := &eventScope{
-		id:     id,
-		name:   c.name,
-		parent: cs,
-		root:   r,
-		exists: exists,
-		event:  env,
+		id:        id,
+		name:      c.name,
+		observers: obs,
+		root:      r,
+		exists:    exists,
+		event:     env,
 	}
 
 	if err := c.handler.HandleEvent(ctx, s, env.Message); err != nil {

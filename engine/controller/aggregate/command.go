@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
@@ -12,13 +11,13 @@ import (
 
 // commandScope is an implementation of dogma.AggregateCommandScope.
 type commandScope struct {
-	id       string
-	name     string
-	parent   controller.Scope
-	root     dogma.AggregateRoot
-	exists   bool
-	command  *envelope.Envelope
-	children []*envelope.Envelope
+	id        string
+	name      string
+	observers fact.ObserverSet
+	root      dogma.AggregateRoot
+	exists    bool
+	command   *envelope.Envelope
+	children  []*envelope.Envelope
 }
 
 func (s *commandScope) InstanceID() string {
@@ -32,7 +31,7 @@ func (s *commandScope) Create() bool {
 
 	s.exists = true
 
-	s.parent.RecordFacts(fact.AggregateInstanceCreated{
+	s.observers.Notify(fact.AggregateInstanceCreated{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -49,7 +48,7 @@ func (s *commandScope) Destroy() {
 
 	s.exists = false
 
-	s.parent.RecordFacts(fact.AggregateInstanceDestroyed{
+	s.observers.Notify(fact.AggregateInstanceDestroyed{
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
@@ -75,7 +74,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	env := s.command.NewChild(m, message.EventRole, time.Time{})
 	s.children = append(s.children, env)
 
-	s.parent.RecordFacts(fact.EventRecordedByAggregate{
+	s.observers.Notify(fact.EventRecordedByAggregate{
 		HandlerName:   s.name,
 		InstanceID:    s.id,
 		Root:          s.root,
@@ -85,7 +84,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 }
 
 func (s *commandScope) Log(f string, v ...interface{}) {
-	s.parent.RecordFacts(fact.MessageLoggedByAggregate{
+	s.observers.Notify(fact.MessageLoggedByAggregate{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,
