@@ -19,6 +19,10 @@ var _ = Describe("type Controller", func() {
 	var (
 		handler    *fixtures.IntegrationMessageHandler
 		controller *Controller
+		command    = envelope.New(
+			fixtures.MessageA1,
+			message.CommandRole,
+		)
 	)
 
 	BeforeEach(func() {
@@ -54,10 +58,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				envelope.New(
-					fixtures.MessageA1,
-					message.CommandRole,
-				),
+				command,
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -78,85 +79,91 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				envelope.New(
-					fixtures.MessageA1,
-					message.CommandRole,
-				),
+				command,
 			)
 
 			Expect(err).To(Equal(expected))
 		})
 
-		It("records a fact when the handler records an event", func() {
-			handler.HandleCommandFunc = func(
-				_ context.Context,
-				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
-			) error {
-				s.RecordEvent(fixtures.MessageB1)
-				return nil
-			}
-
-			buf := &fact.Buffer{}
-			env := envelope.New(
-				fixtures.MessageA1,
-				message.CommandRole,
+		When("the handler records an event", func() {
+			event := command.NewEvent(
+				fixtures.MessageB1,
 			)
 
-			_, err := controller.Handle(
-				context.Background(),
-				buf,
-				env,
-			)
+			BeforeEach(func() {
+				handler.HandleCommandFunc = func(
+					_ context.Context,
+					s dogma.IntegrationCommandScope,
+					_ dogma.Message,
+				) error {
+					s.RecordEvent(fixtures.MessageB1)
+					return nil
+				}
+			})
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(Equal(
-				[]fact.Fact{
+			It("returns the recorded event", func() {
+				events, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(events).To(ConsistOf(event))
+			})
+
+			It("records a fact", func() {
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
 					fact.EventRecordedByIntegration{
 						HandlerName:   "<name>",
-						Envelope:      env,
-						EventEnvelope: env.NewEvent(fixtures.MessageB1),
+						Envelope:      command,
+						EventEnvelope: event,
 					},
-				},
-			))
+				))
+			})
 		})
 
-		It("records a fact when the handler logs a message", func() {
-			handler.HandleCommandFunc = func(
-				_ context.Context,
-				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
-			) error {
-				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return nil
-			}
+		When("the handler logs a message", func() {
+			BeforeEach(func() {
+				handler.HandleCommandFunc = func(
+					_ context.Context,
+					s dogma.IntegrationCommandScope,
+					_ dogma.Message,
+				) error {
+					s.Log("<format>", "<arg-1>", "<arg-2>")
+					return nil
+				}
+			})
 
-			buf := &fact.Buffer{}
-			env := envelope.New(
-				fixtures.MessageA1,
-				message.CommandRole,
-			)
+			It("records a fact", func() {
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
 
-			_, err := controller.Handle(
-				context.Background(),
-				buf,
-				env,
-			)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(Equal(
-				[]fact.Fact{
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
 					fact.MessageLoggedByIntegration{
 						HandlerName: "<name>",
-						Envelope:    env,
+						Envelope:    command,
 						LogFormat:   "<format>",
 						LogArguments: []interface{}{
 							"<arg-1>",
 							"<arg-2>",
 						},
 					},
-				},
-			))
+				))
+			})
 		})
 	})
 })

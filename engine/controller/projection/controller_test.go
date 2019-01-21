@@ -20,6 +20,10 @@ var _ = Describe("type Controller", func() {
 	var (
 		handler    *fixtures.ProjectionMessageHandler
 		controller *Controller
+		event      = envelope.New(
+			fixtures.MessageA1,
+			message.EventRole,
+		)
 	)
 
 	BeforeEach(func() {
@@ -55,10 +59,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				envelope.New(
-					fixtures.MessageA1,
-					message.EventRole,
-				),
+				event,
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -79,51 +80,45 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				envelope.New(
-					fixtures.MessageA1,
-					message.EventRole,
-				),
+				event,
 			)
 
 			Expect(err).To(Equal(expected))
 		})
 
-		It("records a fact when the handler logs a message", func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProjectionEventScope,
-				_ dogma.Message,
-			) error {
-				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return nil
-			}
+		When("the handler logs a message", func() {
+			BeforeEach(func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProjectionEventScope,
+					_ dogma.Message,
+				) error {
+					s.Log("<format>", "<arg-1>", "<arg-2>")
+					return nil
+				}
+			})
 
-			buf := &fact.Buffer{}
-			env := envelope.New(
-				fixtures.MessageA1,
-				message.EventRole,
-			)
+			It("records a fact", func() {
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					event,
+				)
 
-			_, err := controller.Handle(
-				context.Background(),
-				buf,
-				env,
-			)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(Equal(
-				[]fact.Fact{
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
 					fact.MessageLoggedByProjection{
 						HandlerName: "<name>",
-						Envelope:    env,
+						Envelope:    event,
 						LogFormat:   "<format>",
 						LogArguments: []interface{}{
 							"<arg-1>",
 							"<arg-2>",
 						},
 					},
-				},
-			))
+				))
+			})
 		})
 	})
 })
