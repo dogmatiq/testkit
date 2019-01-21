@@ -15,8 +15,6 @@ type Type interface {
 	// String returns a human-readable name for the message type.
 	// Note that this representation may not be globally unique.
 	String() string
-
-	typeTag()
 }
 
 // TypeOf returns the message type of m.
@@ -106,7 +104,4 @@ func (mt *mtype) ReflectType() reflect.Type {
 
 func (mt *mtype) String() string {
 	return string(*mt)
-}
-
-func (*mtype) typeTag() {
 }
