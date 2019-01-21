@@ -41,6 +41,46 @@ func TypeOf(m dogma.Message) Type {
 	return v.(*mtype)
 }
 
+// TypeSet is a collection of distinct message types.
+type TypeSet map[Type]struct{}
+
+// TypesOf returns a type set containing the types of the given messages.
+func TypesOf(messages ...dogma.Message) TypeSet {
+	s := TypeSet{}
+
+	for _, m := range messages {
+		s[TypeOf(m)] = struct{}{}
+	}
+
+	return s
+}
+
+// Has returns true if s contains t.
+func (s TypeSet) Has(t Type) bool {
+	_, ok := s[t]
+	return ok
+}
+
+// Add adds t to s.
+func (s TypeSet) Add(t Type) {
+	s[t] = struct{}{}
+}
+
+// Remove removes t from s.
+func (s TypeSet) Remove(t Type) {
+	delete(s, t)
+}
+
+// AddM adds TypeOf(m) to s.
+func (s TypeSet) AddM(m dogma.Message) {
+	s[TypeOf(m)] = struct{}{}
+}
+
+// RemoveM removes TypeOf(m) from s.
+func (s TypeSet) RemoveM(m dogma.Message) {
+	delete(s, TypeOf(m))
+}
+
 var mtypes, rtypes sync.Map
 
 type mtype string
