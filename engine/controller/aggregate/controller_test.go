@@ -71,6 +71,109 @@ var _ = Describe("type Controller", func() {
 			Expect(called).To(BeTrue())
 		})
 
+		When("the handler returns an empty instance ID", func() {
+			It("panics when the handler routes to an empty instance ID", func() {
+				handler.RouteCommandToInstanceFunc = func(m dogma.Message) string {
+					return ""
+				}
+
+				Expect(func() {
+					controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						command,
+					)
+				}).To(Panic())
+			})
+		})
+
+		When("the instance does not already exist", func() {
+			It("records a fact", func() {
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
+					fact.AggregateInstanceNotFound{
+						HandlerName: "<name>",
+						InstanceID:  "<instance>",
+						Envelope:    command,
+					},
+				))
+			})
+
+			It("panics if New() returns nil", func() {
+				handler.NewFunc = func() dogma.AggregateRoot {
+					return nil
+				}
+
+				Expect(func() {
+					controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						command,
+					)
+				}).To(Panic())
+			})
+
+			When("the handler does not create the instance first", func() {
+				It("panics if the handler access the root", func() {
+					handler.HandleCommandFunc = func(
+						s dogma.AggregateCommandScope,
+						_ dogma.Message,
+					) {
+						s.Root()
+					}
+
+					Expect(func() {
+						controller.Handle(
+							context.Background(),
+							fact.Ignore,
+							command,
+						)
+					}).To(Panic())
+				})
+
+				It("panics if the handler records an event", func() {
+					handler.HandleCommandFunc = func(
+						s dogma.AggregateCommandScope,
+						_ dogma.Message,
+					) {
+						s.RecordEvent(fixtures.MessageB1)
+					}
+
+					Expect(func() {
+						controller.Handle(
+							context.Background(),
+							fact.Ignore,
+							command,
+						)
+					}).To(Panic())
+				})
+
+				It("panics if the handler destroys the instance", func() {
+					handler.HandleCommandFunc = func(
+						s dogma.AggregateCommandScope,
+						_ dogma.Message,
+					) {
+						s.Destroy()
+					}
+
+					Expect(func() {
+						controller.Handle(
+							context.Background(),
+							fact.Ignore,
+							command,
+						)
+					}).To(Panic())
+				})
+			})
+		})
+
 		When("the handler records an event", func() {
 			event := command.NewEvent(
 				fixtures.MessageB1,
