@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/errors"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -32,6 +33,11 @@ func NewController(
 // Name returns the name of the handler that is managed by this controller.
 func (c *Controller) Name() string {
 	return c.name
+}
+
+// Type returns handler.ProcessType.
+func (c *Controller) Type() handler.Type {
+	return handler.ProcessType
 }
 
 // Handle handles a message.

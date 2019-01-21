@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -29,6 +30,11 @@ func NewController(
 // Name returns the name of the handler that is managed by this controller.
 func (c *Controller) Name() string {
 	return c.name
+}
+
+// Type returns handler.ProjectionType.
+func (c *Controller) Type() handler.Type {
+	return handler.ProjectionType
 }
 
 // Handle handles a message.
