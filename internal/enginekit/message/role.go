@@ -21,6 +21,34 @@ func (r Role) MustValidate() {
 	case EventRole:
 	case TimeoutRole:
 	default:
-		panic("invalid role")
+		panic("invalid role: " + r)
+	}
+}
+
+// MustBe panics if r is not one of the given roles.
+func (r Role) MustBe(roles ...Role) {
+	r.MustValidate()
+
+	for _, x := range roles {
+		x.MustValidate()
+
+		if r == x {
+			return
+		}
+	}
+
+	panic("unexpected role: " + r)
+}
+
+// MustNotBe panics if r is one of the given roles.
+func (r Role) MustNotBe(roles ...Role) {
+	r.MustValidate()
+
+	for _, x := range roles {
+		x.MustValidate()
+
+		if r == x {
+			panic("unexpected role: " + r)
+		}
 	}
 }

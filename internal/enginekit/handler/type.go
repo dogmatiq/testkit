@@ -25,6 +25,34 @@ func (t Type) MustValidate() {
 	case IntegrationType:
 	case ProjectionType:
 	default:
-		panic("invalid type")
+		panic("invalid type: " + t)
+	}
+}
+
+// MustBe panics if t is not one of the given types.
+func (t Type) MustBe(types ...Type) {
+	t.MustValidate()
+
+	for _, x := range types {
+		x.MustValidate()
+
+		if t == x {
+			return
+		}
+	}
+
+	panic("unexpected type: " + t)
+}
+
+// MustNotBe panics if t is one of the given types.
+func (t Type) MustNotBe(types ...Type) {
+	t.MustValidate()
+
+	for _, x := range types {
+		x.MustValidate()
+
+		if t == x {
+			panic("unexpected type: " + t)
+		}
 	}
 }

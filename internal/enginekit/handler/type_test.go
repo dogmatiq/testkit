@@ -21,4 +21,28 @@ var _ = Describe("type Type", func() {
 			}).To(Panic())
 		})
 	})
+
+	Describe("func MustBe", func() {
+		It("does not panic when the type is in the given set", func() {
+			AggregateType.MustBe(AggregateType, ProcessType)
+		})
+
+		It("panics when the type is not in the given set", func() {
+			Expect(func() {
+				IntegrationType.MustBe(AggregateType, ProcessType)
+			}).To(Panic())
+		})
+	})
+
+	Describe("func MustNotBe", func() {
+		It("does not panic when the type is not in the given set", func() {
+			IntegrationType.MustNotBe(AggregateType, ProcessType)
+		})
+
+		It("panics when the type is in the given set", func() {
+			Expect(func() {
+				AggregateType.MustNotBe(AggregateType, ProcessType)
+			}).To(Panic())
+		})
+	})
 })

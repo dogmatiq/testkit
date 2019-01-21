@@ -57,7 +57,7 @@ var _ = Describe("type Controller", func() {
 				fact.Ignore,
 				envelope.New(
 					fixtures.MessageA1,
-					message.CommandRole,
+					message.EventRole,
 				),
 			)
 
@@ -79,9 +79,10 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				envelope.New(fixtures.MessageA{
-					Value: "<value>",
-				}, message.CommandRole),
+				envelope.New(
+					fixtures.MessageA1,
+					message.EventRole,
+				),
 			)
 
 			Expect(err).To(Equal(expected))
@@ -100,7 +101,7 @@ var _ = Describe("type Controller", func() {
 			buf := &fact.Buffer{}
 			env := envelope.New(
 				fixtures.MessageA1,
-				message.CommandRole,
+				message.EventRole,
 			)
 
 			_, err := controller.Handle(

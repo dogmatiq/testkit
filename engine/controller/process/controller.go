@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -44,6 +45,8 @@ func (c *Controller) Handle(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
+	env.Role.MustBe(message.EventRole, message.TimeoutRole)
+
 	id, ok, err := c.handler.RouteEventToInstance(ctx, env.Message)
 	if err != nil {
 		return nil, err

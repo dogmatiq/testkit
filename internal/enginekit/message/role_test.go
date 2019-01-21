@@ -20,4 +20,28 @@ var _ = Describe("type Role", func() {
 			}).To(Panic())
 		})
 	})
+
+	Describe("func MustBe", func() {
+		It("does not panic when the role is in the given set", func() {
+			CommandRole.MustBe(CommandRole, EventRole)
+		})
+
+		It("panics when the role is not in the given set", func() {
+			Expect(func() {
+				TimeoutRole.MustBe(CommandRole, EventRole)
+			}).To(Panic())
+		})
+	})
+
+	Describe("func MustNotBe", func() {
+		It("does not panic when the role is not in the given set", func() {
+			TimeoutRole.MustNotBe(CommandRole, EventRole)
+		})
+
+		It("panics when the role is in the given set", func() {
+			Expect(func() {
+				CommandRole.MustNotBe(CommandRole, EventRole)
+			}).To(Panic())
+		})
+	})
 })

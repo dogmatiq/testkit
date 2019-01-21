@@ -28,11 +28,7 @@ type Envelope struct {
 
 // New constructs a new envelope containing the given message.
 func New(m dogma.Message, r message.Role) *Envelope {
-	r.MustValidate()
-
-	if r == message.TimeoutRole {
-		panic("the root message can not be a timeout")
-	}
+	r.MustNotBe(message.TimeoutRole)
 
 	return &Envelope{
 		Message: m,
