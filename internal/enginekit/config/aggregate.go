@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 
 	"github.com/dogmatiq/dogma"
@@ -59,6 +60,11 @@ func NewAggregateConfig(h dogma.AggregateMessageHandler) (*AggregateConfig, erro
 // Name returns the aggregate name.
 func (c *AggregateConfig) Name() string {
 	return c.HandlerName
+}
+
+// HandlerType returns handler.AggregateType.
+func (c *AggregateConfig) HandlerType() handler.Type {
+	return handler.AggregateType
 }
 
 // Accept calls v.VisitAggregateConfig(ctx, c).

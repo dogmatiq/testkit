@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
@@ -58,6 +59,11 @@ func NewProjectionConfig(h dogma.ProjectionMessageHandler) (*ProjectionConfig, e
 // Name returns the projection name.
 func (c *ProjectionConfig) Name() string {
 	return c.HandlerName
+}
+
+// HandlerType returns handler.ProjectionType.
+func (c *ProjectionConfig) HandlerType() handler.Type {
+	return handler.ProjectionType
 }
 
 // Accept calls v.VisitProjectionConfig(ctx, c).

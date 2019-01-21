@@ -3,13 +3,14 @@ package config_test
 import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/internal/enginekit/config"
+	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ Config = &AggregateConfig{}
+var _ HandlerConfig = &AggregateConfig{}
 
 var _ = Describe("type AggregateConfig", func() {
 	Describe("func NewAggregateConfig", func() {
@@ -50,6 +51,12 @@ var _ = Describe("type AggregateConfig", func() {
 			Describe("func Name()", func() {
 				It("returns the handler name", func() {
 					Expect(cfg.Name()).To(Equal("<name>"))
+				})
+			})
+
+			Describe("func HandlerType()", func() {
+				It("returns handler.AggregateType", func() {
+					Expect(cfg.HandlerType()).To(Equal(handlerkit.AggregateType))
 				})
 			})
 		})

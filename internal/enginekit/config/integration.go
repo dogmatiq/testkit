@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
@@ -58,6 +59,11 @@ func NewIntegrationConfig(h dogma.IntegrationMessageHandler) (*IntegrationConfig
 // Name returns the integration name.
 func (c *IntegrationConfig) Name() string {
 	return c.HandlerName
+}
+
+// HandlerType returns handler.IntegrationType.
+func (c *IntegrationConfig) HandlerType() handler.Type {
+	return handler.IntegrationType
 }
 
 // Accept calls v.VisitIntegrationConfig(ctx, c).

@@ -1,6 +1,10 @@
 package config
 
-import "context"
+import (
+	"context"
+
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+)
 
 // Config is an interface for all configuration values.
 type Config interface {
@@ -10,6 +14,14 @@ type Config interface {
 
 	// Accept calls the appropriate method on v for this configuration type.
 	Accept(ctx context.Context, v Visitor) error
+}
+
+// HandlerConfig is an interface for handler configurations.
+type HandlerConfig interface {
+	Config
+
+	// HandleType returns the type of handler that the config applies to.
+	HandlerType() handler.Type
 }
 
 // Visitor is an interface for walking application configurations.

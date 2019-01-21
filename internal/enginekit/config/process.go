@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 )
 
@@ -58,6 +59,11 @@ func NewProcessConfig(h dogma.ProcessMessageHandler) (*ProcessConfig, error) {
 // Name returns the process name.
 func (c *ProcessConfig) Name() string {
 	return c.HandlerName
+}
+
+// HandlerType returns handler.ProcessType.
+func (c *ProcessConfig) HandlerType() handler.Type {
+	return handler.ProcessType
 }
 
 // Accept calls v.VisitProcessConfig(ctx, c).
