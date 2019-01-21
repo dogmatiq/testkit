@@ -26,11 +26,17 @@ func (b *Buffer) Notify(f Fact) {
 	b.Facts = append(b.Facts, f)
 }
 
-// Ignore is an observer that ignores facts.
-var Ignore ignorer
+// Ignore is an observer that ignores fact notifications.
+var Ignore ObserverFunc = func(Fact) {}
 
-type ignorer struct{}
+// ObserverFunc is an adaptor to allow the use of a regular function as an
+// observer.
+//
+// If f is a function with the appropriate signature, ObserverFunc(f) is an
+// Observer that calls f.
+type ObserverFunc func(Fact)
 
-// Notify does nothing.
-func (ignorer) Notify(Fact) {
+// Notify calls fn(f).
+func (fn ObserverFunc) Notify(f Fact) {
+	fn(f)
 }
