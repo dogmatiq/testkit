@@ -2,8 +2,8 @@ package process_test
 
 import (
 	. "github.com/dogmatiq/dogmatest/engine/controller/process"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

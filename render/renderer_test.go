@@ -3,7 +3,7 @@ package render
 import (
 	"io"
 
-	"github.com/dogmatiq/dogmatest/internal/fixtures"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
 	. "github.com/onsi/ginkgo"

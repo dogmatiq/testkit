@@ -4,8 +4,8 @@ import (
 	"time"
 
 	. "github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
-	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

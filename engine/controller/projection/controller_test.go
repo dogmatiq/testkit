@@ -10,8 +10,8 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/internal/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

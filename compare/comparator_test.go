@@ -2,7 +2,7 @@ package compare_test
 
 import (
 	. "github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/internal/fixtures"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
