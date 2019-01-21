@@ -42,8 +42,8 @@ var _ = Describe("type AggregateConfig", func() {
 			It("the message types are in the set", func() {
 				Expect(cfg.CommandTypes).To(Equal(
 					map[message.Type]struct{}{
-						message.TypeOf(fixtures.MessageA{}): struct{}{},
-						message.TypeOf(fixtures.MessageB{}): struct{}{},
+						fixtures.MessageAType: struct{}{},
+						fixtures.MessageBType: struct{}{},
 					},
 				))
 			})

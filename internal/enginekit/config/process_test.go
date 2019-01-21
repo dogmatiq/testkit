@@ -42,8 +42,8 @@ var _ = Describe("type ProcessConfig", func() {
 			It("the message types are in the set", func() {
 				Expect(cfg.EventTypes).To(Equal(
 					map[message.Type]struct{}{
-						message.TypeOf(fixtures.MessageB{}): struct{}{},
-						message.TypeOf(fixtures.MessageA{}): struct{}{},
+						fixtures.MessageAType: struct{}{},
+						fixtures.MessageBType: struct{}{},
 					},
 				))
 			})

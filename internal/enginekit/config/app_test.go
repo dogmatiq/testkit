@@ -77,11 +77,11 @@ var _ = Describe("type AppConfig", func() {
 			It("the routes are present", func() {
 				Expect(cfg.Routes).To(Equal(
 					map[message.Type][]string{
-						message.TypeOf(fixtures.MessageA{}): {"<aggregate>"},
-						message.TypeOf(fixtures.MessageB{}): {"<process>"},
-						message.TypeOf(fixtures.MessageC{}): {"<integration>"},
-						message.TypeOf(fixtures.MessageD{}): {"<projection>"},
-						message.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
+						fixtures.MessageAType: {"<aggregate>"},
+						fixtures.MessageBType: {"<process>"},
+						fixtures.MessageCType: {"<integration>"},
+						fixtures.MessageDType: {"<projection>"},
+						fixtures.MessageEType: {"<process>", "<projection>"},
 					},
 				))
 			})
@@ -89,8 +89,8 @@ var _ = Describe("type AppConfig", func() {
 			It("the command routes are present", func() {
 				Expect(cfg.CommandRoutes).To(Equal(
 					map[message.Type]string{
-						message.TypeOf(fixtures.MessageA{}): "<aggregate>",
-						message.TypeOf(fixtures.MessageC{}): "<integration>",
+						fixtures.MessageAType: "<aggregate>",
+						fixtures.MessageCType: "<integration>",
 					},
 				))
 			})
@@ -98,9 +98,9 @@ var _ = Describe("type AppConfig", func() {
 			It("the event routes are present", func() {
 				Expect(cfg.EventRoutes).To(Equal(
 					map[message.Type][]string{
-						message.TypeOf(fixtures.MessageB{}): {"<process>"},
-						message.TypeOf(fixtures.MessageD{}): {"<projection>"},
-						message.TypeOf(fixtures.MessageE{}): {"<process>", "<projection>"},
+						fixtures.MessageBType: {"<process>"},
+						fixtures.MessageDType: {"<projection>"},
+						fixtures.MessageEType: {"<process>", "<projection>"},
 					},
 				))
 			})
