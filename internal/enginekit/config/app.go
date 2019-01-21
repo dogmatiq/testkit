@@ -195,12 +195,10 @@ func (r *registerer) VisitProcessConfig(_ context.Context, cfg *ProcessConfig) e
 	return r.cfg.registerHandlerConfig(cfg, nil, cfg.EventTypes)
 }
 
-// VisitIntegrationConfig merges cfg with c.
 func (r *registerer) VisitIntegrationConfig(_ context.Context, cfg *IntegrationConfig) error {
 	return r.cfg.registerHandlerConfig(cfg, cfg.CommandTypes, nil)
 }
 
-// VisitProjectionConfig merges cfg with c.
 func (r *registerer) VisitProjectionConfig(_ context.Context, cfg *ProjectionConfig) error {
 	return r.cfg.registerHandlerConfig(cfg, nil, cfg.EventTypes)
 }
