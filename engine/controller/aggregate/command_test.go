@@ -57,22 +57,50 @@ var _ = Describe("type commandScope", func() {
 			})
 		})
 
-		Describe("func RecordEvent", func() {
-			It("panics", func() {
+		Describe("func Create", func() {
+			It("returns true", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.RecordEvent(fixtures.MessageB1)
+					Expect(s.Create()).To(BeTrue())
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 				}
 
-				Expect(func() {
-					controller.Handle(
-						context.Background(),
-						fact.Ignore,
-						command,
-					)
-				}).To(Panic())
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("records a fact", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.Create()
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				}
+
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
+					fact.AggregateInstanceCreated{
+						HandlerName: "<name>",
+						InstanceID:  "<instance>",
+						Root:        &fixtures.AggregateRoot{},
+						Envelope:    command,
+					},
+				))
 			})
 		})
 
@@ -94,6 +122,25 @@ var _ = Describe("type commandScope", func() {
 				}).To(Panic())
 			})
 		})
+
+		Describe("func RecordEvent", func() {
+			It("panics", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.RecordEvent(fixtures.MessageB1)
+				}
+
+				Expect(func() {
+					controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						command,
+					)
+				}).To(Panic())
+			})
+		})
 	})
 
 	When("the instance exists", func() {
@@ -103,7 +150,109 @@ var _ = Describe("type commandScope", func() {
 				_ dogma.Message,
 			) {
 				s.Create()
+				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				envelope.New(
+					fixtures.MessageA2, // use a different message to create the instance
+					message.CommandRole,
+				),
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		Describe("func Root", func() {
+			It("returns the root", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(s.Root()).To(Equal(&fixtures.AggregateRoot{}))
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Describe("func Create", func() {
+			It("returns false", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(s.Create()).To(BeFalse())
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("does not record a fact", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.Create()
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				}
+
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).NotTo(ContainElement(
+					BeAssignableToTypeOf(fact.AggregateInstanceCreated{}),
+				))
+			})
+		})
+
+		Describe("func Destroy", func() {
+			It("records a fact", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when destroying
+					s.Destroy()
+				}
+
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
+					fact.AggregateInstanceDestroyed{
+						HandlerName: "<name>",
+						InstanceID:  "<instance>",
+						Root:        &fixtures.AggregateRoot{},
+						Envelope:    command,
+					},
+				))
+			})
 		})
 
 		Describe("func RecordEvent", func() {
