@@ -142,6 +142,28 @@ var _ = Describe("type commandScope", func() {
 		})
 	})
 
+	Describe("func InstanceID", func() {
+		It("returns the instance ID", func() {
+			called := false
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				called = true
+				Expect(s.InstanceID()).To(Equal("<instance>"))
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				command,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+	})
+
 	Describe("func Log", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
