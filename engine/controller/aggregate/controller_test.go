@@ -119,13 +119,30 @@ var _ = Describe("type Controller", func() {
 					)
 				}).To(Panic())
 			})
+
+			It("panics if the instance is created without recording an event", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.Create()
+				}
+
+				Expect(func() {
+					controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						command,
+					)
+				}).To(Panic())
+			})
 		})
 
 		When("the instance exists", func() {
 			BeforeEach(func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
-					m dogma.Message,
+					_ dogma.Message,
 				) {
 					s.Create()
 					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
@@ -173,6 +190,23 @@ var _ = Describe("type Controller", func() {
 					fact.Ignore,
 					command,
 				)
+			})
+
+			It("panics if the instance is destroyed without recording an event", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.Destroy()
+				}
+
+				Expect(func() {
+					controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						command,
+					)
+				}).To(Panic())
 			})
 		})
 	})

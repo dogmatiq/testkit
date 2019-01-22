@@ -92,6 +92,14 @@ func (c *Controller) Handle(
 
 	c.handler.HandleCommand(s, env.Message)
 
+	if (s.created || s.destroyed) && len(s.children) == 0 {
+		panic(handler.EventNotRecordedError{
+			HandlerName:  c.name,
+			InstanceID:   id,
+			WasDestroyed: s.destroyed,
+		})
+	}
+
 	if s.exists {
 		if c.instances == nil {
 			c.instances = map[string]dogma.AggregateRoot{}

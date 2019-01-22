@@ -8,13 +8,15 @@ import (
 
 // commandScope is an implementation of dogma.AggregateCommandScope.
 type commandScope struct {
-	id       string
-	name     string
-	observer fact.Observer
-	root     dogma.AggregateRoot
-	exists   bool
-	command  *envelope.Envelope
-	children []*envelope.Envelope
+	id        string
+	name      string
+	observer  fact.Observer
+	root      dogma.AggregateRoot
+	exists    bool
+	created   bool // true if Create() returned true at least once
+	destroyed bool // true if Destroy() returned true at least once
+	command   *envelope.Envelope
+	children  []*envelope.Envelope
 }
 
 func (s *commandScope) InstanceID() string {
@@ -27,6 +29,7 @@ func (s *commandScope) Create() bool {
 	}
 
 	s.exists = true
+	s.created = true
 
 	s.observer.Notify(fact.AggregateInstanceCreated{
 		HandlerName: s.name,
@@ -44,6 +47,7 @@ func (s *commandScope) Destroy() {
 	}
 
 	s.exists = false
+	s.destroyed = true
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
 		HandlerName: s.name,
