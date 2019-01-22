@@ -190,7 +190,25 @@ var _ = Describe("type Controller", func() {
 			})
 		})
 
-		XIt("propagates routing errors", func() {
+		It("propagates routing errors", func() {
+			expected := errors.New("<error>")
+
+			handler.RouteEventToInstanceFunc = func(
+				_ context.Context,
+				_ dogma.Message,
+			) (string, bool, error) {
+				// note, we return a valid id and true here to verify that the error is
+				// checked first.
+				return "<instance>", true, expected
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				event,
+			)
+
+			Expect(err).To(Equal(expected))
 		})
 
 		It("panics when the handler routes to an empty instance ID", func() {
