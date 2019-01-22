@@ -35,3 +35,35 @@ var _ = Describe("type NilRootError", func() {
 		})
 	})
 })
+
+var _ = Describe("type EventNotRecordedError", func() {
+	Describe("func Error", func() {
+		When("the instance was created", func() {
+			It("returns a meaningful error description", func() {
+				err := EventNotRecordedError{
+					HandlerName:  "<name>",
+					InstanceID:   "<instance>",
+					WasDestroyed: false,
+				}
+
+				Expect(err.Error()).To(Equal(
+					"the '<name>' aggregate message handler created the '<instance>' instance without recording an event",
+				))
+			})
+		})
+
+		When("the instance was destroyed", func() {
+			It("returns a meaningful error description", func() {
+				err := EventNotRecordedError{
+					HandlerName:  "<name>",
+					InstanceID:   "<instance>",
+					WasDestroyed: true,
+				}
+
+				Expect(err.Error()).To(Equal(
+					"the '<name>' aggregate message handler destroyed the '<instance>' instance without recording an event",
+				))
+			})
+		})
+	})
+})

@@ -31,3 +31,26 @@ func (e NilRootError) Error() string {
 		e.HandlerType,
 	)
 }
+
+// EventNotRecordedError indicates that an aggregate instance was created
+// or destroyed without recording an event.
+type EventNotRecordedError struct {
+	HandlerName  string
+	InstanceID   string
+	WasDestroyed bool
+}
+
+func (e EventNotRecordedError) Error() string {
+	s := "created"
+
+	if e.WasDestroyed {
+		s = "destroyed"
+	}
+
+	return fmt.Sprintf(
+		"the '%s' aggregate message handler %s the '%s' instance without recording an event",
+		e.HandlerName,
+		s,
+		e.InstanceID,
+	)
+}
