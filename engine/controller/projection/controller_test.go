@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
-
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/projection"
+	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -84,41 +83,6 @@ var _ = Describe("type Controller", func() {
 			)
 
 			Expect(err).To(Equal(expected))
-		})
-
-		When("the handler logs a message", func() {
-			BeforeEach(func() {
-				handler.HandleEventFunc = func(
-					_ context.Context,
-					s dogma.ProjectionEventScope,
-					_ dogma.Message,
-				) error {
-					s.Log("<format>", "<arg-1>", "<arg-2>")
-					return nil
-				}
-			})
-
-			It("records a fact", func() {
-				buf := &fact.Buffer{}
-				_, err := controller.Handle(
-					context.Background(),
-					buf,
-					event,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
-					fact.MessageLoggedByProjection{
-						HandlerName: "<name>",
-						Envelope:    event,
-						LogFormat:   "<format>",
-						LogArguments: []interface{}{
-							"<arg-1>",
-							"<arg-2>",
-						},
-					},
-				))
-			})
 		})
 	})
 
