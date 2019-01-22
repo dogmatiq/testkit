@@ -206,7 +206,7 @@ var _ = Describe("type Controller", func() {
 
 			It("does not call New()", func() {
 				handler.NewFunc = func() dogma.AggregateRoot {
-					Fail("expected call to New()")
+					Fail("unexpected call to New()")
 					return nil
 				}
 

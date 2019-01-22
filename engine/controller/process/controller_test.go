@@ -132,10 +132,49 @@ var _ = Describe("type Controller", func() {
 			})
 
 			When("the event is not routed to an instance", func() {
-				XIt("does not forward the message to the handler", func() {
+				BeforeEach(func() {
+					handler.RouteEventToInstanceFunc = func(
+						_ context.Context,
+						_ dogma.Message,
+					) (string, bool, error) {
+						return "", false, nil
+					}
 				})
 
-				XIt("records a fact", func() {
+				It("does not forward the message to the handler", func() {
+					handler.HandleEventFunc = func(
+						context.Context,
+						dogma.ProcessEventScope,
+						dogma.Message,
+					) error {
+						Fail("unexpected call to HandleEvent()")
+						return nil
+					}
+
+					_, err := controller.Handle(
+						context.Background(),
+						fact.Ignore,
+						event,
+					)
+
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+
+				It("records a fact", func() {
+					buf := &fact.Buffer{}
+					_, err := controller.Handle(
+						context.Background(),
+						buf,
+						event,
+					)
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(buf.Facts).To(ContainElement(
+						fact.ProcessEventIgnored{
+							HandlerName: "<name>",
+							Envelope:    event,
+						},
+					))
 				})
 			})
 		})
@@ -249,7 +288,7 @@ var _ = Describe("type Controller", func() {
 
 			It("does not call New()", func() {
 				handler.NewFunc = func() dogma.ProcessRoot {
-					Fail("expected call to New()")
+					Fail("unexpected call to New()")
 					return nil
 				}
 
