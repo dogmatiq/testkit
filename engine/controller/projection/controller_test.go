@@ -48,10 +48,10 @@ var _ = Describe("type Controller", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProjectionEventScope,
-				hm dogma.Message,
+				m dogma.Message,
 			) error {
 				called = true
-				Expect(hm).To(Equal(fixtures.MessageA1))
+				Expect(m).To(Equal(fixtures.MessageA1))
 				return nil
 			}
 

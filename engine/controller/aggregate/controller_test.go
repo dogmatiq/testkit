@@ -55,10 +55,10 @@ var _ = Describe("type Controller", func() {
 			called := false
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateCommandScope,
-				hm dogma.Message,
+				m dogma.Message,
 			) {
 				called = true
-				Expect(hm).To(Equal(fixtures.MessageA1))
+				Expect(m).To(Equal(fixtures.MessageA1))
 			}
 
 			_, err := controller.Handle(
