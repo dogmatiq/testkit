@@ -68,7 +68,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 		panic("can not execute command against non-existent instance")
 	}
 
-	env := s.event.NewEvent(m)
+	env := s.event.NewCommand(m)
 	s.children = append(s.children, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{

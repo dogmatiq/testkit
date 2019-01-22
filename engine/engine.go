@@ -121,6 +121,8 @@ func (e *Engine) dispatch(
 		env := queue[0]
 		queue = queue[1:]
 
+		// TODO(jmalloc): validate env.Role
+
 		for _, c := range e.routes[env.Type] {
 			n := c.Name()
 			t := c.Type()

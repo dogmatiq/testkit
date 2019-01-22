@@ -98,20 +98,18 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		When("the handler returns an empty instance ID", func() {
-			It("panics when the handler routes to an empty instance ID", func() {
-				handler.RouteCommandToInstanceFunc = func(m dogma.Message) string {
-					return ""
-				}
+		It("panics when the handler routes to an empty instance ID", func() {
+			handler.RouteCommandToInstanceFunc = func(dogma.Message) string {
+				return ""
+			}
 
-				Expect(func() {
-					controller.Handle(
-						context.Background(),
-						fact.Ignore,
-						command,
-					)
-				}).To(Panic())
-			})
+			Expect(func() {
+				controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+			}).To(Panic())
 		})
 
 		When("the instance does not exist", func() {
