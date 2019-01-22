@@ -87,7 +87,7 @@ var _ = Describe("type Controller", func() {
 			})
 		})
 
-		When("the instance does not already exist", func() {
+		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
 				_, err := controller.Handle(
@@ -119,6 +119,97 @@ var _ = Describe("type Controller", func() {
 					)
 				}).To(Panic())
 			})
+		})
+
+		When("the instance exists", func() {
+			BeforeEach(func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					m dogma.Message,
+				) {
+					s.Create()
+					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					envelope.New(
+						fixtures.MessageA2, // use a different message to create the instance
+						message.CommandRole,
+					),
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("records a fact", func() {
+				buf := &fact.Buffer{}
+				_, err := controller.Handle(
+					context.Background(),
+					buf,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts).To(ContainElement(
+					fact.AggregateInstanceLoaded{
+						HandlerName: "<name>",
+						InstanceID:  "<instance>",
+						Root:        &fixtures.AggregateRoot{},
+						Envelope:    command,
+					},
+				))
+			})
+
+			It("does not call New()", func() {
+				handler.NewFunc = func() dogma.AggregateRoot {
+					Fail("expected call to New()")
+					return nil
+				}
+
+				controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					command,
+				)
+			})
+		})
+	})
+
+	Describe("func Reset()", func() {
+		BeforeEach(func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				m dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				command,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("removes all instances", func() {
+			controller.Reset()
+
+			buf := &fact.Buffer{}
+			_, err := controller.Handle(
+				context.Background(),
+				buf,
+				command,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buf.Facts).NotTo(ContainElement(
+				BeAssignableToTypeOf(fact.AggregateInstanceLoaded{}),
+			))
 		})
 	})
 })
