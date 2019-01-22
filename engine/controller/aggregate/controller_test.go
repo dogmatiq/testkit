@@ -71,6 +71,33 @@ var _ = Describe("type Controller", func() {
 			Expect(called).To(BeTrue())
 		})
 
+		It("returns the recorded events", func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(fixtures.MessageB1)
+				s.RecordEvent(fixtures.MessageB2)
+			}
+
+			events, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				command,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(events).To(ConsistOf(
+				command.NewEvent(
+					fixtures.MessageB1,
+				),
+				command.NewEvent(
+					fixtures.MessageB2,
+				),
+			))
+		})
+
 		When("the handler returns an empty instance ID", func() {
 			It("panics when the handler routes to an empty instance ID", func() {
 				handler.RouteCommandToInstanceFunc = func(m dogma.Message) string {
