@@ -16,7 +16,7 @@ type commandScope struct {
 	created   bool // true if Create() returned true at least once
 	destroyed bool // true if Destroy() returned true at least once
 	command   *envelope.Envelope
-	children  []*envelope.Envelope
+	events    []*envelope.Envelope
 }
 
 func (s *commandScope) InstanceID() string {
@@ -73,7 +73,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	s.root.ApplyEvent(m)
 
 	env := s.command.NewEvent(m)
-	s.children = append(s.children, env)
+	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
 		HandlerName:   s.name,

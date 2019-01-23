@@ -12,12 +12,12 @@ type commandScope struct {
 	name     string
 	observer fact.Observer
 	command  *envelope.Envelope
-	children []*envelope.Envelope
+	events   []*envelope.Envelope
 }
 
 func (s *commandScope) RecordEvent(m dogma.Message) {
 	env := s.command.NewEvent(m)
-	s.children = append(s.children, env)
+	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
 		HandlerName:   s.name,

@@ -92,7 +92,7 @@ func (c *Controller) Handle(
 
 	c.handler.HandleCommand(s, env.Message)
 
-	if (s.created || s.destroyed) && len(s.children) == 0 {
+	if (s.created || s.destroyed) && len(s.events) == 0 {
 		panic(handler.EventNotRecordedError{
 			HandlerName:  c.name,
 			InstanceID:   id,
@@ -109,7 +109,7 @@ func (c *Controller) Handle(
 		delete(c.instances, id)
 	}
 
-	return s.children, nil
+	return s.events, nil
 }
 
 // Reset clears the state of the controller.

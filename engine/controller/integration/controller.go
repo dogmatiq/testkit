@@ -56,7 +56,7 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	return s.children, nil
+	return s.events, nil
 }
 
 // Reset clears the state of the controller.
