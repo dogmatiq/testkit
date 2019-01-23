@@ -129,47 +129,58 @@ func (e *Engine) dispatch(
 		env.Role.MustBe(r)
 
 		for _, c := range e.routes[env.Type] {
-			n := c.Name()
-			t := c.Type()
-
-			if !do.enabledHandlers[t] {
-				do.observers.Notify(
-					fact.MessageHandlingSkipped{
-						HandlerName: n,
-						HandlerType: c.Type(),
-						Envelope:    env,
-					},
-				)
-
-				continue
-			}
-
-			do.observers.Notify(
-				fact.MessageHandlingBegun{
-					HandlerName: n,
-					HandlerType: t,
-					Envelope:    env,
-				},
-			)
-
-			_, envs, herr := c.Handle(ctx, do.observers, env)
-
-			if herr != nil {
-				err = multierr.Append(err, herr)
-			} else {
-				queue = append(queue, envs...)
-			}
-
-			do.observers.Notify(
-				fact.MessageHandlingCompleted{
-					HandlerName: n,
-					HandlerType: t,
-					Envelope:    env,
-					Error:       herr,
-				},
-			)
+			envs, herr := e.handle(ctx, do, env, c)
+			queue = append(queue, envs...)
+			err = multierr.Append(err, herr)
 		}
 	}
 
 	return err
+}
+
+func (e *Engine) handle(
+	ctx context.Context,
+	do *dispatchOptions,
+	env *envelope.Envelope,
+	c controller.Controller,
+) ([]*envelope.Envelope, error) {
+	n := c.Name()
+	t := c.Type()
+
+	if !do.enabledHandlers[t] {
+		do.observers.Notify(
+			fact.MessageHandlingSkipped{
+				HandlerName: n,
+				HandlerType: c.Type(),
+				Envelope:    env,
+			},
+		)
+
+		return nil, nil
+	}
+
+	do.observers.Notify(
+		fact.MessageHandlingBegun{
+			HandlerName: n,
+			HandlerType: t,
+			Envelope:    env,
+		},
+	)
+
+	_, envs, err := c.Handle(ctx, do.observers, env)
+
+	do.observers.Notify(
+		fact.MessageHandlingCompleted{
+			HandlerName: n,
+			HandlerType: t,
+			Envelope:    env,
+			Error:       err,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return envs, nil
 }
