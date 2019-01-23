@@ -2,6 +2,7 @@ package aggregate
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -39,12 +40,21 @@ func (c *Controller) Type() handler.Type {
 	return handler.AggregateType
 }
 
+// Tick does nothing.
+func (c *Controller) Tick(ctx context.Context, now time.Time) (*time.Time, error) {
+	return nil, nil
+}
+
 // Handle handles a message.
 func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
-) ([]*envelope.Envelope, error) {
+) (
+	*time.Time,
+	[]*envelope.Envelope,
+	error,
+) {
 	env.Role.MustBe(message.CommandRole)
 
 	id := c.handler.RouteCommandToInstance(env.Message)
@@ -109,7 +119,7 @@ func (c *Controller) Handle(
 		delete(c.instances, id)
 	}
 
-	return s.events, nil
+	return nil, s.events, nil
 }
 
 // Reset clears the state of the controller.

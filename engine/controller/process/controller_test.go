@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dogmatiq/dogmatest/engine/controller"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -15,6 +17,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
@@ -69,7 +73,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -90,7 +94,7 @@ var _ = Describe("type Controller", func() {
 					return expected
 				}
 
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -110,7 +114,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				commands, err := controller.Handle(
+				_, commands, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -137,7 +141,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				commands, err := controller.Handle(
+				_, commands, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -167,7 +171,7 @@ var _ = Describe("type Controller", func() {
 						return nil
 					}
 
-					_, err := controller.Handle(
+					_, _, err := controller.Handle(
 						context.Background(),
 						fact.Ignore,
 						event,
@@ -178,7 +182,7 @@ var _ = Describe("type Controller", func() {
 
 				It("records a fact", func() {
 					buf := &fact.Buffer{}
-					_, err := controller.Handle(
+					_, _, err := controller.Handle(
 						context.Background(),
 						buf,
 						event,
@@ -218,7 +222,7 @@ var _ = Describe("type Controller", func() {
 				return "<instance>", true, expected
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -247,7 +251,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -289,7 +293,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					envelope.New(
@@ -303,7 +307,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -346,7 +350,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -359,7 +363,7 @@ var _ = Describe("type Controller", func() {
 			controller.Reset()
 
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				buf,
 				event,

@@ -152,7 +152,7 @@ func (e *Engine) dispatch(
 				},
 			)
 
-			envs, herr := c.Handle(ctx, do.observers, env)
+			_, envs, herr := c.Handle(ctx, do.observers, env)
 
 			if herr != nil {
 				err = multierr.Append(err, herr)

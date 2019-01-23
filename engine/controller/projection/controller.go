@@ -2,6 +2,7 @@ package projection
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -38,12 +39,21 @@ func (c *Controller) Type() handler.Type {
 	return handler.ProjectionType
 }
 
+// Tick does nothing.
+func (c *Controller) Tick(ctx context.Context, now time.Time) (*time.Time, error) {
+	return nil, nil
+}
+
 // Handle handles a message.
 func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
-) ([]*envelope.Envelope, error) {
+) (
+	*time.Time,
+	[]*envelope.Envelope,
+	error,
+) {
 	env.Role.MustBe(message.EventRole)
 
 	s := &scope{
@@ -52,7 +62,7 @@ func (c *Controller) Handle(
 		event:    env,
 	}
 
-	return nil, c.handler.HandleEvent(ctx, s, env.Message)
+	return nil, nil, c.handler.HandleEvent(ctx, s, env.Message)
 }
 
 // Reset clears the state of the controller.

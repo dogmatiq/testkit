@@ -46,7 +46,7 @@ var _ = Describe("type commandScope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				buf,
 				command,
@@ -77,7 +77,7 @@ var _ = Describe("type commandScope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				buf,
 				command,

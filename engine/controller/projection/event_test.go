@@ -42,7 +42,7 @@ var _ = Describe("type eventScope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				buf,
 				event,

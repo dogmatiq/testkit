@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dogmatiq/dogmatest/engine/controller"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -14,6 +16,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
@@ -55,7 +59,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -76,7 +80,7 @@ var _ = Describe("type Controller", func() {
 				return expected
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -84,6 +88,18 @@ var _ = Describe("type Controller", func() {
 
 			Expect(err).To(Equal(expected))
 		})
+
+		It("returns a nil next-tick time", func() {
+			t, _, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(t).To(BeNil())
+		})
+
 	})
 
 	Describe("func Reset()", func() {

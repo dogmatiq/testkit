@@ -3,6 +3,8 @@ package aggregate_test
 import (
 	"context"
 
+	"github.com/dogmatiq/dogmatest/engine/controller"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/aggregate"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -13,6 +15,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
@@ -61,7 +65,7 @@ var _ = Describe("type Controller", func() {
 				Expect(m).To(Equal(fixtures.MessageA1))
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				command,
@@ -81,7 +85,7 @@ var _ = Describe("type Controller", func() {
 				s.RecordEvent(fixtures.MessageB2)
 			}
 
-			events, err := controller.Handle(
+			_, events, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				command,
@@ -112,10 +116,21 @@ var _ = Describe("type Controller", func() {
 			}).To(Panic())
 		})
 
+		It("returns a nil next-tick time", func() {
+			t, _, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				command,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(t).To(BeNil())
+		})
+
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -173,7 +188,7 @@ var _ = Describe("type Controller", func() {
 					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 				}
 
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					envelope.New(
@@ -187,7 +202,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, _, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -246,7 +261,7 @@ var _ = Describe("type Controller", func() {
 				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 			}
 
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				command,
@@ -259,7 +274,7 @@ var _ = Describe("type Controller", func() {
 			controller.Reset()
 
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, _, err := controller.Handle(
 				context.Background(),
 				buf,
 				command,
