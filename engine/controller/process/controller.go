@@ -94,7 +94,7 @@ func (c *Controller) Handle(
 		}
 	}
 
-	s := &eventScope{
+	s := &scope{
 		id:       id,
 		name:     c.name,
 		observer: obs,

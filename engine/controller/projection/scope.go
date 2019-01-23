@@ -5,14 +5,14 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/fact"
 )
 
-// eventScope is an implementation of dogma.ProjectionEventScope.
-type eventScope struct {
+// scope is an implementation of dogma.ProjectionEventScope.
+type scope struct {
 	name     string
 	observer fact.Observer
 	event    *envelope.Envelope
 }
 
-func (s *eventScope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
 		HandlerName:  s.name,
 		Envelope:     s.event,

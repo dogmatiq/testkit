@@ -6,8 +6,8 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/fact"
 )
 
-// commandScope is an implementation of dogma.IntegrationCommandScope.
-type commandScope struct {
+// scope is an implementation of dogma.IntegrationCommandScope.
+type scope struct {
 	id       string
 	name     string
 	observer fact.Observer
@@ -15,7 +15,7 @@ type commandScope struct {
 	events   []*envelope.Envelope
 }
 
-func (s *commandScope) RecordEvent(m dogma.Message) {
+func (s *scope) RecordEvent(m dogma.Message) {
 	env := s.command.NewEvent(m)
 	s.events = append(s.events, env)
 
@@ -26,7 +26,7 @@ func (s *commandScope) RecordEvent(m dogma.Message) {
 	})
 }
 
-func (s *commandScope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
 		HandlerName:  s.name,
 		Envelope:     s.command,

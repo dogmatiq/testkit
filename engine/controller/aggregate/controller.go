@@ -81,7 +81,7 @@ func (c *Controller) Handle(
 		}
 	}
 
-	s := &commandScope{
+	s := &scope{
 		id:       id,
 		name:     c.name,
 		observer: obs,

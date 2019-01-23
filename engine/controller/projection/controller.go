@@ -46,7 +46,7 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
-	s := &eventScope{
+	s := &scope{
 		name:     c.name,
 		observer: obs,
 		event:    env,

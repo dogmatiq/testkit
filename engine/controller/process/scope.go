@@ -8,8 +8,8 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/fact"
 )
 
-// eventScope is an implementation of dogma.ProcessEventScope.
-type eventScope struct {
+// scope is an implementation of dogma.ProcessEventScope.
+type scope struct {
 	id       string
 	name     string
 	observer fact.Observer
@@ -20,11 +20,11 @@ type eventScope struct {
 	timeouts []*envelope.Envelope
 }
 
-func (s *eventScope) InstanceID() string {
+func (s *scope) InstanceID() string {
 	return s.id
 }
 
-func (s *eventScope) Begin() bool {
+func (s *scope) Begin() bool {
 	if s.exists {
 		return false
 	}
@@ -41,7 +41,7 @@ func (s *eventScope) Begin() bool {
 	return true
 }
 
-func (s *eventScope) End() {
+func (s *scope) End() {
 	if !s.exists {
 		panic("can not end non-existent instance")
 	}
@@ -56,7 +56,7 @@ func (s *eventScope) End() {
 	})
 }
 
-func (s *eventScope) Root() dogma.ProcessRoot {
+func (s *scope) Root() dogma.ProcessRoot {
 	if !s.exists {
 		panic("can not access process root of non-existent instance")
 	}
@@ -64,7 +64,7 @@ func (s *eventScope) Root() dogma.ProcessRoot {
 	return s.root
 }
 
-func (s *eventScope) ExecuteCommand(m dogma.Message) {
+func (s *scope) ExecuteCommand(m dogma.Message) {
 	if !s.exists {
 		panic("can not execute command against non-existent instance")
 	}
@@ -81,7 +81,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 	})
 }
 
-func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
+func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	if !s.exists {
 		panic("can not schedule timeout against non-existent instance")
 	}
@@ -98,7 +98,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	})
 }
 
-func (s *eventScope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		HandlerName:  s.name,
 		InstanceID:   s.id,
