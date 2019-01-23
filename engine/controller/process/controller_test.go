@@ -99,9 +99,7 @@ var _ = Describe("type Controller", func() {
 				Expect(err).To(Equal(expected))
 			})
 
-			It("returns the executed commands and scheduled timeouts", func() {
-				t := time.Now()
-
+			It("returns the executed commands", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
 					s dogma.ProcessEventScope,
@@ -109,7 +107,6 @@ var _ = Describe("type Controller", func() {
 				) error {
 					s.Begin()
 					s.ExecuteCommand(fixtures.MessageB1)
-					s.ScheduleTimeout(fixtures.MessageB2, t)
 					return nil
 				}
 
@@ -124,11 +121,30 @@ var _ = Describe("type Controller", func() {
 					event.NewCommand(
 						fixtures.MessageB1,
 					),
-					event.NewTimeout(
-						fixtures.MessageB2,
-						t,
-					),
 				))
+			})
+
+			It("does not return scheduled timeouts", func() {
+				t := time.Now()
+
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					s.Begin()
+					s.ScheduleTimeout(fixtures.MessageB2, t)
+					return nil
+				}
+
+				commands, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(commands).To(BeEmpty())
 			})
 
 			When("the event is not routed to an instance", func() {

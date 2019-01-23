@@ -16,7 +16,8 @@ type eventScope struct {
 	root     dogma.ProcessRoot
 	exists   bool
 	event    *envelope.Envelope
-	children []*envelope.Envelope
+	commands []*envelope.Envelope
+	timeouts []*envelope.Envelope
 }
 
 func (s *eventScope) InstanceID() string {
@@ -69,7 +70,7 @@ func (s *eventScope) ExecuteCommand(m dogma.Message) {
 	}
 
 	env := s.event.NewCommand(m)
-	s.children = append(s.children, env)
+	s.commands = append(s.commands, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
 		HandlerName:     s.name,
@@ -86,7 +87,7 @@ func (s *eventScope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	}
 
 	env := s.event.NewTimeout(m, t)
-	s.children = append(s.children, env)
+	s.timeouts = append(s.timeouts, env)
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
 		HandlerName:     s.name,

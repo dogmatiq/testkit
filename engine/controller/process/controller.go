@@ -116,7 +116,7 @@ func (c *Controller) Handle(
 		delete(c.instances, id)
 	}
 
-	return s.children, nil
+	return s.commands, nil
 }
 
 // Reset clears the state of the controller.
