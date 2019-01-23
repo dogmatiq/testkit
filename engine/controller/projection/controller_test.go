@@ -3,6 +3,7 @@ package projection_test
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/dogmatiq/dogmatest/engine/controller"
 
@@ -43,6 +44,14 @@ var _ = Describe("type Controller", func() {
 	Describe("func Type()", func() {
 		It("returns handler.ProjectionType", func() {
 			Expect(controller.Type()).To(Equal(handlerkit.ProjectionType))
+		})
+	})
+
+	Describe("func Tick()", func() {
+		It("does nothing", func() {
+			t, err := controller.Tick(context.Background(), time.Now())
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(t).To(BeNil())
 		})
 	})
 

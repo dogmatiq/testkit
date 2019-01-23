@@ -2,6 +2,7 @@ package aggregate_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogmatest/engine/controller"
 
@@ -51,6 +52,14 @@ var _ = Describe("type Controller", func() {
 	Describe("func Type()", func() {
 		It("returns handler.AggregateType", func() {
 			Expect(controller.Type()).To(Equal(handlerkit.AggregateType))
+		})
+	})
+
+	Describe("func Tick()", func() {
+		It("does nothing", func() {
+			t, err := controller.Tick(context.Background(), time.Now())
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(t).To(BeNil())
 		})
 	})
 
