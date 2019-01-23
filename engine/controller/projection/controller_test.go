@@ -48,10 +48,9 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Tick()", func() {
-		It("does nothing", func() {
-			t, err := controller.Tick(context.Background(), time.Now())
+		It("does not return an error", func() {
+			err := controller.Tick(context.Background(), time.Now())
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(t).To(BeNil())
 		})
 	})
 
@@ -68,7 +67,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -89,7 +88,7 @@ var _ = Describe("type Controller", func() {
 				return expected
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -97,18 +96,6 @@ var _ = Describe("type Controller", func() {
 
 			Expect(err).To(Equal(expected))
 		})
-
-		It("returns a nil next-tick time", func() {
-			t, _, err := controller.Handle(
-				context.Background(),
-				fact.Ignore,
-				event,
-			)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(t).To(BeNil())
-		})
-
 	})
 
 	Describe("func Reset()", func() {

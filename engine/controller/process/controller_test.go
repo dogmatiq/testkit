@@ -73,7 +73,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -94,7 +94,7 @@ var _ = Describe("type Controller", func() {
 					return expected
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -114,7 +114,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, commands, err := controller.Handle(
+				commands, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -141,7 +141,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, commands, err := controller.Handle(
+				commands, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -171,7 +171,7 @@ var _ = Describe("type Controller", func() {
 						return nil
 					}
 
-					_, _, err := controller.Handle(
+					_, err := controller.Handle(
 						context.Background(),
 						fact.Ignore,
 						event,
@@ -182,7 +182,7 @@ var _ = Describe("type Controller", func() {
 
 				It("records a fact", func() {
 					buf := &fact.Buffer{}
-					_, _, err := controller.Handle(
+					_, err := controller.Handle(
 						context.Background(),
 						buf,
 						event,
@@ -222,7 +222,7 @@ var _ = Describe("type Controller", func() {
 				return "<instance>", true, expected
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -251,7 +251,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -293,7 +293,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					envelope.New(
@@ -307,7 +307,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -350,7 +350,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -363,7 +363,7 @@ var _ = Describe("type Controller", func() {
 			controller.Reset()
 
 			buf := &fact.Buffer{}
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				buf,
 				event,

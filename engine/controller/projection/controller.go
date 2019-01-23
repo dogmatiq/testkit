@@ -40,8 +40,8 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Tick does nothing.
-func (c *Controller) Tick(ctx context.Context, now time.Time) (*time.Time, error) {
-	return nil, nil
+func (c *Controller) Tick(ctx context.Context, now time.Time) error {
+	return nil
 }
 
 // Handle handles a message.
@@ -49,11 +49,7 @@ func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
-) (
-	*time.Time,
-	[]*envelope.Envelope,
-	error,
-) {
+) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
 	s := &scope{
@@ -62,7 +58,7 @@ func (c *Controller) Handle(
 		event:    env,
 	}
 
-	return nil, nil, c.handler.HandleEvent(ctx, s, env.Message)
+	return nil, c.handler.HandleEvent(ctx, s, env.Message)
 }
 
 // Reset clears the state of the controller.

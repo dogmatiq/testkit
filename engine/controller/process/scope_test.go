@@ -74,7 +74,7 @@ var _ = Describe("type eventScope", func() {
 					return nil
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -94,7 +94,7 @@ var _ = Describe("type eventScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -187,7 +187,7 @@ var _ = Describe("type eventScope", func() {
 				return nil
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				envelope.New(
@@ -210,7 +210,7 @@ var _ = Describe("type eventScope", func() {
 					return nil
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -231,7 +231,7 @@ var _ = Describe("type eventScope", func() {
 					return nil
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					event,
@@ -251,7 +251,7 @@ var _ = Describe("type eventScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -276,7 +276,7 @@ var _ = Describe("type eventScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -313,7 +313,7 @@ var _ = Describe("type eventScope", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -355,7 +355,7 @@ var _ = Describe("type eventScope", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					event,
@@ -391,7 +391,7 @@ var _ = Describe("type eventScope", func() {
 				return nil
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				event,
@@ -416,7 +416,7 @@ var _ = Describe("type eventScope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				buf,
 				event,

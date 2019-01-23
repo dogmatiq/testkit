@@ -41,8 +41,8 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Tick does nothing.
-func (c *Controller) Tick(ctx context.Context, now time.Time) (*time.Time, error) {
-	return nil, nil
+func (c *Controller) Tick(ctx context.Context, now time.Time) error {
+	return nil
 }
 
 // Handle handles a message.
@@ -50,16 +50,12 @@ func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
-) (
-	*time.Time,
-	[]*envelope.Envelope,
-	error,
-) {
+) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
 	id, ok, err := c.handler.RouteEventToInstance(ctx, env.Message)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if !ok {
@@ -68,7 +64,7 @@ func (c *Controller) Handle(
 			Envelope:    env,
 		})
 
-		return nil, nil, nil
+		return nil, nil
 	}
 
 	if id == "" {
@@ -114,7 +110,7 @@ func (c *Controller) Handle(
 	}
 
 	if err := c.handler.HandleEvent(ctx, s, env.Message); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if s.exists {
@@ -126,7 +122,7 @@ func (c *Controller) Handle(
 		delete(c.instances, id)
 	}
 
-	return nil, s.commands, nil
+	return s.commands, nil
 }
 
 // Reset clears the state of the controller.

@@ -67,7 +67,7 @@ var _ = Describe("type commandScope", func() {
 					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					command,
@@ -86,7 +86,7 @@ var _ = Describe("type commandScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -153,7 +153,7 @@ var _ = Describe("type commandScope", func() {
 				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				envelope.New(
@@ -174,7 +174,7 @@ var _ = Describe("type commandScope", func() {
 					Expect(s.Root()).To(Equal(&fixtures.AggregateRoot{}))
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					command,
@@ -194,7 +194,7 @@ var _ = Describe("type commandScope", func() {
 					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
 				}
 
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
 					command,
@@ -213,7 +213,7 @@ var _ = Describe("type commandScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -237,7 +237,7 @@ var _ = Describe("type commandScope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -269,7 +269,7 @@ var _ = Describe("type commandScope", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, _, err := controller.Handle(
+				_, err := controller.Handle(
 					context.Background(),
 					buf,
 					command,
@@ -302,7 +302,7 @@ var _ = Describe("type commandScope", func() {
 				Expect(s.InstanceID()).To(Equal("<instance>"))
 			}
 
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				command,
@@ -325,7 +325,7 @@ var _ = Describe("type commandScope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, _, err := controller.Handle(
+			_, err := controller.Handle(
 				context.Background(),
 				buf,
 				command,

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
@@ -16,8 +17,9 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	roles  map[message.Type]message.Role
-	routes map[message.Type][]controller.Controller
+	controllers []controller.Controller
+	roles       map[message.Type]message.Role
+	routes      map[message.Type][]controller.Controller
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -53,11 +55,22 @@ func New(
 
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
-	for _, controllers := range e.routes {
-		for _, c := range controllers {
-			c.Reset()
+	for _, c := range e.controllers {
+		c.Reset()
+	}
+}
+
+// Tick performs one "tick" of the engine, using t as the current time.
+//
+// This allows external control of time-based features of the engine.
+func (e *Engine) Tick(ctx context.Context, t time.Time) error {
+	for _, c := range e.controllers {
+		if err := c.Tick(ctx, t); err != nil {
+			return err
 		}
 	}
+
+	return nil
 }
 
 // Dispatch processes a message.
@@ -167,7 +180,7 @@ func (e *Engine) handle(
 		},
 	)
 
-	_, envs, err := c.Handle(ctx, do.observers, env)
+	envs, err := c.Handle(ctx, do.observers, env)
 
 	do.observers.Notify(
 		fact.MessageHandlingCompleted{
