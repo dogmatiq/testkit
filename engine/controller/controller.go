@@ -22,8 +22,6 @@ type Controller interface {
 	// now is the current time, according to the engine, which may not match the
 	// system time.
 	//
-	// The engine must call Tick() at least once before calling Handle().
-	//
 	// nt is the time that this controller next requires Tick() to be called. If it
 	// is non-nil the engine must call Tick() again at that time. This value
 	// replaces any next-tick time returned by Tick() or Handle(), even if it is
