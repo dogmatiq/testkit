@@ -87,7 +87,7 @@ func (c *configurer) registerController(
 	r message.Role,
 	types message.TypeSet,
 ) {
-	c.engine.controllers = append(c.engine.controllers, ctrl)
+	c.engine.controllers[ctrl.Name()] = ctrl
 
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

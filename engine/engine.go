@@ -16,7 +16,7 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	controllers []controller.Controller
+	controllers map[string]controller.Controller
 	roles       map[message.Type]message.Role
 	routes      map[message.Type][]controller.Controller
 }
@@ -27,8 +27,9 @@ func New(
 	options ...Option,
 ) (*Engine, error) {
 	e := &Engine{
-		roles:  map[message.Type]message.Role{},
-		routes: map[message.Type][]controller.Controller{},
+		controllers: map[string]controller.Controller{},
+		roles:       map[message.Type]message.Role{},
+		routes:      map[message.Type][]controller.Controller{},
 	}
 
 	cfgr := &configurer{
@@ -101,8 +102,7 @@ func (e *Engine) tick(
 		queue []*envelope.Envelope
 	)
 
-	for _, c := range e.controllers {
-		n := c.Name()
+	for n, c := range e.controllers {
 		t := c.Type()
 
 		do.observers.Notify(
@@ -197,14 +197,27 @@ func (e *Engine) dispatch(
 		env := queue[0]
 		queue = queue[1:]
 
-		r, ok := e.roles[env.Type]
-		if !ok {
-			continue
+		var controllers []controller.Controller
+
+		if env.Role == message.TimeoutRole {
+			// always dispatch timeouts back to their origin handler
+			controllers = []controller.Controller{
+				e.controllers[env.Origin.HandlerName],
+			}
+		} else {
+			// for all other message types check to see the role matches the expected
+			// role from the configuration, and if so dispatch it to all of the handlers
+			// associated with that type
+			r, ok := e.roles[env.Type]
+			if !ok {
+				continue
+			}
+
+			env.Role.MustBe(r)
+			controllers = e.routes[env.Type]
 		}
 
-		env.Role.MustBe(r)
-
-		for _, c := range e.routes[env.Type] {
+		for _, c := range controllers {
 			envs, cerr := e.handle(ctx, do, env, c)
 			queue = append(queue, envs...)
 			err = multierr.Append(err, cerr)
