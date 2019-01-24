@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
@@ -68,6 +70,7 @@ func EnableHandlerType(t HandlerType, enable bool) DispatchOption {
 
 // dispatchOptions is a container for the options set via DispatchOption values.
 type dispatchOptions struct {
+	now             time.Time
 	observers       fact.ObserverGroup
 	enabledHandlers map[handler.Type]bool
 }
@@ -75,6 +78,7 @@ type dispatchOptions struct {
 // newDispatchOptions returns a new dispatchOptions with the given options.
 func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
 	do := &dispatchOptions{
+		now: time.Now(),
 		enabledHandlers: map[handler.Type]bool{
 			handler.AggregateType:   true,
 			handler.ProcessType:     true,

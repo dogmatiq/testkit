@@ -86,6 +86,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -107,6 +108,7 @@ var _ = Describe("type Controller", func() {
 			events, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -143,6 +145,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 

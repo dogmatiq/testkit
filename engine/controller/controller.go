@@ -34,9 +34,13 @@ type Controller interface {
 	//
 	// It returns the messages produced by the handler that need to be dispatched
 	// by the engine.
+	//
+	// now is the current time, according to the engine, which may not match the
+	// system time.
 	Handle(
 		ctx context.Context,
 		obs fact.Observer,
+		now time.Time,
 		env *envelope.Envelope,
 	) ([]*envelope.Envelope, error)
 

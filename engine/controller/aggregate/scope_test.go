@@ -2,6 +2,7 @@ package aggregate_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/aggregate"
@@ -52,6 +53,7 @@ var _ = Describe("type commandScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -71,6 +73,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					command,
 				)
 
@@ -90,6 +93,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -118,6 +122,7 @@ var _ = Describe("type commandScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -137,6 +142,7 @@ var _ = Describe("type commandScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -157,6 +163,7 @@ var _ = Describe("type commandScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				envelope.New(
 					fixtures.MessageA2, // use a different message to create the instance
 					message.CommandRole,
@@ -178,6 +185,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					command,
 				)
 
@@ -198,6 +206,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					command,
 				)
 
@@ -217,6 +226,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -241,6 +251,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -273,6 +284,7 @@ var _ = Describe("type commandScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -311,6 +323,7 @@ var _ = Describe("type commandScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -334,6 +347,7 @@ var _ = Describe("type commandScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				command,
 			)
 

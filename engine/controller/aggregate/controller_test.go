@@ -92,6 +92,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -112,6 +113,7 @@ var _ = Describe("type Controller", func() {
 			events, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -145,6 +147,7 @@ var _ = Describe("type Controller", func() {
 				controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					command,
 				)
 			}).To(Panic())
@@ -156,6 +159,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -178,6 +182,7 @@ var _ = Describe("type Controller", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -195,6 +200,7 @@ var _ = Describe("type Controller", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -214,6 +220,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					envelope.New(
 						fixtures.MessageA2, // use a different message to create the instance
 						message.CommandRole,
@@ -228,6 +235,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					command,
 				)
 
@@ -251,6 +259,7 @@ var _ = Describe("type Controller", func() {
 				controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					command,
 				)
 			})
@@ -267,6 +276,7 @@ var _ = Describe("type Controller", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						command,
 					)
 				}).To(Panic())
@@ -287,6 +297,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				command,
 			)
 
@@ -300,6 +311,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				command,
 			)
 

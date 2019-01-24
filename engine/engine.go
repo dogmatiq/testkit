@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
@@ -66,7 +65,6 @@ func (e *Engine) Reset() {
 // time that the engine should treat as the current time.
 func (e *Engine) Tick(
 	ctx context.Context,
-	now time.Time,
 	options ...DispatchOption,
 ) error {
 	do, err := newDispatchOptions(options)
@@ -76,16 +74,16 @@ func (e *Engine) Tick(
 
 	do.observers.Notify(
 		fact.EngineTickBegun{
-			Now:             now,
+			Now:             do.now,
 			EnabledHandlers: do.enabledHandlers,
 		},
 	)
 
-	err = e.tick(ctx, do, now)
+	err = e.tick(ctx, do)
 
 	do.observers.Notify(
 		fact.EngineTickCompleted{
-			Now:             now,
+			Now:             do.now,
 			Error:           err,
 			EnabledHandlers: do.enabledHandlers,
 		},
@@ -97,7 +95,6 @@ func (e *Engine) Tick(
 func (e *Engine) tick(
 	ctx context.Context,
 	do *dispatchOptions,
-	now time.Time,
 ) error {
 	var (
 		err   error
@@ -112,11 +109,11 @@ func (e *Engine) tick(
 			fact.ControllerTickBegun{
 				HandlerName: n,
 				HandlerType: t,
-				Now:         now,
+				Now:         do.now,
 			},
 		)
 
-		envs, cerr := c.Tick(ctx, do.observers, now)
+		envs, cerr := c.Tick(ctx, do.observers, do.now)
 		err = multierr.Append(err, cerr)
 		queue = append(queue, envs...)
 
@@ -124,7 +121,7 @@ func (e *Engine) tick(
 			fact.ControllerTickCompleted{
 				HandlerName: n,
 				HandlerType: t,
-				Now:         now,
+				Now:         do.now,
 				Error:       cerr,
 			},
 		)
@@ -246,7 +243,7 @@ func (e *Engine) handle(
 		},
 	)
 
-	envs, err := c.Handle(ctx, do.observers, env)
+	envs, err := c.Handle(ctx, do.observers, do.now, env)
 
 	do.observers.Notify(
 		fact.MessageHandlingCompleted{

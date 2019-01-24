@@ -58,6 +58,7 @@ var _ = Describe("type eventScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						event,
 					)
 				}).To(Panic())
@@ -78,6 +79,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					event,
 				)
 
@@ -98,6 +100,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					event,
 				)
 
@@ -128,6 +131,7 @@ var _ = Describe("type eventScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						event,
 					)
 				}).To(Panic())
@@ -149,6 +153,7 @@ var _ = Describe("type eventScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						event,
 					)
 				}).To(Panic())
@@ -170,6 +175,7 @@ var _ = Describe("type eventScope", func() {
 					controller.Handle(
 						context.Background(),
 						fact.Ignore,
+						time.Now(),
 						event,
 					)
 				}).To(Panic())
@@ -191,6 +197,7 @@ var _ = Describe("type eventScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				envelope.New(
 					fixtures.MessageA2, // use a different message to create the instance
 					message.EventRole,
@@ -214,6 +221,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					event,
 				)
 
@@ -235,6 +243,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
+					time.Now(),
 					event,
 				)
 
@@ -255,6 +264,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					event,
 				)
 
@@ -280,6 +290,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					event,
 				)
 
@@ -317,6 +328,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					event,
 				)
 
@@ -364,6 +376,7 @@ var _ = Describe("type eventScope", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
+					time.Now(),
 					event,
 				)
 
@@ -405,6 +418,7 @@ var _ = Describe("type eventScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
+				time.Now(),
 				event,
 			)
 
@@ -430,6 +444,7 @@ var _ = Describe("type eventScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				event,
 			)
 

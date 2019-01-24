@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/integration"
@@ -54,6 +55,7 @@ var _ = Describe("type commandScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				command,
 			)
 
@@ -85,6 +87,7 @@ var _ = Describe("type commandScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				command,
 			)
 

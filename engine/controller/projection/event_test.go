@@ -2,6 +2,7 @@ package projection_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogmatest/engine/controller/projection"
@@ -45,6 +46,7 @@ var _ = Describe("type eventScope", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
+				time.Now(),
 				event,
 			)
 
