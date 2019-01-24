@@ -68,6 +68,14 @@ func EnableHandlerType(t HandlerType, enable bool) DispatchOption {
 	}
 }
 
+// WithCurrentTime returns a dispatch option that sets the engine's current time.
+func WithCurrentTime(t time.Time) DispatchOption {
+	return func(do *dispatchOptions) error {
+		do.now = t
+		return nil
+	}
+}
+
 // dispatchOptions is a container for the options set via DispatchOption values.
 type dispatchOptions struct {
 	now             time.Time
