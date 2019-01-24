@@ -16,7 +16,7 @@ type scope struct {
 	observer fact.Observer
 	root     dogma.ProcessRoot
 	exists   bool
-	event    *envelope.Envelope
+	env      *envelope.Envelope // event or timeout
 	commands []*envelope.Envelope
 	timeouts []*envelope.Envelope
 }
@@ -36,7 +36,7 @@ func (s *scope) Begin() bool {
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
-		Envelope:    s.event,
+		Envelope:    s.env,
 	})
 
 	return true
@@ -54,7 +54,7 @@ func (s *scope) End() {
 		HandlerName: s.name,
 		InstanceID:  s.id,
 		Root:        s.root,
-		Envelope:    s.event,
+		Envelope:    s.env,
 	})
 }
 
@@ -71,7 +71,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		panic("can not execute command against non-existent instance")
 	}
 
-	env := s.event.NewCommand(
+	env := s.env.NewCommand(
 		m,
 		envelope.Origin{
 			HandlerName: s.name,
@@ -86,7 +86,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
-		Envelope:        s.event,
+		Envelope:        s.env,
 		CommandEnvelope: env,
 	})
 }
@@ -96,7 +96,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		panic("can not schedule timeout against non-existent instance")
 	}
 
-	env := s.event.NewTimeout(
+	env := s.env.NewTimeout(
 		m,
 		t,
 		envelope.Origin{
@@ -112,7 +112,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		HandlerName:     s.name,
 		InstanceID:      s.id,
 		Root:            s.root,
-		Envelope:        s.event,
+		Envelope:        s.env,
 		TimeoutEnvelope: env,
 	})
 }
@@ -122,7 +122,7 @@ func (s *scope) Log(f string, v ...interface{}) {
 		HandlerName:  s.name,
 		InstanceID:   s.id,
 		Root:         s.root,
-		Envelope:     s.event,
+		Envelope:     s.env,
 		LogFormat:    f,
 		LogArguments: v,
 	})
