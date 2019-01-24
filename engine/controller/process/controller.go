@@ -143,43 +143,67 @@ func (c *Controller) route(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {
-	if env.Role == message.TimeoutRole {
-		// ignore any timeout for instances that no longer exist
-		_, ok := c.instances[env.Origin.InstanceID]
-		return env.Origin.InstanceID, ok, nil
+	if env.Role == message.EventRole {
+		return c.routeEvent(ctx, obs, env)
 	}
 
+	return c.routeTimeout(ctx, obs, env)
+}
+
+func (c *Controller) routeEvent(
+	ctx context.Context,
+	obs fact.Observer,
+	env *envelope.Envelope,
+) (string, bool, error) {
 	id, ok, err := c.handler.RouteEventToInstance(ctx, env.Message)
 	if err != nil {
 		return "", false, err
 	}
 
-	if !ok {
-		obs.Notify(fact.ProcessEventIgnored{
-			HandlerName: c.name,
-			Envelope:    env,
-		})
+	if ok {
+		if id == "" {
+			panic(handler.EmptyInstanceIDError{
+				HandlerName: c.name,
+				HandlerType: c.Type(),
+			})
+		}
 
-		return "", false, nil
+		return id, true, nil
 	}
 
-	if id == "" {
-		panic(handler.EmptyInstanceIDError{
-			HandlerName: c.name,
-			HandlerType: c.Type(),
-		})
+	obs.Notify(fact.ProcessEventIgnored{
+		HandlerName: c.name,
+		Envelope:    env,
+	})
+
+	return "", false, nil
+}
+
+func (c *Controller) routeTimeout(
+	ctx context.Context,
+	obs fact.Observer,
+	env *envelope.Envelope,
+) (string, bool, error) {
+	// ignore any timeout for instances that no longer exist
+	if _, ok := c.instances[env.Origin.InstanceID]; ok {
+		return env.Origin.InstanceID, true, nil
 	}
 
-	return id, true, nil
+	obs.Notify(fact.ProcessTimeoutIgnored{
+		HandlerName: c.name,
+		Envelope:    env,
+	})
+
+	return "", false, nil
 }
 
 // handle calls the appropriate method on the handler based on the  message role.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
-	if s.env.Role == message.TimeoutRole {
-		return c.handler.HandleTimeout(ctx, s, s.env.Message)
+	if s.env.Role == message.EventRole {
+		return c.handler.HandleEvent(ctx, s, s.env.Message)
 	}
 
-	return c.handler.HandleEvent(ctx, s, s.env.Message)
+	return c.handler.HandleTimeout(ctx, s, s.env.Message)
 }
 
 // update stores the process root and its pending timeouts.

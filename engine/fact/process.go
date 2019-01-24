@@ -5,7 +5,7 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 )
 
-// ProcessInstanceLoaded indicates that an process message handler has loaded an
+// ProcessInstanceLoaded indicates that a process message handler has loaded an
 // existing instance in order to handle an event or timeout.
 type ProcessInstanceLoaded struct {
 	HandlerName string
@@ -14,14 +14,21 @@ type ProcessInstanceLoaded struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessEventIgnored indicates that an process message handler chose not to
+// ProcessEventIgnored indicates that a process message handler chose not to
 // route an event to any instance.
 type ProcessEventIgnored struct {
 	HandlerName string
 	Envelope    *envelope.Envelope
 }
 
-// ProcessInstanceNotFound indicates that an process message handler was unable
+// ProcessTimeoutIgnored indicates that a process message handler ignored
+// a timeout message because its instance no longer exists.
+type ProcessTimeoutIgnored struct {
+	HandlerName string
+	Envelope    *envelope.Envelope
+}
+
+// ProcessInstanceNotFound indicates that a process message handler was unable
 // to load an existing instance while handling an event or timeout.
 type ProcessInstanceNotFound struct {
 	HandlerName string
@@ -29,7 +36,7 @@ type ProcessInstanceNotFound struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessInstanceBegun indicates that an process message handler began a
+// ProcessInstanceBegun indicates that a process message handler began a
 // process instance while handling an event.
 type ProcessInstanceBegun struct {
 	HandlerName string
@@ -38,7 +45,7 @@ type ProcessInstanceBegun struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessInstanceEnded indicates that an process message handler destroyed
+// ProcessInstanceEnded indicates that a process message handler destroyed
 // a process instance while handling an event or timeout.
 type ProcessInstanceEnded struct {
 	HandlerName string
