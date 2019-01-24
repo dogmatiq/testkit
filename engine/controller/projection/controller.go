@@ -40,8 +40,12 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Tick does nothing.
-func (c *Controller) Tick(ctx context.Context, now time.Time) error {
-	return nil
+func (c *Controller) Tick(
+	context.Context,
+	fact.Observer,
+	time.Time,
+) ([]*envelope.Envelope, error) {
+	return nil, nil
 }
 
 // Handle handles a message.
@@ -61,6 +65,6 @@ func (c *Controller) Handle(
 	return nil, c.handler.HandleEvent(ctx, s, env.Message)
 }
 
-// Reset clears the state of the controller.
+// Reset does nothing.
 func (c *Controller) Reset() {
 }

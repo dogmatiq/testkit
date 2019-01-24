@@ -19,9 +19,16 @@ type Controller interface {
 
 	// Tick instructs the controller to perform an implementation-defined "tick".
 	//
+	// It returns the messages produced by the handler that need to be dispatched
+	// by the engine.
+	//
 	// now is the current time, according to the engine, which may not match the
 	// system time.
-	Tick(ctx context.Context, now time.Time) error
+	Tick(
+		ctx context.Context,
+		obs fact.Observer,
+		now time.Time,
+	) ([]*envelope.Envelope, error)
 
 	// Handle handles a message.
 	//

@@ -48,9 +48,25 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Tick()", func() {
-		It("does not return an error", func() {
-			err := controller.Tick(context.Background(), time.Now())
+		It("does not return any envelopes", func() {
+			envelopes, err := controller.Tick(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+			)
 			Expect(err).ShouldNot(HaveOccurred())
+			Expect(envelopes).To(BeEmpty())
+		})
+
+		It("does not record any facts", func() {
+			buf := &fact.Buffer{}
+			_, err := controller.Tick(
+				context.Background(),
+				buf,
+				time.Now(),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buf.Facts).To(BeEmpty())
 		})
 	})
 

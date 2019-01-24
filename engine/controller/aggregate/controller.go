@@ -41,8 +41,12 @@ func (c *Controller) Type() handler.Type {
 }
 
 // Tick does nothing.
-func (c *Controller) Tick(ctx context.Context, now time.Time) error {
-	return nil
+func (c *Controller) Tick(
+	context.Context,
+	fact.Observer,
+	time.Time,
+) ([]*envelope.Envelope, error) {
+	return nil, nil
 }
 
 // Handle handles a message.
