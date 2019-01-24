@@ -105,7 +105,9 @@ var _ = Describe("type Controller", func() {
 				Expect(err).To(Equal(expected))
 			})
 
-			It("returns the executed commands", func() {
+			It("returns both commands and timeouts", func() {
+				t := time.Now()
+
 				handler.HandleEventFunc = func(
 					_ context.Context,
 					s dogma.ProcessEventScope,
@@ -113,20 +115,30 @@ var _ = Describe("type Controller", func() {
 				) error {
 					s.Begin()
 					s.ExecuteCommand(fixtures.MessageB1)
+					s.ScheduleTimeout(fixtures.MessageB2, t)
 					return nil
 				}
 
-				commands, err := controller.Handle(
+				envelopes, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					time.Now(),
+					t,
 					event,
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(commands).To(ConsistOf(
+				Expect(envelopes).To(ConsistOf(
 					event.NewCommand(
 						fixtures.MessageB1,
+						envelope.Origin{
+							HandlerName: "<name>",
+							HandlerType: handlerkit.ProcessType,
+							InstanceID:  "<instance>",
+						},
+					),
+					event.NewTimeout(
+						fixtures.MessageB2,
+						t,
 						envelope.Origin{
 							HandlerName: "<name>",
 							HandlerType: handlerkit.ProcessType,
@@ -136,7 +148,7 @@ var _ = Describe("type Controller", func() {
 				))
 			})
 
-			It("does not return scheduled timeouts", func() {
+			It("returns timeouts scheduled at the current time", func() {
 				t := time.Now()
 
 				handler.HandleEventFunc = func(
@@ -149,15 +161,63 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				commands, err := controller.Handle(
+				envelopes, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					time.Now(),
+					t,
 					event,
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(commands).To(BeEmpty())
+				Expect(envelopes).To(HaveLen(1))
+			})
+
+			It("returns timeouts scheduled in the past", func() {
+				t := time.Now()
+
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					s.Begin()
+					s.ScheduleTimeout(fixtures.MessageB2, t.Add(-1))
+					return nil
+				}
+
+				envelopes, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					t,
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(envelopes).To(HaveLen(1))
+			})
+
+			It("does not return timeouts scheduled in the future", func() {
+				t := time.Now()
+
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					s.Begin()
+					s.ScheduleTimeout(fixtures.MessageB2, t.Add(1))
+					return nil
+				}
+
+				envelopes, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					t,
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(envelopes).To(BeEmpty())
 			})
 
 			When("the event is not routed to an instance", func() {

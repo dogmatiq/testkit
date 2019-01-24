@@ -14,11 +14,13 @@ type scope struct {
 	id       string
 	name     string
 	observer fact.Observer
+	now      time.Time
 	root     dogma.ProcessRoot
 	exists   bool
 	env      *envelope.Envelope // event or timeout
 	commands []*envelope.Envelope
-	timeouts []*envelope.Envelope
+	ready    []*envelope.Envelope // timeouts <= now
+	pending  []*envelope.Envelope // timeouts > now
 }
 
 func (s *scope) InstanceID() string {
@@ -48,7 +50,8 @@ func (s *scope) End() {
 	}
 
 	s.exists = false
-	s.timeouts = nil
+	s.ready = nil
+	s.pending = nil
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		HandlerName: s.name,
@@ -106,7 +109,11 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		},
 	)
 
-	s.timeouts = append(s.timeouts, env)
+	if t.After(s.now) {
+		s.pending = append(s.pending, env)
+	} else {
+		s.ready = append(s.ready, env)
+	}
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
 		HandlerName:     s.name,

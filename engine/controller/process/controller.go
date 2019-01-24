@@ -72,7 +72,7 @@ func (c *Controller) Tick(
 func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
-	_ time.Time,
+	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
@@ -112,6 +112,7 @@ func (c *Controller) Handle(
 		id:       id,
 		name:     c.name,
 		observer: obs,
+		now:      now,
 		root:     r,
 		exists:   exists,
 		env:      env,
@@ -127,7 +128,7 @@ func (c *Controller) Handle(
 		c.delete(id)
 	}
 
-	return s.commands, nil
+	return append(s.commands, s.ready...), nil
 }
 
 // Reset clears the state of the controller.
@@ -188,12 +189,14 @@ func (c *Controller) update(s *scope) {
 	}
 
 	c.instances[s.id] = s.root
+	c.timeouts = append(c.timeouts, s.pending...)
 
-	c.timeouts = append(c.timeouts, s.timeouts...)
 	sort.Slice(
 		c.timeouts,
 		func(i, j int) bool {
-			return c.timeouts[i].TimeoutTime.Before(*c.timeouts[j].TimeoutTime)
+			ti := *c.timeouts[i].TimeoutTime
+			tj := *c.timeouts[j].TimeoutTime
+			return ti.Before(tj)
 		},
 	)
 }
