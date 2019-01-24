@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
+	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -284,6 +285,11 @@ var _ = Describe("type commandScope", func() {
 						Envelope:    command,
 						EventEnvelope: command.NewEvent(
 							fixtures.MessageB1,
+							envelope.Origin{
+								HandlerName: "<name>",
+								HandlerType: handlerkit.AggregateType,
+								InstanceID:  "<instance>",
+							},
 						),
 					},
 				))

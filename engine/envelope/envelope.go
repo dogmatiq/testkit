@@ -18,12 +18,13 @@ type Envelope struct {
 	// Role is the message's role.
 	Role message.Role
 
-	// IsRoot is true if this message is at the root of an envelope tree.
-	IsRoot bool
-
-	// TimeoutTime holds the time at which the timeout is scheduled.
-	// If the Role is not message.TimeoutRole, this value is nil.
+	// TimeoutTime holds the time at which a timeout message is scheduled to occur.
+	// It is nil unless Role is message.TimeoutRole.
 	TimeoutTime *time.Time
+
+	// Origin describes the message handler that produced this message.
+	// It is nil if the message was not produced by a handler.
+	Origin *Origin
 }
 
 // New constructs a new envelope containing the given message.
@@ -34,40 +35,49 @@ func New(m dogma.Message, r message.Role) *Envelope {
 		Message: m,
 		Type:    message.TypeOf(m),
 		Role:    r,
-		IsRoot:  true,
 	}
 }
 
 // NewCommand constructs a new command envelope as a child of e, indicating that
 // m is caused by e.Message.
-func (e *Envelope) NewCommand(m dogma.Message) *Envelope {
+func (e *Envelope) NewCommand(
+	m dogma.Message,
+	o Origin,
+) *Envelope {
 	return &Envelope{
 		Message: m,
 		Type:    message.TypeOf(m),
 		Role:    message.CommandRole,
-		IsRoot:  false,
+		Origin:  &o,
 	}
 }
 
 // NewEvent constructs a new event envelope as a child of e, indicating that
 // m is caused by e.Message.
-func (e *Envelope) NewEvent(m dogma.Message) *Envelope {
+func (e *Envelope) NewEvent(
+	m dogma.Message,
+	o Origin,
+) *Envelope {
 	return &Envelope{
 		Message: m,
 		Type:    message.TypeOf(m),
 		Role:    message.EventRole,
-		IsRoot:  false,
+		Origin:  &o,
 	}
 }
 
 // NewTimeout constructs a new event envelope as a child of e, indicating that
 // m is caused by e.Message.
-func (e *Envelope) NewTimeout(m dogma.Message, t time.Time) *Envelope {
+func (e *Envelope) NewTimeout(
+	m dogma.Message,
+	t time.Time,
+	o Origin,
+) *Envelope {
 	return &Envelope{
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        message.TimeoutRole,
-		IsRoot:      false,
+		Origin:      &o,
 		TimeoutTime: &t,
 	}
 }

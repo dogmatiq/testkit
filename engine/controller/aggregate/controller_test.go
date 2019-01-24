@@ -103,9 +103,19 @@ var _ = Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					fixtures.MessageB1,
+					envelope.Origin{
+						HandlerName: "<name>",
+						HandlerType: handlerkit.AggregateType,
+						InstanceID:  "<instance>",
+					},
 				),
 				command.NewEvent(
 					fixtures.MessageB2,
+					envelope.Origin{
+						HandlerName: "<name>",
+						HandlerType: handlerkit.AggregateType,
+						InstanceID:  "<instance>",
+					},
 				),
 			))
 		})

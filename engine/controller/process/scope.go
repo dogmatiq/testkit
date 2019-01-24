@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // scope is an implementation of dogma.ProcessEventScope.
@@ -69,7 +70,15 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		panic("can not execute command against non-existent instance")
 	}
 
-	env := s.event.NewCommand(m)
+	env := s.event.NewCommand(
+		m,
+		envelope.Origin{
+			HandlerName: s.name,
+			HandlerType: handler.ProcessType,
+			InstanceID:  s.id,
+		},
+	)
+
 	s.commands = append(s.commands, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
@@ -86,7 +95,16 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		panic("can not schedule timeout against non-existent instance")
 	}
 
-	env := s.event.NewTimeout(m, t)
+	env := s.event.NewTimeout(
+		m,
+		t,
+		envelope.Origin{
+			HandlerName: s.name,
+			HandlerType: handler.ProcessType,
+			InstanceID:  s.id,
+		},
+	)
+
 	s.timeouts = append(s.timeouts, env)
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{

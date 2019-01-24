@@ -124,6 +124,11 @@ var _ = Describe("type Controller", func() {
 				Expect(commands).To(ConsistOf(
 					event.NewCommand(
 						fixtures.MessageB1,
+						envelope.Origin{
+							HandlerName: "<name>",
+							HandlerType: handlerkit.ProcessType,
+							InstanceID:  "<instance>",
+						},
 					),
 				))
 			})

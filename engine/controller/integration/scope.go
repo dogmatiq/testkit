@@ -4,6 +4,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 )
 
 // scope is an implementation of dogma.IntegrationCommandScope.
@@ -16,7 +17,14 @@ type scope struct {
 }
 
 func (s *scope) RecordEvent(m dogma.Message) {
-	env := s.command.NewEvent(m)
+	env := s.command.NewEvent(
+		m,
+		envelope.Origin{
+			HandlerName: s.name,
+			HandlerType: handler.IntegrationType,
+		},
+	)
+
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{

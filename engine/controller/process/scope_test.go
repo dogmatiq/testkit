@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
+	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -328,6 +329,11 @@ var _ = Describe("type eventScope", func() {
 						Envelope:    event,
 						CommandEnvelope: event.NewCommand(
 							fixtures.MessageB1,
+							envelope.Origin{
+								HandlerName: "<name>",
+								HandlerType: handlerkit.ProcessType,
+								InstanceID:  "<instance>",
+							},
 						),
 					},
 				))
@@ -371,6 +377,11 @@ var _ = Describe("type eventScope", func() {
 						TimeoutEnvelope: event.NewTimeout(
 							fixtures.MessageB1,
 							t,
+							envelope.Origin{
+								HandlerName: "<name>",
+								HandlerType: handlerkit.ProcessType,
+								InstanceID:  "<instance>",
+							},
 						),
 					},
 				))

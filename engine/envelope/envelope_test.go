@@ -5,6 +5,7 @@ import (
 
 	. "github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
+	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,7 +21,6 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageC1,
 					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
-					IsRoot:  true,
 				},
 			))
 		})
@@ -41,8 +41,14 @@ var _ = Describe("type Envelope", func() {
 				fixtures.MessageP1,
 				message.EventRole,
 			)
+			origin := Origin{
+				HandlerName: "<handler>",
+				HandlerType: handler.ProcessType,
+				InstanceID:  "<instance>",
+			}
 			child := parent.NewCommand(
 				fixtures.MessageC1,
+				origin,
 			)
 
 			Expect(child).To(Equal(
@@ -50,7 +56,7 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageC1,
 					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
-					IsRoot:  false,
+					Origin:  &origin,
 				},
 			))
 		})
@@ -62,8 +68,14 @@ var _ = Describe("type Envelope", func() {
 				fixtures.MessageP1,
 				message.CommandRole,
 			)
+			origin := Origin{
+				HandlerName: "<handler>",
+				HandlerType: handler.AggregateType,
+				InstanceID:  "<instance>",
+			}
 			child := parent.NewEvent(
 				fixtures.MessageE1,
+				origin,
 			)
 
 			Expect(child).To(Equal(
@@ -71,7 +83,7 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageE1,
 					Type:    fixtures.MessageEType,
 					Role:    message.EventRole,
-					IsRoot:  false,
+					Origin:  &origin,
 				},
 			))
 		})
@@ -84,9 +96,15 @@ var _ = Describe("type Envelope", func() {
 				fixtures.MessageP1,
 				message.CommandRole,
 			)
+			origin := Origin{
+				HandlerName: "<handler>",
+				HandlerType: handler.ProcessType,
+				InstanceID:  "<instance>",
+			}
 			child := parent.NewTimeout(
 				fixtures.MessageT1,
 				t,
+				origin,
 			)
 
 			Expect(child).To(Equal(
@@ -94,8 +112,8 @@ var _ = Describe("type Envelope", func() {
 					Message:     fixtures.MessageT1,
 					Type:        fixtures.MessageTType,
 					Role:        message.TimeoutRole,
-					IsRoot:      false,
 					TimeoutTime: &t,
+					Origin:      &origin,
 				},
 			))
 		})
