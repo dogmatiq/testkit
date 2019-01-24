@@ -2,6 +2,7 @@ package aggregate_test
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/dogmatest/engine/controller"
@@ -24,17 +25,22 @@ var _ = Describe("type Controller", func() {
 		handler    *fixtures.AggregateMessageHandler
 		controller *Controller
 		command    = envelope.New(
-			fixtures.MessageA1,
+			fixtures.MessageC1,
 			message.CommandRole,
 		)
 	)
 
 	BeforeEach(func() {
 		handler = &fixtures.AggregateMessageHandler{
+			// setup routes for "C" (command) messages to an instance ID based on the
+			// message's content
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
-				switch m.(type) {
-				case fixtures.MessageA:
-					return "<instance>"
+				switch x := m.(type) {
+				case fixtures.MessageC:
+					return fmt.Sprintf(
+						"<instance-%s>",
+						x.Value.(string),
+					)
 				default:
 					panic(dogma.UnexpectedMessage)
 				}
@@ -86,7 +92,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) {
 				called = true
-				Expect(m).To(Equal(fixtures.MessageA1))
+				Expect(m).To(Equal(fixtures.MessageC1))
 			}
 
 			_, err := controller.Handle(
@@ -106,8 +112,8 @@ var _ = Describe("type Controller", func() {
 				_ dogma.Message,
 			) {
 				s.Create()
-				s.RecordEvent(fixtures.MessageB1)
-				s.RecordEvent(fixtures.MessageB2)
+				s.RecordEvent(fixtures.MessageE1)
+				s.RecordEvent(fixtures.MessageE2)
 			}
 
 			events, err := controller.Handle(
@@ -120,19 +126,19 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
-					fixtures.MessageB1,
+					fixtures.MessageE1,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.AggregateType,
-						InstanceID:  "<instance>",
+						InstanceID:  "<instance-C1>",
 					},
 				),
 				command.NewEvent(
-					fixtures.MessageB2,
+					fixtures.MessageE2,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.AggregateType,
-						InstanceID:  "<instance>",
+						InstanceID:  "<instance-C1>",
 					},
 				),
 			))
@@ -167,7 +173,7 @@ var _ = Describe("type Controller", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceNotFound{
 						HandlerName: "<name>",
-						InstanceID:  "<instance>",
+						InstanceID:  "<instance-C1>",
 						Envelope:    command,
 					},
 				))
@@ -221,10 +227,7 @@ var _ = Describe("type Controller", func() {
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					envelope.New(
-						fixtures.MessageA2, // use a different message to create the instance
-						message.CommandRole,
-					),
+					command,
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
@@ -243,7 +246,7 @@ var _ = Describe("type Controller", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceLoaded{
 						HandlerName: "<name>",
-						InstanceID:  "<instance>",
+						InstanceID:  "<instance-C1>",
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
 					},
