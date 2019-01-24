@@ -48,6 +48,7 @@ func (s *scope) End() {
 	}
 
 	s.exists = false
+	s.timeouts = nil
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		HandlerName: s.name,
