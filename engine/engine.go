@@ -60,17 +60,84 @@ func (e *Engine) Reset() {
 	}
 }
 
-// Tick performs one "tick" of the engine, using t as the current time.
+// Tick performs one "tick" of the engine.
 //
-// This allows external control of time-based features of the engine.
-func (e *Engine) Tick(ctx context.Context, t time.Time) error {
-	for _, c := range e.controllers {
-		if err := c.Tick(ctx, t); err != nil {
-			return err
-		}
+// This allows external control of time-based features of the engine. now is the
+// time that the engine should treat as the current time.
+func (e *Engine) Tick(
+	ctx context.Context,
+	now time.Time,
+	options ...DispatchOption,
+) error {
+	do, err := newDispatchOptions(options)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	do.observers.Notify(
+		fact.EngineTickBegun{
+			Now:             now,
+			EnabledHandlers: do.enabledHandlers,
+		},
+	)
+
+	err = e.tick(ctx, do, now)
+
+	do.observers.Notify(
+		fact.EngineTickCompleted{
+			Now:             now,
+			Error:           err,
+			EnabledHandlers: do.enabledHandlers,
+		},
+	)
+
+	return err
+}
+
+func (e *Engine) tick(
+	ctx context.Context,
+	do *dispatchOptions,
+	now time.Time,
+) error {
+	var (
+		err   error
+		queue []*envelope.Envelope
+	)
+
+	for _, c := range e.controllers {
+		n := c.Name()
+		t := c.Type()
+
+		do.observers.Notify(
+			fact.ControllerTickBegun{
+				HandlerName: n,
+				HandlerType: t,
+				Now:         now,
+			},
+		)
+
+		envs, cerr := c.Tick(ctx, do.observers, now)
+		err = multierr.Append(err, cerr)
+		queue = append(queue, envs...)
+
+		do.observers.Notify(
+			fact.ControllerTickCompleted{
+				HandlerName: n,
+				HandlerType: t,
+				Now:         now,
+				Error:       cerr,
+			},
+		)
+	}
+
+	return multierr.Append(
+		err,
+		e.dispatch(
+			ctx,
+			do,
+			queue...,
+		),
+	)
 }
 
 // Dispatch processes a message.
@@ -125,10 +192,9 @@ func (e *Engine) Dispatch(
 func (e *Engine) dispatch(
 	ctx context.Context,
 	do *dispatchOptions,
-	env *envelope.Envelope,
+	queue ...*envelope.Envelope,
 ) error {
 	var err error
-	queue := []*envelope.Envelope{env}
 
 	for len(queue) > 0 {
 		env := queue[0]
@@ -142,9 +208,9 @@ func (e *Engine) dispatch(
 		env.Role.MustBe(r)
 
 		for _, c := range e.routes[env.Type] {
-			envs, herr := e.handle(ctx, do, env, c)
+			envs, cerr := e.handle(ctx, do, env, c)
 			queue = append(queue, envs...)
-			err = multierr.Append(err, herr)
+			err = multierr.Append(err, cerr)
 		}
 	}
 
@@ -191,9 +257,5 @@ func (e *Engine) handle(
 		},
 	)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return envs, nil
+	return envs, err
 }
