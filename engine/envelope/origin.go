@@ -1,7 +1,7 @@
 package envelope
 
 import (
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/enginekit/handler"
 )
 
 // Origin describes the hanlder that produced a message in an envelope.

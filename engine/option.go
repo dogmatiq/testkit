@@ -5,8 +5,8 @@ import (
 
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
 	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/enginekit/handler"
 )
 
 // Option applies optional settings to an engine.

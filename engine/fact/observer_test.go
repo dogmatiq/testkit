@@ -2,7 +2,7 @@ package fact_test
 
 import (
 	. "github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
+	"github.com/dogmatiq/enginekit/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

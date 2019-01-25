@@ -8,8 +8,8 @@ import (
 	. "github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/enginekit/fixtures"
+	"github.com/dogmatiq/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

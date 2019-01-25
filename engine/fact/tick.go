@@ -3,7 +3,7 @@ package fact
 import (
 	"time"
 
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/enginekit/handler"
 )
 
 // EngineTickBegun indicates that Engine.Tick() has been called.

@@ -9,9 +9,9 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/controller/projection"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/config"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
 	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/message"
 )
 
 type configurer struct {

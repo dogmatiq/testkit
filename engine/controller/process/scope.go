@@ -6,7 +6,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/handler"
+	"github.com/dogmatiq/enginekit/handler"
 )
 
 // scope is an implementation of dogma.ProcessEventScope.

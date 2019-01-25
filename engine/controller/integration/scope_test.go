@@ -8,9 +8,9 @@ import (
 	. "github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/dogmatest/internal/enginekit/handler"
-	"github.com/dogmatiq/dogmatest/internal/enginekit/message"
+	"github.com/dogmatiq/enginekit/fixtures"
+	handlerkit "github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
