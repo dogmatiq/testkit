@@ -3,21 +3,17 @@ package engine
 import (
 	"context"
 
-	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/controller/aggregate"
 	"github.com/dogmatiq/dogmatest/engine/controller/integration"
 	"github.com/dogmatiq/dogmatest/engine/controller/process"
 	"github.com/dogmatiq/dogmatest/engine/controller/projection"
-	"github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 )
 
 type configurer struct {
-	engine     *Engine
-	comparator compare.Comparator
-	renderer   render.Renderer
+	engine *Engine
 }
 
 func (c *configurer) VisitApplicationConfig(ctx context.Context, cfg *config.ApplicationConfig) error {

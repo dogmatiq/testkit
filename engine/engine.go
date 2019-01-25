@@ -4,11 +4,9 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/controller"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"go.uber.org/multierr"
@@ -33,9 +31,7 @@ func New(
 	}
 
 	cfgr := &configurer{
-		engine:     e,
-		comparator: compare.DefaultComparator{},
-		renderer:   render.DefaultRenderer{},
+		engine: e,
 	}
 
 	ctx := context.Background()
