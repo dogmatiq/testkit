@@ -76,10 +76,10 @@ func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
 	do := &dispatchOptions{
 		now: time.Now(),
 		enabledHandlers: map[handler.Type]bool{
-			handler.AggregateType:   true,
-			handler.ProcessType:     true,
-			handler.IntegrationType: true,
-			handler.ProjectionType:  true,
+			AggregateHandlerType:   true,
+			ProcessHandlerType:     true,
+			IntegrationHandlerType: true,
+			ProjectionHandlerType:  true,
 		},
 	}
 
@@ -96,15 +96,15 @@ func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
 type HandlerType = handler.Type
 
 const (
-	// AggregateType is the handler type for dogma.AggregateMessageHandler.
-	AggregateType = handler.AggregateType
+	// AggregateHandlerType is the handler type for dogma.AggregateMessageHandler.
+	AggregateHandlerType = handler.AggregateType
 
-	// ProcessType is the handler type for dogma.ProcessMessageHandler.
-	ProcessType = handler.ProcessType
+	// ProcessHandlerType is the handler type for dogma.ProcessMessageHandler.
+	ProcessHandlerType = handler.ProcessType
 
-	// IntegrationType is the handler type for dogma.IntegrationMessageHandler.
-	IntegrationType = handler.IntegrationType
+	// IntegrationHandlerType is the handler type for dogma.IntegrationMessageHandler.
+	IntegrationHandlerType = handler.IntegrationType
 
-	// ProjectionType is the handler type for dogma.ProjectionMessageHandler.
-	ProjectionType = handler.ProjectionType
+	// ProjectionHandlerType is the handler type for dogma.ProjectionMessageHandler.
+	ProjectionHandlerType = handler.ProjectionType
 )
