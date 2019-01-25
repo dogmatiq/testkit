@@ -57,8 +57,7 @@ func WithObserver(o fact.Observer) DispatchOption {
 // EnableHandlerType returns a dispatch option that enables or disables handlers
 // of the given type.
 //
-// By default, aggregates and processes are enabled, and integrations and
-// projections are disabled.
+// All handler types are enabled by default.
 func EnableHandlerType(t HandlerType, enable bool) DispatchOption {
 	t.MustValidate()
 
@@ -90,8 +89,8 @@ func newDispatchOptions(options []DispatchOption) (*dispatchOptions, error) {
 		enabledHandlers: map[handler.Type]bool{
 			handler.AggregateType:   true,
 			handler.ProcessType:     true,
-			handler.IntegrationType: false,
-			handler.ProjectionType:  false,
+			handler.IntegrationType: true,
+			handler.ProjectionType:  true,
 		},
 	}
 
