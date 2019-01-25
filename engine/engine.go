@@ -17,6 +17,7 @@ type Engine struct {
 	controllers map[string]controller.Controller
 	roles       map[message.Type]message.Role
 	routes      map[message.Type][]controller.Controller
+	resetters   []func()
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -37,7 +38,7 @@ func New(
 	ctx := context.Background()
 
 	for _, opt := range options {
-		if err := opt(cfgr); err != nil {
+		if err := opt(e); err != nil {
 			return nil, err
 		}
 	}
@@ -53,6 +54,10 @@ func New(
 func (e *Engine) Reset() {
 	for _, c := range e.controllers {
 		c.Reset()
+	}
+
+	for _, fn := range e.resetters {
+		fn()
 	}
 }
 

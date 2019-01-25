@@ -8,7 +8,22 @@ import (
 )
 
 // Option applies optional settings to an engine.
-type Option func(*configurer) error
+type Option func(*Engine) error
+
+// WithResetter returns an engine option that registers a reset hook with the
+// engine.
+//
+// fn is a function to be called whenever the engine is reset.
+func WithResetter(fn func()) Option {
+	if fn == nil {
+		panic("fn must not be nil")
+	}
+
+	return func(e *Engine) error {
+		e.resetters = append(e.resetters, fn)
+		return nil
+	}
+}
 
 // DispatchOption applies optional settings while dispatching a message.
 type DispatchOption func(*dispatchOptions) error
