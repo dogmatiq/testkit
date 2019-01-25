@@ -13,8 +13,8 @@ import (
 var _ = Describe("type FuncVisitor", func() {
 	entries := []TableEntry{
 		Entry(
-			"AppConfig",
-			&AppConfig{AppName: "<app>"},
+			"ApplicationConfig",
+			&ApplicationConfig{ApplicationName: "<app>"},
 		),
 		Entry(
 			"AggregateConfig",
@@ -50,7 +50,7 @@ var _ = Describe("type FuncVisitor", func() {
 	When("the registered function is non-nil", func() {
 		var arg Config
 		v := &FuncVisitor{
-			AppConfig: func(_ context.Context, cfg *AppConfig) error {
+			ApplicationConfig: func(_ context.Context, cfg *ApplicationConfig) error {
 				arg = cfg
 				return errors.New("<error>")
 			},

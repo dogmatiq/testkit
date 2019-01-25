@@ -6,8 +6,8 @@ import (
 
 // Visitor is an interface for walking application configurations.
 type Visitor interface {
-	// VisitAppConfig is called by AppConfig.Accept().
-	VisitAppConfig(context.Context, *AppConfig) error
+	// VisitApplicationConfig is called by ApplicationConfig.Accept().
+	VisitApplicationConfig(context.Context, *ApplicationConfig) error
 
 	// VisitAggregateConfig is called by AggregateConfig.Accept().
 	VisitAggregateConfig(context.Context, *AggregateConfig) error
@@ -25,8 +25,8 @@ type Visitor interface {
 // FuncVisitor is an implementation of Visitor that dispatches to regular
 // functions.
 type FuncVisitor struct {
-	// AppConfig, if non-nil, is called by VisitAppConfig().
-	AppConfig func(context.Context, *AppConfig) error
+	// ApplicationConfig, if non-nil, is called by VisitApplicationConfig().
+	ApplicationConfig func(context.Context, *ApplicationConfig) error
 
 	// AggregateConfig, if non-nil, is called by VisitAggregateConfig().
 	AggregateConfig func(context.Context, *AggregateConfig) error
@@ -41,10 +41,10 @@ type FuncVisitor struct {
 	ProjectionConfig func(context.Context, *ProjectionConfig) error
 }
 
-// VisitAppConfig calls v.AppConfig if it is non-nil.
-func (v *FuncVisitor) VisitAppConfig(ctx context.Context, cfg *AppConfig) error {
-	if v.AppConfig != nil {
-		return v.AppConfig(ctx, cfg)
+// VisitApplicationConfig calls v.ApplicationConfig if it is non-nil.
+func (v *FuncVisitor) VisitApplicationConfig(ctx context.Context, cfg *ApplicationConfig) error {
+	if v.ApplicationConfig != nil {
+		return v.ApplicationConfig(ctx, cfg)
 	}
 
 	return nil

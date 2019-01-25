@@ -20,7 +20,7 @@ type configurer struct {
 	renderer   render.Renderer
 }
 
-func (c *configurer) VisitAppConfig(ctx context.Context, cfg *config.AppConfig) error {
+func (c *configurer) VisitApplicationConfig(ctx context.Context, cfg *config.ApplicationConfig) error {
 	for _, h := range cfg.Handlers {
 		if err := h.Accept(ctx, c); err != nil {
 			return err

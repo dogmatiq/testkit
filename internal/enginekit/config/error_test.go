@@ -8,8 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ Config = &AppConfig{}
-
 var _ = Describe("type Error", func() {
 	Describe("func Error", func() {
 		It("returns the error message", func() {

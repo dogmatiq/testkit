@@ -9,16 +9,16 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ Config = &AppConfig{}
+var _ Config = &ApplicationConfig{}
 
-var _ = Describe("type AppConfig", func() {
-	Describe("func NewAppConfig", func() {
+var _ = Describe("type ApplicationConfig", func() {
+	Describe("func NewApplicationConfig", func() {
 		var (
 			aggregate   *fixtures.AggregateMessageHandler
 			process     *fixtures.ProcessMessageHandler
 			integration *fixtures.IntegrationMessageHandler
 			projection  *fixtures.ProjectionMessageHandler
-			app         dogma.App
+			app         *fixtures.Application
 		)
 
 		BeforeEach(func() {
@@ -52,26 +52,28 @@ var _ = Describe("type AppConfig", func() {
 				},
 			}
 
-			app = dogma.App{
-				Name:         "<app>",
-				Aggregates:   []dogma.AggregateMessageHandler{aggregate},
-				Processes:    []dogma.ProcessMessageHandler{process},
-				Integrations: []dogma.IntegrationMessageHandler{integration},
-				Projections:  []dogma.ProjectionMessageHandler{projection},
+			app = &fixtures.Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Name("<app>")
+					c.RegisterAggregate(aggregate)
+					c.RegisterProcess(process)
+					c.RegisterIntegration(integration)
+					c.RegisterProjection(projection)
+				},
 			}
 		})
 
 		When("the configuration is valid", func() {
-			var cfg *AppConfig
+			var cfg *ApplicationConfig
 
 			BeforeEach(func() {
 				var err error
-				cfg, err = NewAppConfig(app)
+				cfg, err = NewApplicationConfig(app)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			It("the app name is set", func() {
-				Expect(cfg.AppName).To(Equal("<app>"))
+				Expect(cfg.ApplicationName).To(Equal("<app>"))
 			})
 
 			It("the routes are present", func() {
@@ -112,17 +114,54 @@ var _ = Describe("type AppConfig", func() {
 			})
 		})
 
-		When("the app name is invalid", func() {
+		When("the app does not configure a name", func() {
 			BeforeEach(func() {
-				app.Name = "\t \n"
+				app.ConfigureFunc = nil
 			})
 
 			It("returns a descriptive error", func() {
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
-						`application name "\t \n" is invalid`,
+						"*fixtures.Application.Configure() did not call ApplicationConfigurer.Name()",
+					),
+				))
+			})
+		})
+
+		When("the app configures multiple names", func() {
+			BeforeEach(func() {
+				app.ConfigureFunc = func(c dogma.ApplicationConfigurer) {
+					c.Name("<name>")
+					c.Name("<other>")
+				}
+			})
+
+			It("returns a descriptive error", func() {
+				_, err := NewApplicationConfig(app)
+
+				Expect(err).To(Equal(
+					Error(
+						`*fixtures.Application.Configure() has already called ApplicationConfigurer.Name("<name>")`,
+					),
+				))
+			})
+		})
+
+		When("the app configures an invalid name", func() {
+			BeforeEach(func() {
+				app.ConfigureFunc = func(c dogma.ApplicationConfigurer) {
+					c.Name("\t \n")
+				}
+			})
+
+			It("returns a descriptive error", func() {
+				_, err := NewApplicationConfig(app)
+
+				Expect(err).To(Equal(
+					Error(
+						`*fixtures.Application.Configure() called ApplicationConfigurer.Name("\t \n") with an invalid name`,
 					),
 				))
 			})
@@ -132,7 +171,7 @@ var _ = Describe("type AppConfig", func() {
 			It("returns an error when an aggregate is misconfigured", func() {
 				aggregate.ConfigureFunc = nil
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -140,7 +179,7 @@ var _ = Describe("type AppConfig", func() {
 			It("returns an error when a process is misconfigured", func() {
 				process.ConfigureFunc = nil
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -148,7 +187,7 @@ var _ = Describe("type AppConfig", func() {
 			It("returns an error when an integration is misconfigured", func() {
 				integration.ConfigureFunc = nil
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -156,7 +195,7 @@ var _ = Describe("type AppConfig", func() {
 			It("returns an error when a projection is misconfigured", func() {
 				projection.ConfigureFunc = nil
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -164,24 +203,22 @@ var _ = Describe("type AppConfig", func() {
 
 		When("the app contains conflicting handler names", func() {
 			It("returns an error when an aggregate name is in conflict", func() {
-				// Note that aggregates are processed before everything else, so in order to
-				// induce a conflict we need to have two aggregate names in conflict. For
-				// the other tests, we will test conflicts across differing handler types.
-				app.Aggregates = append(
-					app.Aggregates,
-					&fixtures.AggregateMessageHandler{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Name("<aggregate>") // conflict!
-							c.RouteCommandType(fixtures.MessageG{})
-						},
-					},
-				)
+				aggregate.ConfigureFunc = func(c dogma.AggregateConfigurer) {
+					c.Name("<process>") // conflict!
+					c.RouteCommandType(fixtures.MessageA{})
+				}
 
-				_, err := NewAppConfig(app)
+				app.ConfigureFunc = func(c dogma.ApplicationConfigurer) {
+					c.Name("<app>")
+					c.RegisterProcess(process)
+					c.RegisterAggregate(aggregate) // register the conflicting aggregate last
+				}
+
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
-						`*fixtures.AggregateMessageHandler can not use the handler name "<aggregate>", because it is already used by *fixtures.AggregateMessageHandler`,
+						`*fixtures.AggregateMessageHandler can not use the handler name "<process>", because it is already used by *fixtures.ProcessMessageHandler`,
 					),
 				))
 			})
@@ -192,7 +229,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteEventType(fixtures.MessageB{})
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -207,7 +244,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteCommandType(fixtures.MessageC{})
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -222,7 +259,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteEventType(fixtures.MessageD{})
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -239,7 +276,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteCommandType(fixtures.MessageA{}) // conflict with <aggregate>
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -254,7 +291,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteEventType(fixtures.MessageA{}) // conflict with <aggregate>
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -269,7 +306,7 @@ var _ = Describe("type AppConfig", func() {
 					c.RouteCommandType(fixtures.MessageB{}) // conflict with <process>
 				}
 
-				_, err := NewAppConfig(app)
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(
@@ -279,25 +316,19 @@ var _ = Describe("type AppConfig", func() {
 			})
 
 			It("returns an error when a process route is in conflict because an event with multiple handlers is reclassified as a command", func() {
-				// Note that integrations are the last handler that accepts commands to be
-				// processed, so in order to induce a conflict we need to have two processes
-				// that are routed the same event.
-				app.Processes = append(
-					app.Processes,
-					&fixtures.ProcessMessageHandler{
-						ConfigureFunc: func(c dogma.ProcessConfigurer) {
-							c.Name("<another-process>")
-							c.RouteEventType(fixtures.MessageE{}) // shared with <process> (and <projection>, but that wont have been registered yet)
-						},
-					},
-				)
-
 				integration.ConfigureFunc = func(c dogma.IntegrationConfigurer) {
 					c.Name("<integration>")
-					c.RouteCommandType(fixtures.MessageE{}) // conflict with <process> and <another-process>
+					c.RouteCommandType(fixtures.MessageE{}) // conflict with <process> and <projection>
 				}
 
-				_, err := NewAppConfig(app)
+				app.ConfigureFunc = func(c dogma.ApplicationConfigurer) {
+					c.Name("<app>")
+					c.RegisterProcess(process)
+					c.RegisterProjection(projection)
+					c.RegisterIntegration(integration) // register the conflicting integration last
+				}
+
+				_, err := NewApplicationConfig(app)
 
 				Expect(err).To(Equal(
 					Error(

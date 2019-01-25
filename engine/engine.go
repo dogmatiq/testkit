@@ -23,7 +23,7 @@ type Engine struct {
 
 // New returns a new engine that uses the given app configuration.
 func New(
-	cfg *config.AppConfig,
+	cfg *config.ApplicationConfig,
 	options ...Option,
 ) (*Engine, error) {
 	e := &Engine{

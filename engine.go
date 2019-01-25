@@ -10,8 +10,8 @@ import (
 type Engine = engine.Engine
 
 // NewEngine returns a new test engine.
-func NewEngine(app dogma.App, options ...engine.Option) *Engine {
-	cfg, err := config.NewAppConfig(app)
+func NewEngine(app dogma.Application, options ...engine.Option) *Engine {
+	cfg, err := config.NewApplicationConfig(app)
 	if err != nil {
 		panic(err)
 	}
