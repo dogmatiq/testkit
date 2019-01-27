@@ -109,47 +109,53 @@ func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
 	writeByRole(
 		w,
 		a.Role,
-		" (this command was not executed)\n",
-		" (this event was not recorded)\n",
+		" (this command was not executed)\n\n",
+		" (this event was not recorded)\n\n",
 	)
 
-	// write a diff if we have a "best match", otherwise write the expected message
-	iw := indent.NewIndenter(w, []byte("| "))
+	// if there's no "best match", write a description of the expected message
+	// then bail
+	iw := indent.NewIndenter(w, []byte("  | "))
 	if a.best == nil {
 		iago.Must(r.WriteMessage(iw, a.Message))
-	} else {
-		writeDiff(iw, r, a.Message, a.best.Message)
+		iago.MustWriteString(w, "\n")
+		return false
 	}
+
+	writeDiff(iw, r, a.Message, a.best.Message)
+	iago.MustWriteString(iw, "\n\n")
 
 	// write a hint about how the failure might be fixed
 	if a.eq {
 		writeHintByRole(
-			w,
+			iw,
 			a.Role,
 			a.best.Role,
 			"",
-			"This message was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?\n",
-			"This message was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?\n",
+			"This message was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?",
+			"This message was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?",
 		)
 	} else if a.sim == compare.SameTypes {
 		writeHintByRole(
-			w,
+			iw,
 			a.Role,
 			a.best.Role,
 			"Check the content of the message.",
-			"A similar message was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?\n",
-			"A similar message was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?\n",
+			"A similar message was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?",
+			"A similar message was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?",
 		)
-	} else if a.sim != compare.UnrelatedTypes {
+	} else {
 		writeHintByRole(
-			w,
+			iw,
 			a.Role,
 			a.best.Role,
 			"Check the type of the message.",
-			"A message of a similar type was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?\n",
-			"A message of a similar type was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?\n",
+			"A message of a similar type was executed as a command, did you mean to use the ExpectCommand() assertion instead of ExpectEvent()?",
+			"A message of a similar type was recorded as an event, did you mean to use the ExpectEvent() assertion instead of ExpectCommand()?",
 		)
 	}
+
+	iago.MustWriteString(w, "\n")
 
 	return false
 }
