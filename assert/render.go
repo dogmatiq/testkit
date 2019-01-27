@@ -21,6 +21,22 @@ func writeIcon(w io.Writer, pass bool) {
 	}
 }
 
+// writeByRole writes a message based a message role.
+// message role is the same as some expected role, or if it differs, whether the
+// expected role is CommandRole or EventType.
+func writeByRole(
+	w io.Writer,
+	r message.Role,
+	command, event string,
+) {
+	switch r {
+	case message.CommandRole:
+		iago.MustWriteString(w, command)
+	case message.EventRole:
+		iago.MustWriteString(w, event)
+	}
+}
+
 // writeHintByRole writes one of three given messages depending on whether the a
 // message role is the same as some expected role, or if it differs, whether the
 // expected role is CommandRole or EventType.

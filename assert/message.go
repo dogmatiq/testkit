@@ -1,10 +1,12 @@
 package assert
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 
 	"github.com/dogmatiq/iago"
+	"github.com/dogmatiq/iago/indent"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
@@ -36,11 +38,11 @@ func (a *MessageAssertion) Notify(f fact.Fact) {
 
 	switch x := f.(type) {
 	case fact.EventRecordedByAggregate:
-		a.update(x.Envelope)
+		a.update(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:
-		a.update(x.Envelope)
+		a.update(x.EventEnvelope)
 	case fact.CommandExecutedByProcess:
-		a.update(x.Envelope)
+		a.update(x.CommandEnvelope)
 	}
 }
 
@@ -86,17 +88,16 @@ func (a *MessageAssertion) Begin(c compare.Comparator) {
 
 // End is called after the message-under-test is dispatched.
 func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
-	mt := message.TypeOf(a.Message)
-
 	writeIcon(w, a.pass)
 
 	// write a description of the assertion
-	switch a.Role {
-	case message.CommandRole:
-		iago.MustFprintf(w, " execute specific '%s' command", mt)
-	case message.EventRole:
-		iago.MustFprintf(w, " record specific '%s' command", mt)
-	}
+	mt := message.TypeOf(a.Message)
+	writeByRole(
+		w,
+		a.Role,
+		fmt.Sprintf(" execute specific '%s' command", mt),
+		fmt.Sprintf(" record specific '%s' command", mt),
+	)
 
 	// we found the exact message we expected
 	if a.pass {
@@ -105,18 +106,19 @@ func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
 	}
 
 	// write the failure message
-	switch a.Role {
-	case message.CommandRole:
-		iago.MustWriteString(w, " (this command was not executed)\n")
-	case message.EventRole:
-		iago.MustWriteString(w, " (this event was not record)\n")
-	}
+	writeByRole(
+		w,
+		a.Role,
+		" (this command was not executed)\n",
+		" (this event was not recorded)\n",
+	)
 
 	// write a diff if we have a "best match", otherwise write the expected message
+	iw := indent.NewIndenter(w, []byte("| "))
 	if a.best == nil {
-		iago.Must(r.WriteMessage(w, a.Message))
+		iago.Must(r.WriteMessage(iw, a.Message))
 	} else {
-		writeDiff(w, r, a.Message, a.best.Message)
+		writeDiff(iw, r, a.Message, a.best.Message)
 	}
 
 	// write a hint about how the failure might be fixed
