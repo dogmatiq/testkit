@@ -96,7 +96,7 @@ func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
 		w,
 		a.Role,
 		fmt.Sprintf(" execute specific '%s' command", mt),
-		fmt.Sprintf(" record specific '%s' command", mt),
+		fmt.Sprintf(" record specific '%s' event", mt),
 	)
 
 	// we found the exact message we expected
