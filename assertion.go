@@ -8,34 +8,34 @@ import (
 	"github.com/dogmatiq/enginekit/message"
 )
 
-// Command returns an assertion that passes if m is executed as a command.
-func Command(m dogma.Message) assert.Assertion {
+// CommandExecuted returns an assertion that passes if m is executed as a command.
+func CommandExecuted(m dogma.Message) assert.Assertion {
 	return &assert.MessageAssertion{
 		Message: m,
 		Role:    message.CommandRole,
 	}
 }
 
-// Event returns an assertion that passes if m is recorded as an event.
-func Event(m dogma.Message) assert.Assertion {
+// EventRecorded returns an assertion that passes if m is recorded as an event.
+func EventRecorded(m dogma.Message) assert.Assertion {
 	return &assert.MessageAssertion{
 		Message: m,
 		Role:    message.EventRole,
 	}
 }
 
-// CommandType returns an assertion that passes if a message with the same type
-// as m is executed as a command.
-func CommandType(m dogma.Message) assert.Assertion {
+// CommandTypeExecuted returns an assertion that passes if a message with the
+// same type as m is executed as a command.
+func CommandTypeExecuted(m dogma.Message) assert.Assertion {
 	return &assert.MessageTypeAssertion{
 		Type: message.TypeOf(m),
 		Role: message.CommandRole,
 	}
 }
 
-// EventType returns an assertion that passes if a message witn the same type as
-// m is recorded as an event.
-func EventType(m dogma.Message) assert.Assertion {
+// EventTypeRecorded returns an assertion that passes if a message witn the same
+// type as m is recorded as an event.
+func EventTypeRecorded(m dogma.Message) assert.Assertion {
 	return &assert.MessageTypeAssertion{
 		Type: message.TypeOf(m),
 		Role: message.EventRole,
