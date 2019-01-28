@@ -65,8 +65,8 @@ func writeHintByRole(
 	iago.MustWriteString(w, "\n")
 }
 
-// writeDiff writes the diff of two messages to w.
-func writeDiff(
+// writeMessageDiff writes the diff of two messages to w.
+func writeMessageDiff(
 	w io.Writer,
 	r render.Renderer,
 	a, b dogma.Message,

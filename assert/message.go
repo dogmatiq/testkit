@@ -122,7 +122,7 @@ func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
 		return false
 	}
 
-	writeDiff(iw, r, a.Message, a.best.Message)
+	writeMessageDiff(iw, r, a.Message, a.best.Message)
 	iago.MustWriteString(iw, "\n\n")
 
 	// write a hint about how the failure might be fixed

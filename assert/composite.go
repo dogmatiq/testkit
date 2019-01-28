@@ -16,8 +16,8 @@ type CompositeAssertion struct {
 	// Title is the title to render in reports.
 	Title string
 
-	// Children is the set of assertions in the container.
-	Children []Assertion
+	// SubAssertions is the set of assertions in the container.
+	SubAssertions []Assertion
 
 	// Predicate is a function that determines whether or not the assertion passes,
 	// based on the number of child assertions that passed.
@@ -29,15 +29,15 @@ type CompositeAssertion struct {
 
 // Notify notifies the assertion of the occurrence of a fact.
 func (a *CompositeAssertion) Notify(f fact.Fact) {
-	for _, ca := range a.Children {
-		ca.Notify(f)
+	for _, sub := range a.SubAssertions {
+		sub.Notify(f)
 	}
 }
 
 // Begin is called before the message-under-test is dispatched.
 func (a *CompositeAssertion) Begin(c compare.Comparator) {
-	for _, ca := range a.Children {
-		ca.Begin(c)
+	for _, sub := range a.SubAssertions {
+		sub.Begin(c)
 	}
 }
 
@@ -46,8 +46,8 @@ func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
 	n := 0
 	buf := &bytes.Buffer{}
 
-	for _, ca := range a.Children {
-		if ca.End(buf, r) {
+	for _, sub := range a.SubAssertions {
+		if sub.End(buf, r) {
 			n++
 		}
 	}
