@@ -66,7 +66,7 @@ func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
 
 	iago.MustWriteString(w, "\n")
 	iago.MustWriteTo(
-		indent.NewIndenter(buf, nil),
+		indent.NewIndenter(w, nil),
 		buf,
 	)
 
