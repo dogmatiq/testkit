@@ -65,7 +65,7 @@ func AllOf(subs ...assert.Assertion) assert.Assertion {
 			}
 
 			return fmt.Sprintf(
-				"failed: %d of the sub-assertions failed",
+				"%d of the sub-assertions failed",
 				n-p,
 			), false
 		},
@@ -94,7 +94,7 @@ func AnyOf(subs ...assert.Assertion) assert.Assertion {
 			}
 
 			return fmt.Sprintf(
-				"failed: all %d of the sub-assertions failed",
+				"all %d of the sub-assertions failed",
 				n,
 			), false
 		},
@@ -119,11 +119,11 @@ func NoneOf(subs ...assert.Assertion) assert.Assertion {
 			}
 
 			if n == 1 {
-				return "failed: the sub-assertion passed", false
+				return "the sub-assertion passed unexpectedly", false
 			}
 
 			return fmt.Sprintf(
-				"failed: %d of the sub-assertions passed",
+				"%d of the sub-assertions passed unexpectedly",
 				p,
 			), false
 		},
