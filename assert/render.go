@@ -65,37 +65,57 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 	writeIcon(w, r.Pass)
 	iago.MustWriteByte(w, ' ')
 	iago.MustWriteString(w, r.Title)
-
-	if r.Summary != "" {
-		iago.MustWriteString(w, " (")
-		iago.MustWriteString(w, r.Summary)
-		iago.MustWriteByte(w, ')')
-	}
-
 	iago.MustWriteByte(w, '\n')
 
 	indenter := indent.NewIndenter(w, []byte("  | "))
+	first := true
 
-	if len(r.Hints) > 0 {
-		iago.MustWriteByte(w, '\n')
-		iago.MustWriteString(indenter, "Hint:\n")
-
-		for _, h := range r.Hints {
-			iago.MustWriteString(indenter, "- ")
-			iago.MustWriteString(indenter, h)
-			iago.MustWriteByte(indenter, '\n')
+	if r.Summary != "" {
+		if first {
+			first = false
+			iago.MustWriteByte(w, '\n')
 		}
 
-		if r.Details != "" {
+		iago.MustWriteString(indenter, "Summary: ")
+		iago.MustWriteString(indenter, r.Summary)
+		iago.MustWriteByte(indenter, '\n')
+	}
+
+	if len(r.Hints) > 0 {
+		if first {
+			first = false
+			iago.MustWriteByte(w, '\n')
+		}
+
+		if len(r.Hints) == 1 {
+			iago.MustWriteString(indenter, "Hint: ")
+			iago.MustWriteString(indenter, r.Hints[0])
 			iago.MustWriteByte(indenter, '\n')
+		} else {
+			iago.MustWriteString(indenter, "Hints:\n")
+			for _, h := range r.Hints {
+				iago.MustWriteString(indenter, "  - ")
+				iago.MustWriteString(indenter, h)
+				iago.MustWriteByte(indenter, '\n')
+			}
 		}
 	}
 
 	if r.Details != "" {
+		if first {
+			first = false
+			iago.MustWriteByte(w, '\n')
+		} else {
+			iago.MustWriteByte(indenter, '\n')
+		}
+
+		iago.MustWriteString(indenter, "Details:\n")
 		iago.MustWriteString(indenter, r.Details)
 	}
 
-	iago.MustWriteByte(w, '\n')
+	if !first {
+		iago.MustWriteByte(w, '\n')
+	}
 
 	// TODO(jmalloc): replace with w.Count64()
 	// https://github.com/dogmatiq/iago/issues/1
