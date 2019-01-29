@@ -85,6 +85,8 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 		if first {
 			first = false
 			iago.MustWriteByte(w, '\n')
+		} else {
+			iago.MustWriteByte(indenter, '\n')
 		}
 
 		if len(r.Hints) == 1 {
@@ -109,7 +111,7 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 			iago.MustWriteByte(indenter, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Details:\n")
+		iago.MustWriteString(indenter, "Details:\n\n")
 		iago.MustWriteString(indenter, r.Details)
 	}
 
