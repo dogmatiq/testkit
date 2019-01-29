@@ -11,6 +11,7 @@ import (
 type scope struct {
 	id        string
 	name      string
+	handler   dogma.AggregateMessageHandler
 	observer  fact.Observer
 	root      dogma.AggregateRoot
 	exists    bool

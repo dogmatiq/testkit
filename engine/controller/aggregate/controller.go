@@ -95,6 +95,7 @@ func (c *Controller) Handle(
 	s := &scope{
 		id:       id,
 		name:     c.name,
+		handler:  c.handler,
 		observer: obs,
 		root:     r,
 		exists:   exists,
