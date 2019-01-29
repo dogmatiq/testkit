@@ -13,6 +13,7 @@ import (
 type scope struct {
 	id       string
 	name     string
+	handler  dogma.ProcessMessageHandler
 	observer fact.Observer
 	now      time.Time
 	root     dogma.ProcessRoot
