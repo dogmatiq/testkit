@@ -43,6 +43,10 @@ func (t *test) Setup(messages ...dogma.Message) Test {
 }
 
 func (t *test) ExecuteCommand(m dogma.Message, a assert.Assertion) Test {
+	if a == nil {
+		panic("assertion must not be nil")
+	}
+
 	// TODO: fail if TypeOf(m)'s role is not correct
 	t.dispatch(m, a)
 
@@ -50,6 +54,10 @@ func (t *test) ExecuteCommand(m dogma.Message, a assert.Assertion) Test {
 }
 
 func (t *test) RecordEvent(m dogma.Message, a assert.Assertion) Test {
+	if a == nil {
+		panic("assertion must not be nil")
+	}
+
 	// TODO: fail if TypeOf(m)'s role is not correct
 	t.dispatch(m, a)
 
@@ -57,6 +65,10 @@ func (t *test) RecordEvent(m dogma.Message, a assert.Assertion) Test {
 }
 
 func (t *test) AdvanceTimeBy(delta time.Duration, a assert.Assertion) Test {
+	if a == nil {
+		panic("assertion must not be nil")
+	}
+
 	if delta < 0 {
 		panic("delta must be positive")
 	}
@@ -68,6 +80,10 @@ func (t *test) AdvanceTimeBy(delta time.Duration, a assert.Assertion) Test {
 }
 
 func (t *test) AdvanceTimeTo(now time.Time, a assert.Assertion) Test {
+	if a == nil {
+		panic("assertion must not be nil")
+	}
+
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
 	}
