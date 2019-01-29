@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type commandScope", func() {
+var _ = Describe("type scope", func() {
 	var (
 		handler    *fixtures.AggregateMessageHandler
 		controller *Controller
