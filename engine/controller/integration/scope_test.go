@@ -63,6 +63,7 @@ var _ = Describe("type commandScope", func() {
 			Expect(buf.Facts).To(ContainElement(
 				fact.EventRecordedByIntegration{
 					HandlerName:   "<name>",
+					Handler:       handler,
 					Envelope:      command,
 					EventEnvelope: event,
 				},
@@ -95,6 +96,7 @@ var _ = Describe("type commandScope", func() {
 			Expect(buf.Facts).To(ContainElement(
 				fact.MessageLoggedByIntegration{
 					HandlerName: "<name>",
+					Handler:     handler,
 					Envelope:    command,
 					LogFormat:   "<format>",
 					LogArguments: []interface{}{

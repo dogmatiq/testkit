@@ -1,6 +1,7 @@
 package fact
 
 import (
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 )
 
@@ -8,6 +9,7 @@ import (
 // while handling a command.
 type EventRecordedByIntegration struct {
 	HandlerName   string
+	Handler       dogma.IntegrationMessageHandler
 	Envelope      *envelope.Envelope
 	EventEnvelope *envelope.Envelope
 }
@@ -16,6 +18,7 @@ type EventRecordedByIntegration struct {
 // while handling a command.
 type MessageLoggedByIntegration struct {
 	HandlerName  string
+	Handler      dogma.IntegrationMessageHandler
 	Envelope     *envelope.Envelope
 	LogFormat    string
 	LogArguments []interface{}

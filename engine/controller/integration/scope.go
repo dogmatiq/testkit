@@ -30,6 +30,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
 		HandlerName:   s.name,
+		Handler:       s.handler,
 		Envelope:      s.command,
 		EventEnvelope: env,
 	})
@@ -38,6 +39,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
 		HandlerName:  s.name,
+		Handler:      s.handler,
 		Envelope:     s.command,
 		LogFormat:    f,
 		LogArguments: v,
