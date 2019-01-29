@@ -11,6 +11,7 @@ import (
 type scope struct {
 	id       string
 	name     string
+	handler  dogma.IntegrationMessageHandler
 	observer fact.Observer
 	command  *envelope.Envelope
 	events   []*envelope.Envelope
