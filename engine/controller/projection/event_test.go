@@ -54,6 +54,7 @@ var _ = Describe("type scope", func() {
 			Expect(buf.Facts).To(ContainElement(
 				fact.MessageLoggedByProjection{
 					HandlerName: "<name>",
+					Handler:     handler,
 					Envelope:    event,
 					LogFormat:   "<format>",
 					LogArguments: []interface{}{

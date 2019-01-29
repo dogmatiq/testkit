@@ -17,6 +17,7 @@ type scope struct {
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
 		HandlerName:  s.name,
+		Handler:      s.handler,
 		Envelope:     s.event,
 		LogFormat:    f,
 		LogArguments: v,
