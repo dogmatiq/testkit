@@ -56,7 +56,7 @@ func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
 		}
 	}
 
-	rep.Summary, rep.Pass = a.Predicate(n)
+	rep.SubTitle, rep.Pass = a.Predicate(n)
 
 	iago.MustWriteTo(w, rep)
 	iago.MustWriteByte(w, '\n')

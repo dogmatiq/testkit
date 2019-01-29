@@ -108,12 +108,18 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 		return
 	}
 
+	rep.SubTitle = byRole(
+		a.Role,
+		"no commands of this type were executed",
+		"no events of this type were recorded",
+	)
+
 	// there is no "best match". if any messages were produced at all they weren't
 	// of a related type.
 	if a.sim == compare.UnrelatedTypes {
 		// nothing was produced at all
 		if len(a.produced) == 0 {
-			rep.Summary = "no commands or events were produced"
+			rep.Note = "no commands or events were produced at all"
 
 			// if the message did get routed somewhere, it's probably a legitimate bug
 			// with the business logic, otherwise there's a possibility that the routing
@@ -126,13 +132,6 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 
 			return
 		}
-
-		// some messages were produced
-		rep.Summary = byRole(
-			a.Role,
-			"no commands of this type were executed",
-			"no events of this type were recorded",
-		)
 
 		// if messages of the correct role were produced, perhaps there's just a
 		// simple mispelling of the type. this is common because many messages have
@@ -148,7 +147,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 
 	// the types are equal, so the roles must be a mismatch
 	if a.sim == compare.SameTypes {
-		rep.Summary = byRole(
+		rep.Note = byRole(
 			a.best.Role,
 			"a message of this type was executed as a command",
 			"a message of this type was recorded as an event",
@@ -166,7 +165,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 	rep.addHint("check the assertion's message type, should it be a pointer?")
 
 	if a.Role == a.best.Role {
-		rep.Summary = byRole(
+		rep.Note = byRole(
 			a.Role,
 			"a command of a similar type was executed",
 			"an event of a similar type was recorded",
@@ -176,7 +175,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 	}
 
 	// otherwise, both the role and the content are wrong
-	rep.Summary = byRole(
+	rep.Note = byRole(
 		a.best.Role,
 		"a message of a similar type was executed as a command",
 		"a message of a similar type was recorded as an event",

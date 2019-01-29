@@ -124,10 +124,16 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 		return
 	}
 
+	rep.SubTitle = byRole(
+		a.Role,
+		"this command was not executed",
+		"this event was not recorded",
+	)
+
 	// the "best match" is equal to the expected message. this means that only the
 	// roles were mismatched.
 	if a.equal {
-		rep.Summary = byRole(
+		rep.Note = byRole(
 			a.best.Role,
 			"this message was executed as a command",
 			"this message was recorded as an event",
@@ -143,7 +149,7 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 	if a.sim == compare.UnrelatedTypes {
 		// nothing was produced at all
 		if len(a.produced) == 0 {
-			rep.Summary = "no commands or events were produced"
+			rep.Note = "no commands or events were produced at all"
 
 			// if the message did get routed somewhere, it's probably a legitimate bug
 			// with the business logic, otherwise there's a possibility that the routing
@@ -156,13 +162,6 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 
 			return
 		}
-
-		// some messages were produced
-		rep.Summary = byRole(
-			a.Role,
-			"this command was not executed",
-			"this event was not recorded",
-		)
 
 		// if messages of the correct role were produced, perhaps there's just a
 		// simple mispelling of the type. this is common because many messages have
@@ -182,7 +181,7 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 
 		// if the roles are equal, that means only the content was incorrect
 		if a.Role == a.best.Role {
-			rep.Summary = byRole(
+			rep.Note = byRole(
 				a.Role,
 				"a similar command was executed",
 				"a similar event was recorded",
@@ -192,7 +191,7 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 		}
 
 		// otherwise, both the role and the content are wrong
-		rep.Summary = byRole(
+		rep.Note = byRole(
 			a.best.Role,
 			"a similar message was executed as a command",
 			"a similar message was recorded as an event",
@@ -211,7 +210,7 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 	rep.addHint("check the assertion's message type, should it be a pointer?")
 
 	if a.Role == a.best.Role {
-		rep.Summary = byRole(
+		rep.Note = byRole(
 			a.Role,
 			"a similar command was executed",
 			"a similar event was recorded",
@@ -221,7 +220,7 @@ func (a *MessageAssertion) buildReport(rep *report, r render.Renderer) {
 	}
 
 	// otherwise, both the role and the content are wrong
-	rep.Summary = byRole(
+	rep.Note = byRole(
 		a.best.Role,
 		"a similar message was executed as a command",
 		"a similar message was recorded as an event",
