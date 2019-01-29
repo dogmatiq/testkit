@@ -46,16 +46,16 @@ func renderMessage(r render.Renderer, m dogma.Message) string {
 
 // report generates an assertion report in the standard format.
 type report struct {
-	Pass     bool
-	Title    string
-	SubTitle string
-	Note     string
-	Hints    []string
-	Details  string
+	Pass        bool
+	Title       string
+	SubTitle    string
+	Outcome     string
+	Suggestions []string
+	Details     string
 }
 
-func (r *report) addHint(h string) {
-	r.Hints = append(r.Hints, h)
+func (r *report) suggest(h string) {
+	r.Suggestions = append(r.Suggestions, h)
 }
 
 func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
@@ -78,18 +78,18 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 	indenter := indent.NewIndenter(w, []byte("  | "))
 	first := true
 
-	if r.Note != "" {
+	if r.Outcome != "" {
 		if first {
 			first = false
 			iago.MustWriteByte(w, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Note: ")
-		iago.MustWriteString(indenter, r.Note)
+		iago.MustWriteString(indenter, "Outcome:\n  ")
+		iago.MustWriteString(indenter, r.Outcome)
 		iago.MustWriteByte(indenter, '\n')
 	}
 
-	if len(r.Hints) > 0 {
+	if len(r.Suggestions) > 0 {
 		if first {
 			first = false
 			iago.MustWriteByte(w, '\n')
@@ -98,9 +98,9 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 		}
 
 		iago.MustWriteString(indenter, "Suggestions:\n")
-		for _, h := range r.Hints {
+		for _, s := range r.Suggestions {
 			iago.MustWriteString(indenter, "  - ")
-			iago.MustWriteString(indenter, h)
+			iago.MustWriteString(indenter, s)
 			iago.MustWriteByte(indenter, '\n')
 		}
 	}
@@ -114,7 +114,7 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 		}
 
 		iago.MustWriteString(indenter, "Details:\n\n")
-		iago.MustWriteString(indenter, r.Details)
+		iago.MustWriteString(indenter, indent.String(r.Details, "  "))
 	}
 
 	if !first {

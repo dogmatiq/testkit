@@ -119,15 +119,15 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 	if a.sim == compare.UnrelatedTypes {
 		// nothing was produced at all
 		if len(a.produced) == 0 {
-			rep.Note = "no commands or events were produced at all"
+			rep.Outcome = "no commands or events were produced at all"
 
 			// if the message did get routed somewhere, it's probably a legitimate bug
 			// with the business logic, otherwise there's a possibility that the routing
 			// configuration is wrong.
 			if a.routed {
-				rep.addHint("check the application logic")
+				rep.suggest("check the application logic")
 			} else {
-				rep.addHint("check the application routing configuration for this type")
+				rep.suggest("check the application routing configuration for this type")
 			}
 
 			return
@@ -137,7 +137,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 		// simple mispelling of the type. this is common because many messages have
 		// the same fields.
 		if a.produced[a.Role] {
-			rep.addHint("check the assertion's message type")
+			rep.suggest("check the assertion's message type")
 		} else {
 			a.addWrongAssertionHint(rep)
 		}
@@ -147,7 +147,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 
 	// the types are equal, so the roles must be a mismatch
 	if a.sim == compare.SameTypes {
-		rep.Note = byRole(
+		rep.Outcome = byRole(
 			a.best.Role,
 			"a message of this type was executed as a command",
 			"a message of this type was recorded as an event",
@@ -162,10 +162,10 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 
 	// note this language here is deliberately vague, it doesn't imply whether it
 	// currently is or isn't a pointer, just questions if it should be.
-	rep.addHint("check the assertion's message type, should it be a pointer?")
+	rep.suggest("check the assertion's message type, should it be a pointer?")
 
 	if a.Role == a.best.Role {
-		rep.Note = byRole(
+		rep.Outcome = byRole(
 			a.Role,
 			"a command of a similar type was executed",
 			"an event of a similar type was recorded",
@@ -175,7 +175,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 	}
 
 	// otherwise, both the role and the content are wrong
-	rep.Note = byRole(
+	rep.Outcome = byRole(
 		a.best.Role,
 		"a message of a similar type was executed as a command",
 		"a message of a similar type was recorded as an event",
@@ -186,7 +186,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 
 // addWrongAssertionHint adds a common hint about selecting the correct assertion.
 func (a *MessageTypeAssertion) addWrongAssertionHint(rep *report) {
-	rep.addHint(byRole(
+	rep.suggest(byRole(
 		a.Role,
 		"did you mean to use the EventTypeRecorded assertion instead of CommandTypeExecuted?",
 		"did you mean to use the CommandTypeExecuted assertion instead of EventTypeRecorded?",
