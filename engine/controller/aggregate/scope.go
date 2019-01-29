@@ -35,6 +35,7 @@ func (s *scope) Create() bool {
 
 	s.observer.Notify(fact.AggregateInstanceCreated{
 		HandlerName: s.name,
+		Handler:     s.handler,
 		InstanceID:  s.id,
 		Root:        s.root,
 		Envelope:    s.command,
@@ -53,6 +54,7 @@ func (s *scope) Destroy() {
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
 		HandlerName: s.name,
+		Handler:     s.handler,
 		InstanceID:  s.id,
 		Root:        s.root,
 		Envelope:    s.command,
@@ -87,6 +89,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
 		HandlerName:   s.name,
+		Handler:       s.handler,
 		InstanceID:    s.id,
 		Root:          s.root,
 		Envelope:      s.command,
@@ -97,6 +100,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByAggregate{
 		HandlerName:  s.name,
+		Handler:      s.handler,
 		InstanceID:   s.id,
 		Root:         s.root,
 		Envelope:     s.command,

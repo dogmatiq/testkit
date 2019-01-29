@@ -101,6 +101,7 @@ var _ = Describe("type commandScope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceCreated{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
@@ -259,6 +260,7 @@ var _ = Describe("type commandScope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceDestroyed{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
@@ -292,6 +294,7 @@ var _ = Describe("type commandScope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.EventRecordedByAggregate{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
@@ -355,6 +358,7 @@ var _ = Describe("type commandScope", func() {
 			Expect(buf.Facts).To(ContainElement(
 				fact.MessageLoggedByAggregate{
 					HandlerName: "<name>",
+					Handler:     handler,
 					InstanceID:  "<instance>",
 					Root:        &fixtures.AggregateRoot{},
 					Envelope:    command,

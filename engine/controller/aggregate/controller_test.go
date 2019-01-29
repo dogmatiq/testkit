@@ -173,6 +173,7 @@ var _ = Describe("type Controller", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceNotFound{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance-C1>",
 						Envelope:    command,
 					},
@@ -246,6 +247,7 @@ var _ = Describe("type Controller", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.AggregateInstanceLoaded{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance-C1>",
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,

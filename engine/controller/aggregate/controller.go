@@ -71,6 +71,7 @@ func (c *Controller) Handle(
 	if exists {
 		obs.Notify(fact.AggregateInstanceLoaded{
 			HandlerName: c.name,
+			Handler:     c.handler,
 			InstanceID:  id,
 			Root:        r,
 			Envelope:    env,
@@ -78,6 +79,7 @@ func (c *Controller) Handle(
 	} else {
 		obs.Notify(fact.AggregateInstanceNotFound{
 			HandlerName: c.name,
+			Handler:     c.handler,
 			InstanceID:  id,
 			Envelope:    env,
 		})
