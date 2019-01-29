@@ -113,7 +113,7 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 			iago.MustWriteByte(indenter, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Details:\n\n")
+		iago.MustWriteString(indenter, "Details:\n")
 		iago.MustWriteString(indenter, indent.String(r.Details, "  "))
 	}
 
