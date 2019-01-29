@@ -18,10 +18,10 @@ type Test interface {
 	// messages without any assertions.
 	Setup(...dogma.Message) Test
 
-	ExecuteCommand(dogma.Message, ...assert.Assertion) Test
-	RecordEvent(dogma.Message, ...assert.Assertion) Test
-	AdvanceTimeBy(time.Duration, ...assert.Assertion) Test
-	AdvanceTimeTo(time.Time, ...assert.Assertion) Test
+	ExecuteCommand(dogma.Message, assert.Assertion) Test
+	RecordEvent(dogma.Message, assert.Assertion) Test
+	AdvanceTimeBy(time.Duration, assert.Assertion) Test
+	AdvanceTimeTo(time.Time, assert.Assertion) Test
 }
 
 type test struct {
@@ -42,94 +42,84 @@ func (t *test) Setup(messages ...dogma.Message) Test {
 	return t
 }
 
-func (t *test) ExecuteCommand(m dogma.Message, assertions ...assert.Assertion) Test {
-	// TODO: add assertion that m is executed a command
-	t.dispatch(m, assertions)
+func (t *test) ExecuteCommand(m dogma.Message, a assert.Assertion) Test {
+	// TODO: fail if TypeOf(m)'s role is not correct
+	t.dispatch(m, a)
 
 	return t
 }
 
-func (t *test) RecordEvent(m dogma.Message, assertions ...assert.Assertion) Test {
-	// TODO: add assertion that m is recorded as an event
-	t.dispatch(m, assertions)
+func (t *test) RecordEvent(m dogma.Message, a assert.Assertion) Test {
+	// TODO: fail if TypeOf(m)'s role is not correct
+	t.dispatch(m, a)
 
 	return t
 }
 
-func (t *test) AdvanceTimeBy(delta time.Duration, assertions ...assert.Assertion) Test {
+func (t *test) AdvanceTimeBy(delta time.Duration, a assert.Assertion) Test {
 	if delta < 0 {
 		panic("delta must be positive")
 	}
 
 	t.now.Add(delta)
-	t.tick(assertions)
+	t.tick(a)
 
 	return t
 }
 
-func (t *test) AdvanceTimeTo(now time.Time, assertions ...assert.Assertion) Test {
+func (t *test) AdvanceTimeTo(now time.Time, a assert.Assertion) Test {
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
 	}
 
 	t.now = now
-	t.tick(assertions)
+	t.tick(a)
 
 	return t
 }
 
-func (t *test) dispatch(m dogma.Message, assertions []assert.Assertion) {
-	t.begin(assertions)
+func (t *test) dispatch(m dogma.Message, a assert.Assertion) {
+	t.begin(a)
 
-	opts := t.options(assertions)
+	opts := t.options(a)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
 		t.t.Fatal(err)
 	}
 
-	t.end(assertions)
+	t.end(a)
 }
 
-func (t *test) tick(assertions []assert.Assertion) {
-	t.begin(assertions)
+func (t *test) tick(a assert.Assertion) {
+	t.begin(a)
 
-	opts := t.options(assertions)
+	opts := t.options(a)
 
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
 		t.t.Fatal(err)
 	}
 
-	t.end(assertions)
+	t.end(a)
 }
 
-func (t *test) options(assertions []assert.Assertion) []engine.DispatchOption {
-	opts := append(
+func (t *test) options(a assert.Assertion) []engine.DispatchOption {
+	return append(
 		t.defaults,
 		engine.WithCurrentTime(t.now),
+		engine.WithObserver(a),
 	)
-
-	for _, a := range assertions {
-		opts = append(
-			opts,
-			engine.WithObserver(a),
-		)
-	}
-
-	return opts
 }
 
-func (t *test) begin(assertions []assert.Assertion) {
+func (t *test) begin(a assert.Assertion) {
 	c := t.comparator
 	if c == nil {
 		c = compare.DefaultComparator{}
 	}
 
-	for _, a := range assertions {
-		a.Begin(c)
-	}
+	a.Begin(c)
 }
 
-func (t *test) end(assertions []assert.Assertion) {
+func (t *test) end(a assert.Assertion) {
 	r := t.renderer
 	if r == nil {
 		r = render.DefaultRenderer{}
@@ -137,15 +127,8 @@ func (t *test) end(assertions []assert.Assertion) {
 
 	buf := &strings.Builder{}
 	buf.WriteString("assertion report:\n\n")
-	pass := true
 
-	for _, a := range assertions {
-		if !a.End(buf, r) {
-			pass = false
-		}
-	}
-
-	if pass {
+	if a.End(buf, r) {
 		t.t.Log(buf.String())
 	} else {
 		t.t.Fatal(buf.String())
