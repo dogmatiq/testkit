@@ -43,6 +43,10 @@ func (a *CompositeAssertion) Begin(c compare.Comparator) {
 
 // End is called after the message-under-test is dispatched.
 func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
+	rep := &report{
+		Title: a.Title,
+	}
+
 	n := 0
 	buf := &bytes.Buffer{}
 
@@ -52,23 +56,14 @@ func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
 		}
 	}
 
-	message, pass := a.Predicate(n)
+	rep.Summary, rep.Pass = a.Predicate(n)
 
-	writeIcon(w, pass)
-	iago.MustWriteString(w, " ")
-	iago.MustWriteString(w, a.Title)
-
-	if message != "" {
-		iago.MustWriteString(w, " (")
-		iago.MustWriteString(w, message)
-		iago.MustWriteByte(w, ')')
-	}
-
-	iago.MustWriteString(w, "\n")
+	iago.MustWriteTo(w, rep)
+	iago.MustWriteByte(w, '\n')
 	iago.MustWriteTo(
 		indent.NewIndenter(w, nil),
 		buf,
 	)
 
-	return pass
+	return rep.Pass
 }

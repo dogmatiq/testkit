@@ -5,14 +5,12 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/dogmatiq/iago"
-	"github.com/dogmatiq/iago/indent"
-
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/iago"
 )
 
 // MessageTypeAssertion is an assertion that requires an exact message type to
@@ -21,11 +19,11 @@ type MessageTypeAssertion struct {
 	Type message.Type
 	Role message.Role
 
-	cmp compare.Comparator
-
-	pass bool
-	best *envelope.Envelope
-	sim  compare.TypeSimilarity
+	pass     bool                   // true if assertion passed
+	best     *envelope.Envelope     // envelope containing "best-match"
+	sim      compare.TypeSimilarity // similarity between the expected type and the best-match
+	routed   bool                   // true if the message-under-test gets routed to at least one handler
+	produced map[message.Role]bool  // map of the roles of messages that are produced
 }
 
 // Notify notifies the assertion of the occurrence of a fact.
@@ -35,6 +33,8 @@ func (a *MessageTypeAssertion) Notify(f fact.Fact) {
 	}
 
 	switch x := f.(type) {
+	case fact.MessageHandlingBegun:
+		a.routed = true
 	case fact.EventRecordedByAggregate:
 		a.update(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:
@@ -45,6 +45,8 @@ func (a *MessageTypeAssertion) Notify(f fact.Fact) {
 }
 
 func (a *MessageTypeAssertion) update(env *envelope.Envelope) {
+	a.produced[env.Role] = true
+
 	// check to see if this message is of a similar type to our expected message
 	sim := compare.FuzzyTypeComparison(
 		a.Type.ReflectType(),
@@ -68,78 +70,126 @@ func (a *MessageTypeAssertion) update(env *envelope.Envelope) {
 func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
 	a.Role.MustBe(message.CommandRole, message.EventRole)
 
-	a.cmp = c
 	a.pass = false
 	a.best = nil
 	a.sim = 0
+	a.routed = false
+	a.produced = map[message.Role]bool{}
 }
 
 // End is called after the message-under-test is dispatched.
 func (a *MessageTypeAssertion) End(w io.Writer, r render.Renderer) bool {
-	writeIcon(w, a.pass)
+	rep := &report{Pass: a.pass}
+	a.buildReport(rep, r)
 
-	// write a description of the assertion
-	writeByRole(
-		w,
+	iago.MustWriteTo(w, rep)
+
+	return a.pass
+}
+
+// buildReport populates rep with the result of the assertion.
+func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
+	rep.Title = byRole(
 		a.Role,
-		fmt.Sprintf(" execute any '%s' command", a.Type),
-		fmt.Sprintf(" record any '%s' event", a.Type),
+		fmt.Sprintf("execute any '%s' command", a.Type),
+		fmt.Sprintf("record any '%s' event", a.Type),
 	)
 
-	// we found the exact message type we expected
-	if a.pass {
-		iago.MustWriteString(w, "\n")
-		return true
-	}
-
-	// write the failure message
-	writeByRole(
-		w,
-		a.Role,
-		" (failed: no commands of this type were executed)\n\n",
-		" (failed: no events of this type were recorded)\n\n",
-	)
-
-	// if there's no "best match", write a description of the expected message
-	// type then bail
-	iw := indent.NewIndenter(w, []byte("  | "))
-	if a.best == nil {
-		iago.MustWriteString(iw, a.Type.String())
-		iago.MustWriteString(w, "\n")
-		return false
-	}
-
-	iago.Must(
-		render.WriteDiff(
-			w,
+	if a.pass || a.best == nil {
+		rep.Details = a.Type.String()
+	} else {
+		rep.Details = renderDiff(
 			a.Type.String(),
 			a.best.Type.String(),
-		),
-	)
-	iago.MustWriteString(iw, "\n\n")
-
-	// write a hint about how the failure might be fixed
-	if a.sim == compare.SameTypes {
-		writeHintByRole(
-			iw,
-			a.Role,
-			a.best.Role,
-			"",
-			"A message of this type was executed as a command, did you mean to use the ExpectCommandType() assertion instead of ExpectEventType()?",
-			"A message of this type was recorded as an event, did you mean to use the ExpectEventType() assertion instead of ExpectCommandType()?",
-		)
-	} else {
-		writeHintByRole(
-			iw,
-			a.Role,
-			a.best.Role,
-			"Check the type of the message.",
-			"A message of a similar type was executed as a command, did you mean to use the ExpectCommandType() assertion instead of ExpectEventType()?",
-			"A message of a similar type was recorded as an event, did you mean to use the ExpectEventType() assertion instead of ExpectCommandType()?",
 		)
 	}
 
-	iago.MustWriteString(w, "\n")
+	if a.pass {
+		return
+	}
 
-	return false
+	// there is no "best match". if any messages were produced at all they weren't
+	// of a related type.
+	if a.sim == compare.UnrelatedTypes {
+		// nothing was produced at all
+		if len(a.produced) == 0 {
+			rep.Summary = "no commands or events were produced"
+
+			// if the message did get routed somewhere, it's probably a legitimate bug
+			// with the business logic, otherwise there's a possibility that the routing
+			// configuration is wrong.
+			if a.routed {
+				rep.addHint("check the application logic")
+			} else {
+				rep.addHint("check the application routing configuration for this type")
+			}
+
+			return
+		}
+
+		// some messages were produced
+		rep.Summary = byRole(
+			a.Role,
+			"no commands of this type were executed",
+			"no events of this type were recorded",
+		)
+
+		// if messages of the correct role were produced, perhaps there's just a
+		// simple mispelling of the type. this is common because many messages have
+		// the same fields.
+		if a.produced[a.Role] {
+			rep.addHint("check the assertion's message type")
+		} else {
+			a.addWrongAssertionHint(rep)
+		}
+
+		return
+	}
+
+	// the types are equal, so the roles must be a mismatch
+	if a.sim == compare.SameTypes {
+		rep.Summary = byRole(
+			a.best.Role,
+			"a message of this type was executed as a command",
+			"a message of this type was recorded as an event",
+		)
+
+		a.addWrongAssertionHint(rep)
+
+		return
+	}
+
+	// finally, a message of a similar type did occur.
+
+	// note this language here is deliberately vague, it doesn't imply whether it
+	// currently is or isn't a pointer, just questions if it should be.
+	rep.addHint("check the assertion's message type, should it be a pointer?")
+
+	if a.Role == a.best.Role {
+		rep.Summary = byRole(
+			a.Role,
+			"a command of a similar type was executed",
+			"an event of a similar type was recorded",
+		)
+
+		return
+	}
+
+	// otherwise, both the role and the content are wrong
+	rep.Summary = byRole(
+		a.best.Role,
+		"a message of a similar type was executed as a command",
+		"a message of a similar type was recorded as an event",
+	)
+
+	a.addWrongAssertionHint(rep)
+}
+
+// addWrongAssertionHint adds a common hint about selecting the correct assertion.
+func (a *MessageTypeAssertion) addWrongAssertionHint(rep *report) {
+	rep.addHint(byRole(
+		a.Role,
+		"did you mean to use the EventTypeRecorded assertion instead of CommandTypeExecuted?",
+		"did you mean to use the CommandTypeExecuted assertion instead of EventTypeRecorded?",
+	))
 }

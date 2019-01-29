@@ -6,10 +6,10 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/render"
-
 	"github.com/dogmatiq/enginekit/message"
-
 	"github.com/dogmatiq/iago"
+	"github.com/dogmatiq/iago/count"
+	"github.com/dogmatiq/iago/indent"
 )
 
 // writeIcon writes a pass or failure icon to w.
@@ -21,71 +21,83 @@ func writeIcon(w io.Writer, pass bool) {
 	}
 }
 
-// writeByRole writes a message based a message role.
-// message role is the same as some expected role, or if it differs, whether the
-// expected role is CommandRole or EventType.
-func writeByRole(
-	w io.Writer,
-	r message.Role,
-	command, event string,
-) {
-	switch r {
-	case message.CommandRole:
-		iago.MustWriteString(w, command)
-	case message.EventRole:
-		iago.MustWriteString(w, event)
+// byRole returns a message based on a message's role.
+func byRole(r message.Role, command, event string) string {
+	if r == message.CommandRole {
+		return command
 	}
+
+	return event
 }
 
-// writeHintByRole writes one of three given messages depending on whether the a
-// message role is the same as some expected role, or if it differs, whether the
-// expected role is CommandRole or EventType.
-func writeHintByRole(
-	w io.Writer,
-	expected, actual message.Role,
-	same, command, event string,
-) {
-	m := ""
-
-	switch actual {
-	case expected:
-		m = same
-	case message.CommandRole:
-		m = command
-	case message.EventRole:
-		m = event
-	}
-
-	if m == "" {
-		panic("internal assert error: no message provided")
-	}
-
-	iago.MustWriteString(w, "Hint: ")
-	iago.MustWriteString(w, m)
-	iago.MustWriteString(w, "\n")
+// renderDiff returns the diff of a and b.
+func renderDiff(a, b string) string {
+	var w strings.Builder
+	iago.Must(render.WriteDiff(&w, a, b))
+	return w.String()
 }
 
-// writeMessageDiff writes the diff of two messages to w.
-func writeMessageDiff(
-	w io.Writer,
-	r render.Renderer,
-	a, b dogma.Message,
-) {
-	var aw, bw strings.Builder
+// renderMessage returns the representation of m, as per r.
+func renderMessage(r render.Renderer, m dogma.Message) string {
+	var w strings.Builder
+	iago.Must(r.WriteMessage(&w, m))
+	return w.String()
+}
 
-	iago.Must(
-		r.WriteMessage(&aw, a),
-	)
+// report generates an assertion report in the standard format.
+type report struct {
+	Pass    bool
+	Title   string
+	Summary string
+	Hints   []string
+	Details string
+}
 
-	iago.Must(
-		r.WriteMessage(&bw, b),
-	)
+func (r *report) addHint(h string) {
+	r.Hints = append(r.Hints, h)
+}
 
-	iago.Must(
-		render.WriteDiff(
-			w,
-			aw.String(),
-			bw.String(),
-		),
-	)
+func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
+	defer iago.Recover(&err)
+
+	w := count.NewWriter(next)
+
+	writeIcon(w, r.Pass)
+	iago.MustWriteByte(w, ' ')
+	iago.MustWriteString(w, r.Title)
+
+	if r.Summary != "" {
+		iago.MustWriteString(w, " (")
+		iago.MustWriteString(w, r.Summary)
+		iago.MustWriteByte(w, ')')
+	}
+
+	iago.MustWriteByte(w, '\n')
+
+	indenter := indent.NewIndenter(w, []byte("  | "))
+
+	if len(r.Hints) > 0 {
+		iago.MustWriteByte(w, '\n')
+		iago.MustWriteString(indenter, "Hint:\n")
+
+		for _, h := range r.Hints {
+			iago.MustWriteString(indenter, "- ")
+			iago.MustWriteString(indenter, h)
+			iago.MustWriteByte(indenter, '\n')
+		}
+
+		if r.Details != "" {
+			iago.MustWriteByte(indenter, '\n')
+		}
+	}
+
+	if r.Details != "" {
+		iago.MustWriteString(indenter, r.Details)
+	}
+
+	iago.MustWriteByte(w, '\n')
+
+	// TODO(jmalloc): replace with w.Count64()
+	// https://github.com/dogmatiq/iago/issues/1
+	return int64(w.Count()), nil
 }
