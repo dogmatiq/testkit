@@ -87,6 +87,7 @@ func (c *Controller) Handle(
 	if exists {
 		obs.Notify(fact.ProcessInstanceLoaded{
 			HandlerName: c.name,
+			Handler:     c.handler,
 			InstanceID:  id,
 			Root:        r,
 			Envelope:    env,
@@ -94,6 +95,7 @@ func (c *Controller) Handle(
 	} else {
 		obs.Notify(fact.ProcessInstanceNotFound{
 			HandlerName: c.name,
+			Handler:     c.handler,
 			InstanceID:  id,
 			Envelope:    env,
 		})
@@ -174,6 +176,7 @@ func (c *Controller) routeEvent(
 
 	obs.Notify(fact.ProcessEventIgnored{
 		HandlerName: c.name,
+		Handler:     c.handler,
 		Envelope:    env,
 	})
 
@@ -192,6 +195,7 @@ func (c *Controller) routeTimeout(
 
 	obs.Notify(fact.ProcessTimeoutIgnored{
 		HandlerName: c.name,
+		Handler:     c.handler,
 		Envelope:    env,
 	})
 

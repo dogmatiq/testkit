@@ -9,6 +9,7 @@ import (
 // existing instance in order to handle an event or timeout.
 type ProcessInstanceLoaded struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	InstanceID  string
 	Root        dogma.ProcessRoot
 	Envelope    *envelope.Envelope
@@ -18,6 +19,7 @@ type ProcessInstanceLoaded struct {
 // route an event to any instance.
 type ProcessEventIgnored struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	Envelope    *envelope.Envelope
 }
 
@@ -25,6 +27,7 @@ type ProcessEventIgnored struct {
 // a timeout message because its instance no longer exists.
 type ProcessTimeoutIgnored struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	Envelope    *envelope.Envelope
 }
 
@@ -32,6 +35,7 @@ type ProcessTimeoutIgnored struct {
 // to load an existing instance while handling an event or timeout.
 type ProcessInstanceNotFound struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	InstanceID  string
 	Envelope    *envelope.Envelope
 }
@@ -40,6 +44,7 @@ type ProcessInstanceNotFound struct {
 // process instance while handling an event.
 type ProcessInstanceBegun struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	InstanceID  string
 	Root        dogma.ProcessRoot
 	Envelope    *envelope.Envelope
@@ -49,6 +54,7 @@ type ProcessInstanceBegun struct {
 // a process instance while handling an event or timeout.
 type ProcessInstanceEnded struct {
 	HandlerName string
+	Handler     dogma.ProcessMessageHandler
 	InstanceID  string
 	Root        dogma.ProcessRoot
 	Envelope    *envelope.Envelope
@@ -58,6 +64,7 @@ type ProcessInstanceEnded struct {
 // handling an event or timeout.
 type CommandExecutedByProcess struct {
 	HandlerName     string
+	Handler         dogma.ProcessMessageHandler
 	InstanceID      string
 	Root            dogma.ProcessRoot
 	Envelope        *envelope.Envelope
@@ -68,6 +75,7 @@ type CommandExecutedByProcess struct {
 // handling an event or timeout.
 type TimeoutScheduledByProcess struct {
 	HandlerName     string
+	Handler         dogma.ProcessMessageHandler
 	InstanceID      string
 	Root            dogma.ProcessRoot
 	Envelope        *envelope.Envelope
@@ -78,6 +86,7 @@ type TimeoutScheduledByProcess struct {
 // handling an event or timeout.
 type MessageLoggedByProcess struct {
 	HandlerName  string
+	Handler      dogma.ProcessMessageHandler
 	InstanceID   string
 	Root         dogma.ProcessRoot
 	Envelope     *envelope.Envelope

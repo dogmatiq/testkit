@@ -108,6 +108,7 @@ var _ = Describe("type scope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.ProcessInstanceBegun{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
@@ -298,6 +299,7 @@ var _ = Describe("type scope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.ProcessInstanceEnded{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
@@ -336,6 +338,7 @@ var _ = Describe("type scope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.CommandExecutedByProcess{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
@@ -384,6 +387,7 @@ var _ = Describe("type scope", func() {
 				Expect(buf.Facts).To(ContainElement(
 					fact.TimeoutScheduledByProcess{
 						HandlerName: "<name>",
+						Handler:     handler,
 						InstanceID:  "<instance>",
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
@@ -452,6 +456,7 @@ var _ = Describe("type scope", func() {
 			Expect(buf.Facts).To(ContainElement(
 				fact.MessageLoggedByProcess{
 					HandlerName: "<name>",
+					Handler:     handler,
 					InstanceID:  "<instance>",
 					Root:        &fixtures.ProcessRoot{},
 					Envelope:    event,

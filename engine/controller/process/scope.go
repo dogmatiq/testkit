@@ -37,6 +37,7 @@ func (s *scope) Begin() bool {
 
 	s.observer.Notify(fact.ProcessInstanceBegun{
 		HandlerName: s.name,
+		Handler:     s.handler,
 		InstanceID:  s.id,
 		Root:        s.root,
 		Envelope:    s.env,
@@ -56,6 +57,7 @@ func (s *scope) End() {
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		HandlerName: s.name,
+		Handler:     s.handler,
 		InstanceID:  s.id,
 		Root:        s.root,
 		Envelope:    s.env,
@@ -88,6 +90,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
 		HandlerName:     s.name,
+		Handler:         s.handler,
 		InstanceID:      s.id,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -118,6 +121,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
 		HandlerName:     s.name,
+		Handler:         s.handler,
 		InstanceID:      s.id,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -128,6 +132,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		HandlerName:  s.name,
+		Handler:      s.handler,
 		InstanceID:   s.id,
 		Root:         s.root,
 		Envelope:     s.env,
