@@ -95,9 +95,7 @@ func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
 		fmt.Sprintf("record any '%s' event", a.Type),
 	)
 
-	if a.pass || a.best == nil {
-		rep.Details = a.Type.String()
-	} else {
+	if a.best != nil {
 		rep.Details = renderDiff(
 			a.Type.String(),
 			a.best.Type.String(),
