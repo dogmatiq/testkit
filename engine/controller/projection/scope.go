@@ -1,6 +1,7 @@
 package projection
 
 import (
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 )
@@ -8,6 +9,7 @@ import (
 // scope is an implementation of dogma.ProjectionEventScope.
 type scope struct {
 	name     string
+	handler  dogma.ProjectionMessageHandler
 	observer fact.Observer
 	event    *envelope.Envelope
 }

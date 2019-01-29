@@ -59,6 +59,7 @@ func (c *Controller) Handle(
 
 	s := &scope{
 		name:     c.name,
+		handler:  c.handler,
 		observer: obs,
 		event:    env,
 	}
