@@ -96,8 +96,8 @@ func (a *MessageTypeAssertion) End(w io.Writer, r render.Renderer) bool {
 	writeByRole(
 		w,
 		a.Role,
-		" (no commands of this type were executed)\n\n",
-		" (no events of this type were recorded)\n\n",
+		" (failed: no commands of this type were executed)\n\n",
+		" (failed: no events of this type were recorded)\n\n",
 	)
 
 	// if there's no "best match", write a description of the expected message

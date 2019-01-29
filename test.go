@@ -136,6 +136,7 @@ func (t *test) end(assertions []assert.Assertion) {
 	}
 
 	buf := &strings.Builder{}
+	buf.WriteString("assertion report:\n\n")
 	pass := true
 
 	for _, a := range assertions {

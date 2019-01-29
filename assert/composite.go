@@ -61,7 +61,7 @@ func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
 	if message != "" {
 		iago.MustWriteString(w, " (")
 		iago.MustWriteString(w, message)
-		iago.MustWriteString(w, " )")
+		iago.MustWriteByte(w, ')')
 	}
 
 	iago.MustWriteString(w, "\n")

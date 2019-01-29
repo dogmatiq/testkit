@@ -109,8 +109,8 @@ func (a *MessageAssertion) End(w io.Writer, r render.Renderer) bool {
 	writeByRole(
 		w,
 		a.Role,
-		" (this command was not executed)\n\n",
-		" (this event was not recorded)\n\n",
+		" (failed: this command was not executed)\n\n",
+		" (failed: this event was not recorded)\n\n",
 	)
 
 	// if there's no "best match", write a description of the expected message
