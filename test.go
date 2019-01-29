@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/dogmatest/assert"
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine"
+	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
 )
 
@@ -36,97 +37,88 @@ type test struct {
 
 func (t *test) Setup(messages ...dogma.Message) Test {
 	for _, m := range messages {
-		t.dispatch(m, nil)
+		t.dispatch(m)
 	}
 
 	return t
 }
 
 func (t *test) ExecuteCommand(m dogma.Message, a assert.Assertion) Test {
-	if a == nil {
-		panic("assertion must not be nil")
-	}
-
-	// TODO: fail if TypeOf(m)'s role is not correct
-	t.dispatch(m, a)
+	t.begin(a)
+	t.dispatch(m, a) // TODO: fail if TypeOf(m)'s role is not correct
+	t.end(a)
 
 	return t
 }
 
 func (t *test) RecordEvent(m dogma.Message, a assert.Assertion) Test {
-	if a == nil {
-		panic("assertion must not be nil")
-	}
-
-	// TODO: fail if TypeOf(m)'s role is not correct
-	t.dispatch(m, a)
+	t.begin(a)
+	t.dispatch(m, a) // TODO: fail if TypeOf(m)'s role is not correct
+	t.end(a)
 
 	return t
 }
 
 func (t *test) AdvanceTimeBy(delta time.Duration, a assert.Assertion) Test {
-	if a == nil {
-		panic("assertion must not be nil")
-	}
-
 	if delta < 0 {
 		panic("delta must be positive")
 	}
 
-	t.now.Add(delta)
-	t.tick(a)
-
-	return t
+	return t.AdvanceTimeTo(
+		t.now.Add(delta),
+		a,
+	)
 }
 
 func (t *test) AdvanceTimeTo(now time.Time, a assert.Assertion) Test {
-	if a == nil {
-		panic("assertion must not be nil")
-	}
-
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
 	}
 
 	t.now = now
+
+	t.begin(a)
 	t.tick(a)
+	t.end(a)
 
 	return t
 }
 
-func (t *test) dispatch(m dogma.Message, a assert.Assertion) {
-	t.begin(a)
-
-	opts := t.options(a)
-
+func (t *test) dispatch(m dogma.Message, observers ...fact.Observer) {
+	opts := t.options(observers)
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
 		t.t.Fatal(err)
 	}
-
-	t.end(a)
 }
 
-func (t *test) tick(a assert.Assertion) {
-	t.begin(a)
-
-	opts := t.options(a)
-
+func (t *test) tick(observers ...fact.Observer) {
+	opts := t.options(observers)
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
 		t.t.Fatal(err)
 	}
-
-	t.end(a)
 }
 
-func (t *test) options(a assert.Assertion) []engine.DispatchOption {
-	return append(
+func (t *test) options(observers []fact.Observer) []engine.DispatchOption {
+	opts := append(
 		t.defaults,
 		engine.WithCurrentTime(t.now),
-		engine.WithObserver(a),
 	)
+
+	for _, obs := range observers {
+		opts = append(
+			opts,
+			engine.WithObserver(obs),
+		)
+	}
+
+	return opts
 }
 
 func (t *test) begin(a assert.Assertion) {
+	if a == nil {
+		panic("assertion must not be nil")
+	}
+
 	c := t.comparator
 	if c == nil {
 		c = compare.DefaultComparator{}
