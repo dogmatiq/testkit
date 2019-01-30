@@ -85,26 +85,9 @@ func (a *messageAssertionBehavior) Notify(f fact.Fact) {
 	}
 }
 
-// relevantHandlerTypes returns the types of handlers that could potentially
-// produce messages of the expected role.
-func (a *messageAssertionBehavior) relevantHandlerTypes() []handler.Type {
-	a.role.MustBe(message.CommandRole, message.EventRole)
-
-	if a.role == message.CommandRole {
-		return []handler.Type{handler.ProcessType}
-	}
-
-	return []handler.Type{
-		handler.AggregateType,
-		handler.IntegrationType,
-	}
-}
-
 // messageHandlingBegun updates the assertion's state to reflect f.
 func (a *messageAssertionBehavior) messageHandlingBegun(f fact.MessageHandlingBegun) {
-	relevant := a.relevantHandlerTypes()
-
-	if !f.HandlerType.Is(relevant...) {
+	if !f.HandlerType.IsProducerOf(a.role) {
 		return
 	}
 
