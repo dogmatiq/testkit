@@ -2,6 +2,7 @@ package render
 
 import (
 	"io"
+	"strings"
 
 	"github.com/dogmatiq/iago"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -31,4 +32,11 @@ func WriteDiff(w io.Writer, a, b string) (n int, err error) {
 	}
 
 	return
+}
+
+// Diff returns a human-readable diff of two strings.
+func Diff(a, b string) string {
+	var w strings.Builder
+	iago.Must(WriteDiff(&w, a, b))
+	return w.String()
 }

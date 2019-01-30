@@ -7,9 +7,10 @@ import (
 	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func Diff", func() {
+var _ = Describe("func WriteDiff", func() {
 	It("produces a word-diff of the input", func() {
 		iotest.TestWrite(
 			GinkgoT(),
@@ -24,5 +25,18 @@ var _ = Describe("func Diff", func() {
 			},
 			"foo [-bar-]{+qux+} baz",
 		)
+	})
+})
+
+var _ = Describe("func Diff", func() {
+	It("produces a word-diff of the input", func() {
+		Expect(
+			Diff(
+				"foo bar baz",
+				"foo qux baz",
+			),
+		).To(Equal(
+			"foo [-bar-]{+qux+} baz",
+		))
 	})
 })
