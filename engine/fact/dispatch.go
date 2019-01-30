@@ -1,6 +1,8 @@
 package fact
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/enginekit/handler"
@@ -14,6 +16,7 @@ import (
 type UnroutableMessageDispatched struct {
 	// Message is the message that was dispatched.
 	Message         dogma.Message
+	Now             time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 
@@ -21,12 +24,14 @@ type UnroutableMessageDispatched struct {
 // message that is able to be routed to at least one handler.
 type MessageDispatchBegun struct {
 	Envelope        *envelope.Envelope
+	Now             time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 
 // MessageDispatchCompleted indicates that a call Engine.Dispatch() has completed.
 type MessageDispatchCompleted struct {
 	Envelope        *envelope.Envelope
+	Now             time.Time
 	Error           error
 	EnabledHandlers map[handler.Type]bool
 }

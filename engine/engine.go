@@ -158,6 +158,7 @@ func (e *Engine) Dispatch(
 		do.observers.Notify(
 			fact.UnroutableMessageDispatched{
 				Message:         m,
+				Now:             do.now,
 				EnabledHandlers: do.enabledHandlers,
 			},
 		)
@@ -170,6 +171,7 @@ func (e *Engine) Dispatch(
 	do.observers.Notify(
 		fact.MessageDispatchBegun{
 			Envelope:        env,
+			Now:             do.now,
 			EnabledHandlers: do.enabledHandlers,
 		},
 	)
@@ -179,6 +181,7 @@ func (e *Engine) Dispatch(
 	do.observers.Notify(
 		fact.MessageDispatchCompleted{
 			Envelope:        env,
+			Now:             do.now,
 			Error:           err,
 			EnabledHandlers: do.enabledHandlers,
 		},
