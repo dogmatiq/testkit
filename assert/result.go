@@ -75,11 +75,16 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 	if len(r.Sections) != 0 || r.Explanation != "" {
 		iago.MustWriteByte(w, '\n')
 
-		iw := indent.NewIndenter(w, []byte("  | "))
+		iw := indent.NewIndenter(w, sectionsIndent)
 
 		if r.Explanation != "" {
-			iago.MustWriteString(iw, "EXPLANATION\n  ")
-			iago.MustWriteString(iw, r.Explanation)
+			iago.MustWriteString(iw, "EXPLANATION\n")
+
+			iago.MustWriteString(
+				iw,
+				indent.String(r.Explanation, sectionContentIndent),
+			)
+
 			iago.MustWriteByte(iw, '\n')
 
 			if len(r.Sections) != 0 {
@@ -90,7 +95,15 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 		for i, s := range r.Sections {
 			iago.MustWriteString(iw, strings.ToUpper(s.Title))
 			iago.MustWriteString(iw, "\n")
-			iago.MustWriteString(iw, indent.String(s.Content.String(), "  "))
+
+			iago.MustWriteString(
+				iw,
+				indent.String(
+					strings.TrimSpace(s.Content.String()),
+					sectionContentIndent,
+				),
+			)
+
 			iago.MustWriteByte(iw, '\n')
 
 			if i < len(r.Sections)-1 {
@@ -102,7 +115,7 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 	}
 
 	if len(r.SubResults) != 0 {
-		iw := indent.NewIndenter(w, []byte("    "))
+		iw := indent.NewIndenter(w, subResultsIndent)
 
 		for _, sr := range r.SubResults {
 			iago.MustWriteTo(iw, sr)
@@ -128,6 +141,12 @@ func (s *ReportSection) Append(f string, v ...interface{}) {
 func (s *ReportSection) AppendListItem(f string, v ...interface{}) {
 	s.Append("• "+f, v...)
 }
+
+var (
+	sectionsIndent       = []byte("  | ")
+	sectionContentIndent = "    "
+	subResultsIndent     = []byte("    ")
+)
 
 const (
 	suggestionsSection = "Suggestions"
