@@ -115,8 +115,9 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 	}
 
 	if len(r.SubResults) != 0 {
-		iw := indent.NewIndenter(w, subResultsIndent)
+		iago.MustWriteByte(w, '\n')
 
+		iw := indent.NewIndenter(w, subResultsIndent)
 		for _, sr := range r.SubResults {
 			iago.MustWriteTo(iw, sr)
 		}
