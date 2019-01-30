@@ -61,6 +61,7 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 
 	writeIcon(w, r.Ok)
 
+	iago.MustWriteByte(w, ' ')
 	iago.MustWriteString(w, r.Criteria)
 
 	if r.Outcome != "" {
@@ -71,15 +72,25 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 
 	iago.MustWriteByte(w, '\n')
 
-	if len(r.Sections) != 0 {
+	if len(r.Sections) != 0 || r.Explanation != "" {
 		iago.MustWriteByte(w, '\n')
 
 		iw := indent.NewIndenter(w, []byte("  | "))
 
+		if r.Explanation != "" {
+			iago.MustWriteString(iw, "Explanation: ")
+			iago.MustWriteString(iw, r.Explanation)
+			iago.MustWriteByte(iw, '\n')
+
+			if len(r.Sections) != 0 {
+				iago.MustWriteByte(iw, '\n')
+			}
+		}
+
 		for i, s := range r.Sections {
 			iago.MustWriteString(iw, s.Title)
 			iago.MustWriteString(iw, "\n\n")
-			iago.MustWriteString(iw, strings.TrimSpace(s.Content.String()))
+			iago.MustWriteString(iw, s.Content.String())
 			iago.MustWriteByte(iw, '\n')
 
 			if i < len(r.Sections)-1 {

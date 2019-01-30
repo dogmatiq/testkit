@@ -67,11 +67,11 @@ func (a *EventRecorded) Notify(f fact.Fact) {
 	case fact.MessageHandlingBegun:
 		a.messageHandlingBegun(x)
 	case fact.EventRecordedByAggregate:
-		a.eventRecordedByAggregate(x)
+		a.eventRecorded(x.Envelope)
 	case fact.EventRecordedByIntegration:
-		a.eventRecordedByIntegration(x)
+		a.eventRecorded(x.Envelope)
 	case fact.CommandExecutedByProcess:
-		a.commandExecutedByProcess(x)
+		a.commandExecuted(x.Envelope)
 	}
 }
 
@@ -90,30 +90,21 @@ func (a *EventRecorded) messageHandlingBegun(f fact.MessageHandlingBegun) {
 	a.engagedHandlers[f.HandlerName] = f.HandlerType
 }
 
-// eventRecordedByAggregate updates the assertion's state to reflect f.
-func (a *EventRecorded) eventRecordedByAggregate(f fact.EventRecordedByAggregate) {
-	a.eventRecorded(f.Envelope)
-}
-
-// eventRecordedByIntegration updates the assertion's state to reflect f.
-func (a *EventRecorded) eventRecordedByIntegration(f fact.EventRecordedByIntegration) {
-	a.eventRecorded(f.Envelope)
-}
-
-// commandExecutedByProcess updates the assertion's state to reflect f.
-func (a *EventRecorded) commandExecutedByProcess(f fact.CommandExecutedByProcess) {
+// commandExecuted updates the assertion's state to reflect the fact that a
+// command was executed.
+func (a *EventRecorded) commandExecuted(env *envelope.Envelope) {
 	a.commands++
 
-	if a.cmp.MessageIsEqual(f.Envelope.Message, a.Expected) {
+	if a.cmp.MessageIsEqual(env.Message, a.Expected) {
 		// an equal COMMAND is the best match we'll ever get that doesn't actually
 		// result in a passing assertion.
-		a.best = f.Envelope
+		a.best = env
 		a.sim = compare.SameTypes
 		a.equal = true
 		return
 	}
 
-	a.updateBestMatch(f.Envelope)
+	a.updateBestMatch(env)
 }
 
 // eventRecorded updates the assertion's state to reflect the fact that an event
