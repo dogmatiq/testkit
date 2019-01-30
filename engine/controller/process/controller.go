@@ -196,6 +196,7 @@ func (c *Controller) routeTimeout(
 	obs.Notify(fact.ProcessTimeoutIgnored{
 		HandlerName: c.name,
 		Handler:     c.handler,
+		InstanceID:  env.Origin.InstanceID,
 		Envelope:    env,
 	})
 

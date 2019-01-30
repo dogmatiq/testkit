@@ -596,6 +596,7 @@ var _ = Describe("type Controller", func() {
 						fact.ProcessTimeoutIgnored{
 							HandlerName: "<name>",
 							Handler:     handler,
+							InstanceID:  "<instance>",
 							Envelope:    timeout,
 						},
 					))

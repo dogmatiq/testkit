@@ -28,6 +28,7 @@ type ProcessEventIgnored struct {
 type ProcessTimeoutIgnored struct {
 	HandlerName string
 	Handler     dogma.ProcessMessageHandler
+	InstanceID  string
 	Envelope    *envelope.Envelope
 }
 
