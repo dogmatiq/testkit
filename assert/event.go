@@ -159,11 +159,7 @@ func (a *EventRecorded) End(r render.Renderer) *Result {
 		),
 	}
 
-	if a.ok {
-		res.Outcome = "the expected event was recorded"
-	} else {
-		res.Outcome = "the expected event was NOT recorded"
-
+	if !a.ok {
 		if a.best == nil {
 			a.buildResultNoMatch(r, res)
 		} else {
