@@ -151,5 +151,5 @@ var (
 
 const (
 	suggestionsSection = "Suggestions"
-	diffSection        = "Diff"
+	diffSection        = "Message Diff"
 )
