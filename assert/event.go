@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/dogmatiq/enginekit/handler"
 
 	"github.com/dogmatiq/dogma"
@@ -68,11 +67,11 @@ func (a *EventRecorded) Notify(f fact.Fact) {
 	case fact.MessageHandlingBegun:
 		a.messageHandlingBegun(x)
 	case fact.EventRecordedByAggregate:
-		a.eventRecorded(x.Envelope)
+		a.eventRecorded(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:
-		a.eventRecorded(x.Envelope)
+		a.eventRecorded(x.EventEnvelope)
 	case fact.CommandExecutedByProcess:
-		a.commandExecuted(x.Envelope)
+		a.commandExecuted(x.CommandEnvelope)
 	}
 }
 
@@ -112,8 +111,6 @@ func (a *EventRecorded) commandExecuted(env *envelope.Envelope) {
 // was recorded.
 func (a *EventRecorded) eventRecorded(env *envelope.Envelope) {
 	a.events++
-
-	spew.Dump(env.Message, a.Expected)
 
 	if a.cmp.MessageIsEqual(env.Message, a.Expected) {
 		a.ok = true
