@@ -10,8 +10,8 @@ import (
 	"github.com/dogmatiq/enginekit/message"
 )
 
-// EventRecorded asserts that a specific event is recorded.
-type EventRecorded struct {
+// CommandExecuted asserts that a specific command is executed.
+type CommandExecuted struct {
 	messageAssertionBehavior
 
 	Expected dogma.Message
@@ -20,11 +20,11 @@ type EventRecorded struct {
 // Begin is called before the test is executed.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *EventRecorded) Begin(c compare.Comparator) {
+func (a *CommandExecuted) Begin(c compare.Comparator) {
 	// reset everything
 	a.messageAssertionBehavior = messageAssertionBehavior{
 		expected: a.Expected,
-		role:     message.EventRole,
+		role:     message.CommandRole,
 		cmp:      c,
 	}
 }
@@ -32,11 +32,11 @@ func (a *EventRecorded) Begin(c compare.Comparator) {
 // End is called after the test is executed.
 //
 // It returns the result of the assertion.
-func (a *EventRecorded) End(r render.Renderer) *Result {
+func (a *CommandExecuted) End(r render.Renderer) *Result {
 	res := &Result{
 		Ok: a.ok,
 		Criteria: fmt.Sprintf(
-			"record a specific '%s' event",
+			"edxecuted a specific '%s' command",
 			message.TypeOf(a.Expected),
 		),
 	}
@@ -54,36 +54,27 @@ func (a *EventRecorded) End(r render.Renderer) *Result {
 
 // buildResultNoMatch builds the assertion result when there is no "best-match"
 // message.
-func (a *EventRecorded) buildResultNoMatch(r render.Renderer, res *Result) {
+func (a *CommandExecuted) buildResultNoMatch(r render.Renderer, res *Result) {
 	s := res.Section(suggestionsSection)
 
-	if !a.enabledHandlers[handler.AggregateType] &&
-		!a.enabledHandlers[handler.IntegrationType] {
-		res.Explanation = "no relevant handler types (aggregate and integration) were enabled"
-		s.AppendListItem("enable the relevant handler types using the EnableHandlerType() option")
+	if !a.enabledHandlers[handler.ProcessType] {
+		res.Explanation = "the relevant handler type (process) was not enabled"
+		s.AppendListItem("enable process handlers using the EnableHandlerType() option")
 		return
 	}
 
-	if !a.enabledHandlers[handler.AggregateType] {
-		s.AppendListItem("enable aggregate handlers using the EnableHandlerType() option")
-	}
-
-	if !a.enabledHandlers[handler.IntegrationType] {
-		s.AppendListItem("enable integration handlers using the EnableHandlerType() option")
-	}
-
 	if len(a.engagedHandlers) == 0 {
-		res.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
+		res.Explanation = "no relevant handlers (processes) were engaged"
 		s.AppendListItem("check the application's routing configuration")
 		return
 	}
 
 	if a.commands == 0 && a.events == 0 {
 		res.Explanation = "no messages were produced at all"
-	} else if a.events == 0 {
-		res.Explanation = "no events were recorded at all"
+	} else if a.commands == 0 {
+		res.Explanation = "no commands were executed at all"
 	} else {
-		res.Explanation = "none of the engaged handlers recorded the expected event"
+		res.Explanation = "none of the engaged handlers executed the expected command"
 	}
 
 	for n, t := range a.engagedHandlers {
@@ -93,38 +84,38 @@ func (a *EventRecorded) buildResultNoMatch(r render.Renderer, res *Result) {
 
 // buildResultNoMatch builds the assertion result when there is a "best-match"
 // message available.
-func (a *EventRecorded) buildResult(r render.Renderer, res *Result) {
+func (a *CommandExecuted) buildResult(r render.Renderer, res *Result) {
 	s := res.Section(suggestionsSection)
 
 	// the "best match" is equal to the expected message. this means that only the
 	// roles were mismatched.
 	if a.equal {
 		res.Explanation = fmt.Sprintf(
-			"the expected message was executed as a command by the '%s' %s message handler",
+			"the expected message was recorded as an event by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 
 		s.AppendListItem(
-			"verify that the '%s' %s message handler intended to execute a command of this type",
+			"verify that the '%s' %s message handler intended to record an event of this type",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 
-		s.AppendListItem("verify that EventRecorded is the correct assertion, did you mean CommandExecuted?")
+		s.AppendListItem("verify that CommandExecuted is the correct assertion, did you mean EventRecorded?")
 		return
 	}
 
 	if a.sim == compare.SameTypes {
 		res.Explanation = fmt.Sprintf(
-			"a similar event was recorded by the '%s' %s message handler",
+			"a similar command was executed by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 		s.AppendListItem("check the content of the message")
 	} else {
 		res.Explanation = fmt.Sprintf(
-			"an event of a similar type was recorded by the '%s' %s message handler",
+			"a command of a similar type was executed by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)

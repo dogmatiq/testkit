@@ -7,13 +7,12 @@ import (
 	"github.com/dogmatiq/dogmatest/assert"
 )
 
-// // CommandExecuted returns an assertion that passes if m is executed as a command.
-// func CommandExecuted(m dogma.Message) assert.Assertion {
-// 	return &assert.MessageAssertion{
-// 		Message: m,
-// 		Role:    message.CommandRole,
-// 	}
-// }
+// CommandExecuted returns an assertion that passes if m is executed as a command.
+func CommandExecuted(m dogma.Message) assert.Assertion {
+	return &assert.CommandExecuted{
+		Expected: m,
+	}
+}
 
 // EventRecorded returns an assertion that passes if m is recorded as an event.
 func EventRecorded(m dogma.Message) assert.Assertion {
