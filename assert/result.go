@@ -78,7 +78,7 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 		iw := indent.NewIndenter(w, []byte("  | "))
 
 		if r.Explanation != "" {
-			iago.MustWriteString(iw, "Explanation: ")
+			iago.MustWriteString(iw, "EXPLANATION\n  ")
 			iago.MustWriteString(iw, r.Explanation)
 			iago.MustWriteByte(iw, '\n')
 
@@ -88,9 +88,9 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 		}
 
 		for i, s := range r.Sections {
-			iago.MustWriteString(iw, s.Title)
-			iago.MustWriteString(iw, "\n\n")
-			iago.MustWriteString(iw, s.Content.String())
+			iago.MustWriteString(iw, strings.ToUpper(s.Title))
+			iago.MustWriteString(iw, "\n")
+			iago.MustWriteString(iw, indent.String(s.Content.String(), "  "))
 			iago.MustWriteByte(iw, '\n')
 
 			if i < len(r.Sections)-1 {
@@ -126,7 +126,7 @@ func (s *ReportSection) Append(f string, v ...interface{}) {
 
 // AppendListItem appends a line of text prefixed with a bullet.
 func (s *ReportSection) AppendListItem(f string, v ...interface{}) {
-	s.Append("  • "+f, v...)
+	s.Append("• "+f, v...)
 }
 
 const (
