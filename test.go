@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dogmatiq/iago"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/assert"
 	"github.com/dogmatiq/dogmatest/compare"
@@ -136,7 +138,10 @@ func (t *test) end(a assert.Assertion) {
 	buf := &strings.Builder{}
 	buf.WriteString("assertion report:\n\n")
 
-	if a.End(buf, r) {
+	res := a.End(r)
+	iago.MustWriteTo(buf, res)
+
+	if res.Ok {
 		t.t.Log(buf.String())
 	} else {
 		t.t.Fatal(buf.String())

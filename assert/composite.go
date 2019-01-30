@@ -1,20 +1,15 @@
 package assert
 
 import (
-	"bytes"
-	"io"
-
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
-	"github.com/dogmatiq/iago"
-	"github.com/dogmatiq/iago/indent"
 )
 
 // CompositeAssertion is an assertion that is a container for other assertions.
 type CompositeAssertion struct {
-	// Title is the title to render in reports.
-	Title string
+	// Criteria is a brief description of the assertion's requirement to pass.
+	Criteria string
 
 	// SubAssertions is the set of assertions in the container.
 	SubAssertions []Assertion
@@ -34,36 +29,36 @@ func (a *CompositeAssertion) Notify(f fact.Fact) {
 	}
 }
 
-// Begin is called before the message-under-test is dispatched.
+// Begin is called before the test is executed.
+//
+// c is the comparator used to compare messages and other entities.
 func (a *CompositeAssertion) Begin(c compare.Comparator) {
 	for _, sub := range a.SubAssertions {
 		sub.Begin(c)
 	}
 }
 
-// End is called after the message-under-test is dispatched.
-func (a *CompositeAssertion) End(w io.Writer, r render.Renderer) bool {
-	rep := &report{
-		Title: a.Title,
+// End is called after the test is executed.
+//
+// It returns the result of the assertion.
+func (a *CompositeAssertion) End(r render.Renderer) *Result {
+	res := &Result{
+		Criteria: a.Criteria,
 	}
 
 	n := 0
-	buf := &bytes.Buffer{}
 
 	for _, sub := range a.SubAssertions {
-		if sub.End(buf, r) {
+		sr := sub.End(r)
+
+		if sr.Ok {
 			n++
 		}
+
+		res.AppendResult(sr)
 	}
 
-	rep.SubTitle, rep.Pass = a.Predicate(n)
+	res.Outcome, res.Ok = a.Predicate(n)
 
-	iago.MustWriteTo(w, rep)
-	iago.MustWriteByte(w, '\n')
-	iago.MustWriteTo(
-		indent.NewIndenter(w, nil),
-		buf,
-	)
-
-	return rep.Pass
+	return res
 }

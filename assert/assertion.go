@@ -1,8 +1,6 @@
 package assert
 
 import (
-	"io"
-
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
@@ -13,11 +11,13 @@ import (
 type Assertion interface {
 	fact.Observer
 
-	// Begin is called before the message-under-test is dispatched.
-	Begin(compare.Comparator)
+	// Begin is called before the test is executed.
+	//
+	// c is the comparator used to compare messages and other entities.
+	Begin(c compare.Comparator)
 
-	// End is called after the message-under-test is dispatched.
-	// The assertion writes a report of its result to w.
-	// It returns true if the assertion passed.
-	End(io.Writer, render.Renderer) bool
+	// End is called after the test is executed.
+	//
+	// It returns the result of the assertion.
+	End(r render.Renderer) *Result
 }

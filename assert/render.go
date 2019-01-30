@@ -37,6 +37,13 @@ func renderDiff(a, b string) string {
 	return w.String()
 }
 
+// renderMessageDiff returns the diff of a and b.
+func renderMessageDiff(r render.Renderer, a, b dogma.Message) string {
+	return renderDiff(
+		renderMessage(r, a), renderMessage(r, b),
+	)
+}
+
 // renderMessage returns the representation of m, as per r.
 func renderMessage(r render.Renderer, m dogma.Message) string {
 	var w strings.Builder
