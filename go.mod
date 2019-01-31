@@ -3,7 +3,7 @@ module github.com/dogmatiq/dogmatest
 require (
 	github.com/dogmatiq/dapper v0.3.1
 	github.com/dogmatiq/dogma v0.0.0-20190125031156-7aa035456afb
-	github.com/dogmatiq/enginekit v0.0.0-20190125064235-540de5af7fce
+	github.com/dogmatiq/enginekit v0.0.0-20190130234730-a07e2b8a259b
 	github.com/dogmatiq/iago v0.3.0
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
