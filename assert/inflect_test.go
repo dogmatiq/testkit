@@ -36,17 +36,5 @@ var _ = Describe("func inflect", func() {
 
 		entry(message.CommandRole, "the <message> was <produced>", "the command was executed"),
 		entry(message.EventRole, "the <message> was <produced>", "the event was recorded"),
-
-		entry(message.CommandRole, "an <other-message>", "an event"),
-		entry(message.EventRole, "an <other-message>", "a command"),
-
-		entry(message.CommandRole, "the <other-messages>", "the events"),
-		entry(message.EventRole, "the <other-messages>", "the commands"),
-
-		entry(message.CommandRole, "<other-produce> a specific <other-message>", "record a specific event"),
-		entry(message.EventRole, "<other-produce> a specific <other-message>", "execute a specific command"),
-
-		entry(message.CommandRole, "the <other-message> was <other-produced>", "the event was recorded"),
-		entry(message.EventRole, "the <other-message> was <other-produced>", "the command was executed"),
 	)
 })

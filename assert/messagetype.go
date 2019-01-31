@@ -125,6 +125,7 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *R
 	s := res.Section(suggestionsSection)
 
 	res.Explanation = inflect(
+		a.Role,
 		"a <message> of a similar type was <produced> by the '%s' %s message handler",
 		a.best.Origin.HandlerName,
 		a.best.Origin.HandlerType,
@@ -141,11 +142,12 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *R
 func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res *Result) {
 	s := res.Section(suggestionsSection)
 
-	s.AppendListItem(
-		"verify that the '%s' %s message handler intended to <other-produce> an <other-message> of this type",
+	s.AppendListItem(inflect(
+		a.best.Role,
+		"verify that the '%s' %s message handler intended to <produce> an <message> of this type",
 		a.best.Origin.HandlerName,
 		a.best.Origin.HandlerType,
-	)
+	))
 
 	if a.Role == message.CommandRole {
 		s.AppendListItem("verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?")
@@ -155,13 +157,15 @@ func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res 
 
 	if a.sim == compare.SameTypes {
 		res.Explanation = inflect(
-			"a message of this type was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Role,
+			"a message of this type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 	} else {
 		res.Explanation = inflect(
-			"a message of a similar type was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Role,
+			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)

@@ -140,6 +140,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 
 	if a.sim == compare.SameTypes {
 		res.Explanation = inflect(
+			a.Role,
 			"a similar <message> was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
@@ -147,6 +148,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 		s.AppendListItem("check the content of the message")
 	} else {
 		res.Explanation = inflect(
+			a.Role,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
@@ -177,11 +179,12 @@ func (a *MessageAssertion) buildDiff(r render.Renderer, res *Result) {
 func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Result) {
 	s := res.Section(suggestionsSection)
 
-	s.AppendListItem(
-		"verify that the '%s' %s message handler intended to <other-produce> an <other-message> of this type",
+	s.AppendListItem(inflect(
+		a.best.Role,
+		"verify that the '%s' %s message handler intended to <produce> an <message> of this type",
 		a.best.Origin.HandlerName,
 		a.best.Origin.HandlerType,
-	)
+	))
 
 	if a.Role == message.CommandRole {
 		s.AppendListItem("verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?")
@@ -193,7 +196,8 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 	// roles were mismatched.
 	if a.equal {
 		res.Explanation = inflect(
-			"the expected message was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Role,
+			"the expected message was <produced> as a <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
@@ -203,13 +207,15 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 
 	if a.sim == compare.SameTypes {
 		res.Explanation = inflect(
-			"a similar message was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Role,
+			"a similar message was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 	} else {
 		res.Explanation = inflect(
-			"a message of a similar type was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Role,
+			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
