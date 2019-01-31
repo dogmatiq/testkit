@@ -2,6 +2,9 @@ package dogmatest
 
 import (
 	"fmt"
+	"reflect"
+
+	"github.com/dogmatiq/enginekit/message"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/assert"
@@ -9,35 +12,37 @@ import (
 
 // CommandExecuted returns an assertion that passes if m is executed as a command.
 func CommandExecuted(m dogma.Message) assert.Assertion {
-	return &assert.CommandExecuted{
+	return &assert.MessageAssertion{
 		Expected: m,
+		Role:     message.CommandRole,
 	}
 }
 
 // EventRecorded returns an assertion that passes if m is recorded as an event.
 func EventRecorded(m dogma.Message) assert.Assertion {
-	return &assert.EventRecorded{
+	return &assert.MessageAssertion{
 		Expected: m,
+		Role:     message.EventRole,
 	}
 }
 
-// // CommandTypeExecuted returns an assertion that passes if a message with the
-// // same type as m is executed as a command.
-// func CommandTypeExecuted(m dogma.Message) assert.Assertion {
-// 	return &assert.MessageTypeAssertion{
-// 		Type: message.TypeOf(m),
-// 		Role: message.CommandRole,
-// 	}
-// }
+// CommandTypeExecuted returns an assertion that passes if a message with the
+// same type as m is executed as a command.
+func CommandTypeExecuted(m dogma.Message) assert.Assertion {
+	return &assert.MessageTypeAssertion{
+		Expected: reflect.TypeOf(m),
+		Role:     message.CommandRole,
+	}
+}
 
-// // EventTypeRecorded returns an assertion that passes if a message witn the same
-// // type as m is recorded as an event.
-// func EventTypeRecorded(m dogma.Message) assert.Assertion {
-// 	return &assert.MessageTypeAssertion{
-// 		Type: message.TypeOf(m),
-// 		Role: message.EventRole,
-// 	}
-// }
+// EventTypeRecorded returns an assertion that passes if a message witn the same
+// type as m is recorded as an event.
+func EventTypeRecorded(m dogma.Message) assert.Assertion {
+	return &assert.MessageTypeAssertion{
+		Expected: reflect.TypeOf(m),
+		Role:     message.EventRole,
+	}
+}
 
 // AllOf returns an assertion that passes if all of the given sub-assertions pass.
 func AllOf(subs ...assert.Assertion) assert.Assertion {

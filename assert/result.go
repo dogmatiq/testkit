@@ -150,6 +150,7 @@ var (
 )
 
 const (
-	suggestionsSection = "Suggestions"
-	diffSection        = "Message Diff"
+	suggestionsSection     = "Suggestions"
+	messageDiffSection     = "Message Diff"
+	messageTypeDiffSection = "Message Type Diff"
 )

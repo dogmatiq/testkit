@@ -1,192 +1,214 @@
 package assert
 
-// import (
-// 	"fmt"
-// 	"io"
-// 	"reflect"
+import (
+	"reflect"
 
-// 	"github.com/dogmatiq/dogmatest/compare"
-// 	"github.com/dogmatiq/dogmatest/engine/envelope"
-// 	"github.com/dogmatiq/dogmatest/engine/fact"
-// 	"github.com/dogmatiq/dogmatest/render"
-// 	"github.com/dogmatiq/enginekit/message"
-// 	"github.com/dogmatiq/iago"
-// )
+	"github.com/dogmatiq/dogmatest/compare"
+	"github.com/dogmatiq/dogmatest/engine/envelope"
+	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/message"
+)
 
-// // MessageTypeAssertion is an assertion that requires an exact message type to
-// // be produced.
-// type MessageTypeAssertion struct {
-// 	Type message.Type
-// 	Role message.Role
+// MessageTypeAssertion asserts that a specific message is produced.
+type MessageTypeAssertion struct {
+	// Expected is the type of the message that is expected to be produced.
+	Expected reflect.Type
 
-// 	pass     bool                   // true if assertion passed
-// 	best     *envelope.Envelope     // envelope containing "best-match"
-// 	sim      compare.TypeSimilarity // similarity between the expected type and the best-match
-// 	routed   bool                   // true if the message-under-test gets routed to at least one handler
-// 	produced map[message.Role]bool  // map of the roles of messages that are produced
-// }
+	// Role is the expected role of the expected message.
+	// It must be either CommandRole or EventRole.
+	Role message.Role
 
-// // Notify notifies the assertion of the occurrence of a fact.
-// func (a *MessageTypeAssertion) Notify(f fact.Fact) {
-// 	if a.pass {
-// 		return
-// 	}
+	// ok is true once the assertion is deemed to have passed, after which no
+	// further updates are performed.
+	ok bool
 
-// 	switch x := f.(type) {
-// 	case fact.MessageHandlingBegun:
-// 		a.routed = true
-// 	case fact.EventRecordedByAggregate:
-// 		a.update(x.EventEnvelope)
-// 	case fact.EventRecordedByIntegration:
-// 		a.update(x.EventEnvelope)
-// 	case fact.CommandExecutedByProcess:
-// 		a.update(x.CommandEnvelope)
-// 	}
-// }
+	// best is an envelope containing the "best-match" message for an assertion
+	// that has not yet passed. Note that this message may not have the expected
+	// role.
+	best *envelope.Envelope
 
-// func (a *MessageTypeAssertion) update(env *envelope.Envelope) {
-// 	a.produced[env.Role] = true
+	// sim is a ranking of the similarity between the type of the expected message,
+	// and the current best-match.
+	sim compare.TypeSimilarity
 
-// 	// check to see if this message is of a similar type to our expected message
-// 	sim := compare.FuzzyTypeComparison(
-// 		a.Type.ReflectType(),
-// 		reflect.TypeOf(env.Message),
-// 	)
+	// total is the total number of messages that were produced.
+	total int
 
-// 	// look for an identical message type
-// 	if sim == compare.SameTypes && env.Role == a.Role {
-// 		// if it's the right message role, we've found our match
-// 		a.pass = true
-// 		return
-// 	}
+	// produces is the number of messages of the expected role that were produced.
+	produced int
 
-// 	if sim > a.sim {
-// 		a.best = env
-// 		a.sim = sim
-// 	}
-// }
+	// engaged is the set of handlers that *could* have produced the
+	// expected message.
+	engaged map[string]handler.Type
 
-// // Begin is called before the message-under-test is dispatched.
-// func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
-// 	a.Role.MustBe(message.CommandRole, message.EventRole)
+	// enabled is the set of handler types that are enabled during the
+	// test.
+	enabled map[handler.Type]bool
+}
 
-// 	a.pass = false
-// 	a.best = nil
-// 	a.sim = 0
-// 	a.routed = false
-// 	a.produced = map[message.Role]bool{}
-// }
+// Begin is called before the test is executed.
+//
+// c is the comparator used to compare messages and other entities.
+func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
+	// reset everything
+	*a = MessageTypeAssertion{
+		Expected: a.Expected,
+		Role:     a.Role,
+		engaged:  map[string]handler.Type{},
+	}
+}
 
-// // End is called after the message-under-test is dispatched.
-// func (a *MessageTypeAssertion) End(w io.Writer, r render.Renderer) bool {
-// 	rep := &report{Pass: a.pass}
-// 	a.buildReport(rep, r)
+// End is called after the test is executed.
+//
+// It returns the result of the assertion.
+func (a *MessageTypeAssertion) End(r render.Renderer) *Result {
+	res := &Result{
+		Ok: a.ok,
+		Criteria: inflect(
+			a.Role,
+			"<produce> any '%s' <message>",
+			message.TypeOf(a.Expected),
+		),
+	}
 
-// 	iago.MustWriteTo(w, rep)
+	if !a.ok {
+		if a.best == nil {
+			buildResultNoMatch(
+				res,
+				a.Role,
+				a.enabled,
+				a.engaged,
+				a.total,
+				a.produced,
+			)
+		} else if a.best.Role == message.EventRole {
+			a.buildResultExpectedRole(r, res)
+		} else {
+			a.buildResultUnexpectedRole(r, res)
+		}
+	}
 
-// 	return a.pass
-// }
+	return res
+}
 
-// // buildReport populates rep with the result of the assertion.
-// func (a *MessageTypeAssertion) buildReport(rep *report, r render.Renderer) {
-// 	rep.Title = byRole(
-// 		a.Role,
-// 		fmt.Sprintf("execute any '%s' command", a.Type),
-// 		fmt.Sprintf("record any '%s' event", a.Type),
-// 	)
+// Notify updates the assertion's state in response to a new fact.
+func (a *MessageTypeAssertion) Notify(f fact.Fact) {
+	if a.ok {
+		return
+	}
 
-// 	if a.best != nil {
-// 		rep.Details = renderDiff(
-// 			a.Type.String(),
-// 			a.best.Type.String(),
-// 		)
-// 	}
+	switch x := f.(type) {
+	case fact.MessageDispatchBegun:
+		a.enabled = x.EnabledHandlers
 
-// 	if a.pass {
-// 		return
-// 	}
+	case fact.EngineTickBegun:
+		a.enabled = x.EnabledHandlers
 
-// 	rep.SubTitle = byRole(
-// 		a.Role,
-// 		"no commands of this type were executed",
-// 		"no events of this type were recorded",
-// 	)
+	case fact.MessageHandlingBegun:
+		a.messageHandlingBegun(x)
 
-// 	// there is no "best match". if any messages were produced at all they weren't
-// 	// of a related type.
-// 	if a.sim == compare.UnrelatedTypes {
-// 		// nothing was produced at all
-// 		if len(a.produced) == 0 {
-// 			rep.Outcome = "no commands or events were produced at all"
+	case fact.EventRecordedByAggregate:
+		a.messageProduced(x.EventEnvelope)
 
-// 			// if the message did get routed somewhere, it's probably a legitimate bug
-// 			// with the business logic, otherwise there's a possibility that the routing
-// 			// configuration is wrong.
-// 			if a.routed {
-// 				rep.suggest("check the application logic")
-// 			} else {
-// 				rep.suggest("check the application routing configuration for this type")
-// 			}
+	case fact.EventRecordedByIntegration:
+		a.messageProduced(x.EventEnvelope)
 
-// 			return
-// 		}
+	case fact.CommandExecutedByProcess:
+		a.messageProduced(x.CommandEnvelope)
+	}
+}
 
-// 		// if messages of the correct role were produced, perhaps there's just a
-// 		// simple mispelling of the type. this is common because many messages have
-// 		// the same fields.
-// 		if a.produced[a.Role] {
-// 			rep.suggest("check the assertion's message type")
-// 		} else {
-// 			a.addWrongAssertionHint(rep)
-// 		}
+// messageHandlingBegun updates the assertion's state to reflect f.
+func (a *MessageTypeAssertion) messageHandlingBegun(f fact.MessageHandlingBegun) {
+	if f.HandlerType.IsProducerOf(a.Role) {
+		a.engaged[f.HandlerName] = f.HandlerType
+	}
+}
 
-// 		return
-// 	}
+// messageProduced updates the assertion's state to reflect the fact that a
+// message has been produced.
+func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
+	a.total++
+	if env.Role == a.Role {
+		a.produced++
+	}
 
-// 	// the types are equal, so the roles must be a mismatch
-// 	if a.sim == compare.SameTypes {
-// 		rep.Outcome = byRole(
-// 			a.best.Role,
-// 			"a message of this type was executed as a command",
-// 			"a message of this type was recorded as an event",
-// 		)
+	sim := compare.FuzzyTypeComparison(
+		reflect.TypeOf(a.Expected),
+		reflect.TypeOf(env.Message),
+	)
 
-// 		a.addWrongAssertionHint(rep)
+	if sim > a.sim {
+		a.best = env
+		a.sim = sim
+	}
 
-// 		return
-// 	}
+	if sim == compare.SameTypes && a.Role == env.Role {
+		a.ok = true
+	}
+}
 
-// 	// finally, a message of a similar type did occur.
+// buildDiff adds a "message type diff" section to the result.
+func (a *MessageTypeAssertion) buildDiff(res *Result) {
+	render.WriteDiff(
+		&res.Section("Message Type Diff").Content,
+		a.Expected.String(),
+		a.best.Type.ReflectType().String(),
+	)
+}
 
-// 	// note this language here is deliberately vague, it doesn't imply whether it
-// 	// currently is or isn't a pointer, just questions if it should be.
-// 	rep.suggest("check the assertion's message type, should it be a pointer?")
+// buildResultExpectedRole builds the assertion result when there is a
+// "best-match" message available and it is of the expected role.
+func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *Result) {
+	s := res.Section(suggestionsSection)
 
-// 	if a.Role == a.best.Role {
-// 		rep.Outcome = byRole(
-// 			a.Role,
-// 			"a command of a similar type was executed",
-// 			"an event of a similar type was recorded",
-// 		)
+	res.Explanation = inflect(
+		"a <message> of a similar type was <produced> by the '%s' %s message handler",
+		a.best.Origin.HandlerName,
+		a.best.Origin.HandlerType,
+	)
+	// note this language here is deliberately vague, it doesn't imply whether it
+	// currently is or isn't a pointer, just questions if it should be.
+	s.AppendListItem("check the message type, should it be a pointer?")
 
-// 		return
-// 	}
+	a.buildDiff(res)
+}
 
-// 	// otherwise, both the role and the content are wrong
-// 	rep.Outcome = byRole(
-// 		a.best.Role,
-// 		"a message of a similar type was executed as a command",
-// 		"a message of a similar type was recorded as an event",
-// 	)
+// buildResultUnexpectedRole builds the assertion result when there is a
+// "best-match" message available but it is of an expected role.
+func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res *Result) {
+	s := res.Section(suggestionsSection)
 
-// 	a.addWrongAssertionHint(rep)
-// }
+	s.AppendListItem(
+		"verify that the '%s' %s message handler intended to <other-produce> an <other-message> of this type",
+		a.best.Origin.HandlerName,
+		a.best.Origin.HandlerType,
+	)
 
-// // addWrongAssertionHint adds a common hint about selecting the correct assertion.
-// func (a *MessageTypeAssertion) addWrongAssertionHint(rep *report) {
-// 	rep.suggest(byRole(
-// 		a.Role,
-// 		"did you mean to use the EventTypeRecorded assertion instead of CommandTypeExecuted?",
-// 		"did you mean to use the CommandTypeExecuted assertion instead of EventTypeRecorded?",
-// 	))
-// }
+	if a.Role == message.CommandRole {
+		s.AppendListItem("verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?")
+	} else {
+		s.AppendListItem("verify that EventTypeRecorded() is the correct assertion, did you mean CommandTypeExecuted()?")
+	}
+
+	if a.sim == compare.SameTypes {
+		res.Explanation = inflect(
+			"a message of this type was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Origin.HandlerName,
+			a.best.Origin.HandlerType,
+		)
+	} else {
+		res.Explanation = inflect(
+			"a message of a similar type was <other-produced> as an <other-message> by the '%s' %s message handler",
+			a.best.Origin.HandlerName,
+			a.best.Origin.HandlerType,
+		)
+		// note this language here is deliberately vague, it doesn't imply whether it
+		// currently is or isn't a pointer, just questions if it should be.
+		s.AppendListItem("check the message type, should it be a pointer?")
+
+		a.buildDiff(res)
+	}
+}
