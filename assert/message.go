@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
 )
 
@@ -43,19 +42,8 @@ type MessageAssertion struct {
 	// message has an unexpected role.
 	equal bool
 
-	// total is the total number of messages that were produced.
-	total int
-
-	// produces is the number of messages of the expected role that were produced.
-	produced int
-
-	// engaged is the set of handlers that *could* have produced the
-	// expected message.
-	engaged map[string]handler.Type
-
-	// enabled is the set of handler types that are enabled during the
-	// test.
-	enabled map[handler.Type]bool
+	// tracker observers the handlers and messages that are involved in the test.
+	tracker tracker
 }
 
 // Begin is called before the test is executed.
@@ -67,7 +55,7 @@ func (a *MessageAssertion) Begin(c compare.Comparator) {
 		Expected: a.Expected,
 		Role:     a.Role,
 		cmp:      c,
-		engaged:  map[string]handler.Type{},
+		tracker:  tracker{role: a.Role},
 	}
 }
 
@@ -86,14 +74,7 @@ func (a *MessageAssertion) End(r render.Renderer) *Result {
 
 	if !a.ok {
 		if a.best == nil {
-			buildResultNoMatch(
-				res,
-				a.Role,
-				a.enabled,
-				a.engaged,
-				a.total,
-				a.produced,
-			)
+			buildResultNoMatch(res, &a.tracker)
 		} else if a.best.Role == message.EventRole {
 			a.buildResultExpectedRole(r, res)
 		} else {
@@ -110,42 +91,21 @@ func (a *MessageAssertion) Notify(f fact.Fact) {
 		return
 	}
 
+	a.tracker.Notify(f)
+
 	switch x := f.(type) {
-	case fact.MessageDispatchBegun:
-		a.enabled = x.EnabledHandlers
-
-	case fact.EngineTickBegun:
-		a.enabled = x.EnabledHandlers
-
-	case fact.MessageHandlingBegun:
-		a.messageHandlingBegun(x)
-
 	case fact.EventRecordedByAggregate:
 		a.messageProduced(x.EventEnvelope)
-
 	case fact.EventRecordedByIntegration:
 		a.messageProduced(x.EventEnvelope)
-
 	case fact.CommandExecutedByProcess:
 		a.messageProduced(x.CommandEnvelope)
-	}
-}
-
-// messageHandlingBegun updates the assertion's state to reflect f.
-func (a *MessageAssertion) messageHandlingBegun(f fact.MessageHandlingBegun) {
-	if f.HandlerType.IsProducerOf(a.Role) {
-		a.engaged[f.HandlerName] = f.HandlerType
 	}
 }
 
 // messageProduced updates the assertion's state to reflect the fact that a
 // message has been produced.
 func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
-	a.total++
-	if env.Role == a.Role {
-		a.produced++
-	}
-
 	if !a.cmp.MessageIsEqual(env.Message, a.Expected) {
 		a.updateBestMatch(env)
 		return
@@ -263,23 +223,17 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 
 // buildResultNoMatch is a helper used by MessageAssertion and
 // MessageTypeAssertion when there is no "best-match".
-func buildResultNoMatch(
-	res *Result,
-	r message.Role,
-	enabled map[handler.Type]bool,
-	engaged map[string]handler.Type,
-	total, produced int,
-) {
+func buildResultNoMatch(res *Result, t *tracker) {
 	s := res.Section(suggestionsSection)
 
 	allDisabled := true
-	for t, e := range enabled {
-		if t.IsProducerOf(r) {
+	for ht, e := range t.enabled {
+		if ht.IsProducerOf(t.role) {
 			if e {
 				allDisabled = false
 			} else {
 				s.AppendListItem(
-					fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", t),
+					fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", ht),
 				)
 			}
 		}
@@ -290,21 +244,21 @@ func buildResultNoMatch(
 		return
 	}
 
-	if len(engaged) == 0 {
+	if len(t.engaged) == 0 {
 		res.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
 		s.AppendListItem("check the application's routing configuration")
 		return
 	}
 
-	if total == 0 {
+	if t.total == 0 {
 		res.Explanation = "no messages were produced at all"
-	} else if produced == 0 {
-		res.Explanation = inflect(r, "no <messages> were <produced> at all")
+	} else if t.produced == 0 {
+		res.Explanation = inflect(t.role, "no <messages> were <produced> at all")
 	} else {
-		res.Explanation = inflect(r, "none of the engaged handlers <produced> the expected <message>")
+		res.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
 	}
 
-	for n, t := range engaged {
+	for n, t := range t.engaged {
 		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t)
 	}
 }

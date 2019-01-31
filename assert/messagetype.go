@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
 )
 
@@ -33,19 +32,8 @@ type MessageTypeAssertion struct {
 	// and the current best-match.
 	sim compare.TypeSimilarity
 
-	// total is the total number of messages that were produced.
-	total int
-
-	// produces is the number of messages of the expected role that were produced.
-	produced int
-
-	// engaged is the set of handlers that *could* have produced the
-	// expected message.
-	engaged map[string]handler.Type
-
-	// enabled is the set of handler types that are enabled during the
-	// test.
-	enabled map[handler.Type]bool
+	// tracker observers the handlers and messages that are involved in the test.
+	tracker tracker
 }
 
 // Begin is called before the test is executed.
@@ -56,7 +44,7 @@ func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
 	*a = MessageTypeAssertion{
 		Expected: a.Expected,
 		Role:     a.Role,
-		engaged:  map[string]handler.Type{},
+		tracker:  tracker{role: a.Role},
 	}
 }
 
@@ -75,14 +63,7 @@ func (a *MessageTypeAssertion) End(r render.Renderer) *Result {
 
 	if !a.ok {
 		if a.best == nil {
-			buildResultNoMatch(
-				res,
-				a.Role,
-				a.enabled,
-				a.engaged,
-				a.total,
-				a.produced,
-			)
+			buildResultNoMatch(res, &a.tracker)
 		} else if a.best.Role == message.EventRole {
 			a.buildResultExpectedRole(r, res)
 		} else {
@@ -99,42 +80,21 @@ func (a *MessageTypeAssertion) Notify(f fact.Fact) {
 		return
 	}
 
+	a.tracker.Notify(f)
+
 	switch x := f.(type) {
-	case fact.MessageDispatchBegun:
-		a.enabled = x.EnabledHandlers
-
-	case fact.EngineTickBegun:
-		a.enabled = x.EnabledHandlers
-
-	case fact.MessageHandlingBegun:
-		a.messageHandlingBegun(x)
-
 	case fact.EventRecordedByAggregate:
 		a.messageProduced(x.EventEnvelope)
-
 	case fact.EventRecordedByIntegration:
 		a.messageProduced(x.EventEnvelope)
-
 	case fact.CommandExecutedByProcess:
 		a.messageProduced(x.CommandEnvelope)
-	}
-}
-
-// messageHandlingBegun updates the assertion's state to reflect f.
-func (a *MessageTypeAssertion) messageHandlingBegun(f fact.MessageHandlingBegun) {
-	if f.HandlerType.IsProducerOf(a.Role) {
-		a.engaged[f.HandlerName] = f.HandlerType
 	}
 }
 
 // messageProduced updates the assertion's state to reflect the fact that a
 // message has been produced.
 func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
-	a.total++
-	if env.Role == a.Role {
-		a.produced++
-	}
-
 	sim := compare.FuzzyTypeComparison(
 		reflect.TypeOf(a.Expected),
 		reflect.TypeOf(env.Message),
