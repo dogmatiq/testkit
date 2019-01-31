@@ -1,6 +1,8 @@
 package assert
 
 import (
+	"fmt"
+
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/dogmatest/render"
@@ -20,6 +22,94 @@ type CompositeAssertion struct {
 	// It returns true if the assertion passed, and may optionally return a message
 	// to be displayed in either case.
 	Predicate func(int) (string, bool)
+}
+
+// AllOf returns an assertion that passes if all of the given sub-assertions pass.
+func AllOf(subs ...Assertion) Assertion {
+	n := len(subs)
+
+	if n == 0 {
+		panic("no sub-assertions provided")
+	}
+
+	if n == 1 {
+		return subs[0]
+	}
+
+	return &CompositeAssertion{
+		Criteria:      "all of",
+		SubAssertions: subs,
+		Predicate: func(p int) (string, bool) {
+			n := len(subs)
+
+			if p == n {
+				return "", true
+			}
+
+			return fmt.Sprintf(
+				"%d of the sub-assertions failed",
+				n-p,
+			), false
+		},
+	}
+}
+
+// AnyOf returns an assertion that passes if at least one of the given
+// sub-assertions passes.
+func AnyOf(subs ...Assertion) Assertion {
+	n := len(subs)
+
+	if n == 0 {
+		panic("no sub-assertions provided")
+	}
+
+	if n == 1 {
+		return subs[0]
+	}
+
+	return &CompositeAssertion{
+		Criteria:      "any of",
+		SubAssertions: subs,
+		Predicate: func(p int) (string, bool) {
+			if p > 0 {
+				return "", true
+			}
+
+			return fmt.Sprintf(
+				"all %d of the sub-assertions failed",
+				n,
+			), false
+		},
+	}
+}
+
+// NoneOf returns an assertion that passes if all of the given sub-assertions
+// fail.
+func NoneOf(subs ...Assertion) Assertion {
+	n := len(subs)
+
+	if n == 0 {
+		panic("no sub-assertions provided")
+	}
+
+	return &CompositeAssertion{
+		Criteria:      "none of",
+		SubAssertions: subs,
+		Predicate: func(p int) (string, bool) {
+			if p == 0 {
+				return "", true
+			}
+
+			if n == 1 {
+				return "the sub-assertion passed unexpectedly", false
+			}
+
+			return fmt.Sprintf(
+				"%d of the sub-assertions passed unexpectedly",
+				p,
+			), false
+		},
+	}
 }
 
 // Notify notifies the assertion of the occurrence of a fact.

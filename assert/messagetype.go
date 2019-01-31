@@ -1,8 +1,7 @@
 package assert
 
 import (
-	"reflect"
-
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/dogmatest/engine/fact"
@@ -13,11 +12,11 @@ import (
 // MessageTypeAssertion asserts that a specific message is produced.
 type MessageTypeAssertion struct {
 	// Expected is the type of the message that is expected to be produced.
-	Expected reflect.Type
+	expected message.Type
 
 	// Role is the expected role of the expected message.
 	// It must be either CommandRole or EventRole.
-	Role message.Role
+	role message.Role
 
 	// ok is true once the assertion is deemed to have passed, after which no
 	// further updates are performed.
@@ -36,15 +35,33 @@ type MessageTypeAssertion struct {
 	tracker tracker
 }
 
+// CommandTypeExecuted returns an assertion that passes if a message with the
+// same type as m is executed as a command.
+func CommandTypeExecuted(m dogma.Message) Assertion {
+	return &MessageTypeAssertion{
+		expected: message.TypeOf(m),
+		role:     message.CommandRole,
+	}
+}
+
+// EventTypeRecorded returns an assertion that passes if a message witn the same
+// type as m is recorded as an event.
+func EventTypeRecorded(m dogma.Message) Assertion {
+	return &MessageTypeAssertion{
+		expected: message.TypeOf(m),
+		role:     message.EventRole,
+	}
+}
+
 // Begin is called before the test is executed.
 //
 // c is the comparator used to compare messages and other entities.
 func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
 	// reset everything
 	*a = MessageTypeAssertion{
-		Expected: a.Expected,
-		Role:     a.Role,
-		tracker:  tracker{role: a.Role},
+		expected: a.expected,
+		role:     a.role,
+		tracker:  tracker{role: a.role},
 	}
 }
 
@@ -55,9 +72,9 @@ func (a *MessageTypeAssertion) End(r render.Renderer) *Result {
 	res := &Result{
 		Ok: a.ok,
 		Criteria: inflect(
-			a.Role,
+			a.role,
 			"<produce> any '%s' <message>",
-			message.TypeOf(a.Expected),
+			a.expected,
 		),
 	}
 
@@ -96,8 +113,8 @@ func (a *MessageTypeAssertion) Notify(f fact.Fact) {
 // message has been produced.
 func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
 	sim := compare.FuzzyTypeComparison(
-		reflect.TypeOf(a.Expected),
-		reflect.TypeOf(env.Message),
+		a.expected.ReflectType(),
+		env.Type.ReflectType(),
 	)
 
 	if sim > a.sim {
@@ -105,7 +122,7 @@ func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
 		a.sim = sim
 	}
 
-	if sim == compare.SameTypes && a.Role == env.Role {
+	if sim == compare.SameTypes && a.role == env.Role {
 		a.ok = true
 	}
 }
@@ -114,7 +131,7 @@ func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
 func (a *MessageTypeAssertion) buildDiff(res *Result) {
 	render.WriteDiff(
 		&res.Section("Message Type Diff").Content,
-		a.Expected.String(),
+		a.expected.String(),
 		a.best.Type.ReflectType().String(),
 	)
 }
@@ -125,7 +142,7 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *R
 	s := res.Section(suggestionsSection)
 
 	res.Explanation = inflect(
-		a.Role,
+		a.role,
 		"a <message> of a similar type was <produced> by the '%s' %s message handler",
 		a.best.Origin.HandlerName,
 		a.best.Origin.HandlerType,
@@ -149,7 +166,7 @@ func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res 
 		a.best.Origin.HandlerType,
 	))
 
-	if a.Role == message.CommandRole {
+	if a.role == message.CommandRole {
 		s.AppendListItem("verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?")
 	} else {
 		s.AppendListItem("verify that EventTypeRecorded() is the correct assertion, did you mean CommandTypeExecuted()?")

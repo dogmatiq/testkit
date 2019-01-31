@@ -15,11 +15,11 @@ import (
 // MessageAssertion asserts that a specific message is produced.
 type MessageAssertion struct {
 	// Expected is the message that is expected to be produced.
-	Expected dogma.Message
+	expected dogma.Message
 
 	// Role is the expected role of the expected message.
 	// It must be either CommandRole or EventRole.
-	Role message.Role
+	role message.Role
 
 	// cmp is the comparator used to compare messages for equality.
 	cmp compare.Comparator
@@ -46,16 +46,32 @@ type MessageAssertion struct {
 	tracker tracker
 }
 
+// CommandExecuted returns an assertion that passes if m is executed as a command.
+func CommandExecuted(m dogma.Message) Assertion {
+	return &MessageAssertion{
+		expected: m,
+		role:     message.CommandRole,
+	}
+}
+
+// EventRecorded returns an assertion that passes if m is recorded as an event.
+func EventRecorded(m dogma.Message) Assertion {
+	return &MessageAssertion{
+		expected: m,
+		role:     message.EventRole,
+	}
+}
+
 // Begin is called before the test is executed.
 //
 // c is the comparator used to compare messages and other entities.
 func (a *MessageAssertion) Begin(c compare.Comparator) {
 	// reset everything
 	*a = MessageAssertion{
-		Expected: a.Expected,
-		Role:     a.Role,
+		expected: a.expected,
+		role:     a.role,
 		cmp:      c,
-		tracker:  tracker{role: a.Role},
+		tracker:  tracker{role: a.role},
 	}
 }
 
@@ -66,9 +82,9 @@ func (a *MessageAssertion) End(r render.Renderer) *Result {
 	res := &Result{
 		Ok: a.ok,
 		Criteria: inflect(
-			a.Role,
+			a.role,
 			"<produce> a specific '%s' <message>",
-			message.TypeOf(a.Expected),
+			message.TypeOf(a.expected),
 		),
 	}
 
@@ -106,7 +122,7 @@ func (a *MessageAssertion) Notify(f fact.Fact) {
 // messageProduced updates the assertion's state to reflect the fact that a
 // message has been produced.
 func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
-	if !a.cmp.MessageIsEqual(env.Message, a.Expected) {
+	if !a.cmp.MessageIsEqual(env.Message, a.expected) {
 		a.updateBestMatch(env)
 		return
 	}
@@ -115,7 +131,7 @@ func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
 	a.sim = compare.SameTypes
 	a.equal = true
 
-	if a.Role == env.Role {
+	if a.role == env.Role {
 		a.ok = true
 	}
 }
@@ -123,7 +139,7 @@ func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
 // updateBestMatch replaces a.best with env if it is a better match.
 func (a *MessageAssertion) updateBestMatch(env *envelope.Envelope) {
 	sim := compare.FuzzyTypeComparison(
-		reflect.TypeOf(a.Expected),
+		reflect.TypeOf(a.expected),
 		reflect.TypeOf(env.Message),
 	)
 
@@ -140,7 +156,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 
 	if a.sim == compare.SameTypes {
 		res.Explanation = inflect(
-			a.Role,
+			a.role,
 			"a similar <message> was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
@@ -148,7 +164,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 		s.AppendListItem("check the content of the message")
 	} else {
 		res.Explanation = inflect(
-			a.Role,
+			a.role,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
@@ -160,7 +176,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 
 	render.WriteDiff(
 		&res.Section(messageDiffSection).Content,
-		render.Message(r, a.Expected),
+		render.Message(r, a.expected),
 		render.Message(r, a.best.Message),
 	)
 }
@@ -169,7 +185,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 func (a *MessageAssertion) buildDiff(r render.Renderer, res *Result) {
 	render.WriteDiff(
 		&res.Section("Message Diff").Content,
-		render.Message(r, a.Expected),
+		render.Message(r, a.expected),
 		render.Message(r, a.best.Message),
 	)
 }
@@ -186,7 +202,7 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 		a.best.Origin.HandlerType,
 	))
 
-	if a.Role == message.CommandRole {
+	if a.role == message.CommandRole {
 		s.AppendListItem("verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?")
 	} else {
 		s.AppendListItem("verify that EventRecorded() is the correct assertion, did you mean CommandExecuted()?")
