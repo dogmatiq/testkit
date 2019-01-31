@@ -38,9 +38,7 @@ func New(
 	ctx := context.Background()
 
 	for _, opt := range options {
-		if err := opt(e); err != nil {
-			return nil, err
-		}
+		opt(e)
 	}
 
 	if err := cfg.Accept(ctx, cfgr); err != nil {
@@ -67,27 +65,24 @@ func (e *Engine) Reset() {
 // time that the engine should treat as the current time.
 func (e *Engine) Tick(
 	ctx context.Context,
-	options ...DispatchOption,
+	options ...OperationOption,
 ) error {
-	do, err := newDispatchOptions(options)
-	if err != nil {
-		return err
-	}
+	oo := newOperationOptions(options)
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.EngineTickBegun{
-			Now:             do.now,
-			EnabledHandlers: do.enabledHandlers,
+			Now:             oo.now,
+			EnabledHandlers: oo.enabledHandlers,
 		},
 	)
 
-	err = e.tick(ctx, do)
+	err := e.tick(ctx, oo)
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.EngineTickCompleted{
-			Now:             do.now,
+			Now:             oo.now,
 			Error:           err,
-			EnabledHandlers: do.enabledHandlers,
+			EnabledHandlers: oo.enabledHandlers,
 		},
 	)
 
@@ -96,7 +91,7 @@ func (e *Engine) Tick(
 
 func (e *Engine) tick(
 	ctx context.Context,
-	do *dispatchOptions,
+	oo *operationOptions,
 ) error {
 	var (
 		err   error
@@ -106,23 +101,23 @@ func (e *Engine) tick(
 	for n, c := range e.controllers {
 		t := c.Type()
 
-		do.observers.Notify(
+		oo.observers.Notify(
 			fact.ControllerTickBegun{
 				HandlerName: n,
 				HandlerType: t,
-				Now:         do.now,
+				Now:         oo.now,
 			},
 		)
 
-		envs, cerr := c.Tick(ctx, do.observers, do.now)
+		envs, cerr := c.Tick(ctx, oo.observers, oo.now)
 		err = multierr.Append(err, cerr)
 		queue = append(queue, envs...)
 
-		do.observers.Notify(
+		oo.observers.Notify(
 			fact.ControllerTickCompleted{
 				HandlerName: n,
 				HandlerType: t,
-				Now:         do.now,
+				Now:         oo.now,
 				Error:       cerr,
 			},
 		)
@@ -132,7 +127,7 @@ func (e *Engine) tick(
 		err,
 		e.dispatch(
 			ctx,
-			do,
+			oo,
 			queue...,
 		),
 	)
@@ -144,22 +139,19 @@ func (e *Engine) tick(
 func (e *Engine) Dispatch(
 	ctx context.Context,
 	m dogma.Message,
-	options ...DispatchOption,
+	options ...OperationOption,
 ) error {
-	do, err := newDispatchOptions(options)
-	if err != nil {
-		return err
-	}
+	oo := newOperationOptions(options)
 
 	t := message.TypeOf(m)
 	r, ok := e.roles[t]
 
 	if !ok {
-		do.observers.Notify(
+		oo.observers.Notify(
 			fact.UnroutableMessageDispatched{
 				Message:         m,
-				Now:             do.now,
-				EnabledHandlers: do.enabledHandlers,
+				Now:             oo.now,
+				EnabledHandlers: oo.enabledHandlers,
 			},
 		)
 
@@ -168,22 +160,22 @@ func (e *Engine) Dispatch(
 
 	env := envelope.New(m, r)
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.MessageDispatchBegun{
 			Envelope:        env,
-			Now:             do.now,
-			EnabledHandlers: do.enabledHandlers,
+			Now:             oo.now,
+			EnabledHandlers: oo.enabledHandlers,
 		},
 	)
 
-	err = e.dispatch(ctx, do, env)
+	err := e.dispatch(ctx, oo, env)
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.MessageDispatchCompleted{
 			Envelope:        env,
-			Now:             do.now,
+			Now:             oo.now,
 			Error:           err,
-			EnabledHandlers: do.enabledHandlers,
+			EnabledHandlers: oo.enabledHandlers,
 		},
 	)
 
@@ -192,7 +184,7 @@ func (e *Engine) Dispatch(
 
 func (e *Engine) dispatch(
 	ctx context.Context,
-	do *dispatchOptions,
+	oo *operationOptions,
 	queue ...*envelope.Envelope,
 ) error {
 	var err error
@@ -222,7 +214,7 @@ func (e *Engine) dispatch(
 		}
 
 		for _, c := range controllers {
-			envs, cerr := e.handle(ctx, do, env, c)
+			envs, cerr := e.handle(ctx, oo, env, c)
 			queue = append(queue, envs...)
 			err = multierr.Append(err, cerr)
 		}
@@ -233,15 +225,15 @@ func (e *Engine) dispatch(
 
 func (e *Engine) handle(
 	ctx context.Context,
-	do *dispatchOptions,
+	oo *operationOptions,
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
 	n := c.Name()
 	t := c.Type()
 
-	if !do.enabledHandlers[t] {
-		do.observers.Notify(
+	if !oo.enabledHandlers[t] {
+		oo.observers.Notify(
 			fact.MessageHandlingSkipped{
 				HandlerName: n,
 				HandlerType: c.Type(),
@@ -252,7 +244,7 @@ func (e *Engine) handle(
 		return nil, nil
 	}
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.MessageHandlingBegun{
 			HandlerName: n,
 			HandlerType: t,
@@ -260,9 +252,9 @@ func (e *Engine) handle(
 		},
 	)
 
-	envs, err := c.Handle(ctx, do.observers, do.now, env)
+	envs, err := c.Handle(ctx, oo.observers, oo.now, env)
 
-	do.observers.Notify(
+	oo.observers.Notify(
 		fact.MessageHandlingCompleted{
 			HandlerName: n,
 			HandlerType: t,

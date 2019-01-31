@@ -32,7 +32,7 @@ type test struct {
 	t          T
 	engine     *engine.Engine
 	now        time.Time
-	defaults   []engine.DispatchOption
+	defaults   []engine.OperationOption
 	comparator compare.Comparator
 	renderer   render.Renderer
 }
@@ -100,7 +100,7 @@ func (t *test) tick(observers ...fact.Observer) {
 	}
 }
 
-func (t *test) options(observers []fact.Observer) []engine.DispatchOption {
+func (t *test) options(observers []fact.Observer) []engine.OperationOption {
 	opts := append(
 		t.defaults,
 		engine.WithCurrentTime(t.now),

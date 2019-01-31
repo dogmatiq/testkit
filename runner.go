@@ -30,7 +30,7 @@ func New(app dogma.Application, options ...engine.Option) *Runner {
 }
 
 // Begin starts a new test.
-func (r *Runner) Begin(t T, options ...engine.DispatchOption) Test {
+func (r *Runner) Begin(t T, options ...engine.OperationOption) Test {
 	return r.BeginContext(context.Background(), t, options...)
 }
 
@@ -38,7 +38,7 @@ func (r *Runner) Begin(t T, options ...engine.DispatchOption) Test {
 func (r *Runner) BeginContext(
 	ctx context.Context,
 	t T,
-	options ...engine.DispatchOption,
+	options ...engine.OperationOption,
 ) Test {
 	r.engine.Reset()
 
@@ -48,9 +48,9 @@ func (r *Runner) BeginContext(
 		engine: r.engine,
 		now:    time.Now(),
 		defaults: append(
-			[]engine.DispatchOption{
-				engine.EnableHandlerType(engine.IntegrationHandlerType, false),
-				engine.EnableHandlerType(engine.ProjectionHandlerType, false),
+			[]engine.OperationOption{
+				engine.EnableIntegrations(false),
+				engine.EnableProjections(false),
 			},
 			options...,
 		),
