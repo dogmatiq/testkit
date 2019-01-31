@@ -15,13 +15,18 @@ type Runner struct {
 }
 
 // New returns a test runner.
-func New(app dogma.Application, options ...engine.Option) *Runner {
+func New(
+	app dogma.Application,
+	options ...RunnerOption,
+) *Runner {
+	ro := newRunnerOptions(options)
+
 	cfg, err := config.NewApplicationConfig(app)
 	if err != nil {
 		panic(err)
 	}
 
-	e, err := engine.New(cfg, options...)
+	e, err := engine.New(cfg, ro.engineOptions...)
 	if err != nil {
 		panic(err)
 	}
@@ -30,29 +35,32 @@ func New(app dogma.Application, options ...engine.Option) *Runner {
 }
 
 // Begin starts a new test.
-func (r *Runner) Begin(t T, options ...engine.OperationOption) Test {
-	return r.BeginContext(context.Background(), t, options...)
+func (r *Runner) Begin(
+	t T,
+	options ...TestOption,
+) *Test {
+	return r.BeginContext(
+		context.Background(),
+		t,
+		options...,
+	)
 }
 
 // BeginContext starts a new test within a context.
 func (r *Runner) BeginContext(
 	ctx context.Context,
 	t T,
-	options ...engine.OperationOption,
-) Test {
+	options ...TestOption,
+) *Test {
+	to := newTestOptions(options)
+
 	r.engine.Reset()
 
-	return &test{
-		ctx:    ctx,
-		t:      t,
-		engine: r.engine,
-		now:    time.Now(),
-		defaults: append(
-			[]engine.OperationOption{
-				engine.EnableIntegrations(false),
-				engine.EnableProjections(false),
-			},
-			options...,
-		),
+	return &Test{
+		ctx:              ctx,
+		t:                t,
+		engine:           r.engine,
+		now:              time.Now(),
+		operationOptions: to.operationOptions,
 	}
 }
