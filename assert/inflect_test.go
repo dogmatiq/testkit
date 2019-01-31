@@ -1,14 +1,11 @@
 package assert
 
 import (
-	. "github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 )
-
-var _ Comparator = DefaultComparator{}
 
 var _ = Describe("func inflect", func() {
 	entry := func(r message.Role, in, out string) TableEntry {
