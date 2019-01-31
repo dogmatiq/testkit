@@ -25,10 +25,13 @@ func New(
 	cfg *config.ApplicationConfig,
 	options ...Option,
 ) (*Engine, error) {
+	eo := newEngineOptions(options)
+
 	e := &Engine{
 		controllers: map[string]controller.Controller{},
 		roles:       map[message.Type]message.Role{},
 		routes:      map[message.Type][]controller.Controller{},
+		resetters:   eo.resetters,
 	}
 
 	cfgr := &configurer{
@@ -36,10 +39,6 @@ func New(
 	}
 
 	ctx := context.Background()
-
-	for _, opt := range options {
-		opt(e)
-	}
 
 	if err := cfg.Accept(ctx, cfgr); err != nil {
 		return nil, err

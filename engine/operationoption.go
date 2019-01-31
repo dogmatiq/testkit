@@ -82,7 +82,7 @@ type operationOptions struct {
 	enabledHandlers map[handler.Type]bool
 }
 
-// newOperationOptions returns a new OperationOptions with the given options.
+// newOperationOptions returns a new operationOptions with the given options.
 func newOperationOptions(options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),

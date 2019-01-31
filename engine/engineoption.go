@@ -1,7 +1,7 @@
 package engine
 
 // Option applies optional engine-wide settings.
-type Option func(*Engine)
+type Option func(*engineOptions)
 
 // WithResetter returns an engine option that registers a reset hook with the
 // engine.
@@ -12,7 +12,23 @@ func WithResetter(fn func()) Option {
 		panic("fn must not be nil")
 	}
 
-	return func(e *Engine) {
-		e.resetters = append(e.resetters, fn)
+	return func(eo *engineOptions) {
+		eo.resetters = append(eo.resetters, fn)
 	}
+}
+
+// engineOptions is a container for the options set via Option values.
+type engineOptions struct {
+	resetters []func()
+}
+
+// newEngineOptions returns a new engineOptions with the given options.
+func newEngineOptions(options []Option) *engineOptions {
+	eo := &engineOptions{}
+
+	for _, opt := range options {
+		opt(eo)
+	}
+
+	return eo
 }
