@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/dogmatest/engine/fact"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogmatest/engine"
 	"github.com/dogmatiq/enginekit/config"
@@ -11,7 +13,8 @@ import (
 
 // A Runner executes tests.
 type Runner struct {
-	engine *engine.Engine
+	engine  *engine.Engine
+	verbose bool
 }
 
 // New returns a test runner.
@@ -31,14 +34,14 @@ func New(
 		panic(err)
 	}
 
-	return &Runner{e}
+	return &Runner{
+		e,
+		ro.verbose,
+	}
 }
 
 // Begin starts a new test.
-func (r *Runner) Begin(
-	t T,
-	options ...TestOption,
-) *Test {
+func (r *Runner) Begin(t T, options ...TestOption) *Test {
 	return r.BeginContext(
 		context.Background(),
 		t,
@@ -47,12 +50,26 @@ func (r *Runner) Begin(
 }
 
 // BeginContext starts a new test within a context.
-func (r *Runner) BeginContext(
-	ctx context.Context,
-	t T,
-	options ...TestOption,
-) *Test {
-	to := newTestOptions(options)
+func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *Test {
+	// set the verbose option based on the runner's verbose option, by default.
+	to := newTestOptions(
+		append(
+			options,
+			Verbose(r.verbose),
+		),
+	)
+
+	opts := to.operationOptions
+
+	// log all facts to the 't' object, if verbose is enabled.
+	if to.verbose {
+		opts = append(
+			opts,
+			engine.WithObserver(
+				&fact.Logger{Log: t.Logf},
+			),
+		)
+	}
 
 	r.engine.Reset()
 
@@ -61,6 +78,6 @@ func (r *Runner) BeginContext(
 		t:                t,
 		engine:           r.engine,
 		now:              time.Now(),
-		operationOptions: to.operationOptions,
+		operationOptions: opts,
 	}
 }

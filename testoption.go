@@ -7,9 +7,20 @@ import (
 // TestOption applies optional settings to a test.
 type TestOption func(*testOptions)
 
+// Verbose returns a test option that enables or disables verbose test output
+// for an individual test.
+//
+// By default, tests produce verbose output if the -v flag is passed to "go test".
+func Verbose(enabled bool) TestOption {
+	return func(to *testOptions) {
+		to.verbose = enabled
+	}
+}
+
 // testOptions is a container for the options set via TestOption values.
 type testOptions struct {
 	operationOptions []engine.OperationOption
+	verbose          bool
 }
 
 // newTestOptions returns a new testOptions with the given options.

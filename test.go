@@ -133,9 +133,7 @@ func (t *Test) tick(
 func (t *Test) options(
 	options []engine.OperationOption,
 	a assert.Assertion,
-) []engine.OperationOption {
-	opts := []engine.OperationOption{} // make sure we have our own memory
-
+) (opts []engine.OperationOption) {
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
 	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
@@ -145,7 +143,7 @@ func (t *Test) options(
 		opts = append(opts, engine.WithObserver(a))
 	}
 
-	return opts
+	return
 }
 
 func (t *Test) begin(a assert.Assertion) {

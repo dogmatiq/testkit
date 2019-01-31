@@ -6,5 +6,6 @@ package dogmatest
 // It allows use of stand-ins, such as Ginkgo's GinkgoT() value.
 type T interface {
 	Log(args ...interface{})
+	Logf(f string, args ...interface{})
 	Fatal(args ...interface{})
 }
