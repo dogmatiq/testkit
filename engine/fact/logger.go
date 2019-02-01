@@ -24,6 +24,10 @@ func (l *Logger) Notify(f Fact) {
 		m = l.dispatchCycleCompleted(x)
 	case DispatchCycleSkipped:
 		m = l.dispatchCycleSkipped(x)
+	case DispatchBegun:
+		// m = l.dispatchCompleted(x)
+	case DispatchCompleted:
+		// m = l.dispatchSkipped(x)
 	case HandlingBegun:
 		m = l.handlingBegun(x)
 	case HandlingCompleted:

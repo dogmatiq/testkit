@@ -87,6 +87,41 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
+			XEntry(
+				"DispatchBegun",
+				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
+				DispatchBegun{
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
+				},
+			),
+			XEntry(
+				"DispatchCompleted (success)",
+				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
+				DispatchCompleted{
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
+				},
+			),
+			XEntry(
+				"DispatchCompleted (failure)",
+				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
+				DispatchCompleted{
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
+					Error: errors.New("<error>"),
+				},
+			),
+
 			Entry(
 				"HandlingBegun",
 				"aggregate[<handler>]: message handling begun",
