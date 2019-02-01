@@ -1,6 +1,8 @@
 package dogmatest
 
 import (
+	"testing"
+
 	"github.com/dogmatiq/dogmatest/engine"
 )
 
@@ -24,12 +26,23 @@ type testOptions struct {
 }
 
 // newTestOptions returns a new testOptions with the given options.
-func newTestOptions(options []TestOption) *testOptions {
+func newTestOptions(options []TestOption, verbose *bool) *testOptions {
+	var v bool
+	if verbose == nil {
+		// note: testing.Verbose() is called here instead of in New() so that New()
+		// can be called during package initialization, at which time
+		// testing.Verbose() will always return false.
+		v = testing.Verbose()
+	} else {
+		v = *verbose
+	}
+
 	ro := &testOptions{
 		operationOptions: []engine.OperationOption{
 			engine.EnableIntegrations(false),
 			engine.EnableProjections(false),
 		},
+		verbose: v,
 	}
 
 	for _, opt := range options {

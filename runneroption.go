@@ -1,8 +1,6 @@
 package dogmatest
 
 import (
-	"testing"
-
 	"github.com/dogmatiq/dogmatest/engine"
 )
 
@@ -16,21 +14,19 @@ type RunnerOption func(*runnerOptions)
 // test".
 func RunnerVerbose(enabled bool) RunnerOption {
 	return func(ro *runnerOptions) {
-		ro.verbose = enabled
+		ro.verbose = &enabled
 	}
 }
 
 // runnerOptions is a container for the options set via RunnerOption values.
 type runnerOptions struct {
 	engineOptions []engine.Option
-	verbose       bool
+	verbose       *bool
 }
 
 // newRunnerOptions returns a new runnerOptions with the given options.
 func newRunnerOptions(options []RunnerOption) *runnerOptions {
-	ro := &runnerOptions{
-		verbose: testing.Verbose(),
-	}
+	ro := &runnerOptions{}
 
 	for _, opt := range options {
 		opt(ro)

@@ -14,7 +14,7 @@ import (
 // A Runner executes tests.
 type Runner struct {
 	engine  *engine.Engine
-	verbose bool
+	verbose *bool
 }
 
 // New returns a test runner.
@@ -51,13 +51,7 @@ func (r *Runner) Begin(t T, options ...TestOption) *Test {
 
 // BeginContext starts a new test within a context.
 func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *Test {
-	// set the verbose option based on the runner's verbose option, by default.
-	to := newTestOptions(
-		append(
-			options,
-			Verbose(r.verbose),
-		),
-	)
+	to := newTestOptions(options, r.verbose)
 
 	opts := to.operationOptions
 
