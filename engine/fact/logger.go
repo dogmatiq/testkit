@@ -18,26 +18,26 @@ func (l *Logger) Notify(f Fact) {
 	var m string
 
 	switch x := f.(type) {
-	case UnroutableMessageDispatched:
-		m = l.unroutableMessageDispatched(x)
-	case MessageDispatchBegun:
-		m = l.messageDispatchBegun(x)
-	case MessageDispatchCompleted:
-		m = l.messageDispatchCompleted(x)
-	case MessageHandlingBegun:
-		m = l.messageHandlingBegun(x)
-	case MessageHandlingCompleted:
-		m = l.messageHandlingCompleted(x)
-	case MessageHandlingSkipped:
-		m = l.messageHandlingSkipped(x)
-	case EngineTickBegun:
-		m = l.engineTickBegun(x)
-	case EngineTickCompleted:
-		m = l.engineTickCompleted(x)
-	case ControllerTickBegun:
-		m = l.controllerTickBegun(x)
-	case ControllerTickCompleted:
-		m = l.controllerTickCompleted(x)
+	case DispatchCycleBegun:
+		m = l.dispatchCycleBegun(x)
+	case DispatchCycleCompleted:
+		m = l.dispatchCycleCompleted(x)
+	case DispatchCycleSkipped:
+		m = l.dispatchCycleSkipped(x)
+	case HandlingBegun:
+		m = l.handlingBegun(x)
+	case HandlingCompleted:
+		m = l.handlingCompleted(x)
+	case HandlingSkipped:
+		m = l.handlingSkipped(x)
+	case TickCycleBegun:
+		m = l.tickCycleBegun(x)
+	case TickCycleCompleted:
+		m = l.tickCycleCompleted(x)
+	case TickBegun:
+		m = l.tickBegun(x)
+	case TickCompleted:
+		m = l.tickCompleted(x)
 	case AggregateInstanceLoaded:
 		m = l.aggregateInstanceLoaded(x)
 	case AggregateInstanceNotFound:
@@ -100,16 +100,8 @@ func (l *Logger) formatEnabledHandlers(e map[handler.Type]bool) string {
 	return s
 }
 
-// unroutableMessageDispatched returns the log message for f.
-func (l *Logger) unroutableMessageDispatched(f UnroutableMessageDispatched) string {
-	return fmt.Sprintf(
-		"engine: no route for '%s' messages",
-		message.TypeOf(f.Message),
-	)
-}
-
-// messageDispatchBegun returns the log message for f.
-func (l *Logger) messageDispatchBegun(f MessageDispatchBegun) string {
+// dispatchCycleBegun returns the log message for f.
+func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) string {
 	return fmt.Sprintf(
 		"engine: dispatch of '%s' %s begun at %s (enabled: %s)",
 		f.Envelope.Type,
@@ -119,8 +111,8 @@ func (l *Logger) messageDispatchBegun(f MessageDispatchBegun) string {
 	)
 }
 
-// messageDispatchCompleted returns the log message for f.
-func (l *Logger) messageDispatchCompleted(f MessageDispatchCompleted) string {
+// dispatchCycleCompleted returns the log message for f.
+func (l *Logger) dispatchCycleCompleted(f DispatchCycleCompleted) string {
 	if f.Error == nil {
 		return fmt.Sprintf(
 			"engine: dispatch of '%s' %s completed successfully",
@@ -136,8 +128,16 @@ func (l *Logger) messageDispatchCompleted(f MessageDispatchCompleted) string {
 	)
 }
 
-// messageHandlingBegun returns the log message for f.
-func (l *Logger) messageHandlingBegun(f MessageHandlingBegun) string {
+// dispatchCycleSkipped returns the log message for f.
+func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) string {
+	return fmt.Sprintf(
+		"engine: no route for '%s' messages",
+		message.TypeOf(f.Message),
+	)
+}
+
+// handlingBegun returns the log message for f.
+func (l *Logger) handlingBegun(f HandlingBegun) string {
 	return fmt.Sprintf(
 		"%s[%s]: message handling begun",
 		f.HandlerType,
@@ -145,8 +145,8 @@ func (l *Logger) messageHandlingBegun(f MessageHandlingBegun) string {
 	)
 }
 
-// messageHandlingCompleted returns the log message for f.
-func (l *Logger) messageHandlingCompleted(f MessageHandlingCompleted) string {
+// handlingCompleted returns the log message for f.
+func (l *Logger) handlingCompleted(f HandlingCompleted) string {
 	if f.Error == nil {
 		return fmt.Sprintf(
 			"%s[%s]: handled message successfully",
@@ -163,8 +163,8 @@ func (l *Logger) messageHandlingCompleted(f MessageHandlingCompleted) string {
 	)
 }
 
-// messageHandlingSkipped returns the log message for f.
-func (l *Logger) messageHandlingSkipped(f MessageHandlingSkipped) string {
+// handlingSkipped returns the log message for f.
+func (l *Logger) handlingSkipped(f HandlingSkipped) string {
 	return fmt.Sprintf(
 		"%s[%s]: message handling skipped because %s handlers are disabled",
 		f.HandlerType,
@@ -173,8 +173,8 @@ func (l *Logger) messageHandlingSkipped(f MessageHandlingSkipped) string {
 	)
 }
 
-// engineTickBegun returns the log message for f.
-func (l *Logger) engineTickBegun(f EngineTickBegun) string {
+// tickCycleBegun returns the log message for f.
+func (l *Logger) tickCycleBegun(f TickCycleBegun) string {
 	return fmt.Sprintf(
 		"engine: tick begun at %s (enabled: %s)",
 		f.Now.Format(time.RFC3339),
@@ -182,8 +182,8 @@ func (l *Logger) engineTickBegun(f EngineTickBegun) string {
 	)
 }
 
-// engineTickCompleted  returns the log message for f.
-func (l *Logger) engineTickCompleted(f EngineTickCompleted) string {
+// tickCycleCompleted  returns the log message for f.
+func (l *Logger) tickCycleCompleted(f TickCycleCompleted) string {
 	if f.Error == nil {
 		return "engine: tick completed successfully"
 	}
@@ -191,8 +191,8 @@ func (l *Logger) engineTickCompleted(f EngineTickCompleted) string {
 	return "engine: tick completed with errors"
 }
 
-// controllerTickBegun returns the log message for f.
-func (l *Logger) controllerTickBegun(f ControllerTickBegun) string {
+// tickBegun returns the log message for f.
+func (l *Logger) tickBegun(f TickBegun) string {
 	return fmt.Sprintf(
 		"%s[%s]: tick begun",
 		f.HandlerType,
@@ -200,8 +200,8 @@ func (l *Logger) controllerTickBegun(f ControllerTickBegun) string {
 	)
 }
 
-// controllerTickCompleted returns the log message for f.
-func (l *Logger) controllerTickCompleted(f ControllerTickCompleted) string {
+// tickCompleted returns the log message for f.
+func (l *Logger) tickCompleted(f TickCompleted) string {
 	if f.Error == nil {
 		return fmt.Sprintf(
 			"%s[%s]: tick completed successfully",

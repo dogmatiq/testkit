@@ -10,7 +10,7 @@ import (
 var _ = Describe("type ObserverGroup", func() {
 	Describe("func Notify()", func() {
 		It("notifies each of the observers in the group", func() {
-			f := UnroutableMessageDispatched{
+			f := DispatchCycleSkipped{
 				Message: fixtures.MessageA1,
 			}
 			n := 0
@@ -35,10 +35,10 @@ var _ = Describe("type ObserverGroup", func() {
 var _ = Describe("type Buffer", func() {
 	Describe("func Notify()", func() {
 		It("appends the fact to the buffer", func() {
-			f1 := UnroutableMessageDispatched{
+			f1 := DispatchCycleSkipped{
 				Message: fixtures.MessageA1,
 			}
-			f2 := UnroutableMessageDispatched{
+			f2 := DispatchCycleSkipped{
 				Message: fixtures.MessageA2,
 			}
 			b := &Buffer{}
@@ -57,7 +57,7 @@ var _ = Describe("type Buffer", func() {
 var _ = Describe("var Ignore", func() {
 	Describe("func Notify()", func() {
 		It("does nothing", func() {
-			Ignore.Notify(UnroutableMessageDispatched{
+			Ignore.Notify(DispatchCycleSkipped{
 				Message: fixtures.MessageA1,
 			})
 		})

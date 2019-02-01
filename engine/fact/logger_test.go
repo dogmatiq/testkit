@@ -41,16 +41,9 @@ var _ = Describe("type Logger", func() {
 			// dispatch ...
 
 			Entry(
-				"UnroutableMessageDispatched",
-				"engine: no route for 'fixtures.MessageA' messages",
-				UnroutableMessageDispatched{
-					Message: fixtures.MessageA1,
-				},
-			),
-			Entry(
-				"MessageDispatchBegun",
+				"DispatchCycleBegun",
 				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
-				MessageDispatchBegun{
+				DispatchCycleBegun{
 					Envelope: envelope.New(
 						1000,
 						fixtures.MessageA1,
@@ -64,9 +57,9 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 			Entry(
-				"MessageDispatchCompleted (success)",
+				"DispatchCycleCompleted (success)",
 				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
-				MessageDispatchCompleted{
+				DispatchCycleCompleted{
 					Envelope: envelope.New(
 						1000,
 						fixtures.MessageA1,
@@ -75,9 +68,9 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 			Entry(
-				"MessageDispatchCompleted (failure)",
+				"DispatchCycleCompleted (failure)",
 				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
-				MessageDispatchCompleted{
+				DispatchCycleCompleted{
 					Envelope: envelope.New(
 						1000,
 						fixtures.MessageA1,
@@ -86,36 +79,43 @@ var _ = Describe("type Logger", func() {
 					Error: errors.New("<error>"),
 				},
 			),
+			Entry(
+				"DispatchCycleSkipped",
+				"engine: no route for 'fixtures.MessageA' messages",
+				DispatchCycleSkipped{
+					Message: fixtures.MessageA1,
+				},
+			),
 
 			Entry(
-				"MessageHandlingBegun",
+				"HandlingBegun",
 				"aggregate[<handler>]: message handling begun",
-				MessageHandlingBegun{
+				HandlingBegun{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 				},
 			),
 			Entry(
-				"MessageHandlingCompleted (success)",
+				"HandlingCompleted (success)",
 				"aggregate[<handler>]: handled message successfully",
-				MessageHandlingCompleted{
+				HandlingCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 				},
 			),
 			Entry(
-				"MessageHandlingCompleted (failure)",
+				"HandlingCompleted (failure)",
 				"aggregate[<handler>]: handling failed: <error>",
-				MessageHandlingCompleted{
+				HandlingCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 					Error:       errors.New("<error>"),
 				},
 			),
 			Entry(
-				"MessageHandlingSkipped",
+				"HandlingSkipped",
 				"aggregate[<handler>]: message handling skipped because aggregate handlers are disabled",
-				MessageHandlingSkipped{
+				HandlingSkipped{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 				},
@@ -124,9 +124,9 @@ var _ = Describe("type Logger", func() {
 			// tick ...
 
 			Entry(
-				"EngineTickBegun",
+				"TickCycleBegun",
 				"engine: tick begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
-				EngineTickBegun{
+				TickCycleBegun{
 					Now: now,
 					EnabledHandlers: map[handler.Type]bool{
 						handler.AggregateType: true,
@@ -135,38 +135,38 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 			Entry(
-				"EngineTickCompleted (success)",
+				"TickCycleCompleted (success)",
 				"engine: tick completed successfully",
-				EngineTickCompleted{},
+				TickCycleCompleted{},
 			),
 			Entry(
-				"EngineTickCompleted (failure)",
+				"TickCycleCompleted (failure)",
 				"engine: tick completed with errors",
-				EngineTickCompleted{
+				TickCycleCompleted{
 					Error: errors.New("<error>"),
 				},
 			),
 
 			Entry(
-				"ControllerTickBegun",
+				"TickBegun",
 				"aggregate[<handler>]: tick begun",
-				ControllerTickBegun{
+				TickBegun{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 				},
 			),
 			Entry(
-				"ControllerTickCompleted (success)",
+				"TickCompleted (success)",
 				"aggregate[<handler>]: tick completed successfully",
-				ControllerTickCompleted{
+				TickCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 				},
 			),
 			Entry(
-				"ControllerTickCompleted (failure)",
+				"TickCompleted (failure)",
 				"aggregate[<handler>]: tick failed: <error>",
-				ControllerTickCompleted{
+				TickCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
 					Error:       errors.New("<error>"),

@@ -8,54 +8,64 @@ import (
 	"github.com/dogmatiq/enginekit/handler"
 )
 
-// UnroutableMessageDispatched indicates that Engine.Dispatch() has been called
+// DispatchCycleBegun indicates that Engine.Dispatch() has been called with a
+// message that is able to be routed to at least one handler.
+type DispatchCycleBegun struct {
+	Envelope        *envelope.Envelope
+	Now             time.Time
+	EnabledHandlers map[handler.Type]bool
+}
+
+// DispatchCycleCompleted indicates that a call Engine.Dispatch() has completed.
+type DispatchCycleCompleted struct {
+	Envelope        *envelope.Envelope
+	Error           error
+	EnabledHandlers map[handler.Type]bool
+}
+
+// DispatchCycleSkipped indicates that Engine.Dispatch() has been called
 // with a message that is not routed to any handlers.
 //
 // Note that when dispatch is called with an unroutable message, it is unknown
 // whether it was intended to be a command or an event.
-type UnroutableMessageDispatched struct {
-	// Message is the message that was dispatched.
+type DispatchCycleSkipped struct {
 	Message         dogma.Message
 	Now             time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 
-// MessageDispatchBegun indicates that Engine.Dispatch() has been called with a
+// DispatchBegun indicates that Engine.Dispatch() has been called with a
 // message that is able to be routed to at least one handler.
-type MessageDispatchBegun struct {
-	Envelope        *envelope.Envelope
-	Now             time.Time
-	EnabledHandlers map[handler.Type]bool
+type DispatchBegun struct {
+	Envelope *envelope.Envelope
 }
 
-// MessageDispatchCompleted indicates that a call Engine.Dispatch() has completed.
-type MessageDispatchCompleted struct {
-	Envelope        *envelope.Envelope
-	Now             time.Time
-	Error           error
-	EnabledHandlers map[handler.Type]bool
+// DispatchCompleted indicates that a call Engine.Dispatch() has completed.
+type DispatchCompleted struct {
+	Envelope *envelope.Envelope
+	Error    error
 }
 
-// MessageHandlingBegun indicates that a message is about to be handled by a
-// specific handler.
-type MessageHandlingBegun struct {
+// HandlingBegun indicates that a message is about to be handled by a specific
+// handler.
+type HandlingBegun struct {
 	HandlerName string
 	HandlerType handler.Type
 	Envelope    *envelope.Envelope
 }
 
-// MessageHandlingCompleted indicates that a message has been handled by a
-// specific handler, either successfully or unsucessfully.
-type MessageHandlingCompleted struct {
+// HandlingCompleted indicates that a message has been handled by a specific
+// handler, either successfully or unsucessfully.
+type HandlingCompleted struct {
 	HandlerName string
 	HandlerType handler.Type
 	Envelope    *envelope.Envelope
 	Error       error
 }
 
-// MessageHandlingSkipped indicates that a message has been not been handled by
-// a specific handler, because handlers of that type are disabled.
-type MessageHandlingSkipped struct {
+// HandlingSkipped indicates that a message has been not been handled by a
+// specific handler, because handlers of that type are disabled.
+type HandlingSkipped struct {
 	HandlerName string
 	HandlerType handler.Type
 	Envelope    *envelope.Envelope

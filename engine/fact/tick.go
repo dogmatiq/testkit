@@ -6,31 +6,28 @@ import (
 	"github.com/dogmatiq/enginekit/handler"
 )
 
-// EngineTickBegun indicates that Engine.Tick() has been called.
-type EngineTickBegun struct {
+// TickCycleBegun indicates that Engine.Tick() has been called.
+type TickCycleBegun struct {
 	Now             time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 
-// EngineTickCompleted indicates that a call Engine.Tick() has completed.
-type EngineTickCompleted struct {
-	Now             time.Time
+// TickCycleCompleted indicates that a call Engine.Tick() has completed.
+type TickCycleCompleted struct {
 	Error           error
 	EnabledHandlers map[handler.Type]bool
 }
 
-// ControllerTickBegun indicates that a call to Controller.Tick() is being made.
-type ControllerTickBegun struct {
+// TickBegun indicates that a call to Controller.Tick() is being made.
+type TickBegun struct {
 	HandlerName string
 	HandlerType handler.Type
-	Now         time.Time
 }
 
-// ControllerTickCompleted indicates that a call to Controller.Tick() has
+// TickCompleted indicates that a call to Controller.Tick() has
 // completed.
-type ControllerTickCompleted struct {
+type TickCompleted struct {
 	HandlerName string
 	HandlerType handler.Type
-	Now         time.Time
 	Error       error
 }

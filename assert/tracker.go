@@ -29,11 +29,11 @@ type tracker struct {
 // Notify updates the assertion's state in response to a new fact.
 func (t *tracker) Notify(f fact.Fact) {
 	switch x := f.(type) {
-	case fact.MessageDispatchBegun:
+	case fact.DispatchCycleBegun:
 		t.enabled = x.EnabledHandlers
-	case fact.EngineTickBegun:
+	case fact.TickCycleBegun:
 		t.enabled = x.EnabledHandlers
-	case fact.MessageHandlingBegun:
+	case fact.HandlingBegun:
 		t.updateEngaged(x.HandlerName, x.HandlerType)
 	case fact.EventRecordedByAggregate:
 		t.messageProduced(x.EventEnvelope.Role)
