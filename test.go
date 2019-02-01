@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dogmatiq/enginekit/message"
+
 	"github.com/dogmatiq/iago"
 
 	"github.com/dogmatiq/dogma"
@@ -28,6 +30,8 @@ type Test struct {
 // Setup prepares the application for the test by executing the given set of
 // messages without any assertions.
 func (t *Test) Setup(messages ...dogma.Message) *Test {
+	t.t.Log("--- setup ---")
+
 	for _, m := range messages {
 		t.dispatch(m, nil, nil)
 	}
@@ -42,6 +46,8 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Logf("--- testing the '%s' command ---", message.TypeOf(m))
+
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
@@ -56,6 +62,8 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Logf("--- testing the '%s' event ---", message.TypeOf(m))
+
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
@@ -91,6 +99,8 @@ func (t *Test) AdvanceTimeTo(
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
 	}
+
+	t.t.Logf("--- advancing time to %s ---", now.Format(time.RFC3339))
 
 	t.now = now
 
