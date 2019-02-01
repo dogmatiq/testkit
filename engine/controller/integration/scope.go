@@ -9,16 +9,18 @@ import (
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	id       string
-	name     string
-	handler  dogma.IntegrationMessageHandler
-	observer fact.Observer
-	command  *envelope.Envelope
-	events   []*envelope.Envelope
+	id         string
+	name       string
+	handler    dogma.IntegrationMessageHandler
+	messageIDs *envelope.MessageIDGenerator
+	observer   fact.Observer
+	command    *envelope.Envelope
+	events     []*envelope.Envelope
 }
 
 func (s *scope) RecordEvent(m dogma.Message) {
 	env := s.command.NewEvent(
+		s.messageIDs.Next(),
 		m,
 		envelope.Origin{
 			HandlerName: s.name,

@@ -31,6 +31,7 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 		aggregate.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
+			&c.engine.messageIDs,
 		),
 		message.CommandRole,
 		cfg.MessageTypes,
@@ -44,6 +45,7 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 		process.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
+			&c.engine.messageIDs,
 		),
 		message.EventRole,
 		cfg.MessageTypes,
@@ -57,6 +59,7 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 		integration.NewController(
 			cfg.HandlerName,
 			cfg.Handler,
+			&c.engine.messageIDs,
 		),
 		message.CommandRole,
 		cfg.MessageTypes,

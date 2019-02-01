@@ -14,18 +14,21 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.IntegrationMessageHandler implementations.
 type Controller struct {
-	name    string
-	handler dogma.IntegrationMessageHandler
+	name       string
+	handler    dogma.IntegrationMessageHandler
+	messageIDs *envelope.MessageIDGenerator
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
 	n string,
 	h dogma.IntegrationMessageHandler,
+	g *envelope.MessageIDGenerator,
 ) *Controller {
 	return &Controller{
-		name:    n,
-		handler: h,
+		name:       n,
+		handler:    h,
+		messageIDs: g,
 	}
 }
 
@@ -58,10 +61,11 @@ func (c *Controller) Handle(
 	env.Role.MustBe(message.CommandRole)
 
 	s := &scope{
-		name:     c.name,
-		handler:  c.handler,
-		observer: obs,
-		command:  env,
+		name:       c.name,
+		handler:    c.handler,
+		messageIDs: c.messageIDs,
+		observer:   obs,
+		command:    env,
 	}
 
 	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {

@@ -9,16 +9,17 @@ import (
 
 // scope is an implementation of dogma.AggregateCommandScope.
 type scope struct {
-	id        string
-	name      string
-	handler   dogma.AggregateMessageHandler
-	observer  fact.Observer
-	root      dogma.AggregateRoot
-	exists    bool
-	created   bool // true if Create() returned true at least once
-	destroyed bool // true if Destroy() returned true at least once
-	command   *envelope.Envelope
-	events    []*envelope.Envelope
+	id         string
+	name       string
+	handler    dogma.AggregateMessageHandler
+	messageIDs *envelope.MessageIDGenerator
+	observer   fact.Observer
+	root       dogma.AggregateRoot
+	exists     bool
+	created    bool // true if Create() returned true at least once
+	destroyed  bool // true if Destroy() returned true at least once
+	command    *envelope.Envelope
+	events     []*envelope.Envelope
 }
 
 func (s *scope) InstanceID() string {
@@ -77,6 +78,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.root.ApplyEvent(m)
 
 	env := s.command.NewEvent(
+		s.messageIDs.Next(),
 		m,
 		envelope.Origin{
 			HandlerName: s.name,

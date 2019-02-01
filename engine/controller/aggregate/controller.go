@@ -14,19 +14,22 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
-	name      string
-	handler   dogma.AggregateMessageHandler
-	instances map[string]dogma.AggregateRoot
+	name       string
+	handler    dogma.AggregateMessageHandler
+	messageIDs *envelope.MessageIDGenerator
+	instances  map[string]dogma.AggregateRoot
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
 	n string,
 	h dogma.AggregateMessageHandler,
+	g *envelope.MessageIDGenerator,
 ) *Controller {
 	return &Controller{
-		name:    n,
-		handler: h,
+		name:       n,
+		handler:    h,
+		messageIDs: g,
 	}
 }
 
@@ -95,13 +98,14 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		id:       id,
-		name:     c.name,
-		handler:  c.handler,
-		observer: obs,
-		root:     r,
-		exists:   exists,
-		command:  env,
+		id:         id,
+		name:       c.name,
+		handler:    c.handler,
+		messageIDs: c.messageIDs,
+		observer:   obs,
+		root:       r,
+		exists:     exists,
+		command:    env,
 	}
 
 	c.handler.HandleCommand(s, env.Message)

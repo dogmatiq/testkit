@@ -22,15 +22,19 @@ var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		handler    *fixtures.AggregateMessageHandler
 		controller *Controller
-		command    = envelope.New(
-			fixtures.MessageC1,
-			message.CommandRole,
-		)
+		command    *envelope.Envelope
 	)
 
 	BeforeEach(func() {
+		command = envelope.New(
+			1000,
+			fixtures.MessageC1,
+			message.CommandRole,
+		)
+
 		handler = &fixtures.AggregateMessageHandler{
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
@@ -46,7 +50,10 @@ var _ = Describe("type Controller", func() {
 				}
 			},
 		}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	Describe("func Name()", func() {
@@ -126,6 +133,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
+					1,
 					fixtures.MessageE1,
 					envelope.Origin{
 						HandlerName: "<name>",
@@ -134,6 +142,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				command.NewEvent(
+					2,
 					fixtures.MessageE2,
 					envelope.Origin{
 						HandlerName: "<name>",

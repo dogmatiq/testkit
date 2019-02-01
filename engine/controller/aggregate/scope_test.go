@@ -17,15 +17,19 @@ import (
 
 var _ = Describe("type scope", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		handler    *fixtures.AggregateMessageHandler
 		controller *Controller
-		command    = envelope.New(
-			fixtures.MessageA1,
-			message.CommandRole,
-		)
+		command    *envelope.Envelope
 	)
 
 	BeforeEach(func() {
+		command = envelope.New(
+			1000,
+			fixtures.MessageA1,
+			message.CommandRole,
+		)
+
 		handler = &fixtures.AggregateMessageHandler{
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
 				switch m.(type) {
@@ -36,7 +40,10 @@ var _ = Describe("type scope", func() {
 				}
 			},
 		}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	When("the instance does not exist", func() {
@@ -166,12 +173,15 @@ var _ = Describe("type scope", func() {
 				fact.Ignore,
 				time.Now(),
 				envelope.New(
+					2000,
 					fixtures.MessageA2, // use a different message to create the instance
 					message.CommandRole,
 				),
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
+
+			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
 		Describe("func Root", func() {
@@ -271,17 +281,17 @@ var _ = Describe("type scope", func() {
 
 		Describe("func RecordEvent", func() {
 			BeforeEach(func() {
-				fn := handler.HandleCommandFunc
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
 					m dogma.Message,
 				) {
-					fn(s, m)
 					s.RecordEvent(fixtures.MessageB1)
 				}
 			})
 
 			It("records a fact", func() {
+				messageIDs.Reset() // reset after setup for a predictable ID.
+
 				buf := &fact.Buffer{}
 				_, err := controller.Handle(
 					context.Background(),
@@ -299,6 +309,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
 						EventEnvelope: command.NewEvent(
+							1,
 							fixtures.MessageB1,
 							envelope.Origin{
 								HandlerName: "<name>",

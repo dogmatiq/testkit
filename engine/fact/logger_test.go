@@ -51,8 +51,12 @@ var _ = Describe("type Logger", func() {
 				"MessageDispatchBegun",
 				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
 				MessageDispatchBegun{
-					Envelope: envelope.New(fixtures.MessageA1, message.CommandRole),
-					Now:      now,
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
+					Now: now,
 					EnabledHandlers: map[handler.Type]bool{
 						handler.AggregateType: true,
 						handler.ProcessType:   true,
@@ -63,15 +67,23 @@ var _ = Describe("type Logger", func() {
 				"MessageDispatchCompleted (success)",
 				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
 				MessageDispatchCompleted{
-					Envelope: envelope.New(fixtures.MessageA1, message.CommandRole),
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
 				},
 			),
 			Entry(
 				"MessageDispatchCompleted (failure)",
 				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
 				MessageDispatchCompleted{
-					Envelope: envelope.New(fixtures.MessageA1, message.CommandRole),
-					Error:    errors.New("<error>"),
+					Envelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
+					Error: errors.New("<error>"),
 				},
 			),
 
@@ -199,9 +211,13 @@ var _ = Describe("type Logger", func() {
 				"EventRecordedByAggregate",
 				"aggregate[<handler>@<instance>]: recorded 'fixtures.MessageA' event",
 				EventRecordedByAggregate{
-					HandlerName:   "<handler>",
-					InstanceID:    "<instance>",
-					EventEnvelope: envelope.New(fixtures.MessageA1, message.EventRole),
+					HandlerName: "<handler>",
+					InstanceID:  "<instance>",
+					EventEnvelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.EventRole,
+					),
 				},
 			),
 			Entry(
@@ -268,9 +284,13 @@ var _ = Describe("type Logger", func() {
 				"CommandExecutedByProcess",
 				"process[<handler>@<instance>]: executed 'fixtures.MessageA' command",
 				CommandExecutedByProcess{
-					HandlerName:     "<handler>",
-					InstanceID:      "<instance>",
-					CommandEnvelope: envelope.New(fixtures.MessageA1, message.CommandRole),
+					HandlerName: "<handler>",
+					InstanceID:  "<instance>",
+					CommandEnvelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.CommandRole,
+					),
 				},
 			),
 			Entry(
@@ -280,9 +300,11 @@ var _ = Describe("type Logger", func() {
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					TimeoutEnvelope: envelope.New(
+						1000,
 						fixtures.MessageA1,
 						message.EventRole,
 					).NewTimeout(
+						2000,
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -310,8 +332,12 @@ var _ = Describe("type Logger", func() {
 				"EventRecordedByIntegration",
 				"integration[<handler>]: recorded 'fixtures.MessageA' event",
 				EventRecordedByIntegration{
-					HandlerName:   "<handler>",
-					EventEnvelope: envelope.New(fixtures.MessageA1, message.EventRole),
+					HandlerName: "<handler>",
+					EventEnvelope: envelope.New(
+						1000,
+						fixtures.MessageA1,
+						message.EventRole,
+					),
 				},
 			),
 			Entry(

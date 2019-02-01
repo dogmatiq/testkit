@@ -17,28 +17,27 @@ import (
 
 var _ = Describe("type scope", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		handler    *fixtures.IntegrationMessageHandler
 		controller *Controller
-		command    = envelope.New(
-			fixtures.MessageA1,
-			message.CommandRole,
-		)
+		command    *envelope.Envelope
 	)
 
 	BeforeEach(func() {
+		command = envelope.New(
+			1000,
+			fixtures.MessageA1,
+			message.CommandRole,
+		)
+
 		handler = &fixtures.IntegrationMessageHandler{}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	Describe("func RecordEvent", func() {
-		event := command.NewEvent(
-			fixtures.MessageB1,
-			envelope.Origin{
-				HandlerName: "<name>",
-				HandlerType: handlerkit.IntegrationType,
-			},
-		)
-
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
@@ -62,10 +61,17 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts).To(ContainElement(
 				fact.EventRecordedByIntegration{
-					HandlerName:   "<name>",
-					Handler:       handler,
-					Envelope:      command,
-					EventEnvelope: event,
+					HandlerName: "<name>",
+					Handler:     handler,
+					Envelope:    command,
+					EventEnvelope: command.NewEvent(
+						1,
+						fixtures.MessageB1,
+						envelope.Origin{
+							HandlerName: "<name>",
+							HandlerType: handlerkit.IntegrationType,
+						},
+					),
 				},
 			))
 		})

@@ -11,17 +11,18 @@ import (
 
 // scope is an implementation of dogma.ProcessEventScope.
 type scope struct {
-	id       string
-	name     string
-	handler  dogma.ProcessMessageHandler
-	observer fact.Observer
-	now      time.Time
-	root     dogma.ProcessRoot
-	exists   bool
-	env      *envelope.Envelope // event or timeout
-	commands []*envelope.Envelope
-	ready    []*envelope.Envelope // timeouts <= now
-	pending  []*envelope.Envelope // timeouts > now
+	id         string
+	name       string
+	handler    dogma.ProcessMessageHandler
+	messageIDs *envelope.MessageIDGenerator
+	observer   fact.Observer
+	now        time.Time
+	root       dogma.ProcessRoot
+	exists     bool
+	env        *envelope.Envelope // event or timeout
+	commands   []*envelope.Envelope
+	ready      []*envelope.Envelope // timeouts <= now
+	pending    []*envelope.Envelope // timeouts > now
 }
 
 func (s *scope) InstanceID() string {
@@ -78,6 +79,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	}
 
 	env := s.env.NewCommand(
+		s.messageIDs.Next(),
 		m,
 		envelope.Origin{
 			HandlerName: s.name,
@@ -104,6 +106,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	}
 
 	env := s.env.NewTimeout(
+		s.messageIDs.Next(),
 		m,
 		t,
 		envelope.Origin{

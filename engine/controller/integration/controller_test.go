@@ -22,17 +22,24 @@ var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		handler    *fixtures.IntegrationMessageHandler
 		controller *Controller
-		command    = envelope.New(
-			fixtures.MessageA1,
-			message.CommandRole,
-		)
+		command    *envelope.Envelope
 	)
 
 	BeforeEach(func() {
+		command = envelope.New(
+			1000,
+			fixtures.MessageA1,
+			message.CommandRole,
+		)
+
 		handler = &fixtures.IntegrationMessageHandler{}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	Describe("func Name()", func() {
@@ -115,6 +122,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
+					1,
 					fixtures.MessageB1,
 					envelope.Origin{
 						HandlerName: "<name>",
@@ -122,6 +130,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				command.NewEvent(
+					2,
 					fixtures.MessageB2,
 					envelope.Origin{
 						HandlerName: "<name>",

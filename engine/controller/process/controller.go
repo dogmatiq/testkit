@@ -15,20 +15,23 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	name      string
-	handler   dogma.ProcessMessageHandler
-	instances map[string]dogma.ProcessRoot
-	timeouts  []*envelope.Envelope
+	name       string
+	handler    dogma.ProcessMessageHandler
+	messageIDs *envelope.MessageIDGenerator
+	instances  map[string]dogma.ProcessRoot
+	timeouts   []*envelope.Envelope
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
 	n string,
 	h dogma.ProcessMessageHandler,
+	g *envelope.MessageIDGenerator,
 ) *Controller {
 	return &Controller{
-		name:    n,
-		handler: h,
+		name:       n,
+		handler:    h,
+		messageIDs: g,
 	}
 }
 
@@ -111,14 +114,15 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		id:       id,
-		name:     c.name,
-		handler:  c.handler,
-		observer: obs,
-		now:      now,
-		root:     r,
-		exists:   exists,
-		env:      env,
+		id:         id,
+		name:       c.name,
+		handler:    c.handler,
+		messageIDs: c.messageIDs,
+		observer:   obs,
+		now:        now,
+		root:       r,
+		exists:     exists,
+		env:        env,
 	}
 
 	if err := c.handle(ctx, s); err != nil {

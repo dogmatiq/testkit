@@ -14,6 +14,7 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
+	messageIDs  envelope.MessageIDGenerator
 	controllers map[string]controller.Controller
 	roles       map[message.Type]message.Role
 	routes      map[message.Type][]controller.Controller
@@ -49,6 +50,8 @@ func New(
 
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
+	e.messageIDs.Reset()
+
 	for _, c := range e.controllers {
 		c.Reset()
 	}
@@ -157,7 +160,7 @@ func (e *Engine) Dispatch(
 		return nil
 	}
 
-	env := envelope.New(m, r)
+	env := envelope.New(e.messageIDs.Next(), m, r)
 
 	oo.observers.Notify(
 		fact.MessageDispatchBegun{

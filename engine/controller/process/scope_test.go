@@ -17,15 +17,19 @@ import (
 
 var _ = Describe("type scope", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		handler    *fixtures.ProcessMessageHandler
 		controller *Controller
-		event      = envelope.New(
-			fixtures.MessageA1,
-			message.EventRole,
-		)
+		event      *envelope.Envelope
 	)
 
 	BeforeEach(func() {
+		event = envelope.New(
+			1000,
+			fixtures.MessageA1,
+			message.EventRole,
+		)
+
 		handler = &fixtures.ProcessMessageHandler{
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
@@ -39,7 +43,10 @@ var _ = Describe("type scope", func() {
 				}
 			},
 		}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	When("the instance does not exist", func() {
@@ -200,12 +207,15 @@ var _ = Describe("type scope", func() {
 				fact.Ignore,
 				time.Now(),
 				envelope.New(
+					2000,
 					fixtures.MessageA2, // use a different message to create the instance
 					message.EventRole,
 				),
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
+
+			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
 		Describe("func Root", func() {
@@ -343,6 +353,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
 						CommandEnvelope: event.NewCommand(
+							1,
 							fixtures.MessageB1,
 							envelope.Origin{
 								HandlerName: "<name>",
@@ -392,6 +403,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
 						TimeoutEnvelope: event.NewTimeout(
+							1,
 							fixtures.MessageB1,
 							t,
 							envelope.Origin{

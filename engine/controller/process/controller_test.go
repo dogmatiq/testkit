@@ -22,14 +22,23 @@ var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
+		messageIDs envelope.MessageIDGenerator
 		now        = time.Now()
 		handler    *fixtures.ProcessMessageHandler
 		controller *Controller
-		event      = envelope.New(
+		event      *envelope.Envelope
+		timeout    *envelope.Envelope
+	)
+
+	BeforeEach(func() {
+		event = envelope.New(
+			1000,
 			fixtures.MessageE1,
 			message.EventRole,
 		)
+
 		timeout = event.NewTimeout(
+			2000,
 			fixtures.MessageT1,
 			now,
 			envelope.Origin{
@@ -38,9 +47,7 @@ var _ = Describe("type Controller", func() {
 				InstanceID:  "<instance-E1>",
 			},
 		)
-	)
 
-	BeforeEach(func() {
 		handler = &fixtures.ProcessMessageHandler{
 			// setup routes for "E" (event) messages to an instance ID based on the
 			// message's content
@@ -60,7 +67,10 @@ var _ = Describe("type Controller", func() {
 				}
 			},
 		}
-		controller = NewController("<name>", handler)
+
+		controller = NewController("<name>", handler, &messageIDs)
+
+		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
 	Describe("func Name()", func() {
@@ -99,6 +109,8 @@ var _ = Describe("type Controller", func() {
 				event,
 			)
 			Expect(err).ShouldNot(HaveOccurred())
+
+			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
 		It("returns timeouts that are ready to be handled", func() {
@@ -111,6 +123,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(timeouts).To(ConsistOf(
 				event.NewTimeout(
+					3,
 					fixtures.MessageT1,
 					now.Add(1*time.Hour),
 					envelope.Origin{
@@ -120,6 +133,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				event.NewTimeout(
+					2,
 					fixtures.MessageT2,
 					now.Add(2*time.Hour),
 					envelope.Origin{
@@ -154,14 +168,17 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("does not return timeouts for instances that have been deleted", func() {
+			secondInstanceEvent := envelope.New(
+				3000,
+				fixtures.MessageE2, // different message value = different instance
+				message.EventRole,
+			)
+
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
 				now,
-				envelope.New(
-					fixtures.MessageE2, // different message value = different instance
-					message.EventRole,
-				),
+				secondInstanceEvent,
 			)
 			Expect(err).ShouldNot(HaveOccurred())
 
@@ -192,7 +209,8 @@ var _ = Describe("type Controller", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(timeouts).To(ConsistOf(
-				event.NewTimeout(
+				secondInstanceEvent.NewTimeout(
+					3,
 					fixtures.MessageT1,
 					now.Add(1*time.Hour),
 					envelope.Origin{
@@ -201,7 +219,8 @@ var _ = Describe("type Controller", func() {
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
 				),
-				event.NewTimeout(
+				secondInstanceEvent.NewTimeout(
+					2,
 					fixtures.MessageT2,
 					now.Add(2*time.Hour),
 					envelope.Origin{
@@ -282,6 +301,7 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(ConsistOf(
 					event.NewCommand(
+						1,
 						fixtures.MessageC1,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -290,6 +310,7 @@ var _ = Describe("type Controller", func() {
 						},
 					),
 					event.NewTimeout(
+						2,
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -414,6 +435,8 @@ var _ = Describe("type Controller", func() {
 					event,
 				)
 				Expect(err).ShouldNot(HaveOccurred())
+
+				messageIDs.Reset() // reset after setup for a predictable ID.
 			})
 
 			It("forwards the message to the handler", func() {
@@ -480,7 +503,8 @@ var _ = Describe("type Controller", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(ConsistOf(
-					event.NewCommand(
+					timeout.NewCommand(
+						1,
 						fixtures.MessageC1,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -488,7 +512,8 @@ var _ = Describe("type Controller", func() {
 							InstanceID:  "<instance-E1>",
 						},
 					),
-					event.NewTimeout(
+					timeout.NewTimeout(
+						2,
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -560,6 +585,8 @@ var _ = Describe("type Controller", func() {
 						event,
 					)
 					Expect(err).ShouldNot(HaveOccurred())
+
+					messageIDs.Reset() // reset after setup for a predictable ID.
 				})
 
 				It("does not forward the message to the handler", func() {
@@ -700,6 +727,8 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
+
+				messageIDs.Reset() // reset after setup for a predictable ID.
 			})
 
 			It("records a fact", func() {
@@ -758,6 +787,8 @@ var _ = Describe("type Controller", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
+
+			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
 		It("removes all instances", func() {
