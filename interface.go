@@ -7,5 +7,5 @@ package dogmatest
 type T interface {
 	Log(args ...interface{})
 	Logf(f string, args ...interface{})
-	Fatal(args ...interface{})
+	FailNow()
 }

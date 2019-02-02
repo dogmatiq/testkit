@@ -27,10 +27,10 @@ type Test struct {
 	renderer         render.Renderer
 }
 
-// Setup prepares the application for the test by executing the given set of
+// Prepare prepares the application for the test by executing the given set of
 // messages without any assertions.
-func (t *Test) Setup(messages ...dogma.Message) *Test {
-	t.t.Log("--- setup ---")
+func (t *Test) Prepare(messages ...dogma.Message) *Test {
+	log(t.t, "--- PREPARING APPLICATION FOR TEST ---")
 
 	for _, m := range messages {
 		t.dispatch(m, nil, nil)
@@ -46,7 +46,12 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Logf("--- testing the '%s' command ---", message.TypeOf(m))
+	logf(
+		t.t,
+		"--- EXECUTING TEST COMMAND - %s - %s ---",
+		message.TypeOf(m),
+		message.ToString(m),
+	)
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -62,7 +67,12 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Logf("--- testing the '%s' event ---", message.TypeOf(m))
+	logf(
+		t.t,
+		"--- RECORDING TEST EVENT - %s - %s ---",
+		message.TypeOf(m),
+		message.ToString(m),
+	)
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -82,11 +92,9 @@ func (t *Test) AdvanceTimeBy(
 		panic("delta must be positive")
 	}
 
-	return t.AdvanceTimeTo(
-		t.now.Add(delta),
-		a,
-		options...,
-	)
+	logf(t.t, "--- ADVANCING TIME BY %s ---", delta)
+
+	return t.advanceTime(t.now.Add(delta), a, options)
 }
 
 // AdvanceTimeTo artificially advances the engine's notion of the current time
@@ -100,8 +108,18 @@ func (t *Test) AdvanceTimeTo(
 		panic("time must be greater than the current time")
 	}
 
-	t.t.Logf("--- advancing time to %s ---", now.Format(time.RFC3339))
+	logf(t.t, "--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
 
+	return t.advanceTime(now, a, options)
+}
+
+// advanceTime artificially advances the engine's notion of the current time
+// to a specific time.
+func (t *Test) advanceTime(
+	now time.Time,
+	a assert.Assertion,
+	options []engine.OperationOption,
+) *Test {
 	t.now = now
 
 	t.begin(a)
@@ -121,7 +139,8 @@ func (t *Test) dispatch(
 	opts := t.options(options, a)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		t.t.Fatal(err)
+		log(t.t, err)
+		t.t.FailNow()
 	}
 }
 
@@ -134,7 +153,8 @@ func (t *Test) tick(
 	opts := t.options(options, a)
 
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
-		t.t.Fatal(err)
+		log(t.t, err)
+		t.t.FailNow()
 	}
 }
 
@@ -181,9 +201,9 @@ func (t *Test) end(a assert.Assertion) {
 	res := a.End(r)
 	iago.MustWriteTo(buf, res)
 
-	if res.Ok {
-		t.t.Log(buf.String())
-	} else {
-		t.t.Fatal(buf.String())
+	log(t.t, buf.String())
+
+	if !res.Ok {
+		t.t.FailNow()
 	}
 }
