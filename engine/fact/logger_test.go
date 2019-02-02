@@ -22,13 +22,13 @@ var _ = Describe("type Logger", func() {
 		}
 
 		command := envelope.New(
-			"1000",
+			"100",
 			fixtures.MessageC1,
 			message.CommandRole,
 		)
 
 		event := envelope.New(
-			"1000",
+			"100",
 			fixtures.MessageE1,
 			message.EventRole,
 		)
@@ -63,7 +63,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"DispatchCycleBegun",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
@@ -75,14 +75,14 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"DispatchCycleCompleted (success)",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch cycle completed successfully",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch cycle completed successfully",
 				DispatchCycleCompleted{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCycleCompleted (failure)",
-				"= 1000  ∵ 1000  ⋲ 1000  ▽ ⚙ ✖  dispatch cycle completed with errors",
+				"= 0100  ∵ 0100  ⋲ 0100  ▽ ⚙ ✖  dispatch cycle completed with errors",
 				DispatchCycleCompleted{
 					Envelope: command,
 					Error:    errors.New("<error>"),
@@ -98,21 +98,21 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"DispatchBegun",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    fixtures.MessageC? ● {C1} ● dispatch begun",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    fixtures.MessageC? ● {C1} ● dispatch begun",
 				DispatchBegun{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCompleted (success)",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch completed successfully",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch completed successfully",
 				DispatchCompleted{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCompleted (failure)",
-				"= 1000  ∵ 1000  ⋲ 1000  ▽ ⚙ ✖  dispatch completed with errors",
+				"= 0100  ∵ 0100  ⋲ 0100  ▽ ⚙ ✖  dispatch completed with errors",
 				DispatchCompleted{
 					Envelope: command,
 					Error:    errors.New("<error>"),
@@ -131,7 +131,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"HandlingCompleted (failure)",
-				"= 1000  ∵ 1000  ⋲ 1000  ▽ ∴ ✖  [<handler>]  <error>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▽ ∴ ✖  [<handler>]  <error>",
 				HandlingCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -141,7 +141,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"HandlingSkipped",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler>]  handler skipped because aggregate handlers are disabled",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler>]  handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -199,7 +199,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"AggregateInstanceLoaded",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  loaded an existing instance",
 				AggregateInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -208,7 +208,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceNotFound",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance does not yet exist",
 				AggregateInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -217,7 +217,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceCreated",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance created",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance created",
 				AggregateInstanceCreated{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -226,7 +226,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceDestroyed",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance destroyed",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance destroyed",
 				AggregateInstanceDestroyed{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -235,13 +235,13 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"EventRecordedByAggregate",
-				"= 2000  ∵ 1000  ⋲ 1000  ▲ ∴    [<handler> <instance>]  recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ∴    [<handler> <instance>]  recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					Envelope:    command,
 					EventEnvelope: command.NewEvent(
-						"2000",
+						"200",
 						fixtures.MessageE1,
 						envelope.Origin{},
 					),
@@ -249,7 +249,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByAggregate",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  <message>",
 				MessageLoggedByAggregate{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
@@ -263,7 +263,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"ProcessInstanceLoaded",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  loaded an existing instance",
 				ProcessInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -272,7 +272,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessEventIgnored",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler>]  event ignored because it was not routed to any instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler>]  event ignored because it was not routed to any instance",
 				ProcessEventIgnored{
 					HandlerName: "<handler>",
 					Envelope:    event,
@@ -280,7 +280,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessTimeoutIgnored",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  timeout ignored because the target instance no longer exists",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  timeout ignored because the target instance no longer exists",
 				ProcessTimeoutIgnored{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -289,7 +289,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceNotFound",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance does not yet exist",
 				ProcessInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -298,7 +298,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceBegun",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance begun",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance begun",
 				ProcessInstanceBegun{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -307,7 +307,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceEnded",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance ended",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance ended",
 				ProcessInstanceEnded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -316,13 +316,13 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"CommandExecutedByProcess",
-				"= 2000  ∵ 1000  ⋲ 1000  ▲ ☰    [<handler> <instance>]  executed a command ● fixtures.MessageC? ● {C1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    [<handler> <instance>]  executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					Envelope:    event,
 					CommandEnvelope: event.NewCommand(
-						"2000",
+						"200",
 						fixtures.MessageC1,
 						envelope.Origin{},
 					),
@@ -330,12 +330,12 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TimeoutScheduledByProcess",
-				"= 2000  ∵ 1000  ⋲ 1000  ▲ ☰    [<handler> <instance>]  scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    [<handler> <instance>]  scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
 				TimeoutScheduledByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					TimeoutEnvelope: event.NewTimeout(
-						"2000",
+						"200",
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -348,7 +348,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByProcess",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  <message>",
 				MessageLoggedByProcess{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
@@ -362,12 +362,12 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"EventRecordedByIntegration",
-				"= 2000  ∵ 1000  ⋲ 1000  ▲ ⨝    [<handler>]  recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ⨝    [<handler>]  recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByIntegration{
 					HandlerName: "<handler>",
 					Envelope:    command,
 					EventEnvelope: command.NewEvent(
-						"2000",
+						"200",
 						fixtures.MessageE1,
 						envelope.Origin{},
 					),
@@ -375,7 +375,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByIntegration",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⨝    [<handler>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⨝    [<handler>]  <message>",
 				MessageLoggedByIntegration{
 					HandlerName:  "<handler>",
 					Envelope:     command,
@@ -388,7 +388,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"MessageLoggedByProjection",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ Σ    [<handler>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    [<handler>]  <message>",
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
 					Envelope:     command,
