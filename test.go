@@ -196,7 +196,7 @@ func (t *Test) end(a assert.Assertion) {
 	}
 
 	buf := &strings.Builder{}
-	buf.WriteString("assertion report:\n\n")
+	buf.WriteString("--- ASSERTION REPORT ---\n\n")
 
 	res := a.End(r)
 	iago.MustWriteTo(buf, res)
