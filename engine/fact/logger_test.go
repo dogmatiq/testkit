@@ -2,7 +2,6 @@ package fact_test
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/dogmatiq/dogmatest/engine/envelope"
@@ -42,12 +41,17 @@ var _ = Describe("type Logger", func() {
 					called bool
 				)
 
-				obs := &Logger{
-					Log: func(s string, v ...interface{}) {
+				obs := NewLogger(
+					func(s string) {
 						called = true
-						output = fmt.Sprintf(s, v...)
+
+						if output != "" {
+							output += "\n"
+						}
+
+						output += s
 					},
-				}
+				)
 
 				obs.Notify(f)
 

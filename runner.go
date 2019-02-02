@@ -60,7 +60,9 @@ func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *
 		opts = append(
 			opts,
 			engine.WithObserver(
-				&fact.Logger{Log: t.Logf},
+				fact.NewLogger(func(s string) {
+					t.Log(s)
+				}),
 			),
 		)
 	}
