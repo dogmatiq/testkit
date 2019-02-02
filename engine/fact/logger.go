@@ -193,10 +193,8 @@ func (l *Logger) handlingCompleted(f HandlingCompleted) {
 				logging.HandlerTypeIcon(f.HandlerType),
 				logging.ErrorIcon,
 			},
-			formatHandler(
-				f.HandlerName,
-				f.Error.Error(),
-			),
+			f.HandlerName,
+			f.Error.Error(),
 		)
 	}
 }
@@ -210,12 +208,10 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) {
 			logging.HandlerTypeIcon(f.HandlerType),
 			"",
 		},
-		formatHandler(
-			f.HandlerName,
-			fmt.Sprintf(
-				"handler skipped because %s handlers are disabled",
-				f.HandlerType,
-			),
+		f.HandlerName,
+		fmt.Sprintf(
+			"handler skipped because %s handlers are disabled",
+			f.HandlerType,
 		),
 	)
 }
@@ -272,10 +268,8 @@ func (l *Logger) tickCompleted(f TickCompleted) {
 				logging.HandlerTypeIcon(f.HandlerType),
 				logging.ErrorIcon,
 			},
-			formatHandler(
-				f.HandlerName,
-				f.Error.Error(),
-			),
+			f.HandlerName,
+			f.Error.Error(),
 		)
 	}
 }
@@ -289,11 +283,8 @@ func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"loaded an existing instance",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"loaded an existing instance",
 	)
 }
 
@@ -306,11 +297,8 @@ func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance does not yet exist",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance does not yet exist",
 	)
 }
 
@@ -323,11 +311,8 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance created",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance created",
 	)
 }
 
@@ -340,11 +325,8 @@ func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance destroyed",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance destroyed",
 	)
 }
 
@@ -357,11 +339,8 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"recorded an event",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
 		message.ToString(f.EventEnvelope.Message),
 	)
@@ -376,11 +355,8 @@ func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
 			logging.AggregateIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			fmt.Sprintf(f.LogFormat, f.LogArguments...),
-		),
+		f.HandlerName+" "+f.InstanceID,
+		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
@@ -393,11 +369,8 @@ func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"loaded an existing instance",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"loaded an existing instance",
 	)
 }
 
@@ -410,10 +383,8 @@ func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandler(
-			f.HandlerName,
-			"event ignored because it was not routed to any instance",
-		),
+		f.HandlerName,
+		"event ignored because it was not routed to any instance",
 	)
 }
 
@@ -426,11 +397,8 @@ func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"timeout ignored because the target instance no longer exists",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"timeout ignored because the target instance no longer exists",
 	)
 }
 
@@ -443,11 +411,8 @@ func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance does not yet exist",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance does not yet exist",
 	)
 }
 
@@ -460,11 +425,8 @@ func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance begun",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance begun",
 	)
 }
 
@@ -477,11 +439,8 @@ func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"instance ended",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"instance ended",
 	)
 }
 
@@ -494,11 +453,8 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			"executed a command",
-		),
+		f.HandlerName+" "+f.InstanceID,
+		"executed a command",
 		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
 		message.ToString(f.CommandEnvelope.Message),
 	)
@@ -513,13 +469,10 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			fmt.Sprintf(
-				"scheduled a timeout for %s",
-				f.TimeoutEnvelope.TimeoutTime.Format(time.RFC3339),
-			),
+		f.HandlerName+" "+f.InstanceID,
+		fmt.Sprintf(
+			"scheduled a timeout for %s",
+			f.TimeoutEnvelope.TimeoutTime.Format(time.RFC3339),
 		),
 		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
 		message.ToString(f.TimeoutEnvelope.Message),
@@ -535,11 +488,8 @@ func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		formatHandlerAndInstance(
-			f.HandlerName,
-			f.InstanceID,
-			fmt.Sprintf(f.LogFormat, f.LogArguments...),
-		),
+		f.HandlerName+" "+f.InstanceID,
+		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
@@ -552,10 +502,8 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 			logging.IntegrationIcon,
 			"",
 		},
-		formatHandler(
-			f.HandlerName,
-			"recorded an event",
-		),
+		f.HandlerName,
+		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
 		message.ToString(f.EventEnvelope.Message),
 	)
@@ -570,10 +518,8 @@ func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
 			logging.IntegrationIcon,
 			"",
 		},
-		formatHandler(
-			f.HandlerName,
-			fmt.Sprintf(f.LogFormat, f.LogArguments...),
-		),
+		f.HandlerName,
+		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
@@ -586,10 +532,8 @@ func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
 			logging.ProjectionIcon,
 			"",
 		},
-		formatHandler(
-			f.HandlerName,
-			fmt.Sprintf(f.LogFormat, f.LogArguments...),
-		),
+		f.HandlerName,
+		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
@@ -615,12 +559,4 @@ func formatEnabledHandlers(e map[handler.Type]bool) string {
 	}
 
 	return s
-}
-
-func formatHandler(n, s string) string {
-	return "[" + n + "]  " + s
-}
-
-func formatHandlerAndInstance(n, id, s string) string {
-	return "[" + n + " " + id + "]  " + s
 }

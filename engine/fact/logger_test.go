@@ -131,7 +131,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"HandlingCompleted (failure)",
-				"= 0100  ∵ 0100  ⋲ 0100  ▽ ∴ ✖  [<handler>]  <error>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▽ ∴ ✖  <handler> ● <error>",
 				HandlingCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -141,7 +141,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"HandlingSkipped",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler>]  handler skipped because aggregate handlers are disabled",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> ● handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -187,7 +187,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TickCompleted (failure)",
-				"= ----  ∵ ----  ⋲ ----    ∴ ✖  [<handler>]  <error>",
+				"= ----  ∵ ----  ⋲ ----    ∴ ✖  <handler> ● <error>",
 				TickCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -199,7 +199,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"AggregateInstanceLoaded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● loaded an existing instance",
 				AggregateInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -208,7 +208,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceNotFound",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance does not yet exist",
 				AggregateInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -217,7 +217,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceCreated",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance created",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance created",
 				AggregateInstanceCreated{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -226,7 +226,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceDestroyed",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  instance destroyed",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance destroyed",
 				AggregateInstanceDestroyed{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -235,7 +235,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"EventRecordedByAggregate",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ∴    [<handler> <instance>]  recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ∴    <handler> <instance> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -249,7 +249,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByAggregate",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    [<handler> <instance>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● <message>",
 				MessageLoggedByAggregate{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
@@ -263,7 +263,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"ProcessInstanceLoaded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● loaded an existing instance",
 				ProcessInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -272,7 +272,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessEventIgnored",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler>]  event ignored because it was not routed to any instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> ● event ignored because it was not routed to any instance",
 				ProcessEventIgnored{
 					HandlerName: "<handler>",
 					Envelope:    event,
@@ -280,7 +280,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessTimeoutIgnored",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  timeout ignored because the target instance no longer exists",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● timeout ignored because the target instance no longer exists",
 				ProcessTimeoutIgnored{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -289,7 +289,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceNotFound",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance does not yet exist",
 				ProcessInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -298,7 +298,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceBegun",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance begun",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance begun",
 				ProcessInstanceBegun{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -307,7 +307,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceEnded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  instance ended",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance ended",
 				ProcessInstanceEnded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -316,7 +316,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"CommandExecutedByProcess",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    [<handler> <instance>]  executed a command ● fixtures.MessageC? ● {C1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    <handler> <instance> ● executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -330,7 +330,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TimeoutScheduledByProcess",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    [<handler> <instance>]  scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    <handler> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
 				TimeoutScheduledByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -348,7 +348,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByProcess",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    [<handler> <instance>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● <message>",
 				MessageLoggedByProcess{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
@@ -362,7 +362,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"EventRecordedByIntegration",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ⨝    [<handler>]  recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ⨝    <handler> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByIntegration{
 					HandlerName: "<handler>",
 					Envelope:    command,
@@ -375,7 +375,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByIntegration",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⨝    [<handler>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⨝    <handler> ● <message>",
 				MessageLoggedByIntegration{
 					HandlerName:  "<handler>",
 					Envelope:     command,
@@ -388,7 +388,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"MessageLoggedByProjection",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    [<handler>]  <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    <handler> ● <message>",
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
 					Envelope:     command,
