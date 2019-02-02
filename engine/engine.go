@@ -73,7 +73,7 @@ func (e *Engine) Tick(
 
 	oo.observers.Notify(
 		fact.TickCycleBegun{
-			Now:             oo.now,
+			EngineTime:      oo.now,
 			EnabledHandlers: oo.enabledHandlers,
 		},
 	)
@@ -149,7 +149,7 @@ func (e *Engine) Dispatch(
 		oo.observers.Notify(
 			fact.DispatchCycleSkipped{
 				Message:         m,
-				Now:             oo.now,
+				EngineTime:      oo.now,
 				EnabledHandlers: oo.enabledHandlers,
 			},
 		)
@@ -162,7 +162,7 @@ func (e *Engine) Dispatch(
 	oo.observers.Notify(
 		fact.DispatchCycleBegun{
 			Envelope:        env,
-			Now:             oo.now,
+			EngineTime:      oo.now,
 			EnabledHandlers: oo.enabledHandlers,
 		},
 	)

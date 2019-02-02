@@ -12,7 +12,7 @@ import (
 // message that is able to be routed to at least one handler.
 type DispatchCycleBegun struct {
 	Envelope        *envelope.Envelope
-	Now             time.Time
+	EngineTime      time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 
@@ -30,7 +30,7 @@ type DispatchCycleCompleted struct {
 // whether it was intended to be a command or an event.
 type DispatchCycleSkipped struct {
 	Message         dogma.Message
-	Now             time.Time
+	EngineTime      time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 

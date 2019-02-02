@@ -49,7 +49,7 @@ var _ = Describe("type Logger", func() {
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
-					Now: now,
+					EngineTime: now,
 					EnabledHandlers: map[handler.Type]bool{
 						handler.AggregateType: true,
 						handler.ProcessType:   true,
@@ -162,7 +162,7 @@ var _ = Describe("type Logger", func() {
 				"TickCycleBegun",
 				"engine: tick begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
 				TickCycleBegun{
-					Now: now,
+					EngineTime: now,
 					EnabledHandlers: map[handler.Type]bool{
 						handler.AggregateType: true,
 						handler.ProcessType:   true,

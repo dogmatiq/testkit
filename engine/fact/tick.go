@@ -8,7 +8,7 @@ import (
 
 // TickCycleBegun indicates that Engine.Tick() has been called.
 type TickCycleBegun struct {
-	Now             time.Time
+	EngineTime      time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 

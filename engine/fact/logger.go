@@ -110,7 +110,7 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) string {
 		"engine: dispatch of '%s' %s begun at %s (enabled: %s)",
 		f.Envelope.Type,
 		f.Envelope.Role,
-		f.Now.Format(time.RFC3339),
+		f.EngineTime.Format(time.RFC3339),
 		l.formatEnabledHandlers(f.EnabledHandlers),
 	)
 }
@@ -181,7 +181,7 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) string {
 func (l *Logger) tickCycleBegun(f TickCycleBegun) string {
 	return fmt.Sprintf(
 		"engine: tick begun at %s (enabled: %s)",
-		f.Now.Format(time.RFC3339),
+		f.EngineTime.Format(time.RFC3339),
 		l.formatEnabledHandlers(f.EnabledHandlers),
 	)
 }
