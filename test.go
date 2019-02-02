@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dogmatiq/enginekit/message"
-
 	"github.com/dogmatiq/iago"
 
 	"github.com/dogmatiq/dogma"
@@ -46,12 +44,7 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	logf(
-		t.t,
-		"--- EXECUTING TEST COMMAND - %s - %s ---",
-		message.TypeOf(m),
-		message.ToString(m),
-	)
+	log(t.t, "--- EXECUTING TEST COMMAND ---")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -67,12 +60,7 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	logf(
-		t.t,
-		"--- RECORDING TEST EVENT - %s - %s ---",
-		message.TypeOf(m),
-		message.ToString(m),
-	)
+	log(t.t, "--- RECORDING TEST EVENT ---")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
