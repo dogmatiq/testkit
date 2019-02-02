@@ -61,7 +61,7 @@ func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *
 			opts,
 			engine.WithObserver(
 				fact.NewLogger(func(s string) {
-					t.Log(s)
+					log(t, s)
 				}),
 			),
 		)
