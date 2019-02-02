@@ -28,6 +28,12 @@ var _ = Describe("type Logger", func() {
 			message.CommandRole,
 		)
 
+		event := envelope.New(
+			"1000",
+			fixtures.MessageE1,
+			message.EventRole,
+		)
+
 		DescribeTable(
 			"logs the expected message",
 			func(m string, f Fact) {
@@ -198,7 +204,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceNotFound",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  did not find an existing instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance does not yet exist",
 				AggregateInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -207,7 +213,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceCreated",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  created the instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance created",
 				AggregateInstanceCreated{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -216,7 +222,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"AggregateInstanceDestroyed",
-				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  destroyed the instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  instance destroyed",
 				AggregateInstanceDestroyed{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -253,71 +259,78 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"ProcessInstanceLoaded",
-				"process[<handler>@<instance>]: loading existing instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  loaded an existing instance",
 				ProcessInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"ProcessEventIgnored",
-				"process[<handler>]: event not routed to any instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler>]  event ignored because it was not routed to any instance",
 				ProcessEventIgnored{
 					HandlerName: "<handler>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"ProcessTimeoutIgnored",
-				"process[<handler>@<instance>]: timeout's instance no longer exists",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  timeout ignored because the target instance no longer exists",
 				ProcessTimeoutIgnored{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"ProcessInstanceNotFound",
-				"process[<handler>@<instance>]: no existing instance found",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance does not yet exist",
 				ProcessInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"ProcessInstanceBegun",
-				"process[<handler>@<instance>]: instance begun",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance begun",
 				ProcessInstanceBegun{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"ProcessInstanceEnded",
-				"process[<handler>@<instance>]: instance ended",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  instance ended",
 				ProcessInstanceEnded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    event,
 				},
 			),
 			Entry(
 				"CommandExecutedByProcess",
-				"process[<handler>@<instance>]: executed 'fixtures.MessageC' command",
+				"= 2000  ∵ 1000  ⋲ 1000  ▲ ☰    [<handler> <instance>]  executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{
-					HandlerName:     "<handler>",
-					InstanceID:      "<instance>",
-					CommandEnvelope: command,
+					HandlerName: "<handler>",
+					InstanceID:  "<instance>",
+					Envelope:    event,
+					CommandEnvelope: event.NewCommand(
+						"2000",
+						fixtures.MessageC1,
+						envelope.Origin{},
+					),
 				},
 			),
 			Entry(
 				"TimeoutScheduledByProcess",
-				"process[<handler>@<instance>]: scheduled 'fixtures.MessageT' timeout for 2006-01-02T15:04:05+07:00",
+				"= 2000  ∵ 1000  ⋲ 1000  ▲ ☰    [<handler> <instance>]  scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
 				TimeoutScheduledByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
-					TimeoutEnvelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.EventRole,
-					).NewTimeout(
+					TimeoutEnvelope: event.NewTimeout(
 						"2000",
 						fixtures.MessageT1,
 						now,
@@ -331,10 +344,11 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByProcess",
-				"process[<handler>@<instance>]: <message>",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ☰    [<handler> <instance>]  <message>",
 				MessageLoggedByProcess{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
+					Envelope:     event,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},
@@ -344,21 +358,23 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"EventRecordedByIntegration",
-				"integration[<handler>]: recorded 'fixtures.MessageA' event",
+				"= 2000  ∵ 1000  ⋲ 1000  ▲ ⨝    [<handler>]  recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByIntegration{
 					HandlerName: "<handler>",
-					EventEnvelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.EventRole,
+					Envelope:    command,
+					EventEnvelope: command.NewEvent(
+						"2000",
+						fixtures.MessageE1,
+						envelope.Origin{},
 					),
 				},
 			),
 			Entry(
 				"MessageLoggedByIntegration",
-				"integration[<handler>]: <message>",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⨝    [<handler>]  <message>",
 				MessageLoggedByIntegration{
 					HandlerName:  "<handler>",
+					Envelope:     command,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},
@@ -368,9 +384,10 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"MessageLoggedByProjection",
-				"projection[<handler>]: <message>",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ Σ    [<handler>]  <message>",
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
+					Envelope:     command,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},

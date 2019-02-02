@@ -370,7 +370,7 @@ func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) string {
 		formatHandlerAndInstance(
 			f.HandlerName,
 			f.InstanceID,
-			"did not find an existing instance",
+			"instance does not yet exist",
 		),
 	)
 }
@@ -388,7 +388,7 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) string {
 		formatHandlerAndInstance(
 			f.HandlerName,
 			f.InstanceID,
-			"created the instance",
+			"instance created",
 		),
 	)
 }
@@ -406,7 +406,7 @@ func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) string
 		formatHandlerAndInstance(
 			f.HandlerName,
 			f.InstanceID,
-			"destroyed the instance",
+			"instance destroyed",
 		),
 	)
 }
@@ -451,111 +451,221 @@ func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) string {
 
 // processInstanceLoaded returns the log message for f.
 func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: loading existing instance",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"loaded an existing instance",
+		),
 	)
 }
 
 // processEventIgnored returns the log message for f.
 func (l *Logger) processEventIgnored(f ProcessEventIgnored) string {
-	return fmt.Sprintf(
-		"process[%s]: event not routed to any instance",
-		f.HandlerName,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandler(
+			f.HandlerName,
+			"event ignored because it was not routed to any instance",
+		),
 	)
 }
 
 // processTimeoutIgnored returns the log message for f.
 func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: timeout's instance no longer exists",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"timeout ignored because the target instance no longer exists",
+		),
 	)
 }
 
 // processInstanceNotFound returns the log message for f.
 func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: no existing instance found",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"instance does not yet exist",
+		),
 	)
 }
 
 // processInstanceBegun returns the log message for f.
 func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: instance begun",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"instance begun",
+		),
 	)
 }
 
 // processInstanceEnded returns the log message for f.
 func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: instance ended",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"instance ended",
+		),
 	)
 }
 
 // commandExecutedByProcess returns the log message for f.
 func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: executed '%s' command",
-		f.HandlerName,
-		f.InstanceID,
-		f.CommandEnvelope.Type,
+	return logging.Format(
+		f.CommandEnvelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.OutboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"executed a command",
+		),
+		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
+		message.ToString(f.CommandEnvelope.Message),
 	)
 }
 
 // timeoutScheduledByProcess returns the log message for f.
 func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: scheduled '%s' timeout for %s",
-		f.HandlerName,
-		f.InstanceID,
-		f.TimeoutEnvelope.Type,
-		f.TimeoutEnvelope.TimeoutTime.Format(time.RFC3339),
+	return logging.Format(
+		f.TimeoutEnvelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.OutboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			fmt.Sprintf(
+				"scheduled a timeout for %s",
+				f.TimeoutEnvelope.TimeoutTime.Format(time.RFC3339),
+			),
+		),
+		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
+		message.ToString(f.TimeoutEnvelope.Message),
 	)
 }
 
 // messageLoggedByProcess returns the log message for f.
 func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) string {
-	return fmt.Sprintf(
-		"process[%s@%s]: %s",
-		f.HandlerName,
-		f.InstanceID,
-		fmt.Sprintf(f.LogFormat, f.LogArguments...),
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			fmt.Sprintf(f.LogFormat, f.LogArguments...),
+		),
 	)
 }
 
 // eventRecordedByIntegration returns the log message for f.
 func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) string {
-	return fmt.Sprintf(
-		"integration[%s]: recorded '%s' event",
-		f.HandlerName,
-		f.EventEnvelope.Type,
+	return logging.Format(
+		f.EventEnvelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.OutboundIcon,
+			logging.IntegrationIcon,
+			"",
+		},
+		formatHandler(
+			f.HandlerName,
+			"recorded an event",
+		),
+		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
+		message.ToString(f.EventEnvelope.Message),
 	)
 }
 
 // messageLoggedByIntegration returns the log message for f.
 func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) string {
-	return fmt.Sprintf(
-		"integration[%s]: %s",
-		f.HandlerName,
-		fmt.Sprintf(f.LogFormat, f.LogArguments...),
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.IntegrationIcon,
+			"",
+		},
+		formatHandler(
+			f.HandlerName,
+			fmt.Sprintf(f.LogFormat, f.LogArguments...),
+		),
 	)
 }
 
 // messageLoggedByProjection returns the log message for f.
 func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) string {
-	return fmt.Sprintf(
-		"projection[%s]: %s",
-		f.HandlerName,
-		fmt.Sprintf(f.LogFormat, f.LogArguments...),
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.ProjectionIcon,
+			"",
+		},
+		formatHandler(
+			f.HandlerName,
+			fmt.Sprintf(f.LogFormat, f.LogArguments...),
+		),
 	)
 }
