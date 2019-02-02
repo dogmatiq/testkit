@@ -75,14 +75,14 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"DispatchCycleCompleted (success)",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch cycle completed successfully",
+				"",
 				DispatchCycleCompleted{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCycleCompleted (failure)",
-				"= 0100  ∵ 0100  ⋲ 0100  ▽ ⚙ ✖  dispatch cycle completed with errors",
+				"",
 				DispatchCycleCompleted{
 					Envelope: command,
 					Error:    errors.New("<error>"),
@@ -98,21 +98,21 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"DispatchBegun",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    fixtures.MessageC? ● {C1} ● dispatch begun",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    fixtures.MessageC? ● {C1}",
 				DispatchBegun{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCompleted (success)",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch completed successfully",
+				"",
 				DispatchCompleted{
 					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCompleted (failure)",
-				"= 0100  ∵ 0100  ⋲ 0100  ▽ ⚙ ✖  dispatch completed with errors",
+				"",
 				DispatchCompleted{
 					Envelope: command,
 					Error:    errors.New("<error>"),
@@ -164,12 +164,12 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TickCycleCompleted (success)",
-				"= ----  ∵ ----  ⋲ ----    ⚙    tick cycle completed successfully",
+				"",
 				TickCycleCompleted{},
 			),
 			Entry(
 				"TickCycleCompleted (failure)",
-				"= ----  ∵ ----  ⋲ ----    ⚙ ✖  tick cycle completed with errors",
+				"",
 				TickCycleCompleted{
 					Error: errors.New("<error>"),
 				},

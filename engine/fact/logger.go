@@ -30,22 +30,16 @@ func (l *Logger) Notify(f Fact) {
 	switch x := f.(type) {
 	case DispatchCycleBegun:
 		l.dispatchCycleBegun(x)
-	case DispatchCycleCompleted:
-		l.dispatchCycleCompleted(x)
 	case DispatchCycleSkipped:
 		l.dispatchCycleSkipped(x)
 	case DispatchBegun:
 		l.dispatchBegun(x)
-	case DispatchCompleted:
-		l.dispatchCompleted(x)
 	case HandlingCompleted:
 		l.handlingCompleted(x)
 	case HandlingSkipped:
 		l.handlingSkipped(x)
 	case TickCycleBegun:
 		l.tickCycleBegun(x)
-	case TickCycleCompleted:
-		l.tickCycleCompleted(x)
 	case TickCompleted:
 		l.tickCompleted(x)
 	case AggregateInstanceLoaded:
@@ -104,31 +98,6 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 	)
 }
 
-// dispatchCycleCompleted returns the log message for f.
-func (l *Logger) dispatchCycleCompleted(f DispatchCycleCompleted) {
-	if f.Error == nil {
-		l.logger.LogGeneric(
-			f.Envelope.Correlation,
-			[]string{
-				logging.InboundIcon,
-				logging.SystemIcon,
-				"",
-			},
-			"dispatch cycle completed successfully",
-		)
-	} else {
-		l.logger.LogGeneric(
-			f.Envelope.Correlation,
-			[]string{
-				logging.InboundErrorIcon,
-				logging.SystemIcon,
-				logging.ErrorIcon,
-			},
-			"dispatch cycle completed with errors",
-		)
-	}
-}
-
 // dispatchCycleSkipped returns the log message for f.
 func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
 	l.logger.LogGeneric(
@@ -154,33 +123,7 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 		},
 		message.TypeOf(f.Envelope.Message).String()+f.Envelope.Role.Marker(),
 		message.ToString(f.Envelope.Message),
-		"dispatch begun",
 	)
-}
-
-// dispatchCompleted returns the log message for f.
-func (l *Logger) dispatchCompleted(f DispatchCompleted) {
-	if f.Error == nil {
-		l.logger.LogGeneric(
-			f.Envelope.Correlation,
-			[]string{
-				logging.InboundIcon,
-				logging.SystemIcon,
-				"",
-			},
-			"dispatch completed successfully",
-		)
-	} else {
-		l.logger.LogGeneric(
-			f.Envelope.Correlation,
-			[]string{
-				logging.InboundErrorIcon,
-				logging.SystemIcon,
-				logging.ErrorIcon,
-			},
-			"dispatch completed with errors",
-		)
-	}
 }
 
 // handlingCompleted returns the log message for f.
@@ -231,31 +174,6 @@ func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 			formatEnabledHandlers(f.EnabledHandlers),
 		),
 	)
-}
-
-// tickCycleCompleted  returns the log message for f.
-func (l *Logger) tickCycleCompleted(f TickCycleCompleted) {
-	if f.Error == nil {
-		l.logger.LogGeneric(
-			message.Correlation{},
-			[]string{
-				"",
-				logging.SystemIcon,
-				"",
-			},
-			"tick cycle completed successfully",
-		)
-	} else {
-		l.logger.LogGeneric(
-			message.Correlation{},
-			[]string{
-				"",
-				logging.SystemIcon,
-				logging.ErrorIcon,
-			},
-			"tick cycle completed with errors",
-		)
-	}
 }
 
 // tickCompleted returns the log message for f.
