@@ -1,11 +1,13 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dogmatiq/dapper v0.3.1 h1:1s8F36lKCd+TPUj2CMarnNyftctqp//XQAc68KhRG0Q=
 github.com/dogmatiq/dapper v0.3.1/go.mod h1:UYFIxCd9CKedqo9fbUFUhMDI7WsSy0kYPdB40NlkKlU=
 github.com/dogmatiq/dogma v0.0.0-20190125031156-7aa035456afb h1:errWGpsy/NbPdOZIxLoB+EgXNEXLmVnhFu2KMI0INYk=
 github.com/dogmatiq/dogma v0.0.0-20190125031156-7aa035456afb/go.mod h1:kzDxrkzdgrJattEUoLmoFdyHZtib4H5oa98VcewQEI8=
-github.com/dogmatiq/enginekit v0.0.0-20190130234730-a07e2b8a259b h1:Wkvj3zUgluE3Ps0a7kOWATSvnoWqiD4oKP3PbPgV4VQ=
-github.com/dogmatiq/enginekit v0.0.0-20190130234730-a07e2b8a259b/go.mod h1:A9DvZuGzpLwR5Nejx7OrBsUD04XlH3TbPP/RQPY6KEw=
+github.com/dogmatiq/enginekit v0.0.0-20190202034703-a80e4ee23736 h1:ODZVO0enKd+lSLCmUWzQK4K/dtyyA46WUQyR8gehdEA=
+github.com/dogmatiq/enginekit v0.0.0-20190202034703-a80e4ee23736/go.mod h1:GNi+jdzHuGyhToSO4A/su5JYF1Qm+feUKUY7wdw4PwE=
 github.com/dogmatiq/iago v0.3.0 h1:dARv0U6ynTibSmDEd32ATyXqgoAVdPgsdN7iWdauTHY=
 github.com/dogmatiq/iago v0.3.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
@@ -49,6 +51,8 @@ golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e h1:o3PsSEY8E4eXWkXrIP9YJALUk
 golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190124100055-b90733256f2e h1:3GIlrlVLfkoipSReOMNAgApI0ajnalyLa/EZHHca/XI=
 golang.org/x/sys v0.0.0-20190124100055-b90733256f2e/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20190201152629-afcc84fd7533 h1:bLfqnzrpeG4usq5OvMCrwTdmMJ6aTmlCuo1eKl0mhkI=
+golang.org/x/sys v0.0.0-20190201152629-afcc84fd7533/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
