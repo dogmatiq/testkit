@@ -22,33 +22,40 @@ var _ = Describe("type Logger", func() {
 			panic(err)
 		}
 
+		command := envelope.New(
+			"1000",
+			fixtures.MessageC1,
+			message.CommandRole,
+		)
+
 		DescribeTable(
 			"logs the expected message",
 			func(m string, f Fact) {
-				var output string
+				var (
+					output string
+					called bool
+				)
 
 				obs := &Logger{
 					Log: func(s string, v ...interface{}) {
+						called = true
 						output = fmt.Sprintf(s, v...)
 					},
 				}
 
 				obs.Notify(f)
 
-				Expect(output).To(Equal(m))
+				Expect(output).To(BeIdenticalTo(m))
+				Expect(called).To(Equal(m != ""))
 			},
 
 			// dispatch ...
 
 			Entry(
 				"DispatchCycleBegun",
-				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
 				DispatchCycleBegun{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
+					Envelope:   command,
 					EngineTime: now,
 					EnabledHandlers: map[handler.Type]bool{
 						handler.AggregateType: true,
@@ -58,101 +65,77 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"DispatchCycleCompleted (success)",
-				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch cycle completed successfully",
 				DispatchCycleCompleted{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
+					Envelope: command,
 				},
 			),
 			Entry(
 				"DispatchCycleCompleted (failure)",
-				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
+				"= 1000  ∵ 1000  ⋲ 1000  ▽ ⚙ ✖  dispatch cycle completed with errors",
 				DispatchCycleCompleted{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
-					Error: errors.New("<error>"),
+					Envelope: command,
+					Error:    errors.New("<error>"),
 				},
 			),
 			Entry(
 				"DispatchCycleSkipped",
-				"engine: no route for 'fixtures.MessageA' messages",
+				"= ----  ∵ ----  ⋲ ----  ▼ ⚙    fixtures.MessageC ● dispatch cycle skipped because this message type is not routed to any handlers",
 				DispatchCycleSkipped{
-					Message: fixtures.MessageA1,
+					Message: fixtures.MessageC1,
 				},
 			),
 
-			XEntry(
+			Entry(
 				"DispatchBegun",
-				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    fixtures.MessageC? ● {C1} ● dispatch begun",
 				DispatchBegun{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
+					Envelope: command,
 				},
 			),
-			XEntry(
+			Entry(
 				"DispatchCompleted (success)",
-				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ⚙    dispatch completed successfully",
 				DispatchCompleted{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
+					Envelope: command,
 				},
 			),
-			XEntry(
+			Entry(
 				"DispatchCompleted (failure)",
-				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
+				"= 1000  ∵ 1000  ⋲ 1000  ▽ ⚙ ✖  dispatch completed with errors",
 				DispatchCompleted{
-					Envelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
-					Error: errors.New("<error>"),
+					Envelope: command,
+					Error:    errors.New("<error>"),
 				},
 			),
 
 			Entry(
 				"HandlingBegun",
-				"aggregate[<handler>]: message handling begun",
-				HandlingBegun{
-					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
-				},
+				"",
+				HandlingBegun{},
 			),
 			Entry(
 				"HandlingCompleted (success)",
-				"aggregate[<handler>]: handled message successfully",
-				HandlingCompleted{
-					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
-				},
+				"",
+				HandlingCompleted{},
 			),
 			Entry(
 				"HandlingCompleted (failure)",
-				"aggregate[<handler>]: handling failed: <error>",
+				"= 1000  ∵ 1000  ⋲ 1000  ▽ ∴ ✖  [<handler>]  <error>",
 				HandlingCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
+					Envelope:    command,
 					Error:       errors.New("<error>"),
 				},
 			),
 			Entry(
 				"HandlingSkipped",
-				"aggregate[<handler>]: message handling skipped because aggregate handlers are disabled",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler>]  handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
+					Envelope:    command,
 				},
 			),
 
@@ -160,7 +143,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"TickCycleBegun",
-				"engine: tick begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
+				"= ----  ∵ ----  ⋲ ----    ⚙    tick cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
 				TickCycleBegun{
 					EngineTime: now,
 					EnabledHandlers: map[handler.Type]bool{
@@ -171,12 +154,12 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TickCycleCompleted (success)",
-				"engine: tick completed successfully",
+				"= ----  ∵ ----  ⋲ ----    ⚙    tick cycle completed successfully",
 				TickCycleCompleted{},
 			),
 			Entry(
 				"TickCycleCompleted (failure)",
-				"engine: tick completed with errors",
+				"= ----  ∵ ----  ⋲ ----    ⚙ ✖  tick cycle completed with errors",
 				TickCycleCompleted{
 					Error: errors.New("<error>"),
 				},
@@ -184,23 +167,17 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"TickBegun",
-				"aggregate[<handler>]: tick begun",
-				TickBegun{
-					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
-				},
+				"",
+				TickBegun{},
 			),
 			Entry(
 				"TickCompleted (success)",
-				"aggregate[<handler>]: tick completed successfully",
-				TickCompleted{
-					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
-				},
+				"",
+				TickCompleted{},
 			),
 			Entry(
 				"TickCompleted (failure)",
-				"aggregate[<handler>]: tick failed: <error>",
+				"= ----  ∵ ----  ⋲ ----    ∴ ✖  [<handler>]  <error>",
 				TickCompleted{
 					HandlerName: "<handler>",
 					HandlerType: handler.AggregateType,
@@ -212,55 +189,61 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"AggregateInstanceLoaded",
-				"aggregate[<handler>@<instance>]: loading existing instance",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  loaded an existing instance",
 				AggregateInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    command,
 				},
 			),
 			Entry(
 				"AggregateInstanceNotFound",
-				"aggregate[<handler>@<instance>]: no existing instance found",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  did not find an existing instance",
 				AggregateInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    command,
 				},
 			),
 			Entry(
 				"AggregateInstanceCreated",
-				"aggregate[<handler>@<instance>]: instance created",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  created the instance",
 				AggregateInstanceCreated{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    command,
 				},
 			),
 			Entry(
 				"AggregateInstanceDestroyed",
-				"aggregate[<handler>@<instance>]: instance destroyed",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  destroyed the instance",
 				AggregateInstanceDestroyed{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
+					Envelope:    command,
 				},
 			),
 			Entry(
 				"EventRecordedByAggregate",
-				"aggregate[<handler>@<instance>]: recorded 'fixtures.MessageA' event",
+				"= 2000  ∵ 1000  ⋲ 1000  ▲ ∴    [<handler> <instance>]  recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
-					EventEnvelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.EventRole,
+					Envelope:    command,
+					EventEnvelope: command.NewEvent(
+						"2000",
+						fixtures.MessageE1,
+						envelope.Origin{},
 					),
 				},
 			),
 			Entry(
 				"MessageLoggedByAggregate",
-				"aggregate[<handler>@<instance>]: <message>",
+				"= 1000  ∵ 1000  ⋲ 1000  ▼ ∴    [<handler> <instance>]  <message>",
 				MessageLoggedByAggregate{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
+					Envelope:     command,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},
@@ -317,15 +300,11 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"CommandExecutedByProcess",
-				"process[<handler>@<instance>]: executed 'fixtures.MessageA' command",
+				"process[<handler>@<instance>]: executed 'fixtures.MessageC' command",
 				CommandExecutedByProcess{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					CommandEnvelope: envelope.New(
-						"1000",
-						fixtures.MessageA1,
-						message.CommandRole,
-					),
+					HandlerName:     "<handler>",
+					InstanceID:      "<instance>",
+					CommandEnvelope: command,
 				},
 			),
 			Entry(

@@ -2,11 +2,43 @@ package fact
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/logging"
 	"github.com/dogmatiq/enginekit/message"
 )
+
+const truncateLength = 4
+
+var emptyCorrelation = message.NewCorrelation(
+	strings.Repeat("-", truncateLength),
+)
+
+func formatEnabledHandlers(e map[handler.Type]bool) string {
+	var s string
+
+	for _, t := range handler.Types {
+		if e[t] {
+			if s != "" {
+				s += ", "
+			}
+
+			s += t.String()
+		}
+	}
+
+	return s
+}
+
+func formatHandler(n, s string) string {
+	return "[" + n + "]  " + s
+}
+
+func formatHandlerAndInstance(n, id, s string) string {
+	return "[" + n + " " + id + "]  " + s
+}
 
 // Logger is an observer that logs human-readable messages to a logger.
 type Logger struct {
@@ -25,9 +57,9 @@ func (l *Logger) Notify(f Fact) {
 	case DispatchCycleSkipped:
 		m = l.dispatchCycleSkipped(x)
 	case DispatchBegun:
-		// m = l.dispatchCompleted(x)
+		m = l.dispatchBegun(x)
 	case DispatchCompleted:
-		// m = l.dispatchSkipped(x)
+		m = l.dispatchCompleted(x)
 	case HandlingBegun:
 		m = l.handlingBegun(x)
 	case HandlingCompleted:
@@ -82,199 +114,338 @@ func (l *Logger) Notify(f Fact) {
 		panic("unrecognised fact")
 	}
 
-	if l.Log != nil {
+	if m != "" && l.Log != nil {
 		l.Log(m)
 	}
 }
 
-// formatEnabledHandlers returns a list of the enabled handler types as a string.
-func (l *Logger) formatEnabledHandlers(e map[handler.Type]bool) string {
-	var s string
-
-	for _, t := range handler.Types {
-		if e[t] {
-			if s != "" {
-				s += ", "
-			}
-
-			s += t.String()
-		}
-	}
-
-	return s
-}
-
 // dispatchCycleBegun returns the log message for f.
 func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) string {
-	return fmt.Sprintf(
-		"engine: dispatch of '%s' %s begun at %s (enabled: %s)",
-		f.Envelope.Type,
-		f.Envelope.Role,
-		f.EngineTime.Format(time.RFC3339),
-		l.formatEnabledHandlers(f.EnabledHandlers),
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.SystemIcon,
+			"",
+		},
+		fmt.Sprintf(
+			"dispatch cycle begun at %s [enabled: %s]",
+			f.EngineTime.Format(time.RFC3339),
+			formatEnabledHandlers(f.EnabledHandlers),
+		),
 	)
 }
 
 // dispatchCycleCompleted returns the log message for f.
 func (l *Logger) dispatchCycleCompleted(f DispatchCycleCompleted) string {
 	if f.Error == nil {
-		return fmt.Sprintf(
-			"engine: dispatch of '%s' %s completed successfully",
-			f.Envelope.Type,
-			f.Envelope.Role,
+		return logging.Format(
+			f.Envelope.Correlation,
+			truncateLength,
+			[]string{
+				logging.InboundIcon,
+				logging.SystemIcon,
+				"",
+			},
+			"dispatch cycle completed successfully",
 		)
 	}
 
-	return fmt.Sprintf(
-		"engine: dispatch of '%s' %s completed with errors",
-		f.Envelope.Type,
-		f.Envelope.Role,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundErrorIcon,
+			logging.SystemIcon,
+			logging.ErrorIcon,
+		},
+		"dispatch cycle completed with errors",
 	)
 }
 
 // dispatchCycleSkipped returns the log message for f.
 func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) string {
-	return fmt.Sprintf(
-		"engine: no route for '%s' messages",
-		message.TypeOf(f.Message),
+	return logging.Format(
+		emptyCorrelation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.SystemIcon,
+			"",
+		},
+		message.TypeOf(f.Message).String(),
+		"dispatch cycle skipped because this message type is not routed to any handlers",
+	)
+}
+
+// dispatchBegun returns the log message for f.
+func (l *Logger) dispatchBegun(f DispatchBegun) string {
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.SystemIcon,
+			"",
+		},
+		message.TypeOf(f.Envelope.Message).String()+f.Envelope.Role.Marker(),
+		message.ToString(f.Envelope.Message),
+		"dispatch begun",
+	)
+}
+
+// dispatchCompleted returns the log message for f.
+func (l *Logger) dispatchCompleted(f DispatchCompleted) string {
+	if f.Error == nil {
+		return logging.Format(
+			f.Envelope.Correlation,
+			truncateLength,
+			[]string{
+				logging.InboundIcon,
+				logging.SystemIcon,
+				"",
+			},
+			"dispatch completed successfully",
+		)
+	}
+
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundErrorIcon,
+			logging.SystemIcon,
+			logging.ErrorIcon,
+		},
+		"dispatch completed with errors",
 	)
 }
 
 // handlingBegun returns the log message for f.
 func (l *Logger) handlingBegun(f HandlingBegun) string {
-	return fmt.Sprintf(
-		"%s[%s]: message handling begun",
-		f.HandlerType,
-		f.HandlerName,
-	)
+	return ""
 }
 
 // handlingCompleted returns the log message for f.
 func (l *Logger) handlingCompleted(f HandlingCompleted) string {
 	if f.Error == nil {
-		return fmt.Sprintf(
-			"%s[%s]: handled message successfully",
-			f.HandlerType,
-			f.HandlerName,
-		)
+		return ""
 	}
 
-	return fmt.Sprintf(
-		"%s[%s]: handling failed: %s",
-		f.HandlerType,
-		f.HandlerName,
-		f.Error,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundErrorIcon,
+			logging.HandlerTypeIcon(f.HandlerType),
+			logging.ErrorIcon,
+		},
+		formatHandler(
+			f.HandlerName,
+			f.Error.Error(),
+		),
 	)
 }
 
 // handlingSkipped returns the log message for f.
 func (l *Logger) handlingSkipped(f HandlingSkipped) string {
-	return fmt.Sprintf(
-		"%s[%s]: message handling skipped because %s handlers are disabled",
-		f.HandlerType,
-		f.HandlerName,
-		f.HandlerType,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.HandlerTypeIcon(f.HandlerType),
+			"",
+		},
+		formatHandler(
+			f.HandlerName,
+			fmt.Sprintf(
+				"handler skipped because %s handlers are disabled",
+				f.HandlerType,
+			),
+		),
 	)
 }
 
 // tickCycleBegun returns the log message for f.
 func (l *Logger) tickCycleBegun(f TickCycleBegun) string {
-	return fmt.Sprintf(
-		"engine: tick begun at %s (enabled: %s)",
-		f.EngineTime.Format(time.RFC3339),
-		l.formatEnabledHandlers(f.EnabledHandlers),
+	return logging.Format(
+		emptyCorrelation,
+		truncateLength,
+		[]string{
+			"",
+			logging.SystemIcon,
+			"",
+		},
+		fmt.Sprintf(
+			"tick cycle begun at %s [enabled: %s]",
+			f.EngineTime.Format(time.RFC3339),
+			formatEnabledHandlers(f.EnabledHandlers),
+		),
 	)
 }
 
 // tickCycleCompleted  returns the log message for f.
 func (l *Logger) tickCycleCompleted(f TickCycleCompleted) string {
 	if f.Error == nil {
-		return "engine: tick completed successfully"
+		return logging.Format(
+			emptyCorrelation,
+			truncateLength,
+			[]string{
+				"",
+				logging.SystemIcon,
+				"",
+			},
+			"tick cycle completed successfully",
+		)
 	}
 
-	return "engine: tick completed with errors"
+	return logging.Format(
+		emptyCorrelation,
+		truncateLength,
+		[]string{
+			"",
+			logging.SystemIcon,
+			logging.ErrorIcon,
+		},
+		"tick cycle completed with errors",
+	)
 }
 
 // tickBegun returns the log message for f.
 func (l *Logger) tickBegun(f TickBegun) string {
-	return fmt.Sprintf(
-		"%s[%s]: tick begun",
-		f.HandlerType,
-		f.HandlerName,
-	)
+	return ""
 }
 
 // tickCompleted returns the log message for f.
 func (l *Logger) tickCompleted(f TickCompleted) string {
 	if f.Error == nil {
-		return fmt.Sprintf(
-			"%s[%s]: tick completed successfully",
-			f.HandlerType,
-			f.HandlerName,
-		)
+		return ""
 	}
 
-	return fmt.Sprintf(
-		"%s[%s]: tick failed: %s",
-		f.HandlerType,
-		f.HandlerName,
-		f.Error,
+	return logging.Format(
+		emptyCorrelation,
+		truncateLength,
+		[]string{
+			"",
+			logging.HandlerTypeIcon(f.HandlerType),
+			logging.ErrorIcon,
+		},
+		formatHandler(
+			f.HandlerName,
+			f.Error.Error(),
+		),
 	)
 }
 
 // aggregateInstanceLoaded returns the log message for f.
 func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: loading existing instance",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"loaded an existing instance",
+		),
 	)
 }
 
 // aggregateInstanceNotFound returns the log message for f.
 func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: no existing instance found",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"did not find an existing instance",
+		),
 	)
 }
 
 // aggregateInstanceCreated returns the log message for f.
 func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: instance created",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"created the instance",
+		),
 	)
 }
 
 // aggregateInstanceDestroyed returns the log message for f.
 func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: instance destroyed",
-		f.HandlerName,
-		f.InstanceID,
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"destroyed the instance",
+		),
 	)
 }
 
 // eventRecordedByAggregate returns the log message for f.
 func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: recorded '%s' event",
-		f.HandlerName,
-		f.InstanceID,
-		f.EventEnvelope.Type,
+	return logging.Format(
+		f.EventEnvelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.OutboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			"recorded an event",
+		),
+		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
+		message.ToString(f.EventEnvelope.Message),
 	)
 }
 
 // messageLoggedByAggregate returns the log message for f.
 func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) string {
-	return fmt.Sprintf(
-		"aggregate[%s@%s]: %s",
-		f.HandlerName,
-		f.InstanceID,
-		fmt.Sprintf(f.LogFormat, f.LogArguments...),
+	return logging.Format(
+		f.Envelope.Correlation,
+		truncateLength,
+		[]string{
+			logging.InboundIcon,
+			logging.AggregateIcon,
+			"",
+		},
+		formatHandlerAndInstance(
+			f.HandlerName,
+			f.InstanceID,
+			fmt.Sprintf(f.LogFormat, f.LogArguments...),
+		),
 	)
 }
 
