@@ -28,7 +28,8 @@ type Test struct {
 // Prepare prepares the application for the test by executing the given set of
 // messages without any assertions.
 func (t *Test) Prepare(messages ...dogma.Message) *Test {
-	log(t.t, "--- PREPARING APPLICATION FOR TEST ---")
+	t.t.Helper()
+	t.t.Log("--- PREPARING APPLICATION FOR TEST ---")
 
 	for _, m := range messages {
 		t.dispatch(m, nil, nil)
@@ -44,7 +45,8 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	log(t.t, "--- EXECUTING TEST COMMAND ---")
+	t.t.Helper()
+	t.t.Log("--- EXECUTING TEST COMMAND ---")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -60,7 +62,8 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	log(t.t, "--- RECORDING TEST EVENT ---")
+	t.t.Helper()
+	t.t.Log("--- RECORDING TEST EVENT ---")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -80,7 +83,8 @@ func (t *Test) AdvanceTimeBy(
 		panic("delta must be positive")
 	}
 
-	logf(t.t, "--- ADVANCING TIME BY %s ---", delta)
+	t.t.Helper()
+	t.t.Logf("--- ADVANCING TIME BY %s ---", delta)
 
 	return t.advanceTime(t.now.Add(delta), a, options)
 }
@@ -96,7 +100,8 @@ func (t *Test) AdvanceTimeTo(
 		panic("time must be greater than the current time")
 	}
 
-	logf(t.t, "--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
+	t.t.Helper()
+	t.t.Logf("--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
 
 	return t.advanceTime(now, a, options)
 }
@@ -127,7 +132,8 @@ func (t *Test) dispatch(
 	opts := t.options(options, a)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		log(t.t, err)
+		t.t.Helper()
+		t.t.Log(err)
 		t.t.FailNow()
 	}
 }
@@ -141,7 +147,8 @@ func (t *Test) tick(
 	opts := t.options(options, a)
 
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
-		log(t.t, err)
+		t.t.Helper()
+		t.t.Log(err)
 		t.t.FailNow()
 	}
 }
@@ -189,7 +196,8 @@ func (t *Test) end(a assert.Assertion) {
 	res := a.End(r)
 	iago.MustWriteTo(buf, res)
 
-	log(t.t, buf.String())
+	t.t.Helper()
+	t.t.Log(buf.String())
 
 	if !res.Ok {
 		t.t.FailNow()
