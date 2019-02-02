@@ -14,16 +14,18 @@ import (
 var _ = Describe("type Envelope", func() {
 	Describe("func New", func() {
 		It("returns the expected envelope", func() {
-			env := New(100, fixtures.MessageC1, message.CommandRole)
+			env := New("100", fixtures.MessageC1, message.CommandRole)
 
 			Expect(env).To(Equal(
 				&Envelope{
-					MessageID:     100,
-					CorrelationID: 100,
-					CausationID:   100,
-					Message:       fixtures.MessageC1,
-					Type:          fixtures.MessageCType,
-					Role:          message.CommandRole,
+					Correlation: message.Correlation{
+						MessageID:     "100",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message: fixtures.MessageC1,
+					Type:    fixtures.MessageCType,
+					Role:    message.CommandRole,
 				},
 			))
 		})
@@ -31,7 +33,7 @@ var _ = Describe("type Envelope", func() {
 		It("panics if called with the timeout role", func() {
 			Expect(func() {
 				New(
-					100,
+					"100",
 					fixtures.MessageA1,
 					message.TimeoutRole,
 				)
@@ -42,7 +44,7 @@ var _ = Describe("type Envelope", func() {
 	Describe("func NewCommand", func() {
 		It("returns the expected envelope", func() {
 			parent := New(
-				100,
+				"100",
 				fixtures.MessageP1,
 				message.EventRole,
 			)
@@ -52,20 +54,22 @@ var _ = Describe("type Envelope", func() {
 				InstanceID:  "<instance>",
 			}
 			child := parent.NewCommand(
-				200,
+				"200",
 				fixtures.MessageC1,
 				origin,
 			)
 
 			Expect(child).To(Equal(
 				&Envelope{
-					MessageID:     200,
-					CorrelationID: 100,
-					CausationID:   100,
-					Message:       fixtures.MessageC1,
-					Type:          fixtures.MessageCType,
-					Role:          message.CommandRole,
-					Origin:        &origin,
+					Correlation: message.Correlation{
+						MessageID:     "200",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message: fixtures.MessageC1,
+					Type:    fixtures.MessageCType,
+					Role:    message.CommandRole,
+					Origin:  &origin,
 				},
 			))
 		})
@@ -74,7 +78,7 @@ var _ = Describe("type Envelope", func() {
 	Describe("func NewEvent", func() {
 		It("returns the expected envelope", func() {
 			parent := New(
-				100,
+				"100",
 				fixtures.MessageP1,
 				message.CommandRole,
 			)
@@ -84,20 +88,22 @@ var _ = Describe("type Envelope", func() {
 				InstanceID:  "<instance>",
 			}
 			child := parent.NewEvent(
-				200,
+				"200",
 				fixtures.MessageE1,
 				origin,
 			)
 
 			Expect(child).To(Equal(
 				&Envelope{
-					MessageID:     200,
-					CorrelationID: 100,
-					CausationID:   100,
-					Message:       fixtures.MessageE1,
-					Type:          fixtures.MessageEType,
-					Role:          message.EventRole,
-					Origin:        &origin,
+					Correlation: message.Correlation{
+						MessageID:     "200",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message: fixtures.MessageE1,
+					Type:    fixtures.MessageEType,
+					Role:    message.EventRole,
+					Origin:  &origin,
 				},
 			))
 		})
@@ -107,7 +113,7 @@ var _ = Describe("type Envelope", func() {
 		It("returns the expected envelope", func() {
 			t := time.Now()
 			parent := New(
-				100,
+				"100",
 				fixtures.MessageP1,
 				message.CommandRole,
 			)
@@ -117,7 +123,7 @@ var _ = Describe("type Envelope", func() {
 				InstanceID:  "<instance>",
 			}
 			child := parent.NewTimeout(
-				200,
+				"200",
 				fixtures.MessageT1,
 				t,
 				origin,
@@ -125,14 +131,16 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(child).To(Equal(
 				&Envelope{
-					MessageID:     200,
-					CorrelationID: 100,
-					CausationID:   100,
-					Message:       fixtures.MessageT1,
-					Type:          fixtures.MessageTType,
-					Role:          message.TimeoutRole,
-					TimeoutTime:   &t,
-					Origin:        &origin,
+					Correlation: message.Correlation{
+						MessageID:     "200",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message:     fixtures.MessageT1,
+					Type:        fixtures.MessageTType,
+					Role:        message.TimeoutRole,
+					TimeoutTime: &t,
+					Origin:      &origin,
 				},
 			))
 		})

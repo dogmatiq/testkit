@@ -32,13 +32,13 @@ var _ = Describe("type Controller", func() {
 
 	BeforeEach(func() {
 		event = envelope.New(
-			1000,
+			"1000",
 			fixtures.MessageE1,
 			message.EventRole,
 		)
 
 		timeout = event.NewTimeout(
-			2000,
+			"2000",
 			fixtures.MessageT1,
 			now,
 			envelope.Origin{
@@ -123,7 +123,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(timeouts).To(ConsistOf(
 				event.NewTimeout(
-					3,
+					"3",
 					fixtures.MessageT1,
 					now.Add(1*time.Hour),
 					envelope.Origin{
@@ -133,7 +133,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				event.NewTimeout(
-					2,
+					"2",
 					fixtures.MessageT2,
 					now.Add(2*time.Hour),
 					envelope.Origin{
@@ -169,7 +169,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not return timeouts for instances that have been deleted", func() {
 			secondInstanceEvent := envelope.New(
-				3000,
+				"3000",
 				fixtures.MessageE2, // different message value = different instance
 				message.EventRole,
 			)
@@ -210,7 +210,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(timeouts).To(ConsistOf(
 				secondInstanceEvent.NewTimeout(
-					3,
+					"3",
 					fixtures.MessageT1,
 					now.Add(1*time.Hour),
 					envelope.Origin{
@@ -220,7 +220,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				secondInstanceEvent.NewTimeout(
-					2,
+					"2",
 					fixtures.MessageT2,
 					now.Add(2*time.Hour),
 					envelope.Origin{
@@ -301,7 +301,7 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(ConsistOf(
 					event.NewCommand(
-						1,
+						"1",
 						fixtures.MessageC1,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -310,7 +310,7 @@ var _ = Describe("type Controller", func() {
 						},
 					),
 					event.NewTimeout(
-						2,
+						"2",
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -504,7 +504,7 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(ConsistOf(
 					timeout.NewCommand(
-						1,
+						"1",
 						fixtures.MessageC1,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -513,7 +513,7 @@ var _ = Describe("type Controller", func() {
 						},
 					),
 					timeout.NewTimeout(
-						2,
+						"2",
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{

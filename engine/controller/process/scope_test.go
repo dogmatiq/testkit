@@ -25,7 +25,7 @@ var _ = Describe("type scope", func() {
 
 	BeforeEach(func() {
 		event = envelope.New(
-			1000,
+			"1000",
 			fixtures.MessageA1,
 			message.EventRole,
 		)
@@ -207,7 +207,7 @@ var _ = Describe("type scope", func() {
 				fact.Ignore,
 				time.Now(),
 				envelope.New(
-					2000,
+					"2000",
 					fixtures.MessageA2, // use a different message to create the instance
 					message.EventRole,
 				),
@@ -353,7 +353,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
 						CommandEnvelope: event.NewCommand(
-							1,
+							"1",
 							fixtures.MessageB1,
 							envelope.Origin{
 								HandlerName: "<name>",
@@ -403,7 +403,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.ProcessRoot{},
 						Envelope:    event,
 						TimeoutEnvelope: event.NewTimeout(
-							1,
+							"1",
 							fixtures.MessageB1,
 							t,
 							envelope.Origin{

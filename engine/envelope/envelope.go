@@ -9,20 +9,7 @@ import (
 
 // Envelope is a container for a message that is handled by the test engine.
 type Envelope struct {
-	// MessageID is a unique identifier for a message.
-	MessageID uint64
-
-	// CausationID is the ID of the message that directly caused this message.
-	//
-	// If this message was not caused by some other message, CausationID is set to
-	// MessageID.
-	CausationID uint64
-
-	// CorrelationID is the ID of the message the beginning of a causality chain.
-	//
-	// If this message was not caused by some other message, CorrelationID is set
-	// to MessageID.
-	CorrelationID uint64
+	message.Correlation
 
 	// Message is the application-defined message that the envelope represents.
 	Message dogma.Message
@@ -44,30 +31,31 @@ type Envelope struct {
 
 // New constructs a new envelope containing the given message.
 func New(
-	id uint64,
+	id string,
 	m dogma.Message,
 	r message.Role,
 ) *Envelope {
-	if id == 0 {
-		panic("message ID must not be zero")
+	if id == "" {
+		panic("message ID must not be empty")
 	}
 
 	r.MustNotBe(message.TimeoutRole)
 
+	c := message.NewCorrelation(id)
+	c.MustValidate()
+
 	return &Envelope{
-		MessageID:     id,
-		CausationID:   id,
-		CorrelationID: id,
-		Message:       m,
-		Type:          message.TypeOf(m),
-		Role:          r,
+		Correlation: c,
+		Message:     m,
+		Type:        message.TypeOf(m),
+		Role:        r,
 	}
 }
 
 // NewCommand constructs a new command envelope as a child of e, indicating that
 // m is caused by e.Message.
 func (e *Envelope) NewCommand(
-	id uint64,
+	id string,
 	m dogma.Message,
 	o Origin,
 ) *Envelope {
@@ -77,7 +65,7 @@ func (e *Envelope) NewCommand(
 // NewEvent constructs a new event envelope as a child of e, indicating that
 // m is caused by e.Message.
 func (e *Envelope) NewEvent(
-	id uint64,
+	id string,
 	m dogma.Message,
 	o Origin,
 ) *Envelope {
@@ -87,7 +75,7 @@ func (e *Envelope) NewEvent(
 // NewTimeout constructs a new event envelope as a child of e, indicating that
 // m is caused by e.Message.
 func (e *Envelope) NewTimeout(
-	id uint64,
+	id string,
 	m dogma.Message,
 	t time.Time,
 	o Origin,
@@ -98,22 +86,19 @@ func (e *Envelope) NewTimeout(
 }
 
 func (e *Envelope) new(
-	id uint64,
+	id string,
 	m dogma.Message,
 	r message.Role,
 	o Origin,
 ) *Envelope {
-	if id == 0 {
-		panic("message ID must not be zero")
-	}
+	c := e.Correlation.New(id)
+	c.MustValidate()
 
 	return &Envelope{
-		MessageID:     id,
-		CausationID:   e.MessageID,
-		CorrelationID: e.CorrelationID,
-		Message:       m,
-		Type:          message.TypeOf(m),
-		Role:          r,
-		Origin:        &o,
+		Correlation: c,
+		Message:     m,
+		Type:        message.TypeOf(m),
+		Role:        r,
+		Origin:      &o,
 	}
 }

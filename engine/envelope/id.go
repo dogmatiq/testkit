@@ -1,6 +1,9 @@
 package envelope
 
-import "sync/atomic"
+import (
+	"strconv"
+	"sync/atomic"
+)
 
 // MessageIDGenerator produces sequential message IDs.
 type MessageIDGenerator struct {
@@ -8,8 +11,11 @@ type MessageIDGenerator struct {
 }
 
 // Next returns the next ID in the sequence.
-func (g *MessageIDGenerator) Next() uint64 {
-	return atomic.AddUint64(&g.messageID, 1)
+func (g *MessageIDGenerator) Next() string {
+	return strconv.FormatUint(
+		atomic.AddUint64(&g.messageID, 1),
+		10,
+	)
 }
 
 // Reset resets the generator to begin at one (1) again.

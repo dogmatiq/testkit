@@ -45,7 +45,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
 				DispatchCycleBegun{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -61,7 +61,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
 				DispatchCycleCompleted{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -72,7 +72,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
 				DispatchCycleCompleted{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -92,7 +92,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command begun at 2006-01-02T15:04:05+07:00 (enabled: aggregate, process)",
 				DispatchBegun{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -103,7 +103,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command completed successfully",
 				DispatchCompleted{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -114,7 +114,7 @@ var _ = Describe("type Logger", func() {
 				"engine: dispatch of 'fixtures.MessageA' command completed with errors",
 				DispatchCompleted{
 					Envelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -249,7 +249,7 @@ var _ = Describe("type Logger", func() {
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					EventEnvelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.EventRole,
 					),
@@ -322,7 +322,7 @@ var _ = Describe("type Logger", func() {
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					CommandEnvelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.CommandRole,
 					),
@@ -335,11 +335,11 @@ var _ = Describe("type Logger", func() {
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
 					TimeoutEnvelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.EventRole,
 					).NewTimeout(
-						2000,
+						"2000",
 						fixtures.MessageT1,
 						now,
 						envelope.Origin{
@@ -369,7 +369,7 @@ var _ = Describe("type Logger", func() {
 				EventRecordedByIntegration{
 					HandlerName: "<handler>",
 					EventEnvelope: envelope.New(
-						1000,
+						"1000",
 						fixtures.MessageA1,
 						message.EventRole,
 					),

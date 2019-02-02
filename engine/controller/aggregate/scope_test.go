@@ -25,7 +25,7 @@ var _ = Describe("type scope", func() {
 
 	BeforeEach(func() {
 		command = envelope.New(
-			1000,
+			"1000",
 			fixtures.MessageA1,
 			message.CommandRole,
 		)
@@ -173,7 +173,7 @@ var _ = Describe("type scope", func() {
 				fact.Ignore,
 				time.Now(),
 				envelope.New(
-					2000,
+					"2000",
 					fixtures.MessageA2, // use a different message to create the instance
 					message.CommandRole,
 				),
@@ -309,7 +309,7 @@ var _ = Describe("type scope", func() {
 						Root:        &fixtures.AggregateRoot{},
 						Envelope:    command,
 						EventEnvelope: command.NewEvent(
-							1,
+							"1",
 							fixtures.MessageB1,
 							envelope.Origin{
 								HandlerName: "<name>",

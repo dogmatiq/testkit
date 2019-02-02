@@ -30,7 +30,7 @@ var _ = Describe("type Controller", func() {
 
 	BeforeEach(func() {
 		command = envelope.New(
-			1000,
+			"1000",
 			fixtures.MessageC1,
 			message.CommandRole,
 		)
@@ -133,7 +133,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
-					1,
+					"1",
 					fixtures.MessageE1,
 					envelope.Origin{
 						HandlerName: "<name>",
@@ -142,7 +142,7 @@ var _ = Describe("type Controller", func() {
 					},
 				),
 				command.NewEvent(
-					2,
+					"2",
 					fixtures.MessageE2,
 					envelope.Origin{
 						HandlerName: "<name>",

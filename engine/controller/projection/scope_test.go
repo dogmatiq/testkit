@@ -19,7 +19,7 @@ var _ = Describe("type scope", func() {
 		handler    *fixtures.ProjectionMessageHandler
 		controller *Controller
 		event      = envelope.New(
-			1000,
+			"1000",
 			fixtures.MessageA1,
 			message.EventRole,
 		)

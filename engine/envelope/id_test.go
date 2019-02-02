@@ -15,9 +15,9 @@ var _ = Describe("type MessageIDGenerator", func() {
 
 	Describe("func Next", func() {
 		It("returns the next ID in the sequence", func() {
-			Expect(generator.Next()).To(Equal(uint64(1)))
-			Expect(generator.Next()).To(Equal(uint64(2)))
-			Expect(generator.Next()).To(Equal(uint64(3)))
+			Expect(generator.Next()).To(Equal("1"))
+			Expect(generator.Next()).To(Equal("2"))
+			Expect(generator.Next()).To(Equal("3"))
 		})
 	})
 
@@ -27,7 +27,7 @@ var _ = Describe("type MessageIDGenerator", func() {
 			generator.Next()
 			generator.Next()
 			generator.Reset()
-			Expect(generator.Next()).To(Equal(uint64(1)))
+			Expect(generator.Next()).To(Equal("1"))
 		})
 	})
 })
