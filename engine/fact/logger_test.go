@@ -63,7 +63,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"DispatchCycleBegun",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatch cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatching ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
@@ -153,7 +153,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"TickCycleBegun",
-				"= ----  ∵ ----  ⋲ ----    ⚙    tick cycle begun at 2006-01-02T15:04:05+07:00 [enabled: aggregate, process]",
+				"= ----  ∵ ----  ⋲ ----    ⚙    ticking ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
 				TickCycleBegun{
 					EngineTime: now,
 					EnabledHandlers: map[handler.Type]bool{

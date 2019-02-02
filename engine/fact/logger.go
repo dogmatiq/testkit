@@ -90,11 +90,9 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 			logging.SystemIcon,
 			"",
 		},
-		fmt.Sprintf(
-			"dispatch cycle begun at %s [enabled: %s]",
-			f.EngineTime.Format(time.RFC3339),
-			formatEnabledHandlers(f.EnabledHandlers),
-		),
+		"dispatching",
+		formatEngineTime(f.EngineTime),
+		formatEnabledHandlers(f.EnabledHandlers),
 	)
 }
 
@@ -168,11 +166,9 @@ func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 			logging.SystemIcon,
 			"",
 		},
-		fmt.Sprintf(
-			"tick cycle begun at %s [enabled: %s]",
-			f.EngineTime.Format(time.RFC3339),
-			formatEnabledHandlers(f.EnabledHandlers),
-		),
+		"ticking",
+		formatEngineTime(f.EngineTime),
+		formatEnabledHandlers(f.EnabledHandlers),
 	)
 }
 
@@ -463,14 +459,20 @@ func formatMessageID(id string) string {
 	return fmt.Sprintf("%04s", id)
 }
 
-func formatEnabledHandlers(e map[handler.Type]bool) string {
-	var s string
+func formatEngineTime(t time.Time) string {
+	return "engine time is " + t.Format(time.RFC3339)
+}
 
+func formatEnabledHandlers(e map[handler.Type]bool) string {
+	s := "enabled: "
+
+	first := true
 	for _, t := range handler.Types {
 		if e[t] {
-			if s != "" {
+			if !first {
 				s += ", "
 			}
+			first = false
 
 			s += t.String()
 		}
