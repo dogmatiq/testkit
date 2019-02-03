@@ -23,10 +23,11 @@ type Controller struct {
 	records map[string]*record
 }
 
+// record is a container for an aggregate root
 type record struct {
 	m      sync.Mutex
 	root   dogma.AggregateRoot
-	active bool
+	active bool // set to false when this record instance is removed from c.records
 }
 
 // NewController returns a new controller for the given handler.
@@ -150,12 +151,19 @@ func (c *Controller) lock(id string) (*record, bool) {
 		r, exists := c.records[id]
 
 		if exists {
-			c.m.Unlock() // release the controller lock
-			r.m.Lock()   // while waiting for the individual record lock
+			// release the controller's lock before waiting for the record lock
+			// otherwise no other instances can process messages while we wait
+			c.m.Unlock()
 
+			// !!! IMPORTANT: other messages could be affecting THIS record between
+			// !!! this unlock and lock call.
+
+			r.m.Lock()
+
+			// if this record is still "active", that means that c.records[id] == rec,
+			// and we can use it. By using the active flag, we don't have to re-lock c.m
+			// to check this.
 			if r.active {
-				// if this record is still "active", that means that c.records[id] == rec,
-				// and we can use it.
 				return r, true
 			}
 
