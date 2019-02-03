@@ -289,8 +289,8 @@ func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	return e.Dispatch(ctx, m)
 }
 
-// RecordEvent records the occurrence of an event. It is not an error to attempt
-// recording an event that is not routed to any handlers.
+// RecordEvent records the occurrence of an event. It is not an error to record
+// an event that is not routed to any handlers.
 func (e *Engine) RecordEvent(ctx context.Context, m dogma.Message) error {
 	return e.Dispatch(ctx, m)
 }
