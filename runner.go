@@ -72,6 +72,7 @@ func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *
 	return &Test{
 		ctx:              ctx,
 		t:                t,
+		verbose:          to.verbose,
 		engine:           r.engine,
 		now:              time.Now(),
 		operationOptions: opts,

@@ -18,6 +18,7 @@ import (
 type Test struct {
 	ctx              context.Context
 	t                T
+	verbose          bool
 	engine           *engine.Engine
 	now              time.Time
 	operationOptions []engine.OperationOption
@@ -28,7 +29,9 @@ type Test struct {
 // Prepare prepares the application for the test by executing the given set of
 // messages without any assertions.
 func (t *Test) Prepare(messages ...dogma.Message) *Test {
-	log(t.t, "--- PREPARING APPLICATION FOR TEST ---")
+	if t.verbose {
+		log(t.t, "--- PREPARING APPLICATION FOR TEST ---")
+	}
 
 	for _, m := range messages {
 		t.dispatch(m, nil, nil)
@@ -44,7 +47,9 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	log(t.t, "--- EXECUTING TEST COMMAND ---")
+	if t.verbose {
+		log(t.t, "--- EXECUTING TEST COMMAND ---")
+	}
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -60,7 +65,9 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	log(t.t, "--- RECORDING TEST EVENT ---")
+	if t.verbose {
+		log(t.t, "--- RECORDING TEST EVENT ---")
+	}
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -80,7 +87,9 @@ func (t *Test) AdvanceTimeBy(
 		panic("delta must be positive")
 	}
 
-	logf(t.t, "--- ADVANCING TIME BY %s ---", delta)
+	if t.verbose {
+		logf(t.t, "--- ADVANCING TIME BY %s ---", delta)
+	}
 
 	return t.advanceTime(t.now.Add(delta), a, options)
 }
@@ -96,7 +105,9 @@ func (t *Test) AdvanceTimeTo(
 		panic("time must be greater than the current time")
 	}
 
-	logf(t.t, "--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
+	if t.verbose {
+		logf(t.t, "--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
+	}
 
 	return t.advanceTime(now, a, options)
 }
