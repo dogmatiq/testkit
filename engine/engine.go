@@ -279,3 +279,18 @@ func (e *Engine) handle(
 
 	return envs, err
 }
+
+// ExecuteCommand enqueues a command for execution. It panics if command is not
+// routed to any handlers.
+func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
+	t := message.TypeOf(m)
+	e.roles[t].MustBe(message.CommandRole)
+
+	return e.Dispatch(ctx, m)
+}
+
+// RecordEvent records the occurrence of an event. It is not an error to attempt
+// recording of the event that is not routed to any handlers.
+func (e *Engine) RecordEvent(ctx context.Context, m dogma.Message) error {
+	return e.Dispatch(ctx, m)
+}
