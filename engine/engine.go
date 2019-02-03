@@ -280,8 +280,8 @@ func (e *Engine) handle(
 	return envs, err
 }
 
-// ExecuteCommand enqueues a command for execution. It panics if command is not
-// routed to any handlers.
+// ExecuteCommand enqueues a command for execution. It panics if the command is
+// not routed to any handlers.
 func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	t := message.TypeOf(m)
 	e.roles[t].MustBe(message.CommandRole)
