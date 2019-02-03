@@ -263,7 +263,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"ProcessInstanceLoaded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● loaded an existing instance",
 				ProcessInstanceLoaded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -272,7 +272,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessEventIgnored",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> ● event ignored because it was not routed to any instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> ● event ignored because it was not routed to any instance",
 				ProcessEventIgnored{
 					HandlerName: "<handler>",
 					Envelope:    event,
@@ -280,7 +280,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessTimeoutIgnored",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● timeout ignored because the target instance no longer exists",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● timeout ignored because the target instance no longer exists",
 				ProcessTimeoutIgnored{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -289,7 +289,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceNotFound",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● instance does not yet exist",
 				ProcessInstanceNotFound{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -298,7 +298,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceBegun",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance begun",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● instance begun",
 				ProcessInstanceBegun{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -307,7 +307,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"ProcessInstanceEnded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● instance ended",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● instance ended",
 				ProcessInstanceEnded{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -316,7 +316,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"CommandExecutedByProcess",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    <handler> <instance> ● executed a command ● fixtures.MessageC? ● {C1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ≡    <handler> <instance> ● executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -330,7 +330,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TimeoutScheduledByProcess",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ☰    <handler> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ≡    <handler> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
 				TimeoutScheduledByProcess{
 					HandlerName: "<handler>",
 					InstanceID:  "<instance>",
@@ -348,7 +348,7 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByProcess",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ☰    <handler> <instance> ● <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ≡    <handler> <instance> ● <message>",
 				MessageLoggedByProcess{
 					HandlerName:  "<handler>",
 					InstanceID:   "<instance>",
