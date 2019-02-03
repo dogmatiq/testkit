@@ -42,7 +42,7 @@ func (b *Buffer) Facts() []Fact {
 	facts := make([]Fact, len(b.facts))
 	copy(facts, b.facts)
 
-	return b.facts
+	return facts
 }
 
 // Ignore is an observer that ignores fact notifications.
