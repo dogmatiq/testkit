@@ -86,7 +86,7 @@ func (a *MessageAssertion) Ok() bool {
 // the same value as returned from Ok() when this assertion is used as
 // sub-assertion inside a composite.
 func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
-	res := &Report{
+	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
 		Criteria: inflect(
@@ -96,17 +96,19 @@ func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 		),
 	}
 
-	if !ok {
-		if a.best == nil {
-			buildResultNoMatch(res, &a.tracker)
-		} else if a.best.Role == message.EventRole {
-			a.buildResultExpectedRole(r, res)
-		} else {
-			a.buildResultUnexpectedRole(r, res)
-		}
+	if ok || a.ok {
+		return rep
 	}
 
-	return res
+	if a.best == nil {
+		buildResultNoMatch(rep, &a.tracker)
+	} else if a.best.Role == message.EventRole {
+		a.buildResultExpectedRole(r, rep)
+	} else {
+		a.buildResultUnexpectedRole(r, rep)
+	}
+
+	return rep
 }
 
 // Notify updates the assertion's state in response to a new fact.

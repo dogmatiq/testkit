@@ -86,14 +86,16 @@ func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 		),
 	}
 
-	if !ok {
-		if a.best == nil {
-			buildResultNoMatch(rep, &a.tracker)
-		} else if a.best.Role == message.EventRole {
-			a.buildResultExpectedRole(r, rep)
-		} else {
-			a.buildResultUnexpectedRole(r, rep)
-		}
+	if ok || a.ok {
+		return rep
+	}
+
+	if a.best == nil {
+		buildResultNoMatch(rep, &a.tracker)
+	} else if a.best.Role == message.EventRole {
+		a.buildResultExpectedRole(r, rep)
+	} else {
+		a.buildResultUnexpectedRole(r, rep)
 	}
 
 	return rep
