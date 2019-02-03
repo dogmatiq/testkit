@@ -11,13 +11,18 @@ import (
 type Assertion interface {
 	fact.Observer
 
-	// Begin is called before the test is executed.
+	// Prepare is called to prepare the assertion for a new test.
 	//
 	// c is the comparator used to compare messages and other entities.
-	Begin(c compare.Comparator)
+	Prepare(c compare.Comparator)
 
-	// End is called after the test is executed.
+	// Ok returns true if the assertion passed.
+	Ok() bool
+
+	// BuildReport generates a report about the assertion.
 	//
-	// It returns the result of the assertion.
-	End(r render.Renderer) *Result
+	// ok is true if the assertion is considered to have passed. This may not be
+	// the same value as returned from Ok() when this assertion is used as
+	// sub-assertion inside a composite.
+	BuildReport(ok bool, r render.Renderer) *Report
 }

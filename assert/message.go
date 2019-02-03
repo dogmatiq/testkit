@@ -62,10 +62,10 @@ func EventRecorded(m dogma.Message) Assertion {
 	}
 }
 
-// Begin is called before the test is executed.
+// Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *MessageAssertion) Begin(c compare.Comparator) {
+func (a *MessageAssertion) Prepare(c compare.Comparator) {
 	// reset everything
 	*a = MessageAssertion{
 		expected: a.expected,
@@ -75,12 +75,20 @@ func (a *MessageAssertion) Begin(c compare.Comparator) {
 	}
 }
 
-// End is called after the test is executed.
+// Ok returns true if the assertion passed.
+func (a *MessageAssertion) Ok() bool {
+	return a.ok
+}
+
+// BuildReport generates a report about the assertion.
 //
-// It returns the result of the assertion.
-func (a *MessageAssertion) End(r render.Renderer) *Result {
-	res := &Result{
-		Ok: a.ok,
+// ok is true if the assertion is considered to have passed. This may not be
+// the same value as returned from Ok() when this assertion is used as
+// sub-assertion inside a composite.
+func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+	res := &Report{
+		TreeOk: ok,
+		Ok:     a.ok,
 		Criteria: inflect(
 			a.role,
 			"<produce> a specific '%s' <message>",
@@ -88,7 +96,7 @@ func (a *MessageAssertion) End(r render.Renderer) *Result {
 		),
 	}
 
-	if !a.ok {
+	if !ok {
 		if a.best == nil {
 			buildResultNoMatch(res, &a.tracker)
 		} else if a.best.Role == message.EventRole {
@@ -151,11 +159,11 @@ func (a *MessageAssertion) updateBestMatch(env *envelope.Envelope) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available and it is of the expected role.
-func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Result) {
-	s := res.Section(suggestionsSection)
+func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+	s := rep.Section(suggestionsSection)
 
 	if a.sim == compare.SameTypes {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.role,
 			"a similar <message> was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -163,7 +171,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 		)
 		s.AppendListItem("check the content of the message")
 	} else {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.role,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -175,16 +183,16 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, res *Resul
 	}
 
 	render.WriteDiff(
-		&res.Section(messageDiffSection).Content,
+		&rep.Section(messageDiffSection).Content,
 		render.Message(r, a.expected),
 		render.Message(r, a.best.Message),
 	)
 }
 
 // buildDiff adds a "message diff" section to the result.
-func (a *MessageAssertion) buildDiff(r render.Renderer, res *Result) {
+func (a *MessageAssertion) buildDiff(r render.Renderer, rep *Report) {
 	render.WriteDiff(
-		&res.Section("Message Diff").Content,
+		&rep.Section("Message Diff").Content,
 		render.Message(r, a.expected),
 		render.Message(r, a.best.Message),
 	)
@@ -192,8 +200,8 @@ func (a *MessageAssertion) buildDiff(r render.Renderer, res *Result) {
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Result) {
-	s := res.Section(suggestionsSection)
+func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+	s := rep.Section(suggestionsSection)
 
 	s.AppendListItem(inflect(
 		a.best.Role,
@@ -211,7 +219,7 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 	// the "best-match" is equal to the expected message. this means that only the
 	// roles were mismatched.
 	if a.equal {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.best.Role,
 			"the expected message was <produced> as a <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -222,14 +230,14 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 	}
 
 	if a.sim == compare.SameTypes {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.best.Role,
 			"a similar message was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 	} else {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.best.Role,
 			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -240,13 +248,13 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, res *Res
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
-	a.buildDiff(r, res)
+	a.buildDiff(r, rep)
 }
 
 // buildResultNoMatch is a helper used by MessageAssertion and
 // MessageTypeAssertion when there is no "best-match".
-func buildResultNoMatch(res *Result, t *tracker) {
-	s := res.Section(suggestionsSection)
+func buildResultNoMatch(rep *Report, t *tracker) {
+	s := rep.Section(suggestionsSection)
 
 	allDisabled := true
 	for ht, e := range t.enabled {
@@ -262,22 +270,22 @@ func buildResultNoMatch(res *Result, t *tracker) {
 	}
 
 	if allDisabled {
-		res.Explanation = "no relevant handler types were enabled"
+		rep.Explanation = "no relevant handler types were enabled"
 		return
 	}
 
 	if len(t.engaged) == 0 {
-		res.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
+		rep.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
 		s.AppendListItem("check the application's routing configuration")
 		return
 	}
 
 	if t.total == 0 {
-		res.Explanation = "no messages were produced at all"
+		rep.Explanation = "no messages were produced at all"
 	} else if t.produced == 0 {
-		res.Explanation = inflect(t.role, "no <messages> were <produced> at all")
+		rep.Explanation = inflect(t.role, "no <messages> were <produced> at all")
 	} else {
-		res.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
+		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
 	}
 
 	for n, t := range t.engaged {

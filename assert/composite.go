@@ -22,6 +22,14 @@ type CompositeAssertion struct {
 	// It returns true if the assertion passed, and may optionally return a message
 	// to be displayed in either case.
 	Predicate func(int) (string, bool)
+
+	// ok is a pointer to the assertion's result. It is nil if Ok() has not been
+	// called.
+	ok *bool
+
+	// outcome is the messagestring from the predicate function. It is populated by
+	// Ok().
+	outcome string
 }
 
 // AllOf returns an assertion that passes if all of the given sub-assertions pass.
@@ -119,36 +127,60 @@ func (a *CompositeAssertion) Notify(f fact.Fact) {
 	}
 }
 
-// Begin is called before the test is executed.
+// Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *CompositeAssertion) Begin(c compare.Comparator) {
+func (a *CompositeAssertion) Prepare(c compare.Comparator) {
+	a.ok = nil
+	a.outcome = ""
+
 	for _, sub := range a.SubAssertions {
-		sub.Begin(c)
+		sub.Prepare(c)
 	}
 }
 
-// End is called after the test is executed.
-//
-// It returns the result of the assertion.
-func (a *CompositeAssertion) End(r render.Renderer) *Result {
-	res := &Result{
-		Criteria: a.Criteria,
+// Ok returns true if the assertion passed.
+func (a *CompositeAssertion) Ok() bool {
+	if a.ok != nil {
+		return *a.ok
 	}
 
 	n := 0
 
 	for _, sub := range a.SubAssertions {
-		sr := sub.End(r)
-
-		if sr.Ok {
+		if sub.Ok() {
 			n++
 		}
-
-		res.AppendResult(sr)
 	}
 
-	res.Outcome, res.Ok = a.Predicate(n)
+	m, ok := a.Predicate(n)
 
-	return res
+	a.ok = &ok
+	a.outcome = m
+
+	return *a.ok
+}
+
+// BuildReport generates a report about the assertion.
+//
+// ok is true if the assertion is considered to have passed. This may not be
+// the same value as returned from Ok() when this assertion is used as
+// sub-assertion inside a composite.
+func (a *CompositeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+	a.Ok() // populate a.ok and a.outcome
+
+	rep := &Report{
+		TreeOk:   ok,
+		Ok:       *a.ok,
+		Criteria: a.Criteria,
+		Outcome:  a.outcome,
+	}
+
+	for _, sub := range a.SubAssertions {
+		rep.Append(
+			sub.BuildReport(ok, r),
+		)
+	}
+
+	return rep
 }

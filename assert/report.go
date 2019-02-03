@@ -9,9 +9,12 @@ import (
 	"github.com/dogmatiq/iago/indent"
 )
 
-// Result is the result of performing an assertion.
-type Result struct {
-	// Ok is true if the assertion passed.
+// Report is a report on the outcome of an assertion.
+type Report struct {
+	// TreeOk is true if the "tree" that the assertion belongs to passed.
+	TreeOk bool
+
+	// Ok is true if this assertion passed.
 	Ok bool
 
 	// Criteria is a brief description of the assertion's requirement to pass.
@@ -28,12 +31,12 @@ type Result struct {
 	// assertion.
 	Sections []*ReportSection
 
-	// SubResults contains the results of any sub-assertions.
-	SubResults []*Result
+	// SubReports contains the reports of any sub-assertions.
+	SubReports []*Report
 }
 
 // Section adds an arbitrary "section" to the report.
-func (r *Result) Section(title string) *ReportSection {
+func (r *Report) Section(title string) *ReportSection {
 	for _, s := range r.Sections {
 		if s.Title == title {
 			return s
@@ -49,19 +52,20 @@ func (r *Result) Section(title string) *ReportSection {
 	return s
 }
 
-// AppendResult adds sr as a sub-result of s.
-func (r *Result) AppendResult(sr *Result) {
-	r.SubResults = append(r.SubResults, sr)
+// Append adds sr as a sub-report of s.
+func (r *Report) Append(sr *Report) {
+	r.SubReports = append(r.SubReports, sr)
 }
 
-// WriteTo writes the result to the given writer.
-func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
+// WriteTo writes the report to the given writer.
+func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 	defer iago.Recover(&err)
 	w := count.NewWriter(next)
 
 	writeIcon(w, r.Ok)
 
 	iago.MustWriteByte(w, ' ')
+
 	iago.MustWriteString(w, r.Criteria)
 
 	if r.Outcome != "" {
@@ -114,11 +118,11 @@ func (r *Result) WriteTo(next io.Writer) (_ int64, err error) {
 		iago.MustWriteByte(w, '\n')
 	}
 
-	if len(r.SubResults) != 0 {
+	if len(r.SubReports) != 0 {
 		iago.MustWriteByte(w, '\n')
 
-		iw := indent.NewIndenter(w, subResultsIndent)
-		for _, sr := range r.SubResults {
+		iw := indent.NewIndenter(w, subReportsIndent)
+		for _, sr := range r.SubReports {
 			iago.MustWriteTo(iw, sr)
 		}
 	}
@@ -146,7 +150,7 @@ func (s *ReportSection) AppendListItem(f string, v ...interface{}) {
 var (
 	sectionsIndent       = []byte("  | ")
 	sectionContentIndent = "    "
-	subResultsIndent     = []byte("    ")
+	subReportsIndent     = []byte("    ")
 )
 
 const (

@@ -174,7 +174,7 @@ func (t *Test) begin(a assert.Assertion) {
 		c = compare.DefaultComparator{}
 	}
 
-	a.Begin(c)
+	a.Prepare(c)
 }
 
 func (t *Test) end(a assert.Assertion) {
@@ -186,12 +186,12 @@ func (t *Test) end(a assert.Assertion) {
 	buf := &strings.Builder{}
 	buf.WriteString("--- ASSERTION REPORT ---\n\n")
 
-	res := a.End(r)
-	iago.MustWriteTo(buf, res)
+	rep := a.BuildReport(a.Ok(), r)
+	iago.MustWriteTo(buf, rep)
 
 	log(t.t, buf.String())
 
-	if !res.Ok {
+	if !rep.TreeOk {
 		t.t.FailNow()
 	}
 }

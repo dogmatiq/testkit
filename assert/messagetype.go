@@ -53,10 +53,10 @@ func EventTypeRecorded(m dogma.Message) Assertion {
 	}
 }
 
-// Begin is called before the test is executed.
+// Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
+func (a *MessageTypeAssertion) Prepare(c compare.Comparator) {
 	// reset everything
 	*a = MessageTypeAssertion{
 		expected: a.expected,
@@ -65,12 +65,20 @@ func (a *MessageTypeAssertion) Begin(c compare.Comparator) {
 	}
 }
 
-// End is called after the test is executed.
+// Ok returns true if the assertion passed.
+func (a *MessageTypeAssertion) Ok() bool {
+	return a.ok
+}
+
+// BuildReport generates a report about the assertion.
 //
-// It returns the result of the assertion.
-func (a *MessageTypeAssertion) End(r render.Renderer) *Result {
-	res := &Result{
-		Ok: a.ok,
+// ok is true if the assertion is considered to have passed. This may not be
+// the same value as returned from Ok() when this assertion is used as
+// sub-assertion inside a composite.
+func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+	rep := &Report{
+		TreeOk: ok,
+		Ok:     a.ok,
 		Criteria: inflect(
 			a.role,
 			"<produce> any '%s' <message>",
@@ -78,17 +86,17 @@ func (a *MessageTypeAssertion) End(r render.Renderer) *Result {
 		),
 	}
 
-	if !a.ok {
+	if !ok {
 		if a.best == nil {
-			buildResultNoMatch(res, &a.tracker)
+			buildResultNoMatch(rep, &a.tracker)
 		} else if a.best.Role == message.EventRole {
-			a.buildResultExpectedRole(r, res)
+			a.buildResultExpectedRole(r, rep)
 		} else {
-			a.buildResultUnexpectedRole(r, res)
+			a.buildResultUnexpectedRole(r, rep)
 		}
 	}
 
-	return res
+	return rep
 }
 
 // Notify updates the assertion's state in response to a new fact.
@@ -128,9 +136,9 @@ func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
 }
 
 // buildDiff adds a "message type diff" section to the result.
-func (a *MessageTypeAssertion) buildDiff(res *Result) {
+func (a *MessageTypeAssertion) buildDiff(rep *Report) {
 	render.WriteDiff(
-		&res.Section("Message Type Diff").Content,
+		&rep.Section("Message Type Diff").Content,
 		a.expected.String(),
 		a.best.Type.ReflectType().String(),
 	)
@@ -138,10 +146,10 @@ func (a *MessageTypeAssertion) buildDiff(res *Result) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available and it is of the expected role.
-func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *Result) {
-	s := res.Section(suggestionsSection)
+func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+	s := rep.Section(suggestionsSection)
 
-	res.Explanation = inflect(
+	rep.Explanation = inflect(
 		a.role,
 		"a <message> of a similar type was <produced> by the '%s' %s message handler",
 		a.best.Origin.HandlerName,
@@ -151,13 +159,13 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, res *R
 	// currently is or isn't a pointer, just questions if it should be.
 	s.AppendListItem("check the message type, should it be a pointer?")
 
-	a.buildDiff(res)
+	a.buildDiff(rep)
 }
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res *Result) {
-	s := res.Section(suggestionsSection)
+func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+	s := rep.Section(suggestionsSection)
 
 	s.AppendListItem(inflect(
 		a.best.Role,
@@ -173,14 +181,14 @@ func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res 
 	}
 
 	if a.sim == compare.SameTypes {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.best.Role,
 			"a message of this type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
 	} else {
-		res.Explanation = inflect(
+		rep.Explanation = inflect(
 			a.best.Role,
 			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -190,6 +198,6 @@ func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, res 
 		// currently is or isn't a pointer, just questions if it should be.
 		s.AppendListItem("check the message type, should it be a pointer?")
 
-		a.buildDiff(res)
+		a.buildDiff(rep)
 	}
 }
