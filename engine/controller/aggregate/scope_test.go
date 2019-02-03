@@ -105,7 +105,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceCreated{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -242,7 +242,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).NotTo(ContainElement(
+				Expect(buf.Facts()).NotTo(ContainElement(
 					BeAssignableToTypeOf(fact.AggregateInstanceCreated{}),
 				))
 			})
@@ -267,7 +267,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceDestroyed{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -301,7 +301,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.EventRecordedByAggregate{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -366,7 +366,7 @@ var _ = Describe("type scope", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(ContainElement(
+			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByAggregate{
 					HandlerName: "<name>",
 					Handler:     handler,

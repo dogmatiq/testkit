@@ -67,7 +67,7 @@ var _ = Describe("type Controller", func() {
 				time.Now(),
 			)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(BeEmpty())
+			Expect(buf.Facts()).To(BeEmpty())
 		})
 	})
 

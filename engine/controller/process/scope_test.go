@@ -112,7 +112,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceBegun{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -280,7 +280,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).NotTo(ContainElement(
+				Expect(buf.Facts()).NotTo(ContainElement(
 					BeAssignableToTypeOf(fact.ProcessInstanceBegun{}),
 				))
 			})
@@ -306,7 +306,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceEnded{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -345,7 +345,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.CommandExecutedByProcess{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -395,7 +395,7 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.TimeoutScheduledByProcess{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -465,7 +465,7 @@ var _ = Describe("type scope", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(ContainElement(
+			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByProcess{
 					HandlerName: "<name>",
 					Handler:     handler,

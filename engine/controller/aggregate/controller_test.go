@@ -87,7 +87,7 @@ var _ = Describe("type Controller", func() {
 				time.Now(),
 			)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(BeEmpty())
+			Expect(buf.Facts()).To(BeEmpty())
 		})
 	})
 
@@ -179,7 +179,7 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceNotFound{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -253,7 +253,7 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceLoaded{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -330,7 +330,7 @@ var _ = Describe("type Controller", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).NotTo(ContainElement(
+			Expect(buf.Facts()).NotTo(ContainElement(
 				BeAssignableToTypeOf(fact.AggregateInstanceLoaded{}),
 			))
 		})

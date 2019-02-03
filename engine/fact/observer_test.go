@@ -46,7 +46,7 @@ var _ = Describe("type Buffer", func() {
 			b.Notify(f1)
 			b.Notify(f2)
 
-			Expect(b.Facts).To(Equal([]Fact{
+			Expect(b.Facts()).To(Equal([]Fact{
 				f1,
 				f2,
 			}))

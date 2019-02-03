@@ -1,5 +1,7 @@
 package fact
 
+import "sync"
+
 // Observer is an interface that is notified when facts are recorded.
 type Observer interface {
 	// Notify the observer of a fact.
@@ -17,13 +19,30 @@ func (s ObserverGroup) Notify(f Fact) {
 }
 
 // Buffer is an Observer that buffers facts in-memory.
+//
+// It may be used by multiple goroutines simultaneously.
 type Buffer struct {
-	Facts []Fact
+	m     sync.RWMutex
+	facts []Fact
 }
 
 // Notify appends f to b.Facts.
 func (b *Buffer) Notify(f Fact) {
-	b.Facts = append(b.Facts, f)
+	b.m.Lock()
+	defer b.m.Unlock()
+
+	b.facts = append(b.facts, f)
+}
+
+// Facts returns the facts that have been buffered so far.
+func (b *Buffer) Facts() []Fact {
+	b.m.RLock()
+	defer b.m.RUnlock()
+
+	facts := make([]Fact, len(b.facts))
+	copy(facts, b.facts)
+
+	return b.facts
 }
 
 // Ignore is an observer that ignores fact notifications.

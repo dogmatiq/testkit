@@ -52,7 +52,7 @@ var _ = Describe("type scope", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(ContainElement(
+			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByProjection{
 					HandlerName: "<name>",
 					Handler:     handler,

@@ -59,7 +59,7 @@ var _ = Describe("type scope", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(ContainElement(
+			Expect(buf.Facts()).To(ContainElement(
 				fact.EventRecordedByIntegration{
 					HandlerName: "<name>",
 					Handler:     handler,
@@ -99,7 +99,7 @@ var _ = Describe("type scope", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).To(ContainElement(
+			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByIntegration{
 					HandlerName: "<name>",
 					Handler:     handler,

@@ -406,7 +406,7 @@ var _ = Describe("type Controller", func() {
 					)
 
 					Expect(err).ShouldNot(HaveOccurred())
-					Expect(buf.Facts).To(ContainElement(
+					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessEventIgnored{
 							HandlerName: "<name>",
 							Handler:     handler,
@@ -619,7 +619,7 @@ var _ = Describe("type Controller", func() {
 					)
 
 					Expect(err).ShouldNot(HaveOccurred())
-					Expect(buf.Facts).To(ContainElement(
+					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessTimeoutIgnored{
 							HandlerName: "<name>",
 							Handler:     handler,
@@ -682,7 +682,7 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceNotFound{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -741,7 +741,7 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts).To(ContainElement(
+				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceLoaded{
 						HandlerName: "<name>",
 						Handler:     handler,
@@ -803,7 +803,7 @@ var _ = Describe("type Controller", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts).NotTo(ContainElement(
+			Expect(buf.Facts()).NotTo(ContainElement(
 				BeAssignableToTypeOf(fact.ProcessInstanceLoaded{}),
 			))
 		})
