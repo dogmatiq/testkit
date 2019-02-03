@@ -2,6 +2,7 @@ package aggregate
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -17,7 +18,15 @@ type Controller struct {
 	name       string
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
-	instances  map[string]dogma.AggregateRoot
+
+	m       sync.Mutex
+	records map[string]*record
+}
+
+type record struct {
+	m      sync.Mutex
+	root   dogma.AggregateRoot
+	active bool
 }
 
 // NewController returns a new controller for the given handler.
@@ -69,14 +78,15 @@ func (c *Controller) Handle(
 		})
 	}
 
-	r, exists := c.instances[id]
+	r, exists := c.lock(id)
+	defer r.m.Unlock()
 
 	if exists {
 		obs.Notify(fact.AggregateInstanceLoaded{
 			HandlerName: c.name,
 			Handler:     c.handler,
 			InstanceID:  id,
-			Root:        r,
+			Root:        r.root,
 			Envelope:    env,
 		})
 	} else {
@@ -86,15 +96,6 @@ func (c *Controller) Handle(
 			InstanceID:  id,
 			Envelope:    env,
 		})
-
-		r = c.handler.New()
-
-		if r == nil {
-			panic(handler.NilRootError{
-				HandlerName: c.name,
-				HandlerType: c.Type(),
-			})
-		}
 	}
 
 	s := &scope{
@@ -103,7 +104,7 @@ func (c *Controller) Handle(
 		handler:    c.handler,
 		messageIDs: c.messageIDs,
 		observer:   obs,
-		root:       r,
+		root:       r.root,
 		exists:     exists,
 		command:    env,
 	}
@@ -118,13 +119,11 @@ func (c *Controller) Handle(
 		})
 	}
 
-	if s.exists {
-		if c.instances == nil {
-			c.instances = map[string]dogma.AggregateRoot{}
-		}
-		c.instances[id] = s.root
-	} else {
-		delete(c.instances, id)
+	if !s.exists {
+		c.m.Lock()
+		defer c.m.Unlock()
+		r.active = false
+		delete(c.records, id)
 	}
 
 	return s.events, nil
@@ -132,5 +131,67 @@ func (c *Controller) Handle(
 
 // Reset clears the state of the controller.
 func (c *Controller) Reset() {
-	c.instances = nil
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	for id, r := range c.records {
+		r.m.Lock()
+		r.active = false
+		delete(c.records, id)
+		r.m.Unlock()
+	}
+}
+
+// lock the record for a specific instance, creating it if it does not exist.
+func (c *Controller) lock(id string) (*record, bool) {
+	for {
+		// lock the controller to manipulate c.records
+		c.m.Lock()
+		r, exists := c.records[id]
+
+		if exists {
+			c.m.Unlock() // release the controller lock
+			r.m.Lock()   // while waiting for the individual record lock
+
+			if r.active {
+				// if this record is still "active", that means that c.records[id] == rec,
+				// and we can use it.
+				return r, true
+			}
+
+			// otherwise, the instance has probably been destroyed (and perhaps
+			// re-created), so we just retry from the start.
+			r.m.Unlock()
+			continue
+		}
+
+		// create a new root and record
+		r = &record{
+			root:   c.handler.New(),
+			active: true,
+		}
+
+		if r.root == nil {
+			c.m.Unlock()
+
+			panic(handler.NilRootError{
+				HandlerName: c.name,
+				HandlerType: c.Type(),
+			})
+		}
+
+		// acquire the record lock before we make it visible to other goroutines
+		r.m.Lock()
+
+		if c.records == nil {
+			c.records = map[string]*record{}
+		}
+
+		c.records[id] = r
+
+		// finally, release the controller lock
+		c.m.Unlock()
+
+		return r, false
+	}
 }
