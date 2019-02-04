@@ -1,9 +1,9 @@
 package assert
 
 import (
-	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // tracker is an observer used by assertions that keeps track of common

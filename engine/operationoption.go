@@ -5,7 +5,7 @@ import (
 
 	"github.com/dogmatiq/enginekit/handler"
 
-	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // OperationOption applies optional settings while dispatching a message or

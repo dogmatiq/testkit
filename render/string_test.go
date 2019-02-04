@@ -3,8 +3,8 @@ package render_test
 import (
 	"strings"
 
-	. "github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

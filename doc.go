@@ -1,3 +1,3 @@
-// Package dogmatest contains blackbox testing utilities for testing Dogma
+// Package testkit contains blackbox testing utilities for testing Dogma
 // applications.
-package dogmatest
+package testkit

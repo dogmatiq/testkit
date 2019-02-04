@@ -4,11 +4,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-	. "github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/enginekit/fixtures"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/envelope"
+	. "github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

@@ -1,4 +1,4 @@
-package dogmatest
+package testkit
 
 // T is the interface via which the test framework consumes Go's
 // *testing.T value.

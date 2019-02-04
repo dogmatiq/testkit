@@ -3,9 +3,9 @@ package render_test
 import (
 	"io"
 
-	. "github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
+	. "github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -1,4 +1,4 @@
-module github.com/dogmatiq/dogmatest
+module github.com/dogmatiq/testkit
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

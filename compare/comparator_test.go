@@ -1,8 +1,8 @@
 package compare_test
 
 import (
-	. "github.com/dogmatiq/dogmatest/compare"
 	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/testkit/compare"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

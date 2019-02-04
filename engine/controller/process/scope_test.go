@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogmatest/engine/controller/process"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/testkit/engine/controller/process"
+	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

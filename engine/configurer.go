@@ -3,13 +3,13 @@ package engine
 import (
 	"context"
 
-	"github.com/dogmatiq/dogmatest/engine/controller"
-	"github.com/dogmatiq/dogmatest/engine/controller/aggregate"
-	"github.com/dogmatiq/dogmatest/engine/controller/integration"
-	"github.com/dogmatiq/dogmatest/engine/controller/process"
-	"github.com/dogmatiq/dogmatest/engine/controller/projection"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
+	"github.com/dogmatiq/testkit/engine/controller/aggregate"
+	"github.com/dogmatiq/testkit/engine/controller/integration"
+	"github.com/dogmatiq/testkit/engine/controller/process"
+	"github.com/dogmatiq/testkit/engine/controller/projection"
 )
 
 type configurer struct {

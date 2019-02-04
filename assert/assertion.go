@@ -1,9 +1,9 @@
 package assert
 
 import (
-	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/render"
 )
 
 // Assertion is a predicate that checks if some specific critiria was met during

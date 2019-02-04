@@ -5,11 +5,11 @@ import (
 	"reflect"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/render"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/render"
 )
 
 // MessageAssertion asserts that a specific message is produced.

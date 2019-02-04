@@ -1,7 +1,7 @@
-package dogmatest
+package testkit
 
 import (
-	"github.com/dogmatiq/dogmatest/engine"
+	"github.com/dogmatiq/testkit/engine"
 )
 
 // RunnerOption applies optional settings to a test runner.

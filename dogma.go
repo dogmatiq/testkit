@@ -1,4 +1,4 @@
-package dogmatest
+package testkit
 
 func log(t T, args ...interface{})            { t.Log(args...) }
 func logf(t T, f string, args ...interface{}) { t.Logf(f, args...) }

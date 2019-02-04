@@ -1,4 +1,4 @@
-package dogmatest
+package testkit
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"github.com/dogmatiq/iago"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/assert"
-	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine"
-	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/testkit/assert"
+	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/render"
 )
 
 // Test contains the state of a single test.

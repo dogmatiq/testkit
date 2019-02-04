@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/controller"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
-	"github.com/dogmatiq/dogmatest/engine/fact"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
+	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/engine/fact"
 	"go.uber.org/multierr"
 )
 

@@ -3,9 +3,9 @@ package assert
 import (
 	"fmt"
 
-	"github.com/dogmatiq/dogmatest/compare"
-	"github.com/dogmatiq/dogmatest/engine/fact"
-	"github.com/dogmatiq/dogmatest/render"
+	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/render"
 )
 
 // CompositeAssertion is an assertion that is a container for other assertions.

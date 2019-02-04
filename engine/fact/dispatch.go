@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/testkit/engine/envelope"
 )
 
 // DispatchCycleBegun indicates that Engine.Dispatch() has been called with a

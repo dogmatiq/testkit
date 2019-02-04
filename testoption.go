@@ -1,9 +1,9 @@
-package dogmatest
+package testkit
 
 import (
 	"testing"
 
-	"github.com/dogmatiq/dogmatest/engine"
+	"github.com/dogmatiq/testkit/engine"
 )
 
 // TestOption applies optional settings to a test.

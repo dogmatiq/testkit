@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 - Initial release
 
 <!-- references -->
-[Unreleased]: https://github.com/dogmatiq/dogmatest
+[Unreleased]: https://github.com/dogmatiq/testkit
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

@@ -3,10 +3,10 @@ package envelope_test
 import (
 	"time"
 
-	. "github.com/dogmatiq/dogmatest/engine/envelope"
 	"github.com/dogmatiq/enginekit/fixtures"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

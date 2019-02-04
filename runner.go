@@ -1,14 +1,14 @@
-package dogmatest
+package testkit
 
 import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/dogmatest/engine/fact"
+	"github.com/dogmatiq/testkit/engine/fact"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogmatest/engine"
 	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/testkit/engine"
 )
 
 // A Runner executes tests.
