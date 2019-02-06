@@ -129,7 +129,5 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 		must.WriteByte(w, '\n')
 	}
 
-	// TODO(jmalloc): replace with w.Count64()
-	// https://github.com/dogmatiq/iago/issues/1
-	return int64(w.Count()), nil
+	return w.Count64(), nil
 }
