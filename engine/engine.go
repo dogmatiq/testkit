@@ -22,10 +22,12 @@ type Engine struct {
 }
 
 // New returns a new engine that uses the given app configuration.
-func New(
-	cfg *config.ApplicationConfig,
-	options ...Option,
-) (*Engine, error) {
+func New(app dogma.Application, options ...Option) (*Engine, error) {
+	cfg, err := config.NewApplicationConfig(app)
+	if err != nil {
+		return nil, err
+	}
+
 	eo := newEngineOptions(options)
 
 	e := &Engine{

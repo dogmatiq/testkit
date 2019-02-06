@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/engine"
 )
 
@@ -24,12 +23,7 @@ func New(
 ) *Runner {
 	ro := newRunnerOptions(options)
 
-	cfg, err := config.NewApplicationConfig(app)
-	if err != nil {
-		panic(err)
-	}
-
-	e, err := engine.New(cfg, ro.engineOptions...)
+	e, err := engine.New(app, ro.engineOptions...)
 	if err != nil {
 		panic(err)
 	}
