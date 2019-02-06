@@ -52,10 +52,10 @@ func newTestOptions(options []TestOption, verbose *bool) *testOptions {
 	return ro
 }
 
-// WithOperationOption returns a TestOption that applies optional per-operation
+// WithOperationOptions returns a TestOption that applies optional per-operation
 // settings when performing assertions.
-func WithOperationOption(opt engine.OperationOption) TestOption {
+func WithOperationOptions(options ...engine.OperationOption) TestOption {
 	return func(ro *testOptions) {
-		ro.operationOptions = append(ro.operationOptions, opt)
+		ro.operationOptions = append(ro.operationOptions, options...)
 	}
 }
