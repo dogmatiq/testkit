@@ -5,9 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dogmatiq/iago"
-
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
@@ -198,7 +197,7 @@ func (t *Test) end(a assert.Assertion) {
 	buf.WriteString("--- ASSERTION REPORT ---\n\n")
 
 	rep := a.BuildReport(a.Ok(), r)
-	iago.MustWriteTo(buf, rep)
+	must.WriteTo(buf, rep)
 
 	log(t.t, buf.String())
 

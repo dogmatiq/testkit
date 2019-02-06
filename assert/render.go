@@ -6,18 +6,18 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/message"
-	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/count"
 	"github.com/dogmatiq/iago/indent"
+	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/render"
 )
 
 // writeIcon writes a pass or failure icon to w.
 func writeIcon(w io.Writer, pass bool) {
 	if pass {
-		iago.MustWriteString(w, "✓")
+		must.WriteString(w, "✓")
 	} else {
-		iago.MustWriteString(w, "✗")
+		must.WriteString(w, "✗")
 	}
 }
 
@@ -33,7 +33,7 @@ func byRole(r message.Role, command, event string) string {
 // renderDiff returns the diff of a and b.
 func renderDiff(a, b string) string {
 	var w strings.Builder
-	iago.Must(render.WriteDiff(&w, a, b))
+	must.Must(render.WriteDiff(&w, a, b))
 	return w.String()
 }
 
@@ -47,7 +47,7 @@ func renderMessageDiff(r render.Renderer, a, b dogma.Message) string {
 // renderMessage returns the representation of m, as per r.
 func renderMessage(r render.Renderer, m dogma.Message) string {
 	var w strings.Builder
-	iago.Must(r.WriteMessage(&w, m))
+	must.Must(r.WriteMessage(&w, m))
 	return w.String()
 }
 
@@ -66,21 +66,21 @@ func (r *report) suggest(h string) {
 }
 
 func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
-	defer iago.Recover(&err)
+	defer must.Recover(&err)
 
 	w := count.NewWriter(next)
 
 	writeIcon(w, r.Pass)
-	iago.MustWriteByte(w, ' ')
-	iago.MustWriteString(w, r.Title)
+	must.WriteByte(w, ' ')
+	must.WriteString(w, r.Title)
 
 	if r.SubTitle != "" {
-		iago.MustWriteString(w, " (")
-		iago.MustWriteString(w, r.SubTitle)
-		iago.MustWriteByte(w, ')')
+		must.WriteString(w, " (")
+		must.WriteString(w, r.SubTitle)
+		must.WriteByte(w, ')')
 	}
 
-	iago.MustWriteByte(w, '\n')
+	must.WriteByte(w, '\n')
 
 	indenter := indent.NewIndenter(w, []byte("  | "))
 	first := true
@@ -88,45 +88,45 @@ func (r *report) WriteTo(next io.Writer) (_ int64, err error) {
 	if r.Outcome != "" {
 		if first {
 			first = false
-			iago.MustWriteByte(w, '\n')
+			must.WriteByte(w, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Outcome:\n  ")
-		iago.MustWriteString(indenter, r.Outcome)
-		iago.MustWriteByte(indenter, '\n')
+		must.WriteString(indenter, "Outcome:\n  ")
+		must.WriteString(indenter, r.Outcome)
+		must.WriteByte(indenter, '\n')
 	}
 
 	if len(r.Suggestions) > 0 {
 		if first {
 			first = false
-			iago.MustWriteByte(w, '\n')
+			must.WriteByte(w, '\n')
 		} else {
-			iago.MustWriteByte(indenter, '\n')
+			must.WriteByte(indenter, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Suggestions:\n")
+		must.WriteString(indenter, "Suggestions:\n")
 		for _, s := range r.Suggestions {
-			iago.MustWriteString(indenter, "  - ")
-			iago.MustWriteString(indenter, s)
-			iago.MustWriteByte(indenter, '\n')
+			must.WriteString(indenter, "  - ")
+			must.WriteString(indenter, s)
+			must.WriteByte(indenter, '\n')
 		}
 	}
 
 	if r.Details != "" {
 		if first {
 			first = false
-			iago.MustWriteByte(w, '\n')
+			must.WriteByte(w, '\n')
 		} else {
-			iago.MustWriteByte(indenter, '\n')
+			must.WriteByte(indenter, '\n')
 		}
 
-		iago.MustWriteString(indenter, "Details:\n")
-		iago.MustWriteString(indenter, indent.String(r.Details, "  "))
-		iago.MustWriteByte(indenter, '\n')
+		must.WriteString(indenter, "Details:\n")
+		must.WriteString(indenter, indent.String(r.Details, "  "))
+		must.WriteByte(indenter, '\n')
 	}
 
 	if !first {
-		iago.MustWriteByte(w, '\n')
+		must.WriteByte(w, '\n')
 	}
 
 	// TODO(jmalloc): replace with w.Count64()

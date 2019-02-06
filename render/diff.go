@@ -4,13 +4,13 @@ import (
 	"io"
 	"strings"
 
-	"github.com/dogmatiq/iago"
+	"github.com/dogmatiq/iago/must"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 // WriteDiff renders a human-readable diff of two strings.
 func WriteDiff(w io.Writer, a, b string) (n int, err error) {
-	defer iago.Recover(&err)
+	defer must.Recover(&err)
 
 	d := diffmatchpatch.New()
 
@@ -19,15 +19,15 @@ func WriteDiff(w io.Writer, a, b string) (n int, err error) {
 
 		switch diff.Type {
 		case diffmatchpatch.DiffInsert:
-			n += iago.MustWriteString(w, "{+")
-			n += iago.MustWriteString(w, text)
-			n += iago.MustWriteString(w, "+}")
+			n += must.WriteString(w, "{+")
+			n += must.WriteString(w, text)
+			n += must.WriteString(w, "+}")
 		case diffmatchpatch.DiffDelete:
-			n += iago.MustWriteString(w, "[-")
-			n += iago.MustWriteString(w, text)
-			n += iago.MustWriteString(w, "-]")
+			n += must.WriteString(w, "[-")
+			n += must.WriteString(w, text)
+			n += must.WriteString(w, "-]")
 		case diffmatchpatch.DiffEqual:
-			n += iago.MustWriteString(w, text)
+			n += must.WriteString(w, text)
 		}
 	}
 
@@ -37,6 +37,6 @@ func WriteDiff(w io.Writer, a, b string) (n int, err error) {
 // Diff returns a human-readable diff of two strings.
 func Diff(a, b string) string {
 	var w strings.Builder
-	iago.Must(WriteDiff(&w, a, b))
+	must.Must(WriteDiff(&w, a, b))
 	return w.String()
 }

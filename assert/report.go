@@ -4,9 +4,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/count"
 	"github.com/dogmatiq/iago/indent"
+	"github.com/dogmatiq/iago/must"
 )
 
 // Report is a report on the outcome of an assertion.
@@ -59,48 +59,48 @@ func (r *Report) Append(sr *Report) {
 
 // WriteTo writes the report to the given writer.
 func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
-	defer iago.Recover(&err)
+	defer must.Recover(&err)
 	w := count.NewWriter(next)
 
 	writeIcon(w, r.Ok)
 
-	iago.MustWriteByte(w, ' ')
+	must.WriteByte(w, ' ')
 
-	iago.MustWriteString(w, r.Criteria)
+	must.WriteString(w, r.Criteria)
 
 	if r.Outcome != "" {
-		iago.MustWriteString(w, " (")
-		iago.MustWriteString(w, r.Outcome)
-		iago.MustWriteByte(w, ')')
+		must.WriteString(w, " (")
+		must.WriteString(w, r.Outcome)
+		must.WriteByte(w, ')')
 	}
 
-	iago.MustWriteByte(w, '\n')
+	must.WriteByte(w, '\n')
 
 	if len(r.Sections) != 0 || r.Explanation != "" {
-		iago.MustWriteByte(w, '\n')
+		must.WriteByte(w, '\n')
 
 		iw := indent.NewIndenter(w, sectionsIndent)
 
 		if r.Explanation != "" {
-			iago.MustWriteString(iw, "EXPLANATION\n")
+			must.WriteString(iw, "EXPLANATION\n")
 
-			iago.MustWriteString(
+			must.WriteString(
 				iw,
 				indent.String(r.Explanation, sectionContentIndent),
 			)
 
-			iago.MustWriteByte(iw, '\n')
+			must.WriteByte(iw, '\n')
 
 			if len(r.Sections) != 0 {
-				iago.MustWriteByte(iw, '\n')
+				must.WriteByte(iw, '\n')
 			}
 		}
 
 		for i, s := range r.Sections {
-			iago.MustWriteString(iw, strings.ToUpper(s.Title))
-			iago.MustWriteString(iw, "\n")
+			must.WriteString(iw, strings.ToUpper(s.Title))
+			must.WriteString(iw, "\n")
 
-			iago.MustWriteString(
+			must.WriteString(
 				iw,
 				indent.String(
 					strings.TrimSpace(s.Content.String()),
@@ -108,20 +108,20 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 				),
 			)
 
-			iago.MustWriteByte(iw, '\n')
+			must.WriteByte(iw, '\n')
 
 			if i < len(r.Sections)-1 {
-				iago.MustWriteByte(iw, '\n')
+				must.WriteByte(iw, '\n')
 			}
 		}
 
-		iago.MustWriteByte(w, '\n')
+		must.WriteByte(w, '\n')
 	}
 
 	if len(r.SubReports) != 0 {
 		iw := indent.NewIndenter(w, subReportsIndent)
 		for _, sr := range r.SubReports {
-			iago.MustWriteTo(iw, sr)
+			must.WriteTo(iw, sr)
 		}
 	}
 
@@ -137,7 +137,7 @@ type ReportSection struct {
 
 // Append appends a line of text to the section's content.
 func (s *ReportSection) Append(f string, v ...interface{}) {
-	iago.MustFprintf(&s.Content, f+"\n", v...)
+	must.Fprintf(&s.Content, f+"\n", v...)
 }
 
 // AppendListItem appends a line of text prefixed with a bullet.

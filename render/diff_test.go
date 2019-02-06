@@ -3,8 +3,8 @@ package render_test
 import (
 	"io"
 
-	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
+	"github.com/dogmatiq/iago/must"
 	. "github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,7 +15,7 @@ var _ = Describe("func WriteDiff", func() {
 		iotest.TestWrite(
 			GinkgoT(),
 			func(w io.Writer) int {
-				return iago.Must(
+				return must.Must(
 					WriteDiff(
 						w,
 						"foo bar baz",

@@ -4,8 +4,8 @@ import (
 	"io"
 
 	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/iago"
 	"github.com/dogmatiq/iago/iotest"
+	"github.com/dogmatiq/iago/must"
 	. "github.com/onsi/ginkgo"
 )
 
@@ -17,7 +17,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteMessage(
 							w,
 							fixtures.MessageA1,
@@ -36,7 +36,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteAggregateRoot(
 							w,
 							&fixtures.AggregateRoot{Value: "<value>"},
@@ -56,7 +56,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteProcessRoot(
 							w,
 							&fixtures.ProcessRoot{Value: "<value>"},
@@ -75,7 +75,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteAggregateMessageHandler(
 							w,
 							&fixtures.AggregateMessageHandler{},
@@ -97,7 +97,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteProcessMessageHandler(
 							w,
 							&fixtures.ProcessMessageHandler{},
@@ -120,7 +120,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteIntegrationMessageHandler(
 							w,
 							&fixtures.IntegrationMessageHandler{},
@@ -140,7 +140,7 @@ var _ = Describe("type DefaultRenderer", func() {
 			iotest.TestWrite(
 				GinkgoT(),
 				func(w io.Writer) int {
-					return iago.Must(
+					return must.Must(
 						DefaultRenderer{}.WriteProjectionMessageHandler(
 							w,
 							&fixtures.ProjectionMessageHandler{},
