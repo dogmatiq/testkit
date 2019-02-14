@@ -21,7 +21,7 @@ func (s *scope) Key() string {
 }
 
 func (s *scope) Time() time.Time {
-	return s.event.Time
+	return s.event.CreatedAt
 }
 
 func (s *scope) Log(f string, v ...interface{}) {

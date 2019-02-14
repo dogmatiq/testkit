@@ -60,7 +60,7 @@ var _ = Describe("type scope", func() {
 				_ dogma.Message,
 			) error {
 				Expect(s.Time()).To(
-					BeTemporally("==", event.Time),
+					BeTemporally("==", event.CreatedAt),
 				)
 				return nil
 			}

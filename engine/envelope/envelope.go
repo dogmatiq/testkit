@@ -20,8 +20,8 @@ type Envelope struct {
 	// Role is the message's role.
 	Role message.Role
 
-	// Time is the time at which the message was created.
-	Time time.Time
+	// CreatedAt is the time at which the message was created.
+	CreatedAt time.Time
 
 	// TimeoutTime holds the time at which a timeout message is scheduled to occur.
 	// It is nil unless Role is message.TimeoutRole.
@@ -53,7 +53,7 @@ func New(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
-		Time:        t,
+		CreatedAt:   t,
 	}
 }
 
@@ -108,7 +108,7 @@ func (e *Envelope) new(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
-		Time:        t,
+		CreatedAt:   t,
 		Origin:      &o,
 	}
 }
