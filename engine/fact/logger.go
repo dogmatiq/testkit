@@ -386,7 +386,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 		f.HandlerName+" "+f.InstanceID,
 		fmt.Sprintf(
 			"scheduled a timeout for %s",
-			f.TimeoutEnvelope.TimeoutTime.Format(time.RFC3339),
+			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
 		),
 		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
 		message.ToString(f.TimeoutEnvelope.Message),

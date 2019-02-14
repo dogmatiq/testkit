@@ -23,9 +23,9 @@ type Envelope struct {
 	// CreatedAt is the time at which the message was created.
 	CreatedAt time.Time
 
-	// TimeoutTime holds the time at which a timeout message is scheduled to occur.
-	// It is nil unless Role is message.TimeoutRole.
-	TimeoutTime *time.Time
+	// ScheduledFor holds the time at which a timeout message is scheduled to
+	// occur. Its value is undefined unless Role is message.TimeoutRole.
+	ScheduledFor time.Time
 
 	// Origin describes the message handler that produced this message.
 	// It is nil if the message was not produced by a handler.
@@ -121,7 +121,7 @@ func (e *Envelope) NewTimeout(
 	o Origin,
 ) *Envelope {
 	env := e.new(id, m, message.TimeoutRole, t, o)
-	env.TimeoutTime = &s
+	env.ScheduledFor = s
 	return env
 }
 

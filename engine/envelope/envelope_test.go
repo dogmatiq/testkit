@@ -149,12 +149,12 @@ var _ = Describe("type Envelope", func() {
 				InstanceID:  "<instance>",
 			}
 			now := time.Now()
-			t := time.Now()
+			s := time.Now()
 			child := parent.NewTimeout(
 				"200",
 				fixtures.MessageT1,
 				now,
-				t,
+				s,
 				origin,
 			)
 
@@ -165,12 +165,12 @@ var _ = Describe("type Envelope", func() {
 						CorrelationID: "100",
 						CausationID:   "100",
 					},
-					Message:     fixtures.MessageT1,
-					Type:        fixtures.MessageTType,
-					Role:        message.TimeoutRole,
-					CreatedAt:   now,
-					TimeoutTime: &t,
-					Origin:      &origin,
+					Message:      fixtures.MessageT1,
+					Type:         fixtures.MessageTType,
+					Role:         message.TimeoutRole,
+					CreatedAt:    now,
+					ScheduledFor: s,
+					Origin:       &origin,
 				},
 			))
 		})

@@ -55,7 +55,7 @@ func (c *Controller) Tick(
 
 	// find the index of the first timeout that is AFTER now
 	for _, env := range c.timeouts {
-		if env.TimeoutTime.After(now) {
+		if env.ScheduledFor.After(now) {
 			break
 		}
 
@@ -228,8 +228,8 @@ func (c *Controller) update(s *scope) {
 	sort.Slice(
 		c.timeouts,
 		func(i, j int) bool {
-			ti := *c.timeouts[i].TimeoutTime
-			tj := *c.timeouts[j].TimeoutTime
+			ti := c.timeouts[i].ScheduledFor
+			tj := c.timeouts[j].ScheduledFor
 			return ti.Before(tj)
 		},
 	)
