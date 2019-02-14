@@ -28,6 +28,7 @@ var _ = Describe("type scope", func() {
 			"1000",
 			fixtures.MessageA1,
 			message.CommandRole,
+			time.Now(),
 		)
 
 		handler = &fixtures.IntegrationMessageHandler{}
@@ -51,10 +52,11 @@ var _ = Describe("type scope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
+			now := time.Now()
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
-				time.Now(),
+				now,
 				command,
 			)
 
@@ -67,6 +69,7 @@ var _ = Describe("type scope", func() {
 					EventEnvelope: command.NewEvent(
 						"1",
 						fixtures.MessageB1,
+						now,
 						envelope.Origin{
 							HandlerName: "<name>",
 							HandlerType: handlerkit.IntegrationType,

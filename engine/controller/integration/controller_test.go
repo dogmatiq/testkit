@@ -33,6 +33,7 @@ var _ = Describe("type Controller", func() {
 			"1000",
 			fixtures.MessageA1,
 			message.CommandRole,
+			time.Now(),
 		)
 
 		handler = &fixtures.IntegrationMessageHandler{}
@@ -112,10 +113,11 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
+			now := time.Now()
 			events, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				time.Now(),
+				now,
 				command,
 			)
 
@@ -124,6 +126,7 @@ var _ = Describe("type Controller", func() {
 				command.NewEvent(
 					"1",
 					fixtures.MessageB1,
+					now,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.IntegrationType,
@@ -132,6 +135,7 @@ var _ = Describe("type Controller", func() {
 				command.NewEvent(
 					"2",
 					fixtures.MessageB2,
+					now,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.IntegrationType,

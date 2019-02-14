@@ -1,6 +1,8 @@
 package integration
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -14,6 +16,7 @@ type scope struct {
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
+	now        time.Time
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }
@@ -22,6 +25,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	env := s.command.NewEvent(
 		s.messageIDs.Next(),
 		m,
+		s.now,
 		envelope.Origin{
 			HandlerName: s.name,
 			HandlerType: handler.IntegrationType,
