@@ -1,6 +1,8 @@
 package aggregate
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -15,6 +17,7 @@ type scope struct {
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	root       dogma.AggregateRoot
+	now        time.Time
 	exists     bool
 	created    bool // true if Create() returned true at least once
 	destroyed  bool // true if Destroy() returned true at least once
@@ -80,6 +83,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	env := s.command.NewEvent(
 		s.messageIDs.Next(),
 		m,
+		s.now,
 		envelope.Origin{
 			HandlerName: s.name,
 			HandlerType: handler.AggregateType,
