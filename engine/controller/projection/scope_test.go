@@ -6,7 +6,6 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -18,10 +17,9 @@ var _ = Describe("type scope", func() {
 	var (
 		handler    *fixtures.ProjectionMessageHandler
 		controller *Controller
-		event      = envelope.New(
+		event      = envelope.NewEvent(
 			"1000",
 			fixtures.MessageA1,
-			message.EventRole,
 			time.Now(),
 		)
 	)

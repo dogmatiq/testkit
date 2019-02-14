@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -24,10 +23,9 @@ var _ = Describe("type scope", func() {
 	)
 
 	BeforeEach(func() {
-		event = envelope.New(
+		event = envelope.NewEvent(
 			"1000",
 			fixtures.MessageA1,
-			message.EventRole,
 			time.Now(),
 		)
 
@@ -207,10 +205,9 @@ var _ = Describe("type scope", func() {
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				envelope.New(
+				envelope.NewEvent(
 					"2000",
 					fixtures.MessageA2, // use a different message to create the instance
-					message.EventRole,
 					time.Now(),
 				),
 			)

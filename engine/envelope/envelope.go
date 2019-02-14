@@ -32,8 +32,33 @@ type Envelope struct {
 	Origin *Origin
 }
 
-// New constructs a new envelope containing the given message.
-func New(
+// NewCommand constructs a new envelope containing the given command message.
+//
+// t is the time at which the message was created.
+func NewCommand(
+	id string,
+	m dogma.Message,
+	t time.Time,
+) *Envelope {
+	return new(id, m, message.CommandRole, t)
+}
+
+// NewEvent constructs a new envelope containing the given event message.
+//
+// t is the time at which the message was created.
+func NewEvent(
+	id string,
+	m dogma.Message,
+	t time.Time,
+) *Envelope {
+	return new(id, m, message.EventRole, t)
+}
+
+// new constructs a new envelope containing the given message.
+//
+// It panics if r is message.TimeoutRole, as a timeout can not occur except as a
+// result of some other message.
+func new(
 	id string,
 	m dogma.Message,
 	r message.Role,
@@ -57,8 +82,10 @@ func New(
 	}
 }
 
-// NewCommand constructs a new command envelope as a child of e, indicating that
-// m is caused by e.Message.
+// NewCommand constructs a new envelope as a child of e, indicating that
+// the command message m is caused by e.Message.
+//
+// t is the time at which the message was created.
 func (e *Envelope) NewCommand(
 	id string,
 	m dogma.Message,
@@ -68,8 +95,10 @@ func (e *Envelope) NewCommand(
 	return e.new(id, m, message.CommandRole, t, o)
 }
 
-// NewEvent constructs a new event envelope as a child of e, indicating that
-// m is caused by e.Message.
+// NewEvent constructs a new envelope as a child of e, indicating that
+// the event message m is caused by e.Message.
+//
+// t is the time at which the message was created.
 func (e *Envelope) NewEvent(
 	id string,
 	m dogma.Message,
@@ -79,8 +108,11 @@ func (e *Envelope) NewEvent(
 	return e.new(id, m, message.EventRole, t, o)
 }
 
-// NewTimeout constructs a new event envelope as a child of e, indicating that
-// m is caused by e.Message.
+// NewTimeout constructs a new envelope as a child of e, indicating that
+// the timeout message m is caused by e.Message.
+//
+// t is the time at which the message was created.
+// s is the time at which the timeout is scheduled to occur.
 func (e *Envelope) NewTimeout(
 	id string,
 	m dogma.Message,
@@ -93,6 +125,7 @@ func (e *Envelope) NewTimeout(
 	return env
 }
 
+// new constructs a new envelope as a child of e.
 func (e *Envelope) new(
 	id string,
 	m dogma.Message,

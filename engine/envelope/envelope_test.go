@@ -12,13 +12,12 @@ import (
 )
 
 var _ = Describe("type Envelope", func() {
-	Describe("func New", func() {
+	Describe("func NewCommand", func() {
 		It("returns the expected envelope", func() {
 			now := time.Now()
-			env := New(
+			env := NewCommand(
 				"100",
 				fixtures.MessageC1,
-				message.CommandRole,
 				now,
 			)
 
@@ -36,25 +35,38 @@ var _ = Describe("type Envelope", func() {
 				},
 			))
 		})
+	})
 
-		It("panics if called with the timeout role", func() {
-			Expect(func() {
-				New(
-					"100",
-					fixtures.MessageA1,
-					message.TimeoutRole,
-					time.Now(),
-				)
-			}).To(Panic())
+	Describe("func NewEvent", func() {
+		It("returns the expected envelope", func() {
+			now := time.Now()
+			env := NewEvent(
+				"100",
+				fixtures.MessageE1,
+				now,
+			)
+
+			Expect(env).To(Equal(
+				&Envelope{
+					Correlation: message.Correlation{
+						MessageID:     "100",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message:   fixtures.MessageE1,
+					Type:      fixtures.MessageEType,
+					Role:      message.EventRole,
+					CreatedAt: now,
+				},
+			))
 		})
 	})
 
 	Describe("func NewCommand", func() {
 		It("returns the expected envelope", func() {
-			parent := New(
+			parent := NewEvent(
 				"100",
 				fixtures.MessageP1,
-				message.EventRole,
 				time.Now(),
 			)
 			origin := Origin{
@@ -89,10 +101,9 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewEvent", func() {
 		It("returns the expected envelope", func() {
-			parent := New(
+			parent := NewCommand(
 				"100",
 				fixtures.MessageP1,
-				message.CommandRole,
 				time.Now(),
 			)
 			origin := Origin{
@@ -127,10 +138,9 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewTimeout", func() {
 		It("returns the expected envelope", func() {
-			parent := New(
+			parent := NewCommand(
 				"100",
 				fixtures.MessageP1,
-				message.CommandRole,
 				time.Now(),
 			)
 			origin := Origin{

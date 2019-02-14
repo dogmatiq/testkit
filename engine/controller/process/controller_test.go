@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -30,10 +29,9 @@ var _ = Describe("type Controller", func() {
 	)
 
 	BeforeEach(func() {
-		event = envelope.New(
+		event = envelope.NewEvent(
 			"1000",
 			fixtures.MessageE1,
-			message.EventRole,
 			time.Now(),
 		)
 
@@ -182,10 +180,9 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("does not return timeouts for instances that have been deleted", func() {
-			secondInstanceEvent := envelope.New(
+			secondInstanceEvent := envelope.NewEvent(
 				"3000",
 				fixtures.MessageE2, // different message value = different instance
-				message.EventRole,
 				time.Now(),
 			)
 

@@ -159,7 +159,16 @@ func (e *Engine) Dispatch(
 		return nil
 	}
 
-	env := envelope.New(e.messageIDs.Next(), m, r, oo.now)
+	r.MustBe(message.CommandRole, message.EventRole)
+
+	var env *envelope.Envelope
+	id := e.messageIDs.Next()
+
+	if r == message.CommandRole {
+		env = envelope.NewCommand(id, m, oo.now)
+	} else {
+		env = envelope.NewEvent(id, m, oo.now)
+	}
 
 	oo.observers.Notify(
 		fact.DispatchCycleBegun{
