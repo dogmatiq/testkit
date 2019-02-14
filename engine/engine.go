@@ -159,7 +159,7 @@ func (e *Engine) Dispatch(
 		return nil
 	}
 
-	env := envelope.New(e.messageIDs.Next(), m, r)
+	env := envelope.New(e.messageIDs.Next(), m, r, oo.now)
 
 	oo.observers.Notify(
 		fact.DispatchCycleBegun{
