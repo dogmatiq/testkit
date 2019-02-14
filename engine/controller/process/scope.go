@@ -81,6 +81,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	env := s.env.NewCommand(
 		s.messageIDs.Next(),
 		m,
+		s.now,
 		envelope.Origin{
 			HandlerName: s.name,
 			HandlerType: handler.ProcessType,
@@ -108,6 +109,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	env := s.env.NewTimeout(
 		s.messageIDs.Next(),
 		m,
+		s.now,
 		t,
 		envelope.Origin{
 			HandlerName: s.name,

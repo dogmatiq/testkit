@@ -28,6 +28,7 @@ var _ = Describe("type scope", func() {
 			"1000",
 			fixtures.MessageA1,
 			message.EventRole,
+			time.Now(),
 		)
 
 		handler = &fixtures.ProcessMessageHandler{
@@ -210,6 +211,7 @@ var _ = Describe("type scope", func() {
 					"2000",
 					fixtures.MessageA2, // use a different message to create the instance
 					message.EventRole,
+					time.Now(),
 				),
 			)
 
@@ -337,10 +339,11 @@ var _ = Describe("type scope", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
+				now := time.Now()
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
-					time.Now(),
+					now,
 					event,
 				)
 
@@ -355,6 +358,7 @@ var _ = Describe("type scope", func() {
 						CommandEnvelope: event.NewCommand(
 							"1",
 							fixtures.MessageB1,
+							now,
 							envelope.Origin{
 								HandlerName: "<name>",
 								HandlerType: handlerkit.ProcessType,
@@ -387,10 +391,11 @@ var _ = Describe("type scope", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
+				now := time.Now()
 				_, err := controller.Handle(
 					context.Background(),
 					buf,
-					time.Now(),
+					now,
 					event,
 				)
 
@@ -405,6 +410,7 @@ var _ = Describe("type scope", func() {
 						TimeoutEnvelope: event.NewTimeout(
 							"1",
 							fixtures.MessageB1,
+							now,
 							t,
 							envelope.Origin{
 								HandlerName: "<name>",

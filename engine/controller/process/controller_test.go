@@ -23,7 +23,6 @@ var _ controller.Controller = &Controller{}
 var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		now        = time.Now()
 		handler    *fixtures.ProcessMessageHandler
 		controller *Controller
 		event      *envelope.Envelope
@@ -35,12 +34,14 @@ var _ = Describe("type Controller", func() {
 			"1000",
 			fixtures.MessageE1,
 			message.EventRole,
+			time.Now(),
 		)
 
 		timeout = event.NewTimeout(
 			"2000",
 			fixtures.MessageT1,
-			now,
+			time.Now(),
+			time.Now(),
 			envelope.Origin{
 				HandlerName: "<name>",
 				HandlerType: handlerkit.ProcessType,
@@ -86,7 +87,20 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Tick()", func() {
+		var (
+			createdTime time.Time
+			t1Time      time.Time
+			t2Time      time.Time
+			t3Time      time.Time
+		)
+
 		BeforeEach(func() {
+			createdTime = time.Now()
+
+			t1Time = createdTime.Add(1 * time.Hour)
+			t2Time = createdTime.Add(2 * time.Hour)
+			t3Time = createdTime.Add(3 * time.Hour)
+
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				s dogma.ProcessEventScope,
@@ -95,9 +109,9 @@ var _ = Describe("type Controller", func() {
 				s.Begin()
 
 				// note, calls to ScheduleTimeout are NOT in chronological order
-				s.ScheduleTimeout(fixtures.MessageT3, now.Add(3*time.Hour))
-				s.ScheduleTimeout(fixtures.MessageT2, now.Add(2*time.Hour))
-				s.ScheduleTimeout(fixtures.MessageT1, now.Add(1*time.Hour))
+				s.ScheduleTimeout(fixtures.MessageT3, t3Time)
+				s.ScheduleTimeout(fixtures.MessageT2, t2Time)
+				s.ScheduleTimeout(fixtures.MessageT1, t1Time)
 
 				return nil
 			}
@@ -105,7 +119,7 @@ var _ = Describe("type Controller", func() {
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				now,
+				createdTime,
 				event,
 			)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -117,7 +131,7 @@ var _ = Describe("type Controller", func() {
 			timeouts, err := controller.Tick(
 				context.Background(),
 				fact.Ignore,
-				now.Add(2*time.Hour),
+				t2Time, // advance time
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -125,7 +139,8 @@ var _ = Describe("type Controller", func() {
 				event.NewTimeout(
 					"3",
 					fixtures.MessageT1,
-					now.Add(1*time.Hour),
+					createdTime,
+					t1Time,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.ProcessType,
@@ -135,7 +150,8 @@ var _ = Describe("type Controller", func() {
 				event.NewTimeout(
 					"2",
 					fixtures.MessageT2,
-					now.Add(2*time.Hour),
+					createdTime,
+					t2Time,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.ProcessType,
@@ -146,12 +162,10 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("does not return the same timeouts multiple times", func() {
-			t := now.Add(2 * time.Hour)
-
 			timeouts, err := controller.Tick(
 				context.Background(),
 				fact.Ignore,
-				t,
+				t2Time, // advance time
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -160,7 +174,7 @@ var _ = Describe("type Controller", func() {
 			timeouts, err = controller.Tick(
 				context.Background(),
 				fact.Ignore,
-				t,
+				t2Time, // advance time
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -172,12 +186,13 @@ var _ = Describe("type Controller", func() {
 				"3000",
 				fixtures.MessageE2, // different message value = different instance
 				message.EventRole,
+				time.Now(),
 			)
 
 			_, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				now,
+				createdTime,
 				secondInstanceEvent,
 			)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -195,7 +210,7 @@ var _ = Describe("type Controller", func() {
 			_, err = controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				now,
+				time.Now(),
 				event,
 			)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -204,7 +219,7 @@ var _ = Describe("type Controller", func() {
 			timeouts, err := controller.Tick(
 				context.Background(),
 				fact.Ignore,
-				now.Add(2*time.Hour),
+				t2Time,
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -212,7 +227,8 @@ var _ = Describe("type Controller", func() {
 				secondInstanceEvent.NewTimeout(
 					"3",
 					fixtures.MessageT1,
-					now.Add(1*time.Hour),
+					createdTime,
+					t1Time,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.ProcessType,
@@ -222,7 +238,8 @@ var _ = Describe("type Controller", func() {
 				secondInstanceEvent.NewTimeout(
 					"2",
 					fixtures.MessageT2,
-					now.Add(2*time.Hour),
+					createdTime,
+					t2Time,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.ProcessType,
@@ -250,7 +267,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					now,
+					time.Now(),
 					event,
 				)
 
@@ -272,7 +289,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					now,
+					time.Now(),
 					event,
 				)
 
@@ -280,6 +297,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("returns both commands and timeouts", func() {
+				now := time.Now()
+
 				handler.HandleEventFunc = func(
 					_ context.Context,
 					s dogma.ProcessEventScope,
@@ -303,6 +322,7 @@ var _ = Describe("type Controller", func() {
 					event.NewCommand(
 						"1",
 						fixtures.MessageC1,
+						now,
 						envelope.Origin{
 							HandlerName: "<name>",
 							HandlerType: handlerkit.ProcessType,
@@ -312,6 +332,7 @@ var _ = Describe("type Controller", func() {
 					event.NewTimeout(
 						"2",
 						fixtures.MessageT1,
+						now,
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -323,6 +344,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("returns timeouts scheduled in the past", func() {
+				now := time.Now()
+
 				handler.HandleEventFunc = func(
 					_ context.Context,
 					s dogma.ProcessEventScope,
@@ -345,6 +368,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("does not return timeouts scheduled in the future", func() {
+				now := time.Now()
+
 				handler.HandleEventFunc = func(
 					_ context.Context,
 					s dogma.ProcessEventScope,
@@ -389,7 +414,7 @@ var _ = Describe("type Controller", func() {
 					_, err := controller.Handle(
 						context.Background(),
 						fact.Ignore,
-						now,
+						time.Now(),
 						event,
 					)
 
@@ -401,7 +426,7 @@ var _ = Describe("type Controller", func() {
 					_, err := controller.Handle(
 						context.Background(),
 						buf,
-						now,
+						time.Now(),
 						event,
 					)
 
@@ -431,7 +456,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					now,
+					time.Now(),
 					event,
 				)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -454,7 +479,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					now,
+					time.Now(),
 					timeout,
 				)
 
@@ -476,7 +501,7 @@ var _ = Describe("type Controller", func() {
 				_, err := controller.Handle(
 					context.Background(),
 					fact.Ignore,
-					now,
+					time.Now(),
 					timeout,
 				)
 
@@ -484,6 +509,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("returns both commands and timeouts", func() {
+				now := time.Now()
+
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
 					s dogma.ProcessTimeoutScope,
@@ -506,6 +533,7 @@ var _ = Describe("type Controller", func() {
 					timeout.NewCommand(
 						"1",
 						fixtures.MessageC1,
+						now,
 						envelope.Origin{
 							HandlerName: "<name>",
 							HandlerType: handlerkit.ProcessType,
@@ -515,6 +543,7 @@ var _ = Describe("type Controller", func() {
 					timeout.NewTimeout(
 						"2",
 						fixtures.MessageT1,
+						now,
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -526,6 +555,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("returns timeouts scheduled in the past", func() {
+				now := time.Now()
+
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
 					s dogma.ProcessTimeoutScope,
@@ -547,6 +578,8 @@ var _ = Describe("type Controller", func() {
 			})
 
 			It("does not return timeouts scheduled in the future", func() {
+				now := time.Now()
+
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
 					s dogma.ProcessTimeoutScope,
@@ -581,7 +614,7 @@ var _ = Describe("type Controller", func() {
 					_, err := controller.Handle(
 						context.Background(),
 						fact.Ignore,
-						now,
+						time.Now(),
 						event,
 					)
 					Expect(err).ShouldNot(HaveOccurred())
@@ -602,7 +635,7 @@ var _ = Describe("type Controller", func() {
 					_, err := controller.Handle(
 						context.Background(),
 						fact.Ignore,
-						now,
+						time.Now(),
 						timeout,
 					)
 
@@ -614,7 +647,7 @@ var _ = Describe("type Controller", func() {
 					_, err := controller.Handle(
 						context.Background(),
 						buf,
-						now,
+						time.Now(),
 						timeout,
 					)
 
