@@ -28,6 +28,7 @@ var _ = Describe("type Controller", func() {
 			"1000",
 			fixtures.MessageA1,
 			message.EventRole,
+			time.Now(),
 		)
 	)
 

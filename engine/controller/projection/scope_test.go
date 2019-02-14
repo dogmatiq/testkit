@@ -22,12 +22,57 @@ var _ = Describe("type scope", func() {
 			"1000",
 			fixtures.MessageA1,
 			message.EventRole,
+			time.Now(),
 		)
 	)
 
 	BeforeEach(func() {
 		handler = &fixtures.ProjectionMessageHandler{}
 		controller = NewController("<name>", handler)
+	})
+
+	Describe("func Key", func() {
+		It("returns the message ID", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) error {
+				Expect(s.Key()).To(Equal("1000"))
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Describe("func Time", func() {
+		It("returns event creation time", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) error {
+				Expect(s.Time()).To(
+					BeTemporally("==", event.Time),
+				)
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
 	})
 
 	Describe("func Log", func() {

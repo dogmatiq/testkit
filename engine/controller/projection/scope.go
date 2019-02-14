@@ -1,6 +1,8 @@
 package projection
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -12,6 +14,14 @@ type scope struct {
 	handler  dogma.ProjectionMessageHandler
 	observer fact.Observer
 	event    *envelope.Envelope
+}
+
+func (s *scope) Key() string {
+	return s.event.MessageID
+}
+
+func (s *scope) Time() time.Time {
+	return s.event.Time
 }
 
 func (s *scope) Log(f string, v ...interface{}) {
