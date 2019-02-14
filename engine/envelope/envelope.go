@@ -20,6 +20,9 @@ type Envelope struct {
 	// Role is the message's role.
 	Role message.Role
 
+	// Time is the time at which the message was created.
+	Time time.Time
+
 	// TimeoutTime holds the time at which a timeout message is scheduled to occur.
 	// It is nil unless Role is message.TimeoutRole.
 	TimeoutTime *time.Time
@@ -34,6 +37,7 @@ func New(
 	id string,
 	m dogma.Message,
 	r message.Role,
+	t time.Time,
 ) *Envelope {
 	if id == "" {
 		panic("message ID must not be empty")
@@ -49,6 +53,7 @@ func New(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
+		Time:        t,
 	}
 }
 
@@ -57,9 +62,10 @@ func New(
 func (e *Envelope) NewCommand(
 	id string,
 	m dogma.Message,
+	t time.Time,
 	o Origin,
 ) *Envelope {
-	return e.new(id, m, message.CommandRole, o)
+	return e.new(id, m, message.CommandRole, t, o)
 }
 
 // NewEvent constructs a new event envelope as a child of e, indicating that
@@ -67,9 +73,10 @@ func (e *Envelope) NewCommand(
 func (e *Envelope) NewEvent(
 	id string,
 	m dogma.Message,
+	t time.Time,
 	o Origin,
 ) *Envelope {
-	return e.new(id, m, message.EventRole, o)
+	return e.new(id, m, message.EventRole, t, o)
 }
 
 // NewTimeout constructs a new event envelope as a child of e, indicating that
@@ -78,10 +85,11 @@ func (e *Envelope) NewTimeout(
 	id string,
 	m dogma.Message,
 	t time.Time,
+	s time.Time,
 	o Origin,
 ) *Envelope {
-	env := e.new(id, m, message.TimeoutRole, o)
-	env.TimeoutTime = &t
+	env := e.new(id, m, message.TimeoutRole, t, o)
+	env.TimeoutTime = &s
 	return env
 }
 
@@ -89,6 +97,7 @@ func (e *Envelope) new(
 	id string,
 	m dogma.Message,
 	r message.Role,
+	t time.Time,
 	o Origin,
 ) *Envelope {
 	c := e.Correlation.New(id)
@@ -99,6 +108,7 @@ func (e *Envelope) new(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
+		Time:        t,
 		Origin:      &o,
 	}
 }

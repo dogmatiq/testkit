@@ -14,7 +14,13 @@ import (
 var _ = Describe("type Envelope", func() {
 	Describe("func New", func() {
 		It("returns the expected envelope", func() {
-			env := New("100", fixtures.MessageC1, message.CommandRole)
+			now := time.Now()
+			env := New(
+				"100",
+				fixtures.MessageC1,
+				message.CommandRole,
+				now,
+			)
 
 			Expect(env).To(Equal(
 				&Envelope{
@@ -26,6 +32,7 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageC1,
 					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
+					Time:    now,
 				},
 			))
 		})
@@ -36,6 +43,7 @@ var _ = Describe("type Envelope", func() {
 					"100",
 					fixtures.MessageA1,
 					message.TimeoutRole,
+					time.Now(),
 				)
 			}).To(Panic())
 		})
@@ -47,15 +55,18 @@ var _ = Describe("type Envelope", func() {
 				"100",
 				fixtures.MessageP1,
 				message.EventRole,
+				time.Now(),
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
 				HandlerType: handler.ProcessType,
 				InstanceID:  "<instance>",
 			}
+			now := time.Now()
 			child := parent.NewCommand(
 				"200",
 				fixtures.MessageC1,
+				now,
 				origin,
 			)
 
@@ -69,6 +80,7 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageC1,
 					Type:    fixtures.MessageCType,
 					Role:    message.CommandRole,
+					Time:    now,
 					Origin:  &origin,
 				},
 			))
@@ -81,15 +93,18 @@ var _ = Describe("type Envelope", func() {
 				"100",
 				fixtures.MessageP1,
 				message.CommandRole,
+				time.Now(),
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
 				HandlerType: handler.AggregateType,
 				InstanceID:  "<instance>",
 			}
+			now := time.Now()
 			child := parent.NewEvent(
 				"200",
 				fixtures.MessageE1,
+				now,
 				origin,
 			)
 
@@ -103,6 +118,7 @@ var _ = Describe("type Envelope", func() {
 					Message: fixtures.MessageE1,
 					Type:    fixtures.MessageEType,
 					Role:    message.EventRole,
+					Time:    now,
 					Origin:  &origin,
 				},
 			))
@@ -111,20 +127,23 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewTimeout", func() {
 		It("returns the expected envelope", func() {
-			t := time.Now()
 			parent := New(
 				"100",
 				fixtures.MessageP1,
 				message.CommandRole,
+				time.Now(),
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
 				HandlerType: handler.ProcessType,
 				InstanceID:  "<instance>",
 			}
+			now := time.Now()
+			t := time.Now()
 			child := parent.NewTimeout(
 				"200",
 				fixtures.MessageT1,
+				now,
 				t,
 				origin,
 			)
@@ -139,6 +158,7 @@ var _ = Describe("type Envelope", func() {
 					Message:     fixtures.MessageT1,
 					Type:        fixtures.MessageTType,
 					Role:        message.TimeoutRole,
+					Time:        now,
 					TimeoutTime: &t,
 					Origin:      &origin,
 				},
