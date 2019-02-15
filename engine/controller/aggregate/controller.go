@@ -56,7 +56,7 @@ func (c *Controller) Tick(
 func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
-	_ time.Time,
+	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
@@ -103,6 +103,7 @@ func (c *Controller) Handle(
 		handler:    c.handler,
 		messageIDs: c.messageIDs,
 		observer:   obs,
+		now:        now,
 		root:       r,
 		exists:     exists,
 		command:    env,

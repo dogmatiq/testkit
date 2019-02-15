@@ -12,9 +12,14 @@ import (
 )
 
 var _ = Describe("type Envelope", func() {
-	Describe("func New", func() {
+	Describe("func NewCommand", func() {
 		It("returns the expected envelope", func() {
-			env := New("100", fixtures.MessageC1, message.CommandRole)
+			now := time.Now()
+			env := NewCommand(
+				"100",
+				fixtures.MessageC1,
+				now,
+			)
 
 			Expect(env).To(Equal(
 				&Envelope{
@@ -23,53 +28,10 @@ var _ = Describe("type Envelope", func() {
 						CorrelationID: "100",
 						CausationID:   "100",
 					},
-					Message: fixtures.MessageC1,
-					Type:    fixtures.MessageCType,
-					Role:    message.CommandRole,
-				},
-			))
-		})
-
-		It("panics if called with the timeout role", func() {
-			Expect(func() {
-				New(
-					"100",
-					fixtures.MessageA1,
-					message.TimeoutRole,
-				)
-			}).To(Panic())
-		})
-	})
-
-	Describe("func NewCommand", func() {
-		It("returns the expected envelope", func() {
-			parent := New(
-				"100",
-				fixtures.MessageP1,
-				message.EventRole,
-			)
-			origin := Origin{
-				HandlerName: "<handler>",
-				HandlerType: handler.ProcessType,
-				InstanceID:  "<instance>",
-			}
-			child := parent.NewCommand(
-				"200",
-				fixtures.MessageC1,
-				origin,
-			)
-
-			Expect(child).To(Equal(
-				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "200",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message: fixtures.MessageC1,
-					Type:    fixtures.MessageCType,
-					Role:    message.CommandRole,
-					Origin:  &origin,
+					Message:   fixtures.MessageC1,
+					Type:      fixtures.MessageCType,
+					Role:      message.CommandRole,
+					CreatedAt: now,
 				},
 			))
 		})
@@ -77,19 +39,46 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewEvent", func() {
 		It("returns the expected envelope", func() {
-			parent := New(
+			now := time.Now()
+			env := NewEvent(
+				"100",
+				fixtures.MessageE1,
+				now,
+			)
+
+			Expect(env).To(Equal(
+				&Envelope{
+					Correlation: message.Correlation{
+						MessageID:     "100",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message:   fixtures.MessageE1,
+					Type:      fixtures.MessageEType,
+					Role:      message.EventRole,
+					CreatedAt: now,
+				},
+			))
+		})
+	})
+
+	Describe("func NewCommand", func() {
+		It("returns the expected envelope", func() {
+			parent := NewEvent(
 				"100",
 				fixtures.MessageP1,
-				message.CommandRole,
+				time.Now(),
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
-				HandlerType: handler.AggregateType,
+				HandlerType: handler.ProcessType,
 				InstanceID:  "<instance>",
 			}
-			child := parent.NewEvent(
+			now := time.Now()
+			child := parent.NewCommand(
 				"200",
-				fixtures.MessageE1,
+				fixtures.MessageC1,
+				now,
 				origin,
 			)
 
@@ -100,10 +89,48 @@ var _ = Describe("type Envelope", func() {
 						CorrelationID: "100",
 						CausationID:   "100",
 					},
-					Message: fixtures.MessageE1,
-					Type:    fixtures.MessageEType,
-					Role:    message.EventRole,
-					Origin:  &origin,
+					Message:   fixtures.MessageC1,
+					Type:      fixtures.MessageCType,
+					Role:      message.CommandRole,
+					CreatedAt: now,
+					Origin:    &origin,
+				},
+			))
+		})
+	})
+
+	Describe("func NewEvent", func() {
+		It("returns the expected envelope", func() {
+			parent := NewCommand(
+				"100",
+				fixtures.MessageP1,
+				time.Now(),
+			)
+			origin := Origin{
+				HandlerName: "<handler>",
+				HandlerType: handler.AggregateType,
+				InstanceID:  "<instance>",
+			}
+			now := time.Now()
+			child := parent.NewEvent(
+				"200",
+				fixtures.MessageE1,
+				now,
+				origin,
+			)
+
+			Expect(child).To(Equal(
+				&Envelope{
+					Correlation: message.Correlation{
+						MessageID:     "200",
+						CorrelationID: "100",
+						CausationID:   "100",
+					},
+					Message:   fixtures.MessageE1,
+					Type:      fixtures.MessageEType,
+					Role:      message.EventRole,
+					CreatedAt: now,
+					Origin:    &origin,
 				},
 			))
 		})
@@ -111,21 +138,23 @@ var _ = Describe("type Envelope", func() {
 
 	Describe("func NewTimeout", func() {
 		It("returns the expected envelope", func() {
-			t := time.Now()
-			parent := New(
+			parent := NewCommand(
 				"100",
 				fixtures.MessageP1,
-				message.CommandRole,
+				time.Now(),
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
 				HandlerType: handler.ProcessType,
 				InstanceID:  "<instance>",
 			}
+			now := time.Now()
+			s := time.Now()
 			child := parent.NewTimeout(
 				"200",
 				fixtures.MessageT1,
-				t,
+				now,
+				s,
 				origin,
 			)
 
@@ -136,11 +165,12 @@ var _ = Describe("type Envelope", func() {
 						CorrelationID: "100",
 						CausationID:   "100",
 					},
-					Message:     fixtures.MessageT1,
-					Type:        fixtures.MessageTType,
-					Role:        message.TimeoutRole,
-					TimeoutTime: &t,
-					Origin:      &origin,
+					Message:      fixtures.MessageT1,
+					Type:         fixtures.MessageTType,
+					Role:         message.TimeoutRole,
+					CreatedAt:    now,
+					ScheduledFor: s,
+					Origin:       &origin,
 				},
 			))
 		})

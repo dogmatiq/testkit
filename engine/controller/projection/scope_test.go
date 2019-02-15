@@ -6,7 +6,6 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -18,16 +17,60 @@ var _ = Describe("type scope", func() {
 	var (
 		handler    *fixtures.ProjectionMessageHandler
 		controller *Controller
-		event      = envelope.New(
+		event      = envelope.NewEvent(
 			"1000",
 			fixtures.MessageA1,
-			message.EventRole,
+			time.Now(),
 		)
 	)
 
 	BeforeEach(func() {
 		handler = &fixtures.ProjectionMessageHandler{}
 		controller = NewController("<name>", handler)
+	})
+
+	Describe("func Key", func() {
+		It("returns the message ID", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) error {
+				Expect(s.Key()).To(Equal("1000"))
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Describe("func Time", func() {
+		It("returns event creation time", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) error {
+				Expect(s.Time()).To(
+					BeTemporally("==", event.CreatedAt),
+				)
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
 	})
 
 	Describe("func Log", func() {

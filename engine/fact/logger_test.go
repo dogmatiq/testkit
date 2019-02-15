@@ -6,7 +6,6 @@ import (
 
 	"github.com/dogmatiq/enginekit/fixtures"
 	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
@@ -21,16 +20,16 @@ var _ = Describe("type Logger", func() {
 			panic(err)
 		}
 
-		command := envelope.New(
+		command := envelope.NewCommand(
 			"100",
 			fixtures.MessageC1,
-			message.CommandRole,
+			time.Now(),
 		)
 
-		event := envelope.New(
+		event := envelope.NewEvent(
 			"100",
 			fixtures.MessageE1,
-			message.EventRole,
+			time.Now(),
 		)
 
 		DescribeTable(
@@ -243,6 +242,7 @@ var _ = Describe("type Logger", func() {
 					EventEnvelope: command.NewEvent(
 						"200",
 						fixtures.MessageE1,
+						time.Now(),
 						envelope.Origin{},
 					),
 				},
@@ -324,6 +324,7 @@ var _ = Describe("type Logger", func() {
 					CommandEnvelope: event.NewCommand(
 						"200",
 						fixtures.MessageC1,
+						time.Now(),
 						envelope.Origin{},
 					),
 				},
@@ -337,6 +338,7 @@ var _ = Describe("type Logger", func() {
 					TimeoutEnvelope: event.NewTimeout(
 						"200",
 						fixtures.MessageT1,
+						time.Now(),
 						now,
 						envelope.Origin{
 							HandlerName: "<handler>",
@@ -369,6 +371,7 @@ var _ = Describe("type Logger", func() {
 					EventEnvelope: command.NewEvent(
 						"200",
 						fixtures.MessageE1,
+						time.Now(),
 						envelope.Origin{},
 					),
 				},

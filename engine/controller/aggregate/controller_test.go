@@ -10,7 +10,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -29,10 +28,10 @@ var _ = Describe("type Controller", func() {
 	)
 
 	BeforeEach(func() {
-		command = envelope.New(
+		command = envelope.NewCommand(
 			"1000",
 			fixtures.MessageC1,
-			message.CommandRole,
+			time.Now(),
 		)
 
 		handler = &fixtures.AggregateMessageHandler{
@@ -123,10 +122,11 @@ var _ = Describe("type Controller", func() {
 				s.RecordEvent(fixtures.MessageE2)
 			}
 
+			now := time.Now()
 			events, err := controller.Handle(
 				context.Background(),
 				fact.Ignore,
-				time.Now(),
+				now,
 				command,
 			)
 
@@ -135,6 +135,7 @@ var _ = Describe("type Controller", func() {
 				command.NewEvent(
 					"1",
 					fixtures.MessageE1,
+					now,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.AggregateType,
@@ -144,6 +145,7 @@ var _ = Describe("type Controller", func() {
 				command.NewEvent(
 					"2",
 					fixtures.MessageE2,
+					now,
 					envelope.Origin{
 						HandlerName: "<name>",
 						HandlerType: handlerkit.AggregateType,

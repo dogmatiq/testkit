@@ -20,20 +20,49 @@ type Envelope struct {
 	// Role is the message's role.
 	Role message.Role
 
-	// TimeoutTime holds the time at which a timeout message is scheduled to occur.
-	// It is nil unless Role is message.TimeoutRole.
-	TimeoutTime *time.Time
+	// CreatedAt is the time at which the message was created.
+	CreatedAt time.Time
+
+	// ScheduledFor holds the time at which a timeout message is scheduled to
+	// occur. Its value is undefined unless Role is message.TimeoutRole.
+	ScheduledFor time.Time
 
 	// Origin describes the message handler that produced this message.
 	// It is nil if the message was not produced by a handler.
 	Origin *Origin
 }
 
-// New constructs a new envelope containing the given message.
-func New(
+// NewCommand constructs a new envelope containing the given command message.
+//
+// t is the time at which the message was created.
+func NewCommand(
+	id string,
+	m dogma.Message,
+	t time.Time,
+) *Envelope {
+	return new(id, m, message.CommandRole, t)
+}
+
+// NewEvent constructs a new envelope containing the given event message.
+//
+// t is the time at which the message was created.
+func NewEvent(
+	id string,
+	m dogma.Message,
+	t time.Time,
+) *Envelope {
+	return new(id, m, message.EventRole, t)
+}
+
+// new constructs a new envelope containing the given message.
+//
+// It panics if r is message.TimeoutRole, as a timeout can not occur except as a
+// result of some other message.
+func new(
 	id string,
 	m dogma.Message,
 	r message.Role,
+	t time.Time,
 ) *Envelope {
 	if id == "" {
 		panic("message ID must not be empty")
@@ -49,46 +78,59 @@ func New(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
+		CreatedAt:   t,
 	}
 }
 
-// NewCommand constructs a new command envelope as a child of e, indicating that
-// m is caused by e.Message.
+// NewCommand constructs a new envelope as a child of e, indicating that
+// the command message m is caused by e.Message.
+//
+// t is the time at which the message was created.
 func (e *Envelope) NewCommand(
-	id string,
-	m dogma.Message,
-	o Origin,
-) *Envelope {
-	return e.new(id, m, message.CommandRole, o)
-}
-
-// NewEvent constructs a new event envelope as a child of e, indicating that
-// m is caused by e.Message.
-func (e *Envelope) NewEvent(
-	id string,
-	m dogma.Message,
-	o Origin,
-) *Envelope {
-	return e.new(id, m, message.EventRole, o)
-}
-
-// NewTimeout constructs a new event envelope as a child of e, indicating that
-// m is caused by e.Message.
-func (e *Envelope) NewTimeout(
 	id string,
 	m dogma.Message,
 	t time.Time,
 	o Origin,
 ) *Envelope {
-	env := e.new(id, m, message.TimeoutRole, o)
-	env.TimeoutTime = &t
+	return e.new(id, m, message.CommandRole, t, o)
+}
+
+// NewEvent constructs a new envelope as a child of e, indicating that
+// the event message m is caused by e.Message.
+//
+// t is the time at which the message was created.
+func (e *Envelope) NewEvent(
+	id string,
+	m dogma.Message,
+	t time.Time,
+	o Origin,
+) *Envelope {
+	return e.new(id, m, message.EventRole, t, o)
+}
+
+// NewTimeout constructs a new envelope as a child of e, indicating that
+// the timeout message m is caused by e.Message.
+//
+// t is the time at which the message was created.
+// s is the time at which the timeout is scheduled to occur.
+func (e *Envelope) NewTimeout(
+	id string,
+	m dogma.Message,
+	t time.Time,
+	s time.Time,
+	o Origin,
+) *Envelope {
+	env := e.new(id, m, message.TimeoutRole, t, o)
+	env.ScheduledFor = s
 	return env
 }
 
+// new constructs a new envelope as a child of e.
 func (e *Envelope) new(
 	id string,
 	m dogma.Message,
 	r message.Role,
+	t time.Time,
 	o Origin,
 ) *Envelope {
 	c := e.Correlation.New(id)
@@ -99,6 +141,7 @@ func (e *Envelope) new(
 		Message:     m,
 		Type:        message.TypeOf(m),
 		Role:        r,
+		CreatedAt:   t,
 		Origin:      &o,
 	}
 }

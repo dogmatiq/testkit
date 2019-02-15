@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -24,10 +23,10 @@ var _ = Describe("type scope", func() {
 	)
 
 	BeforeEach(func() {
-		command = envelope.New(
+		command = envelope.NewCommand(
 			"1000",
 			fixtures.MessageA1,
-			message.CommandRole,
+			time.Now(),
 		)
 
 		handler = &fixtures.IntegrationMessageHandler{}
@@ -51,10 +50,11 @@ var _ = Describe("type scope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
+			now := time.Now()
 			_, err := controller.Handle(
 				context.Background(),
 				buf,
-				time.Now(),
+				now,
 				command,
 			)
 
@@ -67,6 +67,7 @@ var _ = Describe("type scope", func() {
 					EventEnvelope: command.NewEvent(
 						"1",
 						fixtures.MessageB1,
+						now,
 						envelope.Origin{
 							HandlerName: "<name>",
 							HandlerType: handlerkit.IntegrationType,
