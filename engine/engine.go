@@ -143,11 +143,9 @@ func (e *Engine) Dispatch(
 	options ...OperationOption,
 ) error {
 	oo := newOperationOptions(options)
-
 	t := message.TypeOf(m)
-	r, ok := e.roles[t]
 
-	if !ok {
+	if _, ok := e.routes[t]; !ok {
 		oo.observers.Notify(
 			fact.DispatchCycleSkipped{
 				Message:         m,
@@ -159,6 +157,7 @@ func (e *Engine) Dispatch(
 		return nil
 	}
 
+	r := e.roles[t]
 	r.MustBe(message.CommandRole, message.EventRole)
 
 	var env *envelope.Envelope
