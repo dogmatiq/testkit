@@ -17,6 +17,7 @@ type Controller struct {
 	name       string
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
+	produced   message.TypeSet
 	instances  map[string]dogma.AggregateRoot
 }
 
@@ -25,11 +26,13 @@ func NewController(
 	n string,
 	h dogma.AggregateMessageHandler,
 	g *envelope.MessageIDGenerator,
+	t message.TypeSet,
 ) *Controller {
 	return &Controller{
 		name:       n,
 		handler:    h,
 		messageIDs: g,
+		produced:   t,
 	}
 }
 
@@ -106,6 +109,7 @@ func (c *Controller) Handle(
 		now:        now,
 		root:       r,
 		exists:     exists,
+		produced:   c.produced,
 		command:    env,
 	}
 

@@ -1,10 +1,12 @@
 package process
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -19,6 +21,7 @@ type scope struct {
 	now        time.Time
 	root       dogma.ProcessRoot
 	exists     bool
+	produced   message.TypeSet
 	env        *envelope.Envelope // event or timeout
 	commands   []*envelope.Envelope
 	ready      []*envelope.Envelope // timeouts <= now
@@ -76,6 +79,14 @@ func (s *scope) Root() dogma.ProcessRoot {
 func (s *scope) ExecuteCommand(m dogma.Message) {
 	if !s.exists {
 		panic("can not execute command against non-existent instance")
+	}
+
+	if !s.produced.HasM(m) {
+		panic(fmt.Sprintf(
+			"the '%s' handler is not configured to execute commands of type %T",
+			s.name,
+			m,
+		))
 	}
 
 	env := s.env.NewCommand(

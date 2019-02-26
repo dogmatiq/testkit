@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -67,7 +68,14 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController("<name>", handler, &messageIDs)
+		controller = NewController(
+			"<name>",
+			handler,
+			&messageIDs,
+			message.NewTypeSet(
+				fixtures.MessageCType,
+			),
+		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})

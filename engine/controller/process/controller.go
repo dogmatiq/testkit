@@ -18,6 +18,7 @@ type Controller struct {
 	name       string
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
+	produced   message.TypeSet
 	instances  map[string]dogma.ProcessRoot
 	timeouts   []*envelope.Envelope
 }
@@ -27,11 +28,13 @@ func NewController(
 	n string,
 	h dogma.ProcessMessageHandler,
 	g *envelope.MessageIDGenerator,
+	t message.TypeSet,
 ) *Controller {
 	return &Controller{
 		name:       n,
 		handler:    h,
 		messageIDs: g,
+		produced:   t,
 	}
 }
 
@@ -122,6 +125,7 @@ func (c *Controller) Handle(
 		now:        now,
 		root:       r,
 		exists:     exists,
+		produced:   c.produced,
 		env:        env,
 	}
 
