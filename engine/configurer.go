@@ -93,7 +93,7 @@ func (c *configurer) registerController(
 	}
 }
 
-// roleMapToSet converts a map of message type role, as used by the enginekit
+// roleMapToSet converts a map of message type to role, as used by the enginekit
 // config system, into a type set.
 func roleMapToSet(m map[message.Type]message.Role) message.TypeSet {
 	s := message.TypeSet{}
