@@ -21,7 +21,7 @@ type scope struct {
 	now        time.Time
 	root       dogma.ProcessRoot
 	exists     bool
-	produced   message.TypeSet
+	produced   message.TypeContainer
 	env        *envelope.Envelope // event or timeout
 	commands   []*envelope.Envelope
 	ready      []*envelope.Envelope // timeouts <= now

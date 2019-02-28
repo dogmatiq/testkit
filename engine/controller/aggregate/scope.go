@@ -23,7 +23,7 @@ type scope struct {
 	exists     bool
 	created    bool // true if Create() returned true at least once
 	destroyed  bool // true if Destroy() returned true at least once
-	produced   message.TypeSet
+	produced   message.TypeContainer
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }

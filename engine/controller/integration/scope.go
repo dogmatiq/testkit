@@ -19,7 +19,7 @@ type scope struct {
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
-	produced   message.TypeSet
+	produced   message.TypeContainer
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }

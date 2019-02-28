@@ -6,8 +6,8 @@ github.com/dogmatiq/dapper v0.3.2 h1:amB05g0KSVmXhwdrGXgBTjHTGSw8HwhC6mqThDDhEKw
 github.com/dogmatiq/dapper v0.3.2/go.mod h1:wvWzpY8JYKHRZE80Mf0jdjSDkMezyv/amjgbirHUyaw=
 github.com/dogmatiq/dogma v0.3.0 h1:Egfo6zjEDwLXYtk59al3nlSngqbq5agzxnPMaQih1Sg=
 github.com/dogmatiq/dogma v0.3.0/go.mod h1:kzDxrkzdgrJattEUoLmoFdyHZtib4H5oa98VcewQEI8=
-github.com/dogmatiq/enginekit v0.2.0 h1:rIsMzNAyeqUIqvaiRV7aN2FcrBUzPgMvbeV+V5wzpn4=
-github.com/dogmatiq/enginekit v0.2.0/go.mod h1:bCXYIbptGRMdLriktoaGBwYKlO+L8Hd5+s9jvi3q6zc=
+github.com/dogmatiq/enginekit v0.3.0 h1:if1BUYY1mP7VGH2MPvz2xF13dD8cc9ZwmuFXnTN7SQc=
+github.com/dogmatiq/enginekit v0.3.0/go.mod h1:bCXYIbptGRMdLriktoaGBwYKlO+L8Hd5+s9jvi3q6zc=
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
 github.com/dogmatiq/iago v0.4.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=

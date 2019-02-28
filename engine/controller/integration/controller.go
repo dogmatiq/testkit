@@ -17,7 +17,7 @@ type Controller struct {
 	name       string
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeSet
+	produced   message.TypeContainer
 }
 
 // NewController returns a new controller for the given handler.
@@ -25,7 +25,7 @@ func NewController(
 	n string,
 	h dogma.IntegrationMessageHandler,
 	g *envelope.MessageIDGenerator,
-	t message.TypeSet,
+	t message.TypeContainer,
 ) *Controller {
 	return &Controller{
 		name:       n,
