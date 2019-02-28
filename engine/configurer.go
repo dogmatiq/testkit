@@ -34,7 +34,7 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 			cfg.HandlerName,
 			cfg.Handler,
 			&c.engine.messageIDs,
-			roleMapToSet(cfg.ProducedMessageTypes()),
+			cfg.ProducedMessageTypes(),
 		),
 		cfg.ConsumedMessageTypes(),
 	)
@@ -48,7 +48,7 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 			cfg.HandlerName,
 			cfg.Handler,
 			&c.engine.messageIDs,
-			roleMapToSet(cfg.ProducedMessageTypes()),
+			cfg.ProducedMessageTypes(),
 		),
 		cfg.ConsumedMessageTypes(),
 	)
@@ -62,7 +62,7 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 			cfg.HandlerName,
 			cfg.Handler,
 			&c.engine.messageIDs,
-			roleMapToSet(cfg.ProducedMessageTypes()),
+			cfg.ProducedMessageTypes(),
 		),
 		cfg.ConsumedMessageTypes(),
 	)
@@ -91,16 +91,4 @@ func (c *configurer) registerController(
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)
 	}
-}
-
-// roleMapToSet converts a map of message type to role, as used by the enginekit
-// config system, into a type set.
-func roleMapToSet(m map[message.Type]message.Role) message.TypeSet {
-	s := message.TypeSet{}
-
-	for t := range m {
-		s.Add(t)
-	}
-
-	return s
 }
