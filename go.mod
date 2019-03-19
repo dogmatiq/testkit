@@ -4,7 +4,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dogmatiq/dapper v0.3.2
 	github.com/dogmatiq/dogma v0.3.0
-	github.com/dogmatiq/enginekit v0.3.0
+	github.com/dogmatiq/enginekit v0.4.0
 	github.com/dogmatiq/iago v0.4.0
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
