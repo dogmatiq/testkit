@@ -4,10 +4,10 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dogmatiq/dapper v0.3.2 h1:amB05g0KSVmXhwdrGXgBTjHTGSw8HwhC6mqThDDhEKw=
 github.com/dogmatiq/dapper v0.3.2/go.mod h1:wvWzpY8JYKHRZE80Mf0jdjSDkMezyv/amjgbirHUyaw=
-github.com/dogmatiq/dogma v0.3.0 h1:Egfo6zjEDwLXYtk59al3nlSngqbq5agzxnPMaQih1Sg=
-github.com/dogmatiq/dogma v0.3.0/go.mod h1:kzDxrkzdgrJattEUoLmoFdyHZtib4H5oa98VcewQEI8=
-github.com/dogmatiq/enginekit v0.4.0 h1:wHz1hSvHfQqbUgkS5kRBvA0O7hzyB3tTngm187Iz7qM=
-github.com/dogmatiq/enginekit v0.4.0/go.mod h1:bCXYIbptGRMdLriktoaGBwYKlO+L8Hd5+s9jvi3q6zc=
+github.com/dogmatiq/dogma v0.4.0 h1:qOlzxJKWVK379IHoPFxAZYIdSi46/fSohfUt9AjwNLc=
+github.com/dogmatiq/dogma v0.4.0/go.mod h1:Im+Z77qgdIza8H5g/rrbrxCkHkJK7hHFs49MAqMHLTc=
+github.com/dogmatiq/enginekit v0.5.0 h1:V+/28xuQiMqlGFJ9hsahzrCjFI4ksH2TQKhMFY6JIMI=
+github.com/dogmatiq/enginekit v0.5.0/go.mod h1:ptFkKxV4CKM8zzmto7oiIGtjI4YiksfM1NLvw4Zg5tY=
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
 github.com/dogmatiq/iago v0.4.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
