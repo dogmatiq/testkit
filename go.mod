@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dogmatiq/dapper v0.3.2
+	github.com/dogmatiq/dapper v0.3.3
 	github.com/dogmatiq/dogma v0.4.0
 	github.com/dogmatiq/enginekit v0.5.0
 	github.com/dogmatiq/iago v0.4.0
