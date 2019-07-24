@@ -50,14 +50,14 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Time", func() {
+	Describe("func RecordedAt", func() {
 		It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
 			) error {
-				Expect(s.Time()).To(
+				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
 				)
 				return nil
