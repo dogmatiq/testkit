@@ -11,7 +11,8 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
-// scope is an implementation of dogma.ProcessEventScope.
+// scope is an implementation of dogma.ProcessEventScope and
+// dogma.ProcessTimeoutScope.
 type scope struct {
 	id         string
 	name       string
@@ -112,6 +113,10 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	})
 }
 
+func (s *scope) RecordedAt() time.Time {
+	return s.env.CreatedAt
+}
+
 func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	if !s.exists {
 		panic("can not schedule timeout against non-existent instance")
@@ -143,6 +148,10 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		Envelope:        s.env,
 		TimeoutEnvelope: env,
 	})
+}
+
+func (s *scope) ScheduledFor() time.Time {
+	return s.env.ScheduledFor
 }
 
 func (s *scope) Log(f string, v ...interface{}) {
