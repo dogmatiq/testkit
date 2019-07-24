@@ -6,7 +6,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dogmatiq/dapper v0.3.3
 	github.com/dogmatiq/dogma v0.5.0
-	github.com/dogmatiq/enginekit v0.5.3-0.20190724023032-333805fc6c0e // TODO(KM): Update this use master until new tag
+	github.com/dogmatiq/enginekit v0.5.3-0.20190724031847-b9de5772d3d1 // use master until new tag
 	github.com/dogmatiq/iago v0.4.0
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
