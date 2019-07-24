@@ -5,8 +5,8 @@ go 1.12
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dogmatiq/dapper v0.3.3
-	github.com/dogmatiq/dogma v0.4.1-0.20190705064149-e2531b60d5da // master until 0.5.0
-	github.com/dogmatiq/enginekit v0.5.0
+	github.com/dogmatiq/dogma v0.5.0
+	github.com/dogmatiq/enginekit v0.5.0 // TODO(KM): Update this use master until new tag
 	github.com/dogmatiq/iago v0.4.0
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
