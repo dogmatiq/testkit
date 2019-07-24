@@ -64,7 +64,24 @@ func (c *Controller) Handle(
 		event:    env,
 	}
 
-	return nil, c.handler.HandleEvent(ctx, s, env.Message)
+	k := []byte(env.MessageID)
+
+	var err error
+	if _, ok, _ := c.handler.Recover(ctx, k); !ok {
+		err = c.handler.HandleEvent(
+			ctx,
+			s,
+			env.Message,
+			k,
+			nil,
+		)
+	}
+
+	if err == nil {
+		c.handler.Discard(ctx, k)
+	}
+
+	return nil, err
 }
 
 // Reset does nothing.

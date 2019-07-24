@@ -77,6 +77,8 @@ var _ = Describe("type Controller", func() {
 				_ context.Context,
 				_ dogma.ProjectionEventScope,
 				m dogma.Message,
+				_ []byte,
+				_ []byte,
 			) error {
 				called = true
 				Expect(m).To(Equal(fixtures.MessageA1))
@@ -101,6 +103,8 @@ var _ = Describe("type Controller", func() {
 				_ context.Context,
 				_ dogma.ProjectionEventScope,
 				_ dogma.Message,
+				_ []byte,
+				_ []byte,
 			) error {
 				return expected
 			}
