@@ -110,6 +110,7 @@ var _ = Describe("type DefaultRenderer", func() {
 				"    RouteEventToInstanceFunc: nil",
 				"    HandleEventFunc:          nil",
 				"    HandleTimeoutFunc:        nil",
+				"    TimeoutHintFunc:          nil",
 				"}",
 			)
 		})
@@ -130,6 +131,7 @@ var _ = Describe("type DefaultRenderer", func() {
 				"*fixtures.IntegrationMessageHandler{",
 				"    ConfigureFunc:     nil",
 				"    HandleCommandFunc: nil",
+				"    TimeoutHintFunc:   nil",
 				"}",
 			)
 		})
@@ -150,6 +152,9 @@ var _ = Describe("type DefaultRenderer", func() {
 				"*fixtures.ProjectionMessageHandler{",
 				"    ConfigureFunc:   nil",
 				"    HandleEventFunc: nil",
+				"    RecoverFunc:     nil",
+				"    DiscardFunc:     nil",
+				"    TimeoutHintFunc: nil",
 				"}",
 			)
 		})
