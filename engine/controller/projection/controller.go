@@ -67,7 +67,13 @@ func (c *Controller) Handle(
 	k := []byte(env.MessageID)
 
 	var err error
-	if _, ok, _ := c.handler.Recover(ctx, k); !ok {
+
+	_, ok, err := c.handler.Recover(ctx, k)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
 		err = c.handler.HandleEvent(
 			ctx,
 			s,
@@ -78,7 +84,7 @@ func (c *Controller) Handle(
 	}
 
 	if err == nil {
-		c.handler.Discard(ctx, k)
+		err = c.handler.Discard(ctx, k)
 	}
 
 	return nil, err

@@ -35,6 +35,8 @@ var _ = Describe("type scope", func() {
 				_ context.Context,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
+				_ []byte,
+				_ []byte,
 			) error {
 				Expect(s.Key()).To(Equal("1000"))
 				return nil
@@ -56,6 +58,8 @@ var _ = Describe("type scope", func() {
 				_ context.Context,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
+				_ []byte,
+				_ []byte,
 			) error {
 				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
@@ -79,6 +83,8 @@ var _ = Describe("type scope", func() {
 				_ context.Context,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
+				_ []byte,
+				_ []byte,
 			) error {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 				return nil
