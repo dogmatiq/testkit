@@ -19,7 +19,7 @@ type configurer struct {
 func (c *configurer) VisitApplicationConfig(ctx context.Context, cfg *config.ApplicationConfig) error {
 	c.engine.roles = cfg.Roles
 
-	for _, h := range cfg.Handlers {
+	for _, h := range cfg.HandlersByName {
 		if err := h.Accept(ctx, c); err != nil {
 			return err
 		}
