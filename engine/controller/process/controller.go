@@ -83,6 +83,12 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
+	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+
 	id, ok, err := c.route(ctx, obs, env)
 	if !ok || err != nil {
 		return nil, err

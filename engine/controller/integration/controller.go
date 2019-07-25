@@ -63,6 +63,12 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
+	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+
 	s := &scope{
 		name:       c.name,
 		handler:    c.handler,
