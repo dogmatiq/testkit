@@ -73,6 +73,12 @@ func (c *Controller) Handle(
 		command:    env,
 	}
 
+	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+
 	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {
 		return nil, err
 	}

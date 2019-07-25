@@ -213,6 +213,12 @@ func (c *Controller) routeTimeout(
 
 // handle calls the appropriate method on the handler based on the  message role.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
+	if t := c.handler.TimeoutHint(s.env.Message); t != 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+
 	if s.env.Role == message.EventRole {
 		return c.handler.HandleEvent(ctx, s, s.env.Message)
 	}
