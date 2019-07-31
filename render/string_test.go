@@ -87,6 +87,7 @@ var _ = Describe("func ProcessMessageHandler", func() {
 			"    RouteEventToInstanceFunc: nil",
 			"    HandleEventFunc:          nil",
 			"    HandleTimeoutFunc:        nil",
+			"    TimeoutHintFunc:          nil",
 			"}",
 		)))
 	})
@@ -103,6 +104,7 @@ var _ = Describe("func IntegrationMessageHandler", func() {
 			"*fixtures.IntegrationMessageHandler{",
 			"    ConfigureFunc:     nil",
 			"    HandleCommandFunc: nil",
+			"    TimeoutHintFunc:   nil",
 			"}",
 		)))
 	})
@@ -117,8 +119,11 @@ var _ = Describe("func ProjectionMessageHandler", func() {
 			),
 		).To(Equal(join(
 			"*fixtures.ProjectionMessageHandler{",
-			"    ConfigureFunc:   nil",
-			"    HandleEventFunc: nil",
+			"    ConfigureFunc:       nil",
+			"    HandleEventFunc:     nil",
+			"    ResourceVersionFunc: nil",
+			"    CloseResourceFunc:   nil",
+			"    TimeoutHintFunc:     nil",
 			"}",
 		)))
 	})
