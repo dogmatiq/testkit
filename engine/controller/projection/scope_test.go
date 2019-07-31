@@ -29,27 +29,6 @@ var _ = Describe("type scope", func() {
 		controller = NewController("<name>", handler)
 	})
 
-	Describe("func Key", func() {
-		It("returns the message ID", func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProjectionEventScope,
-				_ dogma.Message,
-			) error {
-				Expect(s.Key()).To(Equal("1000"))
-				return nil
-			}
-
-			_, err := controller.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-	})
-
 	Describe("func RecordedAt", func() {
 		It("returns event creation time", func() {
 			handler.HandleEventFunc = func(

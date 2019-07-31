@@ -16,10 +16,6 @@ type scope struct {
 	event    *envelope.Envelope
 }
 
-func (s *scope) Key() string {
-	return s.event.MessageID
-}
-
 func (s *scope) RecordedAt() time.Time {
 	return s.event.CreatedAt
 }
