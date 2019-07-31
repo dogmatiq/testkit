@@ -33,13 +33,14 @@ var _ = Describe("type scope", func() {
 		It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
-			) error {
+			) (bool, error) {
 				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
 				)
-				return nil
+				return true, nil
 			}
 
 			_, err := controller.Handle(
@@ -56,11 +57,12 @@ var _ = Describe("type scope", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
-			) error {
+			) (bool, error) {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return nil
+				return true, nil
 			}
 		})
 

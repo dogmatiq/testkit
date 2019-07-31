@@ -75,12 +75,13 @@ var _ = Describe("type Controller", func() {
 			called := false
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
 				m dogma.Message,
-			) error {
+			) (bool, error) {
 				called = true
 				Expect(m).To(Equal(fixtures.MessageA1))
-				return nil
+				return true, nil
 			}
 
 			_, err := controller.Handle(
@@ -99,10 +100,11 @@ var _ = Describe("type Controller", func() {
 
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
 				_ dogma.Message,
-			) error {
-				return expected
+			) (bool, error) {
+				return false, expected
 			}
 
 			_, err := controller.Handle(
