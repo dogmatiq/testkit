@@ -396,6 +396,33 @@ var _ = Describe("type Controller", func() {
 				Expect(envelopes).To(BeEmpty())
 			})
 
+			It("uses the handler's timeout hint", func() {
+				hint := 3 * time.Second
+				handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
+					return hint
+				}
+
+				handler.HandleEventFunc = func(
+					ctx context.Context,
+					_ dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					dl, ok := ctx.Deadline()
+					Expect(ok).To(BeTrue())
+					Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
+					return nil
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
 			When("the event is not routed to an instance", func() {
 				BeforeEach(func() {
 					handler.RouteEventToInstanceFunc = func(
@@ -603,6 +630,33 @@ var _ = Describe("type Controller", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(BeEmpty())
+			})
+
+			It("uses the handler's timeout hint", func() {
+				hint := 3 * time.Second
+				handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
+					return hint
+				}
+
+				handler.HandleTimeoutFunc = func(
+					ctx context.Context,
+					_ dogma.ProcessTimeoutScope,
+					_ dogma.Message,
+				) error {
+					dl, ok := ctx.Deadline()
+					Expect(ok).To(BeTrue())
+					Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
+					return nil
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					timeout,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			When("the instance that created the timeout no longer exists", func() {

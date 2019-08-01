@@ -57,6 +57,12 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
+	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+
 	s := &scope{
 		name:     c.name,
 		handler:  c.handler,
@@ -64,7 +70,46 @@ func (c *Controller) Handle(
 		event:    env,
 	}
 
-	return nil, c.handler.HandleEvent(ctx, s, env.Message)
+	// This implementation attempts to use the full suite of OCC operations
+	// including ResourceVersion() and CloseResource() in order to more
+	// thoroughly test the projection handler. However, a "real" implementation
+	// would likely not need to call ResourceVersion() before every call to
+	// HandleEvent().
+
+	// The message ID is used as the resource identifier. When the message is
+	// handled, the resource version is updated to a non-empty value, indicating
+	// that the message has been processed.
+	res := []byte(env.MessageID)
+	cur, err := c.handler.ResourceVersion(ctx, res)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the version is non-empty, this message has already been processed.
+	// This would likely never occur as part of regular testing.
+	if len(cur) != 0 {
+		return nil, nil
+	}
+
+	ok, err := c.handler.HandleEvent(
+		ctx,
+		res,
+		nil,       // current version
+		[]byte{1}, // next version
+		s,
+		env.Message,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// If this call to handle actually applied the event, close the resource as
+	// we'll never invoke the handler with this message again.
+	if ok {
+		return nil, c.handler.CloseResource(ctx, res)
+	}
+
+	return nil, nil
 }
 
 // Reset does nothing.

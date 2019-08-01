@@ -29,38 +29,18 @@ var _ = Describe("type scope", func() {
 		controller = NewController("<name>", handler)
 	})
 
-	Describe("func Key", func() {
-		It("returns the message ID", func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProjectionEventScope,
-				_ dogma.Message,
-			) error {
-				Expect(s.Key()).To(Equal("1000"))
-				return nil
-			}
-
-			_, err := controller.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-	})
-
-	Describe("func Time", func() {
+	Describe("func RecordedAt", func() {
 		It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
-			) error {
-				Expect(s.Time()).To(
+			) (bool, error) {
+				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
 				)
-				return nil
+				return true, nil
 			}
 
 			_, err := controller.Handle(
@@ -77,11 +57,12 @@ var _ = Describe("type scope", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Message,
-			) error {
+			) (bool, error) {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return nil
+				return true, nil
 			}
 		})
 

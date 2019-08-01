@@ -21,7 +21,7 @@ var _ = Describe("type Engine", func() {
 		BeforeEach(func() {
 			aggregate = &fixtures.AggregateMessageHandler{
 				ConfigureFunc: func(c dogma.AggregateConfigurer) {
-					c.Name("<aggregate>")
+					c.Identity("<aggregate>", "<aggregate-key>")
 					c.ConsumesCommandType(fixtures.MessageA{})
 					c.ProducesEventType(fixtures.MessageE{})
 				},
@@ -29,7 +29,7 @@ var _ = Describe("type Engine", func() {
 
 			process = &fixtures.ProcessMessageHandler{
 				ConfigureFunc: func(c dogma.ProcessConfigurer) {
-					c.Name("<process>")
+					c.Identity("<process>", "<process-key>")
 					c.ConsumesEventType(fixtures.MessageB{})
 					c.ConsumesEventType(fixtures.MessageE{}) // shared with <projection>
 					c.ProducesCommandType(fixtures.MessageC{})
@@ -38,7 +38,7 @@ var _ = Describe("type Engine", func() {
 
 			integration = &fixtures.IntegrationMessageHandler{
 				ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-					c.Name("<integration>")
+					c.Identity("<integration>", "<integration-key>")
 					c.ConsumesCommandType(fixtures.MessageC{})
 					c.ProducesEventType(fixtures.MessageF{})
 				},
@@ -46,7 +46,7 @@ var _ = Describe("type Engine", func() {
 
 			projection = &fixtures.ProjectionMessageHandler{
 				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-					c.Name("<projection>")
+					c.Identity("<projection>", "<projection-key>")
 					c.ConsumesEventType(fixtures.MessageD{})
 					c.ConsumesEventType(fixtures.MessageE{}) // shared with <process>
 				},
@@ -54,7 +54,7 @@ var _ = Describe("type Engine", func() {
 
 			app = &fixtures.Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Name("<app>")
+					c.Identity("<app>", "<app-key>")
 					c.RegisterAggregate(aggregate)
 					c.RegisterProcess(process)
 					c.RegisterIntegration(integration)
