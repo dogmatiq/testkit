@@ -96,7 +96,8 @@ func (c *Controller) Handle(
 		res,
 		nil,       // current version
 		[]byte{1}, // next version
-		s, env.Message,
+		s,
+		env.Message,
 	)
 	if err != nil {
 		return nil, err
