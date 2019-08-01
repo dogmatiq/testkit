@@ -171,6 +171,32 @@ var _ = Describe("type Controller", func() {
 
 			Expect(err).To(Equal(expected))
 		})
+
+		It("uses the handler's timeout hint", func() {
+			hint := 3 * time.Second
+			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
+				return hint
+			}
+
+			handler.HandleCommandFunc = func(
+				ctx context.Context,
+				_ dogma.IntegrationCommandScope,
+				_ dogma.Message,
+			) error {
+				dl, ok := ctx.Deadline()
+				Expect(ok).To(BeTrue())
+				Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
 	})
 
 	Describe("func Reset()", func() {
