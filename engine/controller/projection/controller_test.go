@@ -117,6 +117,127 @@ var _ = Describe("type Controller", func() {
 			Expect(err).To(Equal(expected))
 		})
 
+		It("propagates errors when loading the resource version", func() {
+			expected := errors.New("<error>")
+
+			handler.ResourceVersionFunc = func(
+				context.Context,
+				[]byte,
+			) ([]byte, error) {
+				return nil, expected
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).To(Equal(expected))
+		})
+
+		It("passes the correct OCC values", func() {
+			handler.HandleEventFunc = func(
+				ctx context.Context,
+				r, c, n []byte,
+				_ dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) (bool, error) {
+				Expect(r).To(Equal([]byte(event.MessageID)))
+				Expect(c).To(BeEmpty())
+				Expect(n).NotTo(BeEmpty())
+				return false, nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("does not handle events that have already been applied", func() {
+			handler.ResourceVersionFunc = func(
+				context.Context,
+				[]byte,
+			) ([]byte, error) {
+				return []byte("<not empty>"), nil
+			}
+
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				_, _, _ []byte,
+				_ dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) (bool, error) {
+				Fail("unexpected call")
+				return false, nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("closes the resource if the event is applied", func() {
+			called := false
+			handler.CloseResourceFunc = func(
+				_ context.Context,
+				r []byte,
+			) error {
+				called = true
+				Expect(r).To(Equal([]byte(event.MessageID)))
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+
+		It("does not close the resource if the event is not applied", func() {
+			handler.HandleEventFunc = func(
+				ctx context.Context,
+				_, _, _ []byte,
+				_ dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) (bool, error) {
+				return false, nil
+			}
+
+			handler.CloseResourceFunc = func(
+				_ context.Context,
+				r []byte,
+			) error {
+				Fail("unexpected call")
+				return nil
+			}
+
+			_, err := controller.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
 		It("uses the handler's timeout hint", func() {
 			hint := 3 * time.Second
 			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
@@ -141,6 +262,7 @@ var _ = Describe("type Controller", func() {
 				time.Now(),
 				event,
 			)
+
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})

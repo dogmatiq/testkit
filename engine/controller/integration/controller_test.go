@@ -195,6 +195,7 @@ var _ = Describe("type Controller", func() {
 				time.Now(),
 				command,
 			)
+
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})

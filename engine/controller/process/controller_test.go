@@ -419,6 +419,7 @@ var _ = Describe("type Controller", func() {
 					time.Now(),
 					event,
 				)
+
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
@@ -654,6 +655,7 @@ var _ = Describe("type Controller", func() {
 					time.Now(),
 					timeout,
 				)
+
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
