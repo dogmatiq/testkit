@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"testing"
+	"time"
 
 	"github.com/dogmatiq/testkit/engine"
 )
@@ -19,10 +20,20 @@ func Verbose(enabled bool) TestOption {
 	}
 }
 
+// StartTime returns a test option that sets the initial time of the test clock.
+//
+// By default, the current system time is used.
+func StartTime(t time.Time) TestOption {
+	return func(to *testOptions) {
+		to.time = t
+	}
+}
+
 // testOptions is a container for the options set via TestOption values.
 type testOptions struct {
 	operationOptions []engine.OperationOption
 	verbose          bool
+	time             time.Time
 }
 
 // newTestOptions returns a new testOptions with the given options.
@@ -43,6 +54,7 @@ func newTestOptions(options []TestOption, verbose *bool) *testOptions {
 			engine.EnableProjections(false),
 		},
 		verbose: v,
+		time:    time.Now(),
 	}
 
 	for _, opt := range options {

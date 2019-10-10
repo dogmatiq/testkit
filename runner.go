@@ -2,7 +2,6 @@ package testkit
 
 import (
 	"context"
-	"time"
 
 	"github.com/dogmatiq/testkit/engine/fact"
 
@@ -68,7 +67,7 @@ func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *
 		t:                t,
 		verbose:          to.verbose,
 		engine:           r.engine,
-		now:              time.Now(),
+		now:              to.time,
 		operationOptions: opts,
 	}
 }
