@@ -4,7 +4,7 @@ import (
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega" // can't use dot-import because gomega.Assertion conflicts with this package's Assertion type
 )
 
 var _ = Describe("func inflect", func() {
@@ -20,7 +20,7 @@ var _ = Describe("func inflect", func() {
 	DescribeTable(
 		"returns true if the values have the same type and value",
 		func(r message.Role, in, out string) {
-			Expect(inflect(r, in)).To(Equal(out))
+			gomega.Expect(inflect(r, in)).To(gomega.Equal(out))
 		},
 		entry(message.CommandRole, "a <message>", "a command"),
 		entry(message.EventRole, "a <message>", "an event"),
