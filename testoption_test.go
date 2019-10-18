@@ -1,10 +1,11 @@
-package testkit
+package testkit_test
 
 import (
 	"context"
 	"time"
 
 	"github.com/dogmatiq/dogma"
+	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 
 	"github.com/dogmatiq/enginekit/fixtures"
