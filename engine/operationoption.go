@@ -26,15 +26,15 @@ func WithObserver(o fact.Observer) OperationOption {
 	}
 }
 
-// EnableAggregates returns a dispatch option that enables or disables aggregate
-// message handlers.
+// EnableAggregates returns an operation option that enables or disables
+// aggregate message handlers.
 //
 // All handler types are enabled by default.
 func EnableAggregates(enabled bool) OperationOption {
 	return enableHandlerType(handler.AggregateType, enabled)
 }
 
-// EnableProcesses returns a dispatch option that enables or disables process
+// EnableProcesses returns an operation option that enables or disables process
 // message handlers.
 //
 // All handler types are enabled by default.
@@ -42,7 +42,7 @@ func EnableProcesses(enabled bool) OperationOption {
 	return enableHandlerType(handler.ProcessType, enabled)
 }
 
-// EnableIntegrations returns a dispatch option that enables or disables
+// EnableIntegrations returns an operation option that enables or disables
 // integration message handlers.
 //
 // All handler types are enabled by default.
@@ -50,7 +50,7 @@ func EnableIntegrations(enabled bool) OperationOption {
 	return enableHandlerType(handler.IntegrationType, enabled)
 }
 
-// EnableProjections returns a dispatch option that enables or disables
+// EnableProjections returns an operation option that enables or disables
 // projection message handlers.
 //
 // All handler types are enabled by default.
@@ -58,8 +58,8 @@ func EnableProjections(enabled bool) OperationOption {
 	return enableHandlerType(handler.ProjectionType, enabled)
 }
 
-// enableHandlerType returns a dispatch option that enables or disables handlers
-// of the given type.
+// enableHandlerType returns an operation option that enables or disables
+// handlers of the given type.
 func enableHandlerType(t handler.Type, enabled bool) OperationOption {
 	t.MustValidate()
 
@@ -68,7 +68,13 @@ func enableHandlerType(t handler.Type, enabled bool) OperationOption {
 	}
 }
 
-// WithCurrentTime returns a dispatch option that sets the engine's current time.
+// WithCurrentTime returns an operation option that sets the engine's current
+// time.
+//
+// Note that if this option is used with the test runner, it will take
+// precedence over the testkit.WithStartTime() option, clobbering any
+// adjustments to the test clock made with the Test.AdvanceTimeTo() and
+// AdvanceTimeBy() methods.
 func WithCurrentTime(t time.Time) OperationOption {
 	return func(oo *operationOptions) {
 		oo.now = t

@@ -20,10 +20,11 @@ func Verbose(enabled bool) TestOption {
 	}
 }
 
-// StartTime returns a test option that sets the initial time of the test clock.
+// WithStartTime returns a test option that sets the time of the test runner's
+// clock at the start of the test.
 //
 // By default, the current system time is used.
-func StartTime(t time.Time) TestOption {
+func WithStartTime(t time.Time) TestOption {
 	return func(to *testOptions) {
 		to.time = t
 	}

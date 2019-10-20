@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func StartTime()", func() {
+var _ = Describe("func WithStartTime()", func() {
 	It("sets the engine time as seen during a Prepare() call", func() {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
@@ -45,7 +45,7 @@ var _ = Describe("func StartTime()", func() {
 		New(app).
 			Begin(
 				&mockT{},
-				StartTime(now),
+				WithStartTime(now),
 				WithOperationOptions(
 					engine.EnableProjections(true),
 				),
