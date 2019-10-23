@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -14,7 +15,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
-	name       string
+	identity   identity.Identity
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	produced   message.TypeContainer
@@ -23,22 +24,22 @@ type Controller struct {
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	n string,
+	i identity.Identity,
 	h dogma.AggregateMessageHandler,
 	g *envelope.MessageIDGenerator,
 	t message.TypeContainer,
 ) *Controller {
 	return &Controller{
-		name:       n,
+		identity:   i,
 		handler:    h,
 		messageIDs: g,
 		produced:   t,
 	}
 }
 
-// Name returns the name of the handler that is managed by this controller.
-func (c *Controller) Name() string {
-	return c.name
+// Identity returns the identity of the handler that is managed by this controller.
+func (c *Controller) Identity() identity.Identity {
+	return c.identity
 }
 
 // Type returns handler.AggregateType.
@@ -67,7 +68,7 @@ func (c *Controller) Handle(
 	id := c.handler.RouteCommandToInstance(env.Message)
 	if id == "" {
 		panic(handler.EmptyInstanceIDError{
-			HandlerName: c.name,
+			Handler:     c.identity,
 			HandlerType: c.Type(),
 		})
 	}
@@ -76,7 +77,7 @@ func (c *Controller) Handle(
 
 	if exists {
 		obs.Notify(fact.AggregateInstanceLoaded{
-			HandlerName: c.name,
+			HandlerName: c.identity.Name,
 			Handler:     c.handler,
 			InstanceID:  id,
 			Root:        r,
@@ -84,7 +85,7 @@ func (c *Controller) Handle(
 		})
 	} else {
 		obs.Notify(fact.AggregateInstanceNotFound{
-			HandlerName: c.name,
+			HandlerName: c.identity.Name,
 			Handler:     c.handler,
 			InstanceID:  id,
 			Envelope:    env,
@@ -94,15 +95,15 @@ func (c *Controller) Handle(
 
 		if r == nil {
 			panic(handler.NilRootError{
-				HandlerName: c.name,
+				Handler:     c.identity,
 				HandlerType: c.Type(),
 			})
 		}
 	}
 
 	s := &scope{
-		id:         id,
-		name:       c.name,
+		instanceID: id,
+		identity:   c.identity,
 		handler:    c.handler,
 		messageIDs: c.messageIDs,
 		observer:   obs,
@@ -117,7 +118,7 @@ func (c *Controller) Handle(
 
 	if (s.created || s.destroyed) && len(s.events) == 0 {
 		panic(handler.EventNotRecordedError{
-			HandlerName:  c.name,
+			Handler:      c.identity,
 			InstanceID:   id,
 			WasDestroyed: s.destroyed,
 		})

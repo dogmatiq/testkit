@@ -31,7 +31,7 @@ func (c *configurer) VisitApplicationConfig(ctx context.Context, cfg *config.App
 func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.AggregateConfig) error {
 	c.registerController(
 		aggregate.NewController(
-			cfg.HandlerName,
+			cfg.HandlerIdentity,
 			cfg.Handler,
 			&c.engine.messageIDs,
 			cfg.ProducedMessageTypes(),
@@ -45,7 +45,7 @@ func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.Aggrega
 func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessConfig) error {
 	c.registerController(
 		process.NewController(
-			cfg.HandlerName,
+			cfg.HandlerIdentity,
 			cfg.Handler,
 			&c.engine.messageIDs,
 			cfg.ProducedMessageTypes(),
@@ -59,7 +59,7 @@ func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessCo
 func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.IntegrationConfig) error {
 	c.registerController(
 		integration.NewController(
-			cfg.HandlerName,
+			cfg.HandlerIdentity,
 			cfg.Handler,
 			&c.engine.messageIDs,
 			cfg.ProducedMessageTypes(),
@@ -73,7 +73,7 @@ func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.Integ
 func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.ProjectionConfig) error {
 	c.registerController(
 		projection.NewController(
-			cfg.HandlerName,
+			cfg.HandlerIdentity,
 			cfg.Handler,
 		),
 		cfg.ConsumedMessageTypes(),
@@ -86,7 +86,7 @@ func (c *configurer) registerController(
 	ctrl controller.Controller,
 	types map[message.Type]message.Role,
 ) {
-	c.engine.controllers[ctrl.Name()] = ctrl
+	c.engine.controllers[ctrl.Identity().Name] = ctrl
 
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

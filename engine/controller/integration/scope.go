@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -13,8 +14,7 @@ import (
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	id         string
-	name       string
+	identity   identity.Identity
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
@@ -28,7 +28,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to record events of type %T",
-			s.name,
+			s.identity.Name,
 			m,
 		))
 	}
@@ -38,7 +38,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.name,
+			HandlerName: s.identity.Name,
 			HandlerType: handler.IntegrationType,
 		},
 	)
@@ -46,7 +46,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
-		HandlerName:   s.name,
+		HandlerName:   s.identity.Name,
 		Handler:       s.handler,
 		Envelope:      s.command,
 		EventEnvelope: env,
@@ -55,7 +55,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
-		HandlerName:  s.name,
+		HandlerName:  s.identity.Name,
 		Handler:      s.handler,
 		Envelope:     s.command,
 		LogFormat:    f,

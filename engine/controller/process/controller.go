@@ -7,6 +7,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -15,7 +16,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	name       string
+	identity   identity.Identity
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	produced   message.TypeContainer
@@ -25,22 +26,22 @@ type Controller struct {
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	n string,
+	i identity.Identity,
 	h dogma.ProcessMessageHandler,
 	g *envelope.MessageIDGenerator,
 	t message.TypeContainer,
 ) *Controller {
 	return &Controller{
-		name:       n,
+		identity:   i,
 		handler:    h,
 		messageIDs: g,
 		produced:   t,
 	}
 }
 
-// Name returns the name of the handler that is managed by this controller.
-func (c *Controller) Name() string {
-	return c.name
+// Identity returns the identity of the handler that is managed by this controller.
+func (c *Controller) Identity() identity.Identity {
+	return c.identity
 }
 
 // Type returns handler.ProcessType.
@@ -98,7 +99,7 @@ func (c *Controller) Handle(
 
 	if exists {
 		obs.Notify(fact.ProcessInstanceLoaded{
-			HandlerName: c.name,
+			HandlerName: c.identity.Name,
 			Handler:     c.handler,
 			InstanceID:  id,
 			Root:        r,
@@ -106,7 +107,7 @@ func (c *Controller) Handle(
 		})
 	} else {
 		obs.Notify(fact.ProcessInstanceNotFound{
-			HandlerName: c.name,
+			HandlerName: c.identity.Name,
 			Handler:     c.handler,
 			InstanceID:  id,
 			Envelope:    env,
@@ -116,15 +117,15 @@ func (c *Controller) Handle(
 
 		if r == nil {
 			panic(handler.NilRootError{
-				HandlerName: c.name,
+				Handler:     c.identity,
 				HandlerType: c.Type(),
 			})
 		}
 	}
 
 	s := &scope{
-		id:         id,
-		name:       c.name,
+		instanceID: id,
+		identity:   c.identity,
 		handler:    c.handler,
 		messageIDs: c.messageIDs,
 		observer:   obs,
@@ -180,7 +181,7 @@ func (c *Controller) routeEvent(
 	if ok {
 		if id == "" {
 			panic(handler.EmptyInstanceIDError{
-				HandlerName: c.name,
+				Handler:     c.identity,
 				HandlerType: c.Type(),
 			})
 		}
@@ -189,7 +190,7 @@ func (c *Controller) routeEvent(
 	}
 
 	obs.Notify(fact.ProcessEventIgnored{
-		HandlerName: c.name,
+		HandlerName: c.identity.Name,
 		Handler:     c.handler,
 		Envelope:    env,
 	})
@@ -208,7 +209,7 @@ func (c *Controller) routeTimeout(
 	}
 
 	obs.Notify(fact.ProcessTimeoutIgnored{
-		HandlerName: c.name,
+		HandlerName: c.identity.Name,
 		Handler:     c.handler,
 		InstanceID:  env.Origin.InstanceID,
 		Envelope:    env,
@@ -232,7 +233,7 @@ func (c *Controller) update(s *scope) {
 		c.instances = map[string]dogma.ProcessRoot{}
 	}
 
-	c.instances[s.id] = s.root
+	c.instances[s.instanceID] = s.root
 	c.timeouts = append(c.timeouts, s.pending...)
 
 	sort.Slice(

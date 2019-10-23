@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -13,8 +14,8 @@ import (
 
 // scope is an implementation of dogma.AggregateCommandScope.
 type scope struct {
-	id         string
-	name       string
+	instanceID string
+	identity   identity.Identity
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
@@ -29,7 +30,7 @@ type scope struct {
 }
 
 func (s *scope) InstanceID() string {
-	return s.id
+	return s.instanceID
 }
 
 func (s *scope) Create() bool {
@@ -41,9 +42,9 @@ func (s *scope) Create() bool {
 	s.created = true
 
 	s.observer.Notify(fact.AggregateInstanceCreated{
-		HandlerName: s.name,
+		HandlerName: s.identity.Name,
 		Handler:     s.handler,
-		InstanceID:  s.id,
+		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.command,
 	})
@@ -60,9 +61,9 @@ func (s *scope) Destroy() {
 	s.destroyed = true
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
-		HandlerName: s.name,
+		HandlerName: s.identity.Name,
 		Handler:     s.handler,
-		InstanceID:  s.id,
+		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.command,
 	})
@@ -84,7 +85,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to record events of type %T",
-			s.name,
+			s.identity.Name,
 			m,
 		))
 	}
@@ -96,18 +97,18 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.name,
+			HandlerName: s.identity.Name,
 			HandlerType: handler.AggregateType,
-			InstanceID:  s.id,
+			InstanceID:  s.instanceID,
 		},
 	)
 
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
-		HandlerName:   s.name,
+		HandlerName:   s.identity.Name,
 		Handler:       s.handler,
-		InstanceID:    s.id,
+		InstanceID:    s.instanceID,
 		Root:          s.root,
 		Envelope:      s.command,
 		EventEnvelope: env,
@@ -116,9 +117,9 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByAggregate{
-		HandlerName:  s.name,
+		HandlerName:  s.identity.Name,
 		Handler:      s.handler,
-		InstanceID:   s.id,
+		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.command,
 		LogFormat:    f,

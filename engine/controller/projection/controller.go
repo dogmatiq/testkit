@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -14,24 +15,24 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	name    string
-	handler dogma.ProjectionMessageHandler
+	identity identity.Identity
+	handler  dogma.ProjectionMessageHandler
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	n string,
+	i identity.Identity,
 	h dogma.ProjectionMessageHandler,
 ) *Controller {
 	return &Controller{
-		name:    n,
-		handler: h,
+		identity: i,
+		handler:  h,
 	}
 }
 
-// Name returns the name of the handler that is managed by this controller.
-func (c *Controller) Name() string {
-	return c.name
+// Identity returns the identity of the handler that is managed by this controller.
+func (c *Controller) Identity() identity.Identity {
+	return c.identity
 }
 
 // Type returns handler.ProjectionType.
@@ -64,7 +65,7 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		name:     c.name,
+		identity: c.identity,
 		handler:  c.handler,
 		observer: obs,
 		event:    env,
