@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -14,8 +15,8 @@ import (
 // scope is an implementation of dogma.ProcessEventScope and
 // dogma.ProcessTimeoutScope.
 type scope struct {
-	id         string
-	name       string
+	instanceID string
+	identity   identity.Identity
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
@@ -30,7 +31,7 @@ type scope struct {
 }
 
 func (s *scope) InstanceID() string {
-	return s.id
+	return s.instanceID
 }
 
 func (s *scope) Begin() bool {
@@ -41,9 +42,9 @@ func (s *scope) Begin() bool {
 	s.exists = true
 
 	s.observer.Notify(fact.ProcessInstanceBegun{
-		HandlerName: s.name,
+		HandlerName: s.identity.Name,
 		Handler:     s.handler,
-		InstanceID:  s.id,
+		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.env,
 	})
@@ -61,9 +62,9 @@ func (s *scope) End() {
 	s.pending = nil
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
-		HandlerName: s.name,
+		HandlerName: s.identity.Name,
 		Handler:     s.handler,
-		InstanceID:  s.id,
+		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.env,
 	})
@@ -85,7 +86,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to execute commands of type %T",
-			s.name,
+			s.identity.Name,
 			m,
 		))
 	}
@@ -95,18 +96,18 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.name,
+			HandlerName: s.identity.Name,
 			HandlerType: handler.ProcessType,
-			InstanceID:  s.id,
+			InstanceID:  s.instanceID,
 		},
 	)
 
 	s.commands = append(s.commands, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
-		HandlerName:     s.name,
+		HandlerName:     s.identity.Name,
 		Handler:         s.handler,
-		InstanceID:      s.id,
+		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
 		CommandEnvelope: env,
@@ -128,9 +129,9 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		s.now,
 		t,
 		envelope.Origin{
-			HandlerName: s.name,
+			HandlerName: s.identity.Name,
 			HandlerType: handler.ProcessType,
-			InstanceID:  s.id,
+			InstanceID:  s.instanceID,
 		},
 	)
 
@@ -141,9 +142,9 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	}
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
-		HandlerName:     s.name,
+		HandlerName:     s.identity.Name,
 		Handler:         s.handler,
-		InstanceID:      s.id,
+		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
 		TimeoutEnvelope: env,
@@ -156,9 +157,9 @@ func (s *scope) ScheduledFor() time.Time {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
-		HandlerName:  s.name,
+		HandlerName:  s.identity.Name,
 		Handler:      s.handler,
-		InstanceID:   s.id,
+		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.env,
 		LogFormat:    f,

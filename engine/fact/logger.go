@@ -117,7 +117,7 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 			"",
 		},
 		message.TypeOf(f.Envelope.Message).String()+f.Envelope.Role.Marker(),
-		message.ToString(f.Envelope.Message),
+		message.Description(f.Envelope.Message),
 	)
 }
 
@@ -253,7 +253,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 		f.HandlerName+" "+f.InstanceID,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
-		message.ToString(f.EventEnvelope.Message),
+		message.Description(f.EventEnvelope.Message),
 	)
 }
 
@@ -367,7 +367,7 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 		f.HandlerName+" "+f.InstanceID,
 		"executed a command",
 		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
-		message.ToString(f.CommandEnvelope.Message),
+		message.Description(f.CommandEnvelope.Message),
 	)
 }
 
@@ -386,7 +386,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
 		),
 		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
-		message.ToString(f.TimeoutEnvelope.Message),
+		message.Description(f.TimeoutEnvelope.Message),
 	)
 }
 
@@ -416,7 +416,7 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 		f.HandlerName,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
-		message.ToString(f.EventEnvelope.Message),
+		message.Description(f.EventEnvelope.Message),
 	)
 }
 

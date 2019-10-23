@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -45,7 +46,7 @@ var _ = Describe("type scope", func() {
 		}
 
 		controller = NewController(
-			"<name>",
+			identity.MustNew("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(

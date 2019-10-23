@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
+	"github.com/dogmatiq/enginekit/identity"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -26,7 +27,10 @@ var _ = Describe("type scope", func() {
 
 	BeforeEach(func() {
 		handler = &fixtures.ProjectionMessageHandler{}
-		controller = NewController("<name>", handler)
+		controller = NewController(
+			identity.MustNew("<name>", "<key>"),
+			handler,
+		)
 	})
 
 	Describe("func RecordedAt", func() {
