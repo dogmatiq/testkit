@@ -10,7 +10,5 @@ require (
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/sergi/go-diff v1.0.0
-	github.com/stretchr/testify v1.3.0 // indirect
-	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.4.0
 )
