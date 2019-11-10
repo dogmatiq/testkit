@@ -55,7 +55,7 @@ var _ = Describe("type Test", func() {
 					"--- EXECUTING TEST COMMAND (test_test.go:50) ---",
 				))
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT (test_test.go:50) ---",
+					"--- ASSERTION REPORT (test_test.go:50) ---\n\n✓ pass unconditionally\n\n",
 				))
 			})
 		})
@@ -70,7 +70,7 @@ var _ = Describe("type Test", func() {
 					"--- RECORDING TEST EVENT (test_test.go:65) ---",
 				))
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT (test_test.go:65) ---",
+					"--- ASSERTION REPORT (test_test.go:65) ---\n\n✓ pass unconditionally\n\n",
 				))
 			})
 		})
@@ -85,7 +85,7 @@ var _ = Describe("type Test", func() {
 					"--- ADVANCING TIME BY 3s (test_test.go:80) ---",
 				))
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT (test_test.go:80) ---",
+					"--- ASSERTION REPORT (test_test.go:80) ---\n\n✓ pass unconditionally\n\n",
 				))
 			})
 		})
@@ -100,7 +100,7 @@ var _ = Describe("type Test", func() {
 					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z (test_test.go:95) ---",
 				))
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT (test_test.go:95) ---",
+					"--- ASSERTION REPORT (test_test.go:95) ---\n\n✓ pass unconditionally\n\n",
 				))
 			})
 		})

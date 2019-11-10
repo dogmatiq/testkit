@@ -196,10 +196,14 @@ func (t *Test) end(a assert.Assertion) {
 		r = render.DefaultRenderer{}
 	}
 
-	t.logHeading("ASSERTION REPORT")
-
+	caller := t.findCaller()
 	buf := &strings.Builder{}
-	buf.WriteString("\n")
+	fmt.Fprintf(
+		buf,
+		"--- ASSERTION REPORT (%s:%d) ---\n\n",
+		path.Base(caller.File),
+		caller.Line,
+	)
 
 	rep := a.BuildReport(a.Ok(), r)
 	must.WriteTo(buf, rep)
