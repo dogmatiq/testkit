@@ -37,7 +37,7 @@ var _ = Describe("type Test", func() {
 		})
 
 		Describe("func Prepare()", func() {
-			It("logs a heading", func() {
+			It("logs file and line information in headings", func() {
 				test.Prepare() // <-- THIS LINE NUMBER SHOULD APPEAR IN THE OUTPUT
 				Expect(t.Logs).To(ContainElement(
 					"--- PREPARING APPLICATION FOR TEST (test_test.go:41) ---",
@@ -46,7 +46,7 @@ var _ = Describe("type Test", func() {
 		})
 
 		Describe("func ExecuteCommand()", func() {
-			It("logs a heading", func() {
+			It("logs file and line information in headings", func() {
 				test.ExecuteCommand( // <-- THIS LINE NUMBER SHOULD APPEAR IN THE OUTPUT
 					fixtures.MessageC1,
 					noopAssertion{},
@@ -54,41 +54,53 @@ var _ = Describe("type Test", func() {
 				Expect(t.Logs).To(ContainElement(
 					"--- EXECUTING TEST COMMAND (test_test.go:50) ---",
 				))
+				Expect(t.Logs).To(ContainElement(
+					"--- ASSERTION REPORT (test_test.go:50) ---",
+				))
 			})
 		})
 
 		Describe("func RecordEvent()", func() {
-			It("logs a heading", func() {
+			It("logs file and line information in headings", func() {
 				test.RecordEvent( // <-- THIS LINE NUMBER SHOULD APPEAR IN THE OUTPUT
 					fixtures.MessageC1,
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
-					"--- RECORDING TEST EVENT (test_test.go:62) ---",
+					"--- RECORDING TEST EVENT (test_test.go:65) ---",
+				))
+				Expect(t.Logs).To(ContainElement(
+					"--- ASSERTION REPORT (test_test.go:65) ---",
 				))
 			})
 		})
 
 		Describe("func AdvanceTimeBy()", func() {
-			It("logs a heading", func() {
+			It("logs file and line information in headings", func() {
 				test.AdvanceTimeBy( // <-- THIS LINE NUMBER SHOULD APPEAR IN THE OUTPUT
 					3*time.Second,
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME BY 3s (test_test.go:74) ---",
+					"--- ADVANCING TIME BY 3s (test_test.go:80) ---",
+				))
+				Expect(t.Logs).To(ContainElement(
+					"--- ASSERTION REPORT (test_test.go:80) ---",
 				))
 			})
 		})
 
 		Describe("func AdvanceTimeTo()", func() {
-			It("logs a heading", func() {
+			It("logs file and line information in headings", func() {
 				test.AdvanceTimeTo( // <-- THIS LINE NUMBER SHOULD APPEAR IN THE OUTPUT
 					time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC),
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z (test_test.go:86) ---",
+					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z (test_test.go:95) ---",
+				))
+				Expect(t.Logs).To(ContainElement(
+					"--- ASSERTION REPORT (test_test.go:95) ---",
 				))
 			})
 		})

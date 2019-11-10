@@ -196,8 +196,10 @@ func (t *Test) end(a assert.Assertion) {
 		r = render.DefaultRenderer{}
 	}
 
+	t.logHeading("ASSERTION REPORT")
+
 	buf := &strings.Builder{}
-	buf.WriteString("--- ASSERTION REPORT ---\n\n")
+	buf.WriteString("\n")
 
 	rep := a.BuildReport(a.Ok(), r)
 	must.WriteTo(buf, rep)
