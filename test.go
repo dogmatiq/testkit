@@ -2,6 +2,9 @@ package testkit
 
 import (
 	"context"
+	"fmt"
+	"path"
+	"runtime"
 	"strings"
 	"time"
 
@@ -29,7 +32,7 @@ type Test struct {
 // messages without any assertions.
 func (t *Test) Prepare(messages ...dogma.Message) *Test {
 	if t.verbose {
-		log(t.t, "--- PREPARING APPLICATION FOR TEST ---")
+		t.logHeading("PREPARING APPLICATION FOR TEST")
 	}
 
 	for _, m := range messages {
@@ -47,7 +50,7 @@ func (t *Test) ExecuteCommand(
 	options ...engine.OperationOption,
 ) *Test {
 	if t.verbose {
-		log(t.t, "--- EXECUTING TEST COMMAND ---")
+		t.logHeading("EXECUTING TEST COMMAND")
 	}
 
 	t.begin(a)
@@ -65,7 +68,7 @@ func (t *Test) RecordEvent(
 	options ...engine.OperationOption,
 ) *Test {
 	if t.verbose {
-		log(t.t, "--- RECORDING TEST EVENT ---")
+		t.logHeading("RECORDING TEST EVENT")
 	}
 
 	t.begin(a)
@@ -87,7 +90,7 @@ func (t *Test) AdvanceTimeBy(
 	}
 
 	if t.verbose {
-		logf(t.t, "--- ADVANCING TIME BY %s ---", delta)
+		t.logHeading("ADVANCING TIME BY %s", delta)
 	}
 
 	return t.advanceTime(t.now.Add(delta), a, options)
@@ -105,7 +108,7 @@ func (t *Test) AdvanceTimeTo(
 	}
 
 	if t.verbose {
-		logf(t.t, "--- ADVANCING TIME TO %s ---", now.Format(time.RFC3339))
+		t.logHeading("ADVANCING TIME TO %s", now.Format(time.RFC3339))
 	}
 
 	return t.advanceTime(now, a, options)
@@ -203,5 +206,43 @@ func (t *Test) end(a assert.Assertion) {
 
 	if !rep.TreeOk {
 		t.t.FailNow()
+	}
+}
+
+func (t *Test) logHeading(f string, v ...interface{}) {
+	caller := t.findCaller()
+
+	logf(
+		t.t,
+		"--- %s (%s:%d) ---",
+		fmt.Sprintf(f, v...),
+		path.Base(caller.File),
+		caller.Line,
+	)
+}
+
+// findCaller returns the frame of the deepest caller in the stack that is
+// not a method of the testkit.Test type.
+//
+// If none of the callers
+func (t *Test) findCaller() (f runtime.Frame) {
+	const window = 5
+	offset := 2 // start by excluding this function and runtime.Callers()
+
+	for {
+		pc := make([]uintptr, window) // we assume that Test itself does
+		n := runtime.Callers(offset, pc)
+		pc = pc[:n]
+		offset += window
+
+		frames := runtime.CallersFrames(pc)
+		more := true
+
+		for more {
+			f, more = frames.Next()
+			if !strings.HasPrefix(f.Function, "github.com/dogmatiq/testkit.(*Test)") {
+				return
+			}
+		}
 	}
 }
