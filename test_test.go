@@ -110,7 +110,6 @@ var _ = Describe("type Test", func() {
 type noopAssertion struct{}
 
 func (noopAssertion) Prepare(compare.Comparator) {
-
 }
 
 func (noopAssertion) Ok() bool {
@@ -126,5 +125,4 @@ func (noopAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
 }
 
 func (noopAssertion) Notify(fact.Fact) {
-
 }

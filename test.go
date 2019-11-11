@@ -229,14 +229,12 @@ func (t *Test) logHeading(f string, v ...interface{}) {
 
 // findCaller returns the frame of the deepest caller in the stack that is
 // not a method of the testkit.Test type.
-//
-// If none of the callers
 func (t *Test) findCaller() (f runtime.Frame) {
 	const window = 5
 	offset := 2 // start by excluding this function and runtime.Callers()
 
 	for {
-		pc := make([]uintptr, window) // we assume that Test itself does
+		pc := make([]uintptr, window)
 		n := runtime.Callers(offset, pc)
 		pc = pc[:n]
 		offset += window
