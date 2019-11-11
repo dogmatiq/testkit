@@ -92,7 +92,7 @@ func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 
 	if a.best == nil {
 		buildResultNoMatch(rep, &a.tracker)
-	} else if a.best.Role == message.EventRole {
+	} else if a.best.Role == a.role {
 		a.buildResultExpectedRole(r, rep)
 	} else {
 		a.buildResultUnexpectedRole(r, rep)

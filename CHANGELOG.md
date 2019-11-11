@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - Test logs and assertion reports now display the file and line number of the test operation ([#38])
 
+### Fixed
+
+- `assert.CommandExecuted()` now renders the correct suggestions when it fails due to mismatched message role
+
 ## [0.3.0] - 2019-10-31
 
 ### Changed
