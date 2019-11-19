@@ -1,4 +1,4 @@
-# Dogma Testing Kit
+# Dogma Application Testing Toolkit
 
 [![Build Status](https://github.com/dogmatiq/testkit/workflows/CI/badge.svg)](https://github.com/dogmatiq/testkit/actions?workflow=CI)
 [![Code Coverage](https://img.shields.io/codecov/c/github/dogmatiq/testkit/master.svg)](https://codecov.io/github/dogmatiq/testkit)
