@@ -3,8 +3,6 @@ package testkit
 import (
 	"context"
 	"fmt"
-	"path"
-	"runtime"
 	"strings"
 	"time"
 
@@ -218,13 +216,10 @@ func (t *Test) end(a assert.Assertion) {
 		r = render.DefaultRenderer{}
 	}
 
-	caller := t.findCaller()
 	buf := &strings.Builder{}
-	fmt.Fprintf(
+	fmt.Fprint(
 		buf,
-		"--- ASSERTION REPORT (%s:%d) ---\n\n",
-		path.Base(caller.File),
-		caller.Line,
+		"--- ASSERTION REPORT ---\n\n",
 	)
 
 	rep := a.BuildReport(a.Ok(), r)
@@ -240,38 +235,8 @@ func (t *Test) end(a assert.Assertion) {
 func (t *Test) logHeading(f string, v ...interface{}) {
 	t.t.Helper()
 
-	caller := t.findCaller()
-
 	t.t.Logf(
-		"--- %s (%s:%d) ---",
+		"--- %s ---",
 		fmt.Sprintf(f, v...),
-		path.Base(caller.File),
-		caller.Line,
 	)
-}
-
-// findCaller returns the frame of the deepest caller in the stack that is
-// not a method of the testkit.Test type.
-func (t *Test) findCaller() (f runtime.Frame) {
-	t.t.Helper()
-
-	const window = 5
-	offset := 2 // start by excluding this function and runtime.Callers()
-
-	for {
-		pc := make([]uintptr, window)
-		n := runtime.Callers(offset, pc)
-		pc = pc[:n]
-		offset += window
-
-		frames := runtime.CallersFrames(pc)
-		more := true
-
-		for more {
-			f, more = frames.Next()
-			if !strings.HasPrefix(f.Function, "github.com/dogmatiq/testkit.(*Test)") {
-				return
-			}
-		}
-	}
 }
