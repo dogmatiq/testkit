@@ -8,4 +8,5 @@ type T interface {
 	Log(args ...interface{})
 	Logf(f string, args ...interface{})
 	FailNow()
+	Helper()
 }

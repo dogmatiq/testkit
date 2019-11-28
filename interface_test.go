@@ -18,3 +18,6 @@ func (t *mockT) Logf(f string, args ...interface{}) {
 func (t *mockT) FailNow() {
 	panic("test failed")
 }
+
+func (t *mockT) Helper() {
+}
