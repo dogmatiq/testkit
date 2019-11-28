@@ -6,7 +6,7 @@ import (
 
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
-	"github.com/dogmatiq/testkit/engine/logging"
+	"github.com/dogmatiq/testkit/engine/fact/internal/logging"
 )
 
 // Logger is an observer that logs human-readable messages to a log function.

@@ -31,6 +31,8 @@ type Test struct {
 // Prepare prepares the application for the test by executing the given set of
 // messages without any assertions.
 func (t *Test) Prepare(messages ...dogma.Message) *Test {
+	t.t.Helper()
+
 	if t.verbose {
 		t.logHeading("PREPARING APPLICATION FOR TEST")
 	}
@@ -49,6 +51,8 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Helper()
+
 	if t.verbose {
 		t.logHeading("EXECUTING TEST COMMAND")
 	}
@@ -67,6 +71,8 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Helper()
+
 	if t.verbose {
 		t.logHeading("RECORDING TEST EVENT")
 	}
@@ -85,6 +91,8 @@ func (t *Test) AdvanceTimeBy(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Helper()
+
 	if delta < 0 {
 		panic("delta must be positive")
 	}
@@ -103,6 +111,8 @@ func (t *Test) AdvanceTimeTo(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
+	t.t.Helper()
+
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
 	}
@@ -121,6 +131,8 @@ func (t *Test) advanceTime(
 	a assert.Assertion,
 	options []engine.OperationOption,
 ) *Test {
+	t.t.Helper()
+
 	t.now = now
 
 	t.begin(a)
@@ -137,10 +149,12 @@ func (t *Test) dispatch(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) {
+	t.t.Helper()
+
 	opts := t.options(options, a)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		log(t.t, err)
+		t.t.Log(err)
 		t.t.FailNow()
 	}
 }
@@ -151,10 +165,12 @@ func (t *Test) tick(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) {
+	t.t.Helper()
+
 	opts := t.options(options, a)
 
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
-		log(t.t, err)
+		t.t.Log(err)
 		t.t.FailNow()
 	}
 }
@@ -165,6 +181,8 @@ func (t *Test) options(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) (opts []engine.OperationOption) {
+	t.t.Helper()
+
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
 	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
@@ -178,6 +196,8 @@ func (t *Test) options(
 }
 
 func (t *Test) begin(a assert.Assertion) {
+	t.t.Helper()
+
 	if a == nil {
 		panic("assertion must not be nil")
 	}
@@ -191,6 +211,8 @@ func (t *Test) begin(a assert.Assertion) {
 }
 
 func (t *Test) end(a assert.Assertion) {
+	t.t.Helper()
+
 	r := t.renderer
 	if r == nil {
 		r = render.DefaultRenderer{}
@@ -208,7 +230,7 @@ func (t *Test) end(a assert.Assertion) {
 	rep := a.BuildReport(a.Ok(), r)
 	must.WriteTo(buf, rep)
 
-	log(t.t, buf.String())
+	t.t.Log(buf.String())
 
 	if !rep.TreeOk {
 		t.t.FailNow()
@@ -216,10 +238,11 @@ func (t *Test) end(a assert.Assertion) {
 }
 
 func (t *Test) logHeading(f string, v ...interface{}) {
+	t.t.Helper()
+
 	caller := t.findCaller()
 
-	logf(
-		t.t,
+	t.t.Logf(
 		"--- %s (%s:%d) ---",
 		fmt.Sprintf(f, v...),
 		path.Base(caller.File),
@@ -230,6 +253,8 @@ func (t *Test) logHeading(f string, v ...interface{}) {
 // findCaller returns the frame of the deepest caller in the stack that is
 // not a method of the testkit.Test type.
 func (t *Test) findCaller() (f runtime.Frame) {
+	t.t.Helper()
+
 	const window = 5
 	offset := 2 // start by excluding this function and runtime.Callers()
 

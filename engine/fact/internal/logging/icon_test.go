@@ -3,7 +3,7 @@ package logging_test
 import (
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
-	. "github.com/dogmatiq/testkit/engine/logging"
+	. "github.com/dogmatiq/testkit/engine/fact/internal/logging"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
