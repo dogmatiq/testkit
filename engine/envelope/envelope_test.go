@@ -23,15 +23,13 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(env).To(Equal(
 				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "100",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message:   fixtures.MessageC1,
-					Type:      fixtures.MessageCType,
-					Role:      message.CommandRole,
-					CreatedAt: now,
+					MessageID:     "100",
+					CorrelationID: "100",
+					CausationID:   "100",
+					Message:       fixtures.MessageC1,
+					Type:          fixtures.MessageCType,
+					Role:          message.CommandRole,
+					CreatedAt:     now,
 				},
 			))
 		})
@@ -48,15 +46,13 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(env).To(Equal(
 				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "100",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message:   fixtures.MessageE1,
-					Type:      fixtures.MessageEType,
-					Role:      message.EventRole,
-					CreatedAt: now,
+					MessageID:     "100",
+					CorrelationID: "100",
+					CausationID:   "100",
+					Message:       fixtures.MessageE1,
+					Type:          fixtures.MessageEType,
+					Role:          message.EventRole,
+					CreatedAt:     now,
 				},
 			))
 		})
@@ -84,16 +80,14 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(child).To(Equal(
 				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "200",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message:   fixtures.MessageC1,
-					Type:      fixtures.MessageCType,
-					Role:      message.CommandRole,
-					CreatedAt: now,
-					Origin:    &origin,
+					MessageID:     "200",
+					CorrelationID: "100",
+					CausationID:   "100",
+					Message:       fixtures.MessageC1,
+					Type:          fixtures.MessageCType,
+					Role:          message.CommandRole,
+					CreatedAt:     now,
+					Origin:        &origin,
 				},
 			))
 		})
@@ -121,16 +115,14 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(child).To(Equal(
 				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "200",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message:   fixtures.MessageE1,
-					Type:      fixtures.MessageEType,
-					Role:      message.EventRole,
-					CreatedAt: now,
-					Origin:    &origin,
+					MessageID:     "200",
+					CorrelationID: "100",
+					CausationID:   "100",
+					Message:       fixtures.MessageE1,
+					Type:          fixtures.MessageEType,
+					Role:          message.EventRole,
+					CreatedAt:     now,
+					Origin:        &origin,
 				},
 			))
 		})
@@ -160,17 +152,15 @@ var _ = Describe("type Envelope", func() {
 
 			Expect(child).To(Equal(
 				&Envelope{
-					Correlation: message.Correlation{
-						MessageID:     "200",
-						CorrelationID: "100",
-						CausationID:   "100",
-					},
-					Message:      fixtures.MessageT1,
-					Type:         fixtures.MessageTType,
-					Role:         message.TimeoutRole,
-					CreatedAt:    now,
-					ScheduledFor: s,
-					Origin:       &origin,
+					MessageID:     "200",
+					CorrelationID: "100",
+					CausationID:   "100",
+					Message:       fixtures.MessageT1,
+					Type:          fixtures.MessageTType,
+					Role:          message.TimeoutRole,
+					CreatedAt:     now,
+					ScheduledFor:  s,
+					Origin:        &origin,
 				},
 			))
 		})

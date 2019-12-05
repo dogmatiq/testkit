@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/logging"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/envelope"
 )
 
 // Logger is an observer that logs human-readable messages to a log function.
@@ -81,7 +82,7 @@ func (l *Logger) Notify(f Fact) {
 // dispatchCycleBegun returns the log message for f.
 func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.SystemIcon,
@@ -96,7 +97,7 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 // dispatchCycleSkipped returns the log message for f.
 func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
 	l.log(
-		message.Correlation{},
+		&envelope.Envelope{},
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.SystemIcon,
@@ -110,7 +111,7 @@ func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
 // dispatchBegun returns the log message for f.
 func (l *Logger) dispatchBegun(f DispatchBegun) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.SystemIcon,
@@ -125,7 +126,7 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 func (l *Logger) handlingCompleted(f HandlingCompleted) {
 	if f.Error != nil {
 		l.log(
-			f.Envelope.Correlation,
+			f.Envelope,
 			[]logging.Icon{
 				logging.InboundErrorIcon,
 				logging.HandlerTypeIcon(f.HandlerType),
@@ -140,7 +141,7 @@ func (l *Logger) handlingCompleted(f HandlingCompleted) {
 // handlingSkipped returns the log message for f.
 func (l *Logger) handlingSkipped(f HandlingSkipped) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.HandlerTypeIcon(f.HandlerType),
@@ -157,7 +158,7 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) {
 // tickCycleBegun returns the log message for f.
 func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 	l.log(
-		message.Correlation{},
+		&envelope.Envelope{},
 		[]logging.Icon{
 			"",
 			logging.SystemIcon,
@@ -173,7 +174,7 @@ func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 func (l *Logger) tickCompleted(f TickCompleted) {
 	if f.Error != nil {
 		l.log(
-			message.Correlation{},
+			&envelope.Envelope{},
 			[]logging.Icon{
 				"",
 				logging.HandlerTypeIcon(f.HandlerType),
@@ -188,7 +189,7 @@ func (l *Logger) tickCompleted(f TickCompleted) {
 // aggregateInstanceLoaded returns the log message for f.
 func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.AggregateIcon,
@@ -202,7 +203,7 @@ func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
 // aggregateInstanceNotFound returns the log message for f.
 func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.AggregateIcon,
@@ -216,7 +217,7 @@ func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) {
 // aggregateInstanceCreated returns the log message for f.
 func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.AggregateIcon,
@@ -230,7 +231,7 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 // aggregateInstanceDestroyed returns the log message for f.
 func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.AggregateIcon,
@@ -244,7 +245,7 @@ func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) {
 // eventRecordedByAggregate returns the log message for f.
 func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 	l.log(
-		f.EventEnvelope.Correlation,
+		f.EventEnvelope,
 		[]logging.Icon{
 			logging.OutboundIcon,
 			logging.AggregateIcon,
@@ -260,7 +261,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 // messageLoggedByAggregate returns the log message for f.
 func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.AggregateIcon,
@@ -274,7 +275,7 @@ func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
 // processInstanceLoaded returns the log message for f.
 func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -288,7 +289,7 @@ func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
 // processEventIgnored returns the log message for f.
 func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -302,7 +303,7 @@ func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
 // processTimeoutIgnored returns the log message for f.
 func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -316,7 +317,7 @@ func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
 // processInstanceNotFound returns the log message for f.
 func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -330,7 +331,7 @@ func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) {
 // processInstanceBegun returns the log message for f.
 func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -344,7 +345,7 @@ func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
 // processInstanceEnded returns the log message for f.
 func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -358,7 +359,7 @@ func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 // commandExecutedByProcess returns the log message for f.
 func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 	l.log(
-		f.CommandEnvelope.Correlation,
+		f.CommandEnvelope,
 		[]logging.Icon{
 			logging.OutboundIcon,
 			logging.ProcessIcon,
@@ -374,7 +375,7 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 // timeoutScheduledByProcess returns the log message for f.
 func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 	l.log(
-		f.TimeoutEnvelope.Correlation,
+		f.TimeoutEnvelope,
 		[]logging.Icon{
 			logging.OutboundIcon,
 			logging.ProcessIcon,
@@ -393,7 +394,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 // messageLoggedByProcess returns the log message for f.
 func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProcessIcon,
@@ -407,7 +408,7 @@ func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 // eventRecordedByIntegration returns the log message for f.
 func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 	l.log(
-		f.EventEnvelope.Correlation,
+		f.EventEnvelope,
 		[]logging.Icon{
 			logging.OutboundIcon,
 			logging.IntegrationIcon,
@@ -423,7 +424,7 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 // messageLoggedByIntegration returns the log message for f.
 func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.IntegrationIcon,
@@ -437,7 +438,7 @@ func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
 // messageLoggedByProjection returns the log message for f.
 func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
 	l.log(
-		f.Envelope.Correlation,
+		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
 			logging.ProjectionIcon,
@@ -449,20 +450,20 @@ func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
 }
 
 func (l *Logger) log(
-	c message.Correlation,
+	env *envelope.Envelope,
 	icons []logging.Icon,
 	text ...string,
 ) {
 	l.Log(logging.String(
 		[]logging.IconWithLabel{
 			logging.MessageIDIcon.WithLabel(
-				formatMessageID(c.MessageID),
+				formatMessageID(env.MessageID),
 			),
 			logging.CausationIDIcon.WithLabel(
-				formatMessageID(c.CausationID),
+				formatMessageID(env.CausationID),
 			),
 			logging.CorrelationIDIcon.WithLabel(
-				formatMessageID(c.CorrelationID),
+				formatMessageID(env.CorrelationID),
 			),
 		},
 		icons,

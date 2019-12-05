@@ -9,7 +9,16 @@ import (
 
 // Envelope is a container for a message that is handled by the test engine.
 type Envelope struct {
-	message.Correlation
+	// MessageID is a unique identifier for the message.
+	MessageID string
+
+	// CausationID is the ID of the message that was being handled when the message
+	// identified by MessageID was produced.
+	CausationID string
+
+	// CorrelationID is the ID of the "root" message that entered the application
+	// to cause the message identified by MessageID, either directly or indirectly.
+	CorrelationID string
 
 	// Message is the application-defined message that the envelope represents.
 	Message dogma.Message
@@ -70,15 +79,14 @@ func new(
 
 	r.MustNotBe(message.TimeoutRole)
 
-	c := message.NewCorrelation(id)
-	c.MustValidate()
-
 	return &Envelope{
-		Correlation: c,
-		Message:     m,
-		Type:        message.TypeOf(m),
-		Role:        r,
-		CreatedAt:   t,
+		MessageID:     id,
+		CausationID:   id,
+		CorrelationID: id,
+		Message:       m,
+		Type:          message.TypeOf(m),
+		Role:          r,
+		CreatedAt:     t,
 	}
 }
 
@@ -133,15 +141,14 @@ func (e *Envelope) new(
 	t time.Time,
 	o Origin,
 ) *Envelope {
-	c := e.Correlation.New(id)
-	c.MustValidate()
-
 	return &Envelope{
-		Correlation: c,
-		Message:     m,
-		Type:        message.TypeOf(m),
-		Role:        r,
-		CreatedAt:   t,
-		Origin:      &o,
+		MessageID:     id,
+		CausationID:   e.MessageID,
+		CorrelationID: e.CorrelationID,
+		Message:       m,
+		Type:          message.TypeOf(m),
+		Role:          r,
+		CreatedAt:     t,
+		Origin:        &o,
 	}
 }
