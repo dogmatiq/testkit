@@ -148,7 +148,7 @@ func (e *Engine) Dispatch(
 
 	if _, ok := e.routes[t]; !ok {
 		panic(fmt.Sprintf(
-			"dispatch cycle skipped because the %s message type is not routed to any handlers",
+			"the %s message type is not consumed by any handlers",
 			t,
 		))
 	}
