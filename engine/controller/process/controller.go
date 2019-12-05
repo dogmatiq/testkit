@@ -117,10 +117,10 @@ func (c *Controller) Handle(
 		r = c.handler.New()
 
 		if r == nil {
-			panic(handler.NilRootError{
-				Handler:     c.identity,
-				HandlerType: c.Type(),
-			})
+			panic(fmt.Sprintf(
+				"the '%s' process message handler returned a nil root from New()",
+				c.identity.Name,
+			))
 		}
 	}
 
