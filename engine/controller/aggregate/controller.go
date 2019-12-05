@@ -2,6 +2,7 @@ package aggregate
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -67,10 +68,11 @@ func (c *Controller) Handle(
 
 	id := c.handler.RouteCommandToInstance(env.Message)
 	if id == "" {
-		panic(handler.EmptyInstanceIDError{
-			Handler:     c.identity,
-			HandlerType: c.Type(),
-		})
+		panic(fmt.Sprintf(
+			"the '%s' aggregate message handler attempted to route a %s command to an empty instance ID",
+			c.identity.Name,
+			message.TypeOf(env.Message),
+		))
 	}
 
 	r, exists := c.instances[id]
