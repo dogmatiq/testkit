@@ -3,7 +3,6 @@ package fact
 import (
 	"time"
 
-	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/testkit/engine/envelope"
 )
@@ -20,17 +19,6 @@ type DispatchCycleBegun struct {
 type DispatchCycleCompleted struct {
 	Envelope        *envelope.Envelope
 	Error           error
-	EnabledHandlers map[handler.Type]bool
-}
-
-// DispatchCycleSkipped indicates that Engine.Dispatch() has been called
-// with a message that is not routed to any handlers.
-//
-// Note that when dispatch is called with an unroutable message, it is unknown
-// whether it was intended to be a command or an event.
-type DispatchCycleSkipped struct {
-	Message         dogma.Message
-	EngineTime      time.Time
 	EnabledHandlers map[handler.Type]bool
 }
 

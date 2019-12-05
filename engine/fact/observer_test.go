@@ -1,7 +1,6 @@
 package fact_test
 
 import (
-	"github.com/dogmatiq/enginekit/fixtures"
 	. "github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,8 +9,8 @@ import (
 var _ = Describe("type ObserverGroup", func() {
 	Describe("func Notify()", func() {
 		It("notifies each of the observers in the group", func() {
-			f := DispatchCycleSkipped{
-				Message: fixtures.MessageA1,
+			f := HandlingBegun{
+				HandlerName: "<handler-1>",
 			}
 			n := 0
 			g := ObserverGroup{
@@ -35,11 +34,11 @@ var _ = Describe("type ObserverGroup", func() {
 var _ = Describe("type Buffer", func() {
 	Describe("func Notify()", func() {
 		It("appends the fact to the buffer", func() {
-			f1 := DispatchCycleSkipped{
-				Message: fixtures.MessageA1,
+			f1 := HandlingBegun{
+				HandlerName: "<handler-1>",
 			}
-			f2 := DispatchCycleSkipped{
-				Message: fixtures.MessageA2,
+			f2 := HandlingBegun{
+				HandlerName: "<handler-2>",
 			}
 			b := &Buffer{}
 
@@ -57,8 +56,8 @@ var _ = Describe("type Buffer", func() {
 var _ = Describe("var Ignore", func() {
 	Describe("func Notify()", func() {
 		It("does nothing", func() {
-			Ignore.Notify(DispatchCycleSkipped{
-				Message: fixtures.MessageA1,
+			Ignore.Notify(HandlingBegun{
+				HandlerName: "<handler-1>",
 			})
 		})
 	})
