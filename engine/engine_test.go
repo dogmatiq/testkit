@@ -1,73 +1,79 @@
 package engine_test
 
 import (
+	"context"
+
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/enginekit/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("type Engine", func() {
-	Describe("func New", func() {
-		var (
-			aggregate   *fixtures.AggregateMessageHandler
-			process     *fixtures.ProcessMessageHandler
-			integration *fixtures.IntegrationMessageHandler
-			projection  *fixtures.ProjectionMessageHandler
-			app         *fixtures.Application
-		)
+	var (
+		aggregate   *AggregateMessageHandler
+		process     *ProcessMessageHandler
+		integration *IntegrationMessageHandler
+		projection  *ProjectionMessageHandler
+		app         *Application
+		engine      *Engine
+	)
 
-		BeforeEach(func() {
-			aggregate = &fixtures.AggregateMessageHandler{
-				ConfigureFunc: func(c dogma.AggregateConfigurer) {
-					c.Identity("<aggregate>", "<aggregate-key>")
-					c.ConsumesCommandType(fixtures.MessageA{})
-					c.ProducesEventType(fixtures.MessageE{})
-				},
-			}
+	BeforeEach(func() {
+		aggregate = &AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<aggregate>", "<aggregate-key>")
+				c.ConsumesCommandType(MessageA{})
+				c.ProducesEventType(MessageE{})
+			},
+		}
 
-			process = &fixtures.ProcessMessageHandler{
-				ConfigureFunc: func(c dogma.ProcessConfigurer) {
-					c.Identity("<process>", "<process-key>")
-					c.ConsumesEventType(fixtures.MessageB{})
-					c.ConsumesEventType(fixtures.MessageE{}) // shared with <projection>
-					c.ProducesCommandType(fixtures.MessageC{})
-				},
-			}
+		process = &ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<process>", "<process-key>")
+				c.ConsumesEventType(MessageB{})
+				c.ConsumesEventType(MessageE{}) // shared with <projection>
+				c.ProducesCommandType(MessageC{})
+			},
+		}
 
-			integration = &fixtures.IntegrationMessageHandler{
-				ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-					c.Identity("<integration>", "<integration-key>")
-					c.ConsumesCommandType(fixtures.MessageC{})
-					c.ProducesEventType(fixtures.MessageF{})
-				},
-			}
+		integration = &IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<integration>", "<integration-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageF{})
+			},
+		}
 
-			projection = &fixtures.ProjectionMessageHandler{
-				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-					c.Identity("<projection>", "<projection-key>")
-					c.ConsumesEventType(fixtures.MessageD{})
-					c.ConsumesEventType(fixtures.MessageE{}) // shared with <process>
-				},
-			}
+		projection = &ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<projection>", "<projection-key>")
+				c.ConsumesEventType(MessageD{})
+				c.ConsumesEventType(MessageE{}) // shared with <process>
+			},
+		}
 
-			app = &fixtures.Application{
-				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Identity("<app>", "<app-key>")
-					c.RegisterAggregate(aggregate)
-					c.RegisterProcess(process)
-					c.RegisterIntegration(integration)
-					c.RegisterProjection(projection)
-				},
-			}
-		})
+		app = &Application{
+			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+				c.Identity("<app>", "<app-key>")
+				c.RegisterAggregate(aggregate)
+				c.RegisterProcess(process)
+				c.RegisterIntegration(integration)
+				c.RegisterProjection(projection)
+			},
+		}
 
-		When("the configuration is valid", func() {
-			It("does not return an error", func() {
-				_, err := New(app)
-				Expect(err).ShouldNot(HaveOccurred())
-			})
+		var err error
+		engine, err = New(app)
+		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	Describe("func Dispatch()", func() {
+		It("panics if the message type is unrecognized", func() {
+			Expect(func() {
+				engine.Dispatch(context.Background(), MessageX1)
+			}).To(Panic())
 		})
 	})
 })
