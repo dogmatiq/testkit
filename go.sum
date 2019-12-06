@@ -4,8 +4,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dogmatiq/configkit v0.1.1-0.20191206015141-c8fcfd6ea56f h1:1lowr5WwdbjH8bZwOX2W+1A1EtSlfm9HC+5502H7a70=
-github.com/dogmatiq/configkit v0.1.1-0.20191206015141-c8fcfd6ea56f/go.mod h1:k4Cgle0csPMTDOpBFiWs27apnX9MC+98QTs/JGyYNuM=
+github.com/dogmatiq/configkit v0.1.1 h1:CRuBWyluBJqvLQ+2uOopyl0oTjx0udux/JM6so5mb0Q=
+github.com/dogmatiq/configkit v0.1.1/go.mod h1:k4Cgle0csPMTDOpBFiWs27apnX9MC+98QTs/JGyYNuM=
 github.com/dogmatiq/dapper v0.3.5 h1:F4bCCc8KKv/USNzYa22BeelzJEhLVbVhg3/vAk+xEL4=
 github.com/dogmatiq/dapper v0.3.5/go.mod h1:U32cRxzGYI5owhc/hMKjYLgBTVCdW/s3MdFJHwfDrLQ=
 github.com/dogmatiq/dogma v0.6.1 h1:0xizpaBpQIGMdcUQx4tiCS5azM8dytZsQOy/7NyUVm0=
