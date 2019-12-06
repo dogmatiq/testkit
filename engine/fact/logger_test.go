@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
@@ -22,13 +22,13 @@ var _ = Describe("type Logger", func() {
 
 		command := envelope.NewCommand(
 			"100",
-			fixtures.MessageC1,
+			MessageC1,
 			time.Now(),
 		)
 
 		event := envelope.NewEvent(
 			"100",
-			fixtures.MessageE1,
+			MessageE1,
 			time.Now(),
 		)
 
@@ -234,7 +234,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:    command,
 					EventEnvelope: command.NewEvent(
 						"200",
-						fixtures.MessageE1,
+						MessageE1,
 						time.Now(),
 						envelope.Origin{},
 					),
@@ -316,7 +316,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:    event,
 					CommandEnvelope: event.NewCommand(
 						"200",
-						fixtures.MessageC1,
+						MessageC1,
 						time.Now(),
 						envelope.Origin{},
 					),
@@ -330,7 +330,7 @@ var _ = Describe("type Logger", func() {
 					InstanceID:  "<instance>",
 					TimeoutEnvelope: event.NewTimeout(
 						"200",
-						fixtures.MessageT1,
+						MessageT1,
 						time.Now(),
 						now,
 						envelope.Origin{
@@ -363,7 +363,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:    command,
 					EventEnvelope: command.NewEvent(
 						"200",
-						fixtures.MessageE1,
+						MessageE1,
 						time.Now(),
 						envelope.Origin{},
 					),

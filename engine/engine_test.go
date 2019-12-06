@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

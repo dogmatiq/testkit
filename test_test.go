@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
@@ -15,26 +15,26 @@ import (
 )
 
 var _ = Describe("type Test", func() {
-	var app *fixtures.Application
+	var app *Application
 
 	BeforeEach(func() {
-		app = &fixtures.Application{
+		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
-				c.RegisterAggregate(&fixtures.AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandler{
 					RouteCommandToInstanceFunc: func(m dogma.Message) string {
 						return "<instance>"
 					},
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "<aggregate-key>")
-						c.ConsumesCommandType(fixtures.MessageC{})
-						c.ProducesEventType(fixtures.MessageE{})
+						c.ConsumesCommandType(MessageC{})
+						c.ProducesEventType(MessageE{})
 					},
 				})
-				c.RegisterProjection(&fixtures.ProjectionMessageHandler{
+				c.RegisterProjection(&ProjectionMessageHandler{
 					ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 						c.Identity("<projection>", "<projection-key>")
-						c.ConsumesEventType(fixtures.MessageE{})
+						c.ConsumesEventType(MessageE{})
 					},
 				})
 			},
@@ -64,7 +64,7 @@ var _ = Describe("type Test", func() {
 		Describe("func ExecuteCommand()", func() {
 			It("logs file and line information in headings", func() {
 				test.ExecuteCommand(
-					fixtures.MessageC1,
+					MessageC1,
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
@@ -79,7 +79,7 @@ var _ = Describe("type Test", func() {
 		Describe("func RecordEvent()", func() {
 			It("logs file and line information in headings", func() {
 				test.RecordEvent(
-					fixtures.MessageE1,
+					MessageE1,
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(

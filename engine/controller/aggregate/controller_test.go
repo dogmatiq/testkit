@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/testkit/engine/controller"
-
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
 	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
