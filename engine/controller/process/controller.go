@@ -2,6 +2,7 @@ package process
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -116,10 +117,10 @@ func (c *Controller) Handle(
 		r = c.handler.New()
 
 		if r == nil {
-			panic(handler.NilRootError{
-				Handler:     c.identity,
-				HandlerType: c.Type(),
-			})
+			panic(fmt.Sprintf(
+				"the '%s' process message handler returned a nil root from New()",
+				c.identity.Name,
+			))
 		}
 	}
 
@@ -180,10 +181,11 @@ func (c *Controller) routeEvent(
 
 	if ok {
 		if id == "" {
-			panic(handler.EmptyInstanceIDError{
-				Handler:     c.identity,
-				HandlerType: c.Type(),
-			})
+			panic(fmt.Sprintf(
+				"the '%s' process message handler attempted to route a %s event to an empty instance ID",
+				c.identity.Name,
+				message.TypeOf(env.Message),
+			))
 		}
 
 		return id, true, nil

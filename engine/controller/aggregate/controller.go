@@ -2,6 +2,7 @@ package aggregate
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -67,10 +68,11 @@ func (c *Controller) Handle(
 
 	id := c.handler.RouteCommandToInstance(env.Message)
 	if id == "" {
-		panic(handler.EmptyInstanceIDError{
-			Handler:     c.identity,
-			HandlerType: c.Type(),
-		})
+		panic(fmt.Sprintf(
+			"the '%s' aggregate message handler attempted to route a %s command to an empty instance ID",
+			c.identity.Name,
+			message.TypeOf(env.Message),
+		))
 	}
 
 	r, exists := c.instances[id]
@@ -94,10 +96,10 @@ func (c *Controller) Handle(
 		r = c.handler.New()
 
 		if r == nil {
-			panic(handler.NilRootError{
-				Handler:     c.identity,
-				HandlerType: c.Type(),
-			})
+			panic(fmt.Sprintf(
+				"the '%s' aggregate message handler returned a nil root from New()",
+				c.identity.Name,
+			))
 		}
 	}
 
@@ -116,12 +118,24 @@ func (c *Controller) Handle(
 
 	c.handler.HandleCommand(s, env.Message)
 
-	if (s.created || s.destroyed) && len(s.events) == 0 {
-		panic(handler.EventNotRecordedError{
-			Handler:      c.identity,
-			InstanceID:   id,
-			WasDestroyed: s.destroyed,
-		})
+	if len(s.events) == 0 {
+		if s.created {
+			panic(fmt.Sprintf(
+				"the '%s' aggregate message handler created the '%s' instance without recording an event while handling a %s command",
+				c.identity.Name,
+				id,
+				message.TypeOf(env.Message),
+			))
+		}
+
+		if s.destroyed {
+			panic(fmt.Sprintf(
+				"the '%s' aggregate message handler destroyed the '%s' instance without recording an event while handling a %s command",
+				c.identity.Name,
+				id,
+				message.TypeOf(env.Message),
+			))
+		}
 	}
 
 	if s.exists {
