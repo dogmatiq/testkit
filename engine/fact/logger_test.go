@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+
 	. "github.com/dogmatiq/dogma/fixtures"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
@@ -66,9 +67,9 @@ var _ = Describe("type Logger", func() {
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
-					EnabledHandlers: map[handler.Type]bool{
-						handler.AggregateType: true,
-						handler.ProcessType:   true,
+					EnabledHandlers: map[configkit.HandlerType]bool{
+						configkit.AggregateHandlerType: true,
+						configkit.ProcessHandlerType:   true,
 					},
 				},
 			),
@@ -126,7 +127,7 @@ var _ = Describe("type Logger", func() {
 				"= 0100  ∵ 0100  ⋲ 0100  ▽ ∴ ✖  <handler> ● <error>",
 				HandlingCompleted{
 					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
+					HandlerType: configkit.AggregateHandlerType,
 					Envelope:    command,
 					Error:       errors.New("<error>"),
 				},
@@ -136,7 +137,7 @@ var _ = Describe("type Logger", func() {
 				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> ● handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
 					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
+					HandlerType: configkit.AggregateHandlerType,
 					Envelope:    command,
 				},
 			),
@@ -148,9 +149,9 @@ var _ = Describe("type Logger", func() {
 				"= ----  ∵ ----  ⋲ ----    ⚙    ticking ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
 				TickCycleBegun{
 					EngineTime: now,
-					EnabledHandlers: map[handler.Type]bool{
-						handler.AggregateType: true,
-						handler.ProcessType:   true,
+					EnabledHandlers: map[configkit.HandlerType]bool{
+						configkit.AggregateHandlerType: true,
+						configkit.ProcessHandlerType:   true,
 					},
 				},
 			),
@@ -182,7 +183,7 @@ var _ = Describe("type Logger", func() {
 				"= ----  ∵ ----  ⋲ ----    ∴ ✖  <handler> ● <error>",
 				TickCompleted{
 					HandlerName: "<handler>",
-					HandlerType: handler.AggregateType,
+					HandlerType: configkit.AggregateHandlerType,
 					Error:       errors.New("<error>"),
 				},
 			),
@@ -335,7 +336,7 @@ var _ = Describe("type Logger", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<handler>",
-							HandlerType: handler.ProcessType,
+							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance>",
 						},
 					),

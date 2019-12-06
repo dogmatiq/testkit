@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
@@ -80,7 +80,7 @@ var _ = Describe("type scope", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
-							HandlerType: handlerkit.IntegrationType,
+							HandlerType: configkit.IntegrationHandlerType,
 						},
 					),
 				},

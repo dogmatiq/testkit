@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact/internal/logging"
@@ -467,11 +467,11 @@ func formatEngineTime(t time.Time) string {
 	return "engine time is " + t.Format(time.RFC3339)
 }
 
-func formatEnabledHandlers(e map[handler.Type]bool) string {
+func formatEnabledHandlers(e map[configkit.HandlerType]bool) string {
 	s := "enabled: "
 
 	first := true
-	for _, t := range handler.Types {
+	for _, t := range configkit.HandlerTypes {
 		if e[t] {
 			if !first {
 				s += ", "

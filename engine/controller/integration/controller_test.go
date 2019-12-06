@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine/controller"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
@@ -60,8 +60,8 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Type()", func() {
-		It("returns handler.IntegrationType", func() {
-			Expect(controller.Type()).To(Equal(handlerkit.IntegrationType))
+		It("returns configkit.IntegrationHandlerType", func() {
+			Expect(controller.Type()).To(Equal(configkit.IntegrationHandlerType))
 		})
 	})
 
@@ -139,7 +139,7 @@ var _ = Describe("type Controller", func() {
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.IntegrationType,
+						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),
 				command.NewEvent(
@@ -148,7 +148,7 @@ var _ = Describe("type Controller", func() {
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.IntegrationType,
+						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),
 			))

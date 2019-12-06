@@ -1,7 +1,7 @@
 package logging_test
 
 import (
-	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/fact/internal/logging"
 	. "github.com/onsi/ginkgo"
@@ -42,9 +42,9 @@ var _ = Describe("func DirectionIcon()", func() {
 
 var _ = Describe("func HandlerTypeIcon()", func() {
 	It("returns the expected icon", func() {
-		Expect(HandlerTypeIcon(handler.AggregateType)).To(Equal(AggregateIcon))
-		Expect(HandlerTypeIcon(handler.ProcessType)).To(Equal(ProcessIcon))
-		Expect(HandlerTypeIcon(handler.IntegrationType)).To(Equal(IntegrationIcon))
-		Expect(HandlerTypeIcon(handler.ProjectionType)).To(Equal(ProjectionIcon))
+		Expect(HandlerTypeIcon(configkit.AggregateHandlerType)).To(Equal(AggregateIcon))
+		Expect(HandlerTypeIcon(configkit.ProcessHandlerType)).To(Equal(ProcessIcon))
+		Expect(HandlerTypeIcon(configkit.IntegrationHandlerType)).To(Equal(IntegrationIcon))
+		Expect(HandlerTypeIcon(configkit.ProjectionHandlerType)).To(Equal(ProjectionIcon))
 	})
 })

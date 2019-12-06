@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -97,7 +97,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		s.now,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.ProcessType,
+			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
 	)
@@ -130,7 +130,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		t,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.ProcessType,
+			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
 	)

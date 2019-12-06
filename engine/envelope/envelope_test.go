@@ -3,8 +3,8 @@ package envelope_test
 import (
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/onsi/ginkgo"
@@ -67,7 +67,7 @@ var _ = Describe("type Envelope", func() {
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
-				HandlerType: handler.ProcessType,
+				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			}
 			now := time.Now()
@@ -102,7 +102,7 @@ var _ = Describe("type Envelope", func() {
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
-				HandlerType: handler.AggregateType,
+				HandlerType: configkit.AggregateHandlerType,
 				InstanceID:  "<instance>",
 			}
 			now := time.Now()
@@ -137,7 +137,7 @@ var _ = Describe("type Envelope", func() {
 			)
 			origin := Origin{
 				HandlerName: "<handler>",
-				HandlerType: handler.ProcessType,
+				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			}
 			now := time.Now()

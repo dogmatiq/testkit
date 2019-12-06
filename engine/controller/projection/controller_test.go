@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine/controller"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -48,8 +48,8 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Type()", func() {
-		It("returns handler.ProjectionType", func() {
-			Expect(controller.Type()).To(Equal(handlerkit.ProjectionType))
+		It("returns configkit.ProjectionHandlerType", func() {
+			Expect(controller.Type()).To(Equal(configkit.ProjectionHandlerType))
 		})
 	})
 

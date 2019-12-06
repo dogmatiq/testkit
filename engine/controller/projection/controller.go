@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -35,9 +35,9 @@ func (c *Controller) Identity() identity.Identity {
 	return c.identity
 }
 
-// Type returns handler.ProjectionType.
-func (c *Controller) Type() handler.Type {
-	return handler.ProjectionType
+// Type returns configkit.ProjectionHandlerType.
+func (c *Controller) Type() configkit.HandlerType {
+	return configkit.ProjectionHandlerType
 }
 
 // Tick does nothing.

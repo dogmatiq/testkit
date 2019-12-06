@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
 	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/controller"
@@ -44,7 +44,7 @@ var _ = Describe("type Controller", func() {
 			time.Now(),
 			envelope.Origin{
 				HandlerName: "<name>",
-				HandlerType: handlerkit.ProcessType,
+				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance-E1>",
 			},
 		)
@@ -90,8 +90,8 @@ var _ = Describe("type Controller", func() {
 	})
 
 	Describe("func Type()", func() {
-		It("returns handler.ProcessType", func() {
-			Expect(controller.Type()).To(Equal(handlerkit.ProcessType))
+		It("returns configkit.ProcessHandlerType", func() {
+			Expect(controller.Type()).To(Equal(configkit.ProcessHandlerType))
 		})
 	})
 
@@ -152,7 +152,7 @@ var _ = Describe("type Controller", func() {
 					t1Time,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.ProcessType,
+						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
 				),
@@ -163,7 +163,7 @@ var _ = Describe("type Controller", func() {
 					t2Time,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.ProcessType,
+						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
 				),
@@ -239,7 +239,7 @@ var _ = Describe("type Controller", func() {
 					t1Time,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.ProcessType,
+						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
 				),
@@ -250,7 +250,7 @@ var _ = Describe("type Controller", func() {
 					t2Time,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.ProcessType,
+						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
 				),
@@ -333,7 +333,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
-							HandlerType: handlerkit.ProcessType,
+							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
 					),
@@ -344,7 +344,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
-							HandlerType: handlerkit.ProcessType,
+							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
 					),
@@ -571,7 +571,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
-							HandlerType: handlerkit.ProcessType,
+							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
 					),
@@ -582,7 +582,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
-							HandlerType: handlerkit.ProcessType,
+							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
 					),
