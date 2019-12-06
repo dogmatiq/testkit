@@ -2,7 +2,7 @@ package assert
 
 import (
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 

@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -23,7 +23,7 @@ type scope struct {
 	now        time.Time
 	root       dogma.ProcessRoot
 	exists     bool
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	env        *envelope.Envelope // event or timeout
 	commands   []*envelope.Envelope
 	ready      []*envelope.Envelope // timeouts <= now

@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/testkit/engine/controller"
-
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -24,7 +24,7 @@ var _ controller.Controller = &Controller{}
 var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *fixtures.IntegrationMessageHandler
+		handler    *IntegrationMessageHandler
 		controller *Controller
 		command    *envelope.Envelope
 	)
@@ -32,19 +32,19 @@ var _ = Describe("type Controller", func() {
 	BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			fixtures.MessageA1,
+			MessageA1,
 			time.Now(),
 		)
 
-		handler = &fixtures.IntegrationMessageHandler{}
+		handler = &IntegrationMessageHandler{}
 
 		controller = NewController(
 			identity.MustNew("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
-				fixtures.MessageBType,
-				fixtures.MessageEType,
+				MessageBType,
+				MessageEType,
 			),
 		)
 
@@ -97,7 +97,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) error {
 				called = true
-				Expect(m).To(Equal(fixtures.MessageA1))
+				Expect(m).To(Equal(MessageA1))
 				return nil
 			}
 
@@ -118,8 +118,8 @@ var _ = Describe("type Controller", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Message,
 			) error {
-				s.RecordEvent(fixtures.MessageB1)
-				s.RecordEvent(fixtures.MessageB2)
+				s.RecordEvent(MessageB1)
+				s.RecordEvent(MessageB2)
 				return nil
 			}
 
@@ -135,7 +135,7 @@ var _ = Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					"1",
-					fixtures.MessageB1,
+					MessageB1,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
@@ -144,7 +144,7 @@ var _ = Describe("type Controller", func() {
 				),
 				command.NewEvent(
 					"2",
-					fixtures.MessageB2,
+					MessageB2,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",

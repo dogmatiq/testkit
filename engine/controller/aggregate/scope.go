@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -24,7 +24,7 @@ type scope struct {
 	exists     bool
 	created    bool // true if Create() returned true at least once
 	destroyed  bool // true if Destroy() returned true at least once
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }

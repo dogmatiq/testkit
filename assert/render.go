@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/iago/count"
 	"github.com/dogmatiq/iago/indent"
 	"github.com/dogmatiq/iago/must"

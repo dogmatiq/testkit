@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
+	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -24,7 +25,7 @@ var _ controller.Controller = &Controller{}
 var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *fixtures.ProcessMessageHandler
+		handler    *ProcessMessageHandler
 		controller *Controller
 		event      *envelope.Envelope
 		timeout    *envelope.Envelope
@@ -33,13 +34,13 @@ var _ = Describe("type Controller", func() {
 	BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			fixtures.MessageE1,
+			MessageE1,
 			time.Now(),
 		)
 
 		timeout = event.NewTimeout(
 			"2000",
-			fixtures.MessageT1,
+			MessageT1,
 			time.Now(),
 			time.Now(),
 			envelope.Origin{
@@ -49,7 +50,7 @@ var _ = Describe("type Controller", func() {
 			},
 		)
 
-		handler = &fixtures.ProcessMessageHandler{
+		handler = &ProcessMessageHandler{
 			// setup routes for "E" (event) messages to an instance ID based on the
 			// message's content
 			RouteEventToInstanceFunc: func(
@@ -57,7 +58,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) (string, bool, error) {
 				switch x := m.(type) {
-				case fixtures.MessageE:
+				case MessageE:
 					id := fmt.Sprintf(
 						"<instance-%s>",
 						x.Value.(string),
@@ -74,7 +75,7 @@ var _ = Describe("type Controller", func() {
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
-				fixtures.MessageCType,
+				MessageCType,
 			),
 		)
 
@@ -118,9 +119,9 @@ var _ = Describe("type Controller", func() {
 				s.Begin()
 
 				// note, calls to ScheduleTimeout are NOT in chronological order
-				s.ScheduleTimeout(fixtures.MessageT3, t3Time)
-				s.ScheduleTimeout(fixtures.MessageT2, t2Time)
-				s.ScheduleTimeout(fixtures.MessageT1, t1Time)
+				s.ScheduleTimeout(MessageT3, t3Time)
+				s.ScheduleTimeout(MessageT2, t2Time)
+				s.ScheduleTimeout(MessageT1, t1Time)
 
 				return nil
 			}
@@ -147,7 +148,7 @@ var _ = Describe("type Controller", func() {
 			Expect(timeouts).To(ConsistOf(
 				event.NewTimeout(
 					"3",
-					fixtures.MessageT1,
+					MessageT1,
 					createdTime,
 					t1Time,
 					envelope.Origin{
@@ -158,7 +159,7 @@ var _ = Describe("type Controller", func() {
 				),
 				event.NewTimeout(
 					"2",
-					fixtures.MessageT2,
+					MessageT2,
 					createdTime,
 					t2Time,
 					envelope.Origin{
@@ -193,7 +194,7 @@ var _ = Describe("type Controller", func() {
 		It("does not return timeouts for instances that have been deleted", func() {
 			secondInstanceEvent := envelope.NewEvent(
 				"3000",
-				fixtures.MessageE2, // different message value = different instance
+				MessageE2, // different message value = different instance
 				time.Now(),
 			)
 
@@ -234,7 +235,7 @@ var _ = Describe("type Controller", func() {
 			Expect(timeouts).To(ConsistOf(
 				secondInstanceEvent.NewTimeout(
 					"3",
-					fixtures.MessageT1,
+					MessageT1,
 					createdTime,
 					t1Time,
 					envelope.Origin{
@@ -245,7 +246,7 @@ var _ = Describe("type Controller", func() {
 				),
 				secondInstanceEvent.NewTimeout(
 					"2",
-					fixtures.MessageT2,
+					MessageT2,
 					createdTime,
 					t2Time,
 					envelope.Origin{
@@ -268,7 +269,7 @@ var _ = Describe("type Controller", func() {
 					m dogma.Message,
 				) error {
 					called = true
-					Expect(m).To(Equal(fixtures.MessageE1))
+					Expect(m).To(Equal(MessageE1))
 					return nil
 				}
 
@@ -313,8 +314,8 @@ var _ = Describe("type Controller", func() {
 					_ dogma.Message,
 				) error {
 					s.Begin()
-					s.ExecuteCommand(fixtures.MessageC1)
-					s.ScheduleTimeout(fixtures.MessageT1, now) // timeouts at current time are "ready"
+					s.ExecuteCommand(MessageC1)
+					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
 					return nil
 				}
 
@@ -329,7 +330,7 @@ var _ = Describe("type Controller", func() {
 				Expect(envelopes).To(ConsistOf(
 					event.NewCommand(
 						"1",
-						fixtures.MessageC1,
+						MessageC1,
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -339,7 +340,7 @@ var _ = Describe("type Controller", func() {
 					),
 					event.NewTimeout(
 						"2",
-						fixtures.MessageT1,
+						MessageT1,
 						now,
 						now,
 						envelope.Origin{
@@ -360,7 +361,7 @@ var _ = Describe("type Controller", func() {
 					_ dogma.Message,
 				) error {
 					s.Begin()
-					s.ScheduleTimeout(fixtures.MessageT1, now.Add(-1))
+					s.ScheduleTimeout(MessageT1, now.Add(-1))
 					return nil
 				}
 
@@ -384,7 +385,7 @@ var _ = Describe("type Controller", func() {
 					_ dogma.Message,
 				) error {
 					s.Begin()
-					s.ScheduleTimeout(fixtures.MessageT1, now.Add(1))
+					s.ScheduleTimeout(MessageT1, now.Add(1))
 					return nil
 				}
 
@@ -507,7 +508,7 @@ var _ = Describe("type Controller", func() {
 					m dogma.Message,
 				) error {
 					called = true
-					Expect(m).To(Equal(fixtures.MessageT1))
+					Expect(m).To(Equal(MessageT1))
 					return nil
 				}
 
@@ -551,8 +552,8 @@ var _ = Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
-					s.ExecuteCommand(fixtures.MessageC1)
-					s.ScheduleTimeout(fixtures.MessageT1, now) // timeouts at current time are "ready"
+					s.ExecuteCommand(MessageC1)
+					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
 					return nil
 				}
 
@@ -567,7 +568,7 @@ var _ = Describe("type Controller", func() {
 				Expect(envelopes).To(ConsistOf(
 					timeout.NewCommand(
 						"1",
-						fixtures.MessageC1,
+						MessageC1,
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -577,7 +578,7 @@ var _ = Describe("type Controller", func() {
 					),
 					timeout.NewTimeout(
 						"2",
-						fixtures.MessageT1,
+						MessageT1,
 						now,
 						now,
 						envelope.Origin{
@@ -597,7 +598,7 @@ var _ = Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(fixtures.MessageB2, now.Add(-1))
+					s.ScheduleTimeout(MessageB2, now.Add(-1))
 					return nil
 				}
 
@@ -620,7 +621,7 @@ var _ = Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(fixtures.MessageB2, now.Add(1))
+					s.ScheduleTimeout(MessageB2, now.Add(1))
 					return nil
 				}
 
@@ -841,7 +842,7 @@ var _ = Describe("type Controller", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance-E1>",
-						Root:        &fixtures.ProcessRoot{},
+						Root:        &ProcessRoot{},
 						Envelope:    event,
 					},
 				))

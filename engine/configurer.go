@@ -3,8 +3,8 @@ package engine
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/enginekit/config"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/controller/integration"

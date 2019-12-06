@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/iago/must"
 )
 
@@ -149,10 +148,8 @@ func formatLabel(label string) string {
 }
 
 // DirectionIcon returns the icon to use for the given message direction.
-func DirectionIcon(d message.Direction, isError bool) Icon {
-	d.MustValidate()
-
-	if d == message.InboundDirection {
+func DirectionIcon(inbound bool, isError bool) Icon {
+	if inbound {
 		if isError {
 			return InboundErrorIcon
 		}

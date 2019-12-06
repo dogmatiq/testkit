@@ -4,8 +4,9 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +18,7 @@ var _ = Describe("type Envelope", func() {
 			now := time.Now()
 			env := NewCommand(
 				"100",
-				fixtures.MessageC1,
+				MessageC1,
 				now,
 			)
 
@@ -26,8 +27,8 @@ var _ = Describe("type Envelope", func() {
 					MessageID:     "100",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       fixtures.MessageC1,
-					Type:          fixtures.MessageCType,
+					Message:       MessageC1,
+					Type:          MessageCType,
 					Role:          message.CommandRole,
 					CreatedAt:     now,
 				},
@@ -40,7 +41,7 @@ var _ = Describe("type Envelope", func() {
 			now := time.Now()
 			env := NewEvent(
 				"100",
-				fixtures.MessageE1,
+				MessageE1,
 				now,
 			)
 
@@ -49,8 +50,8 @@ var _ = Describe("type Envelope", func() {
 					MessageID:     "100",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       fixtures.MessageE1,
-					Type:          fixtures.MessageEType,
+					Message:       MessageE1,
+					Type:          MessageEType,
 					Role:          message.EventRole,
 					CreatedAt:     now,
 				},
@@ -62,7 +63,7 @@ var _ = Describe("type Envelope", func() {
 		It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
-				fixtures.MessageP1,
+				MessageP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -73,7 +74,7 @@ var _ = Describe("type Envelope", func() {
 			now := time.Now()
 			child := parent.NewCommand(
 				"200",
-				fixtures.MessageC1,
+				MessageC1,
 				now,
 				origin,
 			)
@@ -83,8 +84,8 @@ var _ = Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       fixtures.MessageC1,
-					Type:          fixtures.MessageCType,
+					Message:       MessageC1,
+					Type:          MessageCType,
 					Role:          message.CommandRole,
 					CreatedAt:     now,
 					Origin:        &origin,
@@ -97,7 +98,7 @@ var _ = Describe("type Envelope", func() {
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
-				fixtures.MessageP1,
+				MessageP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -108,7 +109,7 @@ var _ = Describe("type Envelope", func() {
 			now := time.Now()
 			child := parent.NewEvent(
 				"200",
-				fixtures.MessageE1,
+				MessageE1,
 				now,
 				origin,
 			)
@@ -118,8 +119,8 @@ var _ = Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       fixtures.MessageE1,
-					Type:          fixtures.MessageEType,
+					Message:       MessageE1,
+					Type:          MessageEType,
 					Role:          message.EventRole,
 					CreatedAt:     now,
 					Origin:        &origin,
@@ -132,7 +133,7 @@ var _ = Describe("type Envelope", func() {
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
-				fixtures.MessageP1,
+				MessageP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -144,7 +145,7 @@ var _ = Describe("type Envelope", func() {
 			s := time.Now()
 			child := parent.NewTimeout(
 				"200",
-				fixtures.MessageT1,
+				MessageT1,
 				now,
 				s,
 				origin,
@@ -155,8 +156,8 @@ var _ = Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       fixtures.MessageT1,
-					Type:          fixtures.MessageTType,
+					Message:       MessageT1,
+					Type:          MessageTType,
 					Role:          message.TimeoutRole,
 					CreatedAt:     now,
 					ScheduledFor:  s,

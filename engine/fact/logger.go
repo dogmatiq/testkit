@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact/internal/logging"
 )
@@ -102,7 +103,7 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 			"",
 		},
 		message.TypeOf(f.Envelope.Message).String()+f.Envelope.Role.Marker(),
-		message.Description(f.Envelope.Message),
+		dogma.DescribeMessage(f.Envelope.Message),
 	)
 }
 
@@ -238,7 +239,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 		f.HandlerName+" "+f.InstanceID,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
-		message.Description(f.EventEnvelope.Message),
+		dogma.DescribeMessage(f.EventEnvelope.Message),
 	)
 }
 
@@ -352,7 +353,7 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 		f.HandlerName+" "+f.InstanceID,
 		"executed a command",
 		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
-		message.Description(f.CommandEnvelope.Message),
+		dogma.DescribeMessage(f.CommandEnvelope.Message),
 	)
 }
 
@@ -371,7 +372,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
 		),
 		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
-		message.Description(f.TimeoutEnvelope.Message),
+		dogma.DescribeMessage(f.TimeoutEnvelope.Message),
 	)
 }
 
@@ -401,7 +402,7 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 		f.HandlerName,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
-		message.Description(f.EventEnvelope.Message),
+		dogma.DescribeMessage(f.EventEnvelope.Message),
 	)
 }
 

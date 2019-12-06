@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -19,7 +19,7 @@ type Controller struct {
 	identity   identity.Identity
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	instances  map[string]dogma.AggregateRoot
 }
 
@@ -28,7 +28,7 @@ func NewController(
 	i identity.Identity,
 	h dogma.AggregateMessageHandler,
 	g *envelope.MessageIDGenerator,
-	t message.TypeContainer,
+	t message.TypeCollection,
 ) *Controller {
 	return &Controller{
 		identity:   i,

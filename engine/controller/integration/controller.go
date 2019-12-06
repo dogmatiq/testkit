@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -18,7 +18,7 @@ type Controller struct {
 	identity   identity.Identity
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 }
 
 // NewController returns a new controller for the given handler.
@@ -26,7 +26,7 @@ func NewController(
 	i identity.Identity,
 	h dogma.IntegrationMessageHandler,
 	g *envelope.MessageIDGenerator,
-	t message.TypeContainer,
+	t message.TypeCollection,
 ) *Controller {
 	return &Controller{
 		identity:   i,
