@@ -28,8 +28,6 @@ func (l *Logger) Notify(f Fact) {
 	switch x := f.(type) {
 	case DispatchCycleBegun:
 		l.dispatchCycleBegun(x)
-	case DispatchCycleSkipped:
-		l.dispatchCycleSkipped(x)
 	case DispatchBegun:
 		l.dispatchBegun(x)
 	case HandlingCompleted:
@@ -91,20 +89,6 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 		"dispatching",
 		formatEngineTime(f.EngineTime),
 		formatEnabledHandlers(f.EnabledHandlers),
-	)
-}
-
-// dispatchCycleSkipped returns the log message for f.
-func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
-	l.log(
-		&envelope.Envelope{},
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.SystemIcon,
-			"",
-		},
-		message.TypeOf(f.Message).String(),
-		"dispatch cycle skipped because this message type is not routed to any handlers",
 	)
 }
 

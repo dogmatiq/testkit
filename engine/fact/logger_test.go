@@ -87,13 +87,6 @@ var _ = Describe("type Logger", func() {
 					Error:    errors.New("<error>"),
 				},
 			),
-			Entry(
-				"DispatchCycleSkipped",
-				"= ----  ∵ ----  ⋲ ----  ▼ ⚙    fixtures.MessageC ● dispatch cycle skipped because this message type is not routed to any handlers",
-				DispatchCycleSkipped{
-					Message: fixtures.MessageC1,
-				},
-			),
 
 			Entry(
 				"DispatchBegun",

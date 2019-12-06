@@ -21,6 +21,22 @@ var _ = Describe("type Test", func() {
 		app = &fixtures.Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
+				c.RegisterAggregate(&fixtures.AggregateMessageHandler{
+					RouteCommandToInstanceFunc: func(m dogma.Message) string {
+						return "<instance>"
+					},
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "<aggregate-key>")
+						c.ConsumesCommandType(fixtures.MessageC{})
+						c.ProducesEventType(fixtures.MessageE{})
+					},
+				})
+				c.RegisterProjection(&fixtures.ProjectionMessageHandler{
+					ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+						c.Identity("<projection>", "<projection-key>")
+						c.ConsumesEventType(fixtures.MessageE{})
+					},
+				})
 			},
 		}
 	})
@@ -63,7 +79,7 @@ var _ = Describe("type Test", func() {
 		Describe("func RecordEvent()", func() {
 			It("logs file and line information in headings", func() {
 				test.RecordEvent(
-					fixtures.MessageC1,
+					fixtures.MessageE1,
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(

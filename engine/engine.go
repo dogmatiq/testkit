@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -146,15 +147,10 @@ func (e *Engine) Dispatch(
 	t := message.TypeOf(m)
 
 	if _, ok := e.routes[t]; !ok {
-		oo.observers.Notify(
-			fact.DispatchCycleSkipped{
-				Message:         m,
-				EngineTime:      oo.now,
-				EnabledHandlers: oo.enabledHandlers,
-			},
-		)
-
-		return nil
+		panic(fmt.Sprintf(
+			"the %s message type is not consumed by any handlers",
+			t,
+		))
 	}
 
 	r := e.roles[t]
