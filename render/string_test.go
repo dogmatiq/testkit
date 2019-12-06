@@ -3,7 +3,7 @@ package render_test
 import (
 	"strings"
 
-	"github.com/dogmatiq/enginekit/fixtures"
+	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
 	. "github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

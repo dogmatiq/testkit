@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
-
-	"github.com/dogmatiq/enginekit/fixtures"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -18,10 +17,10 @@ var _ = Describe("func WithStartTime()", func() {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
 
-		handler := &fixtures.ProjectionMessageHandler{
+		handler := &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<handler-name>", "<handler-key>")
-				c.ConsumesEventType(fixtures.MessageA{})
+				c.ConsumesEventType(MessageA{})
 			},
 			HandleEventFunc: func(
 				_ context.Context,
@@ -35,7 +34,7 @@ var _ = Describe("func WithStartTime()", func() {
 			},
 		}
 
-		app := &fixtures.Application{
+		app := &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
 				c.RegisterProjection(handler)
@@ -50,7 +49,7 @@ var _ = Describe("func WithStartTime()", func() {
 					engine.EnableProjections(true),
 				),
 			).
-			Prepare(fixtures.MessageA1)
+			Prepare(MessageA1)
 
 		Expect(called).To(BeTrue())
 	})
