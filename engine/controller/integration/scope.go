@@ -5,16 +5,15 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer

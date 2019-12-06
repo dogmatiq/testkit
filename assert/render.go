@@ -4,8 +4,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/count"
 	"github.com/dogmatiq/iago/indent"
 	"github.com/dogmatiq/iago/must"

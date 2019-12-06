@@ -10,7 +10,6 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/identity"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -34,7 +33,7 @@ var _ = Describe("type Controller", func() {
 	BeforeEach(func() {
 		handler = &fixtures.ProjectionMessageHandler{}
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 		)
 	})
@@ -42,7 +41,7 @@ var _ = Describe("type Controller", func() {
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
 			Expect(controller.Identity()).To(Equal(
-				identity.MustNew("<name>", "<key>"),
+				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
 	})

@@ -10,7 +10,6 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -39,7 +38,7 @@ var _ = Describe("type Controller", func() {
 		handler = &IntegrationMessageHandler{}
 
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
@@ -54,7 +53,7 @@ var _ = Describe("type Controller", func() {
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
 			Expect(controller.Identity()).To(Equal(
-				identity.MustNew("<name>", "<key>"),
+				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
 	})

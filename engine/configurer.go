@@ -3,8 +3,8 @@ package engine
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/controller/integration"
@@ -16,67 +16,65 @@ type configurer struct {
 	engine *Engine
 }
 
-func (c *configurer) VisitApplicationConfig(ctx context.Context, cfg *config.ApplicationConfig) error {
-	c.engine.roles = cfg.Roles
+func (c *configurer) VisitRichApplication(ctx context.Context, cfg configkit.RichApplication) error {
+	c.engine.roles = cfg.MessageTypes().Roles
 
-	for _, h := range cfg.HandlersByName {
-		if err := h.Accept(ctx, c); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return cfg.RichHandlers().AcceptRichVisitor(ctx, c)
 }
 
-func (c *configurer) VisitAggregateConfig(_ context.Context, cfg *config.AggregateConfig) error {
+func (c *configurer) VisitRichAggregate(_ context.Context, cfg configkit.RichAggregate) error {
+	mt := cfg.MessageTypes()
 	c.registerController(
 		aggregate.NewController(
-			cfg.HandlerIdentity,
-			cfg.Handler,
+			cfg.Identity(),
+			cfg.Handler(),
 			&c.engine.messageIDs,
-			cfg.ProducedMessageTypes(),
+			mt.Produced,
 		),
-		cfg.ConsumedMessageTypes(),
+		mt.Consumed,
 	)
 
 	return nil
 }
 
-func (c *configurer) VisitProcessConfig(_ context.Context, cfg *config.ProcessConfig) error {
+func (c *configurer) VisitRichProcess(_ context.Context, cfg configkit.RichProcess) error {
+	mt := cfg.MessageTypes()
 	c.registerController(
 		process.NewController(
-			cfg.HandlerIdentity,
-			cfg.Handler,
+			cfg.Identity(),
+			cfg.Handler(),
 			&c.engine.messageIDs,
-			cfg.ProducedMessageTypes(),
+			mt.Produced,
 		),
-		cfg.ConsumedMessageTypes(),
+		mt.Consumed,
 	)
 
 	return nil
 }
 
-func (c *configurer) VisitIntegrationConfig(_ context.Context, cfg *config.IntegrationConfig) error {
+func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichIntegration) error {
+	mt := cfg.MessageTypes()
 	c.registerController(
 		integration.NewController(
-			cfg.HandlerIdentity,
-			cfg.Handler,
+			cfg.Identity(),
+			cfg.Handler(),
 			&c.engine.messageIDs,
-			cfg.ProducedMessageTypes(),
+			mt.Produced,
 		),
-		cfg.ConsumedMessageTypes(),
+		mt.Consumed,
 	)
 
 	return nil
 }
 
-func (c *configurer) VisitProjectionConfig(_ context.Context, cfg *config.ProjectionConfig) error {
+func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichProjection) error {
+	mt := cfg.MessageTypes()
 	c.registerController(
 		projection.NewController(
-			cfg.HandlerIdentity,
-			cfg.Handler,
+			cfg.Identity(),
+			cfg.Handler(),
 		),
-		cfg.ConsumedMessageTypes(),
+		mt.Consumed,
 	)
 
 	return nil

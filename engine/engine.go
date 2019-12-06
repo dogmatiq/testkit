@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/configkit"
+
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -23,11 +24,9 @@ type Engine struct {
 }
 
 // New returns a new engine that uses the given app configuration.
-func New(app dogma.Application, options ...Option) (*Engine, error) {
-	cfg, err := config.NewApplicationConfig(app)
-	if err != nil {
-		return nil, err
-	}
+func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
+	defer configkit.Recover(&err)
+	cfg := configkit.FromApplication(app)
 
 	eo := newEngineOptions(options)
 
@@ -44,7 +43,7 @@ func New(app dogma.Application, options ...Option) (*Engine, error) {
 
 	ctx := context.Background()
 
-	if err := cfg.Accept(ctx, cfgr); err != nil {
+	if err := cfg.AcceptRichVisitor(ctx, cfgr); err != nil {
 		return nil, err
 	}
 

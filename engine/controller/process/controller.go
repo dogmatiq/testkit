@@ -7,9 +7,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -17,7 +16,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	produced   message.TypeCollection
@@ -27,7 +26,7 @@ type Controller struct {
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	i identity.Identity,
+	i configkit.Identity,
 	h dogma.ProcessMessageHandler,
 	g *envelope.MessageIDGenerator,
 	t message.TypeCollection,
@@ -41,7 +40,7 @@ func NewController(
 }
 
 // Identity returns the identity of the handler that is managed by this controller.
-func (c *Controller) Identity() identity.Identity {
+func (c *Controller) Identity() configkit.Identity {
 	return c.identity
 }
 
