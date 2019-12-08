@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -13,10 +12,10 @@ import (
 // Controller orchestrates the handling of a message by Dogma message handler.
 type Controller interface {
 	// Identity returns the identity of the handler that is managed by this controller.
-	Identity() identity.Identity
+	Identity() configkit.Identity
 
 	// Type returns the name of the handler that is managed by this controller.
-	Type() handler.Type
+	Type() configkit.HandlerType
 
 	// Tick instructs the controller to perform an implementation-defined "tick".
 	//

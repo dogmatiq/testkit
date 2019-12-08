@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -19,7 +19,7 @@ import (
 var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *fixtures.ProcessMessageHandler
+		handler    *ProcessMessageHandler
 		controller *Controller
 		event      *envelope.Envelope
 	)
@@ -27,17 +27,17 @@ var _ = Describe("type scope", func() {
 	BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			fixtures.MessageA1,
+			MessageA1,
 			time.Now(),
 		)
 
-		handler = &fixtures.ProcessMessageHandler{
+		handler = &ProcessMessageHandler{
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
 				m dogma.Message,
 			) (string, bool, error) {
 				switch m.(type) {
-				case fixtures.MessageA:
+				case MessageA:
 					return "<instance>", true, nil
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -46,12 +46,12 @@ var _ = Describe("type scope", func() {
 		}
 
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
-				fixtures.MessageBType,
-				fixtures.MessageCType,
+				MessageBType,
+				MessageCType,
 			),
 		)
 
@@ -126,7 +126,7 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.ProcessRoot{},
+						Root:        &ProcessRoot{},
 						Envelope:    event,
 					},
 				))
@@ -162,7 +162,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ExecuteCommand(fixtures.MessageB1)
+					s.ExecuteCommand(MessageB1)
 					return nil
 				}
 
@@ -184,7 +184,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(fixtures.MessageB1, time.Now())
+					s.ScheduleTimeout(MessageB1, time.Now())
 					return nil
 				}
 
@@ -217,7 +217,7 @@ var _ = Describe("type scope", func() {
 				time.Now(),
 				envelope.NewEvent(
 					"2000",
-					fixtures.MessageA2, // use a different message to create the instance
+					MessageA2, // use a different message to create the instance
 					time.Now(),
 				),
 			)
@@ -234,7 +234,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					Expect(s.Root()).To(Equal(&fixtures.ProcessRoot{}))
+					Expect(s.Root()).To(Equal(&ProcessRoot{}))
 					return nil
 				}
 
@@ -320,7 +320,7 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.ProcessRoot{},
+						Root:        &ProcessRoot{},
 						Envelope:    event,
 					},
 				))
@@ -339,7 +339,7 @@ var _ = Describe("type scope", func() {
 						return err
 					}
 
-					s.ExecuteCommand(fixtures.MessageB1)
+					s.ExecuteCommand(MessageB1)
 					return nil
 				}
 			})
@@ -360,15 +360,15 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.ProcessRoot{},
+						Root:        &ProcessRoot{},
 						Envelope:    event,
 						CommandEnvelope: event.NewCommand(
 							"1",
-							fixtures.MessageB1,
+							MessageB1,
 							now,
 							envelope.Origin{
 								HandlerName: "<name>",
-								HandlerType: handlerkit.ProcessType,
+								HandlerType: configkit.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -382,7 +382,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					m dogma.Message,
 				) error {
-					s.ExecuteCommand(fixtures.MessageZ1)
+					s.ExecuteCommand(MessageZ1)
 					return nil
 				}
 
@@ -411,7 +411,7 @@ var _ = Describe("type scope", func() {
 						return err
 					}
 
-					s.ScheduleTimeout(fixtures.MessageB1, t)
+					s.ScheduleTimeout(MessageB1, t)
 					return nil
 				}
 			})
@@ -432,16 +432,16 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.ProcessRoot{},
+						Root:        &ProcessRoot{},
 						Envelope:    event,
 						TimeoutEnvelope: event.NewTimeout(
 							"1",
-							fixtures.MessageB1,
+							MessageB1,
 							now,
 							t,
 							envelope.Origin{
 								HandlerName: "<name>",
-								HandlerType: handlerkit.ProcessType,
+								HandlerType: configkit.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -503,7 +503,7 @@ var _ = Describe("type scope", func() {
 					HandlerName: "<name>",
 					Handler:     handler,
 					InstanceID:  "<instance>",
-					Root:        &fixtures.ProcessRoot{},
+					Root:        &ProcessRoot{},
 					Envelope:    event,
 					LogFormat:   "<format>",
 					LogArguments: []interface{}{

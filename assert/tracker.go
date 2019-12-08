@@ -1,8 +1,8 @@
 package assert
 
 import (
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -20,10 +20,10 @@ type tracker struct {
 
 	// engaged is the set of handlers that *could* have produced the expected
 	// message.
-	engaged map[string]handler.Type
+	engaged map[string]configkit.HandlerType
 
 	// enabled is the set of handler types that are enabled during the test.
-	enabled map[handler.Type]bool
+	enabled map[configkit.HandlerType]bool
 }
 
 // Notify updates the assertion's state in response to a new fact.
@@ -44,10 +44,10 @@ func (t *tracker) Notify(f fact.Fact) {
 	}
 }
 
-func (t *tracker) updateEngaged(n string, ht handler.Type) {
+func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
 	if ht.IsProducerOf(t.role) {
 		if t.engaged == nil {
-			t.engaged = map[string]handler.Type{}
+			t.engaged = map[string]configkit.HandlerType{}
 		}
 
 		t.engaged[n] = ht

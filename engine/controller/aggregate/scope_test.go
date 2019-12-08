@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -19,7 +19,7 @@ import (
 var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *fixtures.AggregateMessageHandler
+		handler    *AggregateMessageHandler
 		controller *Controller
 		command    *envelope.Envelope
 	)
@@ -27,14 +27,14 @@ var _ = Describe("type scope", func() {
 	BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			fixtures.MessageA1,
+			MessageA1,
 			time.Now(),
 		)
 
-		handler = &fixtures.AggregateMessageHandler{
+		handler = &AggregateMessageHandler{
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
 				switch m.(type) {
-				case fixtures.MessageA:
+				case MessageA:
 					return "<instance>"
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -43,12 +43,12 @@ var _ = Describe("type scope", func() {
 		}
 
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
-				fixtures.MessageBType,
-				fixtures.MessageEType,
+				MessageBType,
+				MessageEType,
 			),
 		)
 
@@ -83,7 +83,7 @@ var _ = Describe("type scope", func() {
 					_ dogma.Message,
 				) {
 					Expect(s.Create()).To(BeTrue())
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
 				_, err := controller.Handle(
@@ -102,7 +102,7 @@ var _ = Describe("type scope", func() {
 					_ dogma.Message,
 				) {
 					s.Create()
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
 				buf := &fact.Buffer{}
@@ -119,7 +119,7 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.AggregateRoot{},
+						Root:        &AggregateRoot{},
 						Envelope:    command,
 					},
 				))
@@ -152,7 +152,7 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.RecordEvent(fixtures.MessageB1)
+					s.RecordEvent(MessageB1)
 				}
 
 				Expect(func() {
@@ -174,7 +174,7 @@ var _ = Describe("type scope", func() {
 				_ dogma.Message,
 			) {
 				s.Create()
-				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				s.RecordEvent(MessageE1) // event must be recorded when creating
 			}
 
 			_, err := controller.Handle(
@@ -183,7 +183,7 @@ var _ = Describe("type scope", func() {
 				time.Now(),
 				envelope.NewCommand(
 					"2000",
-					fixtures.MessageA2, // use a different message to create the instance
+					MessageA2, // use a different message to create the instance
 					time.Now(),
 				),
 			)
@@ -199,7 +199,7 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					Expect(s.Root()).To(Equal(&fixtures.AggregateRoot{}))
+					Expect(s.Root()).To(Equal(&AggregateRoot{}))
 				}
 
 				_, err := controller.Handle(
@@ -220,7 +220,7 @@ var _ = Describe("type scope", func() {
 					_ dogma.Message,
 				) {
 					Expect(s.Create()).To(BeFalse())
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
 				_, err := controller.Handle(
@@ -239,7 +239,7 @@ var _ = Describe("type scope", func() {
 					_ dogma.Message,
 				) {
 					s.Create()
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
 				buf := &fact.Buffer{}
@@ -263,7 +263,7 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when destroying
+					s.RecordEvent(MessageE1) // event must be recorded when destroying
 					s.Destroy()
 				}
 
@@ -281,7 +281,7 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.AggregateRoot{},
+						Root:        &AggregateRoot{},
 						Envelope:    command,
 					},
 				))
@@ -294,7 +294,7 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					m dogma.Message,
 				) {
-					s.RecordEvent(fixtures.MessageB1)
+					s.RecordEvent(MessageB1)
 				}
 			})
 
@@ -316,15 +316,15 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &fixtures.AggregateRoot{},
+						Root:        &AggregateRoot{},
 						Envelope:    command,
 						EventEnvelope: command.NewEvent(
 							"1",
-							fixtures.MessageB1,
+							MessageB1,
 							now,
 							envelope.Origin{
 								HandlerName: "<name>",
-								HandlerType: handlerkit.AggregateType,
+								HandlerType: configkit.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -337,7 +337,7 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					m dogma.Message,
 				) {
-					s.RecordEvent(fixtures.MessageZ1)
+					s.RecordEvent(MessageZ1)
 				}
 
 				Expect(func() {
@@ -400,7 +400,7 @@ var _ = Describe("type scope", func() {
 					HandlerName: "<name>",
 					Handler:     handler,
 					InstanceID:  "<instance>",
-					Root:        &fixtures.AggregateRoot{},
+					Root:        &AggregateRoot{},
 					Envelope:    command,
 					LogFormat:   "<format>",
 					LogArguments: []interface{}{

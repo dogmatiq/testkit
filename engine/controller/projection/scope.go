@@ -3,15 +3,15 @@ package projection
 import (
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/identity"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // scope is an implementation of dogma.ProjectionEventScope.
 type scope struct {
-	identity identity.Identity
+	identity configkit.Identity
 	handler  dogma.ProjectionMessageHandler
 	observer fact.Observer
 	event    *envelope.Envelope

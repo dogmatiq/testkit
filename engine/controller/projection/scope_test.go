@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
-	"github.com/dogmatiq/enginekit/identity"
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -16,19 +16,19 @@ import (
 
 var _ = Describe("type scope", func() {
 	var (
-		handler    *fixtures.ProjectionMessageHandler
+		handler    *ProjectionMessageHandler
 		controller *Controller
 		event      = envelope.NewEvent(
 			"1000",
-			fixtures.MessageA1,
+			MessageA1,
 			time.Now(),
 		)
 	)
 
 	BeforeEach(func() {
-		handler = &fixtures.ProjectionMessageHandler{}
+		handler = &ProjectionMessageHandler{}
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 		)
 	})

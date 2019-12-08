@@ -1,7 +1,7 @@
 package assert
 
 import (
-	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/configkit/message"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	"github.com/onsi/gomega" // can't use dot-import because gomega.Assertion conflicts with this package's Assertion type

@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -16,14 +15,14 @@ import (
 // dogma.ProcessTimeoutScope.
 type scope struct {
 	instanceID string
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
 	root       dogma.ProcessRoot
 	exists     bool
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	env        *envelope.Envelope // event or timeout
 	commands   []*envelope.Envelope
 	ready      []*envelope.Envelope // timeouts <= now
@@ -97,7 +96,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		s.now,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.ProcessType,
+			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
 	)
@@ -130,7 +129,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		t,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.ProcessType,
+			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
 	)

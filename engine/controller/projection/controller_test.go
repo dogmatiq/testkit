@@ -5,12 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/testkit/engine/controller"
-
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
+	. "github.com/dogmatiq/dogma/fixtures"
+	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/projection"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -22,19 +20,19 @@ var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
-		handler    *fixtures.ProjectionMessageHandler
+		handler    *ProjectionMessageHandler
 		controller *Controller
 		event      = envelope.NewEvent(
 			"1000",
-			fixtures.MessageA1,
+			MessageA1,
 			time.Now(),
 		)
 	)
 
 	BeforeEach(func() {
-		handler = &fixtures.ProjectionMessageHandler{}
+		handler = &ProjectionMessageHandler{}
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 		)
 	})
@@ -42,14 +40,14 @@ var _ = Describe("type Controller", func() {
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
 			Expect(controller.Identity()).To(Equal(
-				identity.MustNew("<name>", "<key>"),
+				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
 	})
 
 	Describe("func Type()", func() {
-		It("returns handler.ProjectionType", func() {
-			Expect(controller.Type()).To(Equal(handlerkit.ProjectionType))
+		It("returns configkit.ProjectionHandlerType", func() {
+			Expect(controller.Type()).To(Equal(configkit.ProjectionHandlerType))
 		})
 	})
 
@@ -86,7 +84,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) (bool, error) {
 				called = true
-				Expect(m).To(Equal(fixtures.MessageA1))
+				Expect(m).To(Equal(MessageA1))
 				return true, nil
 			}
 

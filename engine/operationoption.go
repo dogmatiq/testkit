@@ -3,7 +3,7 @@ package engine
 import (
 	"time"
 
-	"github.com/dogmatiq/enginekit/handler"
+	"github.com/dogmatiq/configkit"
 
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -31,7 +31,7 @@ func WithObserver(o fact.Observer) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableAggregates(enabled bool) OperationOption {
-	return enableHandlerType(handler.AggregateType, enabled)
+	return enableHandlerType(configkit.AggregateHandlerType, enabled)
 }
 
 // EnableProcesses returns an operation option that enables or disables process
@@ -39,7 +39,7 @@ func EnableAggregates(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableProcesses(enabled bool) OperationOption {
-	return enableHandlerType(handler.ProcessType, enabled)
+	return enableHandlerType(configkit.ProcessHandlerType, enabled)
 }
 
 // EnableIntegrations returns an operation option that enables or disables
@@ -47,7 +47,7 @@ func EnableProcesses(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableIntegrations(enabled bool) OperationOption {
-	return enableHandlerType(handler.IntegrationType, enabled)
+	return enableHandlerType(configkit.IntegrationHandlerType, enabled)
 }
 
 // EnableProjections returns an operation option that enables or disables
@@ -55,12 +55,12 @@ func EnableIntegrations(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableProjections(enabled bool) OperationOption {
-	return enableHandlerType(handler.ProjectionType, enabled)
+	return enableHandlerType(configkit.ProjectionHandlerType, enabled)
 }
 
 // enableHandlerType returns an operation option that enables or disables
 // handlers of the given type.
-func enableHandlerType(t handler.Type, enabled bool) OperationOption {
+func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	t.MustValidate()
 
 	return func(oo *operationOptions) {
@@ -85,18 +85,18 @@ func WithCurrentTime(t time.Time) OperationOption {
 type operationOptions struct {
 	now             time.Time
 	observers       fact.ObserverGroup
-	enabledHandlers map[handler.Type]bool
+	enabledHandlers map[configkit.HandlerType]bool
 }
 
 // newOperationOptions returns a new operationOptions with the given options.
 func newOperationOptions(options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),
-		enabledHandlers: map[handler.Type]bool{
-			handler.AggregateType:   true,
-			handler.ProcessType:     true,
-			handler.IntegrationType: true,
-			handler.ProjectionType:  true,
+		enabledHandlers: map[configkit.HandlerType]bool{
+			configkit.AggregateHandlerType:   true,
+			configkit.ProcessHandlerType:     true,
+			configkit.IntegrationHandlerType: true,
+			configkit.ProjectionHandlerType:  true,
 		},
 	}
 

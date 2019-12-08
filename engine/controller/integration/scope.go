@@ -4,22 +4,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.IntegrationMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }
@@ -39,7 +38,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		s.now,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.IntegrationType,
+			HandlerType: configkit.IntegrationHandlerType,
 		},
 	)
 

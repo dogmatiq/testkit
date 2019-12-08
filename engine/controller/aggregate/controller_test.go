@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/fixtures"
-	handlerkit "github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
+	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/dogmatiq/testkit/engine/controller/aggregate"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -23,7 +23,7 @@ var _ controller.Controller = &Controller{}
 var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *fixtures.AggregateMessageHandler
+		handler    *AggregateMessageHandler
 		controller *Controller
 		command    *envelope.Envelope
 	)
@@ -31,16 +31,16 @@ var _ = Describe("type Controller", func() {
 	BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			fixtures.MessageC1,
+			MessageC1,
 			time.Now(),
 		)
 
-		handler = &fixtures.AggregateMessageHandler{
+		handler = &AggregateMessageHandler{
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
 				switch x := m.(type) {
-				case fixtures.MessageC:
+				case MessageC:
 					return fmt.Sprintf(
 						"<instance-%s>",
 						x.Value.(string),
@@ -52,11 +52,11 @@ var _ = Describe("type Controller", func() {
 		}
 
 		controller = NewController(
-			identity.MustNew("<name>", "<key>"),
+			configkit.MustNewIdentity("<name>", "<key>"),
 			handler,
 			&messageIDs,
 			message.NewTypeSet(
-				fixtures.MessageEType,
+				MessageEType,
 			),
 		)
 
@@ -66,14 +66,14 @@ var _ = Describe("type Controller", func() {
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
 			Expect(controller.Identity()).To(Equal(
-				identity.MustNew("<name>", "<key>"),
+				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
 	})
 
 	Describe("func Type()", func() {
-		It("returns handler.AggregateType", func() {
-			Expect(controller.Type()).To(Equal(handlerkit.AggregateType))
+		It("returns configkit.AggregateHandlerType", func() {
+			Expect(controller.Type()).To(Equal(configkit.AggregateHandlerType))
 		})
 	})
 
@@ -108,7 +108,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) {
 				called = true
-				Expect(m).To(Equal(fixtures.MessageC1))
+				Expect(m).To(Equal(MessageC1))
 			}
 
 			_, err := controller.Handle(
@@ -128,8 +128,8 @@ var _ = Describe("type Controller", func() {
 				_ dogma.Message,
 			) {
 				s.Create()
-				s.RecordEvent(fixtures.MessageE1)
-				s.RecordEvent(fixtures.MessageE2)
+				s.RecordEvent(MessageE1)
+				s.RecordEvent(MessageE2)
 			}
 
 			now := time.Now()
@@ -144,21 +144,21 @@ var _ = Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					"1",
-					fixtures.MessageE1,
+					MessageE1,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.AggregateType,
+						HandlerType: configkit.AggregateHandlerType,
 						InstanceID:  "<instance-C1>",
 					},
 				),
 				command.NewEvent(
 					"2",
-					fixtures.MessageE2,
+					MessageE2,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
-						HandlerType: handlerkit.AggregateType,
+						HandlerType: configkit.AggregateHandlerType,
 						InstanceID:  "<instance-C1>",
 					},
 				),
@@ -242,7 +242,7 @@ var _ = Describe("type Controller", func() {
 					_ dogma.Message,
 				) {
 					s.Create()
-					s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
 				_, err := controller.Handle(
@@ -270,7 +270,7 @@ var _ = Describe("type Controller", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance-C1>",
-						Root:        &fixtures.AggregateRoot{},
+						Root:        &AggregateRoot{},
 						Envelope:    command,
 					},
 				))
@@ -317,7 +317,7 @@ var _ = Describe("type Controller", func() {
 				m dogma.Message,
 			) {
 				s.Create()
-				s.RecordEvent(fixtures.MessageE1) // event must be recorded when creating
+				s.RecordEvent(MessageE1) // event must be recorded when creating
 			}
 
 			_, err := controller.Handle(

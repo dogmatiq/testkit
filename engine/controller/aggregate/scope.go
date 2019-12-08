@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -15,7 +14,7 @@ import (
 // scope is an implementation of dogma.AggregateCommandScope.
 type scope struct {
 	instanceID string
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
@@ -24,7 +23,7 @@ type scope struct {
 	exists     bool
 	created    bool // true if Create() returned true at least once
 	destroyed  bool // true if Destroy() returned true at least once
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }
@@ -98,7 +97,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		s.now,
 		envelope.Origin{
 			HandlerName: s.identity.Name,
-			HandlerType: handler.AggregateType,
+			HandlerType: configkit.AggregateHandlerType,
 			InstanceID:  s.instanceID,
 		},
 	)

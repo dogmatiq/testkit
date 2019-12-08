@@ -6,10 +6,9 @@ import (
 	"sort"
 	"time"
 
+	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/handler"
-	"github.com/dogmatiq/enginekit/identity"
-	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -17,20 +16,20 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	identity   identity.Identity
+	identity   configkit.Identity
 	handler    dogma.ProcessMessageHandler
 	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeContainer
+	produced   message.TypeCollection
 	instances  map[string]dogma.ProcessRoot
 	timeouts   []*envelope.Envelope
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	i identity.Identity,
+	i configkit.Identity,
 	h dogma.ProcessMessageHandler,
 	g *envelope.MessageIDGenerator,
-	t message.TypeContainer,
+	t message.TypeCollection,
 ) *Controller {
 	return &Controller{
 		identity:   i,
@@ -41,13 +40,13 @@ func NewController(
 }
 
 // Identity returns the identity of the handler that is managed by this controller.
-func (c *Controller) Identity() identity.Identity {
+func (c *Controller) Identity() configkit.Identity {
 	return c.identity
 }
 
-// Type returns handler.ProcessType.
-func (c *Controller) Type() handler.Type {
-	return handler.ProcessType
+// Type returns configkit.ProcessHandlerType.
+func (c *Controller) Type() configkit.HandlerType {
+	return configkit.ProcessHandlerType
 }
 
 // Tick returns the timeout messages that are ready to be handled.

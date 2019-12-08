@@ -1,8 +1,6 @@
 package envelope
 
-import (
-	"github.com/dogmatiq/enginekit/handler"
-)
+import "github.com/dogmatiq/configkit"
 
 // Origin describes the hanlder that produced a message in an envelope.
 type Origin struct {
@@ -10,12 +8,12 @@ type Origin struct {
 	HandlerName string
 
 	// HandlerType is the type of the handler that produced this message.
-	HandlerType handler.Type
+	HandlerType configkit.HandlerType
 
 	// InstanceID is the ID of the aggregate or process instance that
 	// produced this message.
 	//
-	// It is empty if HandlerType is neither handler.AggregateType nor
-	// handler.ProcessType.
+	// It is empty if HandlerType is neither configkit.AggregateHandlerType nor
+	// configkit.ProcessHandlerType.
 	InstanceID string
 }
