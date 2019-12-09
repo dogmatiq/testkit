@@ -12,7 +12,7 @@ import (
 var _ Renderer = DefaultRenderer{}
 
 var _ = Describe("type DefaultRenderer", func() {
-	Describe("func WriteMessage", func() {
+	Describe("func WriteMessage()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -31,7 +31,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteAggregateRoot", func() {
+	Describe("func WriteAggregateRoot()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -51,7 +51,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteProcessRoot", func() {
+	Describe("func WriteProcessRoot()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -70,7 +70,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteAggregateMessageHandler", func() {
+	Describe("func WriteAggregateMessageHandler()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -92,7 +92,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteProcessMessageHandler", func() {
+	Describe("func WriteProcessMessageHandler()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -116,7 +116,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteIntegrationMessageHandler", func() {
+	Describe("func WriteIntegrationMessageHandler()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),
@@ -137,7 +137,7 @@ var _ = Describe("type DefaultRenderer", func() {
 		})
 	})
 
-	Describe("func WriteProjectionMessageHandler", func() {
+	Describe("func WriteProjectionMessageHandler()", func() {
 		It("writes a suitable representation", func() {
 			iotest.TestWrite(
 				GinkgoT(),

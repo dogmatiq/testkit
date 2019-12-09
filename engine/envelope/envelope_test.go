@@ -13,7 +13,7 @@ import (
 )
 
 var _ = Describe("type Envelope", func() {
-	Describe("func NewCommand", func() {
+	Describe("func NewCommand()", func() {
 		It("returns the expected envelope", func() {
 			now := time.Now()
 			env := NewCommand(
@@ -36,7 +36,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewEvent", func() {
+	Describe("func NewEvent()", func() {
 		It("returns the expected envelope", func() {
 			now := time.Now()
 			env := NewEvent(
@@ -59,7 +59,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewCommand", func() {
+	Describe("func NewCommand()", func() {
 		It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
@@ -94,7 +94,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewEvent", func() {
+	Describe("func NewEvent()", func() {
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
@@ -129,7 +129,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewTimeout", func() {
+	Describe("func NewTimeout()", func() {
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",

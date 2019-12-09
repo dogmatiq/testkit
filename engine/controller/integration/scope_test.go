@@ -46,7 +46,7 @@ var _ = Describe("type scope", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func RecordEvent", func() {
+	Describe("func RecordEvent()", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
@@ -108,7 +108,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log", func() {
+	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,

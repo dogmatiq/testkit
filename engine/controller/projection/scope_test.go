@@ -33,7 +33,7 @@ var _ = Describe("type scope", func() {
 		)
 	})
 
-	Describe("func RecordedAt", func() {
+	Describe("func RecordedAt()", func() {
 		It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
@@ -57,7 +57,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log", func() {
+	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,

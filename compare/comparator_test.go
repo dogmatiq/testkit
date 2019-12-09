@@ -12,7 +12,7 @@ var _ Comparator = DefaultComparator{}
 var _ = Describe("type DefaultComparator", func() {
 	comparator := DefaultComparator{}
 
-	Describe("func MessageIsEqual", func() {
+	Describe("func MessageIsEqual()", func() {
 		It("returns true if the values have the same type and value", func() {
 			Expect(comparator.MessageIsEqual(
 				MessageA1,
@@ -35,7 +35,7 @@ var _ = Describe("type DefaultComparator", func() {
 		})
 	})
 
-	Describe("func AggregateRootIsEqual", func() {
+	Describe("func AggregateRootIsEqual()", func() {
 		It("returns true if tlues have the same type and value", func() {
 			Expect(comparator.AggregateRootIsEqual(
 				&AggregateRoot{Value: "<foo>"},
@@ -58,7 +58,7 @@ var _ = Describe("type DefaultComparator", func() {
 		})
 	})
 
-	Describe("func ProcessRootIsEqual", func() {
+	Describe("func ProcessRootIsEqual()", func() {
 		It("returns true if tlues have the same type and value", func() {
 			Expect(comparator.ProcessRootIsEqual(
 				&ProcessRoot{Value: "<foo>"},

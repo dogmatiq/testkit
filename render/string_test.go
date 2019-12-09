@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func Message", func() {
+var _ = Describe("func Message()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			Message(
@@ -24,7 +24,7 @@ var _ = Describe("func Message", func() {
 	})
 })
 
-var _ = Describe("func AggregateRoot", func() {
+var _ = Describe("func AggregateRoot()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			AggregateRoot(
@@ -40,7 +40,7 @@ var _ = Describe("func AggregateRoot", func() {
 	})
 })
 
-var _ = Describe("func ProcessRoot", func() {
+var _ = Describe("func ProcessRoot()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			ProcessRoot(
@@ -55,7 +55,7 @@ var _ = Describe("func ProcessRoot", func() {
 	})
 })
 
-var _ = Describe("func AggregateMessageHandler", func() {
+var _ = Describe("func AggregateMessageHandler()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			AggregateMessageHandler(
@@ -73,7 +73,7 @@ var _ = Describe("func AggregateMessageHandler", func() {
 	})
 })
 
-var _ = Describe("func ProcessMessageHandler", func() {
+var _ = Describe("func ProcessMessageHandler()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			ProcessMessageHandler(
@@ -93,7 +93,7 @@ var _ = Describe("func ProcessMessageHandler", func() {
 	})
 })
 
-var _ = Describe("func IntegrationMessageHandler", func() {
+var _ = Describe("func IntegrationMessageHandler()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			IntegrationMessageHandler(
@@ -110,7 +110,7 @@ var _ = Describe("func IntegrationMessageHandler", func() {
 	})
 })
 
-var _ = Describe("func ProjectionMessageHandler", func() {
+var _ = Describe("func ProjectionMessageHandler()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
 			ProjectionMessageHandler(

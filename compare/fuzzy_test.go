@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func FuzzyTypeComparison", func() {
+var _ = Describe("func FuzzyTypeComparison()", func() {
 	It("returns SameTypes when given two identical types", func() {
 		Expect(
 			FuzzyTypeComparison(

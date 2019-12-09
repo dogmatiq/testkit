@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func WriteDiff", func() {
+var _ = Describe("func WriteDiff()", func() {
 	It("produces a word-diff of the input", func() {
 		iotest.TestWrite(
 			GinkgoT(),
@@ -28,7 +28,7 @@ var _ = Describe("func WriteDiff", func() {
 	})
 })
 
-var _ = Describe("func Diff", func() {
+var _ = Describe("func Diff()", func() {
 	It("produces a word-diff of the input", func() {
 		Expect(
 			Diff(

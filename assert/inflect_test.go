@@ -7,7 +7,7 @@ import (
 	"github.com/onsi/gomega" // can't use dot-import because gomega.Assertion conflicts with this package's Assertion type
 )
 
-var _ = Describe("func inflect", func() {
+var _ = Describe("func inflect()", func() {
 	entry := func(r message.Role, in, out string) TableEntry {
 		return Entry(
 			in+" ("+r.String()+")",

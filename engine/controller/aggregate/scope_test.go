@@ -56,7 +56,7 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
-		Describe("func Root", func() {
+		Describe("func Root()", func() {
 			It("panics", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -76,7 +76,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Create", func() {
+		Describe("func Create()", func() {
 			It("returns true", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -126,7 +126,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Destroy", func() {
+		Describe("func Destroy()", func() {
 			It("panics", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -146,7 +146,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func RecordEvent", func() {
+		Describe("func RecordEvent()", func() {
 			It("panics", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -193,7 +193,7 @@ var _ = Describe("type scope", func() {
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
-		Describe("func Root", func() {
+		Describe("func Root()", func() {
 			It("returns the root", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -213,7 +213,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Create", func() {
+		Describe("func Create()", func() {
 			It("returns false", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -257,7 +257,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Destroy", func() {
+		Describe("func Destroy()", func() {
 			It("records a fact", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -288,7 +288,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func RecordEvent", func() {
+		Describe("func RecordEvent()", func() {
 			BeforeEach(func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
@@ -352,7 +352,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func InstanceID", func() {
+	Describe("func InstanceID()", func() {
 		It("returns the instance ID", func() {
 			called := false
 			handler.HandleCommandFunc = func(
@@ -375,7 +375,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log", func() {
+	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				s dogma.AggregateCommandScope,

@@ -59,7 +59,7 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
-		Describe("func Root", func() {
+		Describe("func Root()", func() {
 			It("panics", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -81,7 +81,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Begin", func() {
+		Describe("func Begin()", func() {
 			It("returns true", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -133,7 +133,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func End", func() {
+		Describe("func End()", func() {
 			It("panics", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -155,7 +155,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func ExecuteCommand", func() {
+		Describe("func ExecuteCommand()", func() {
 			It("panics", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -177,7 +177,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func ScheduleTimeout", func() {
+		Describe("func ScheduleTimeout()", func() {
 			It("panics", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -227,7 +227,7 @@ var _ = Describe("type scope", func() {
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
-		Describe("func Root", func() {
+		Describe("func Root()", func() {
 			It("returns the root", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -249,7 +249,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func Begin", func() {
+		Describe("func Begin()", func() {
 			It("returns false", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -295,7 +295,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func End", func() {
+		Describe("func End()", func() {
 			It("records a fact", func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
@@ -327,7 +327,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func ExecuteCommand", func() {
+		Describe("func ExecuteCommand()", func() {
 			BeforeEach(func() {
 				fn := handler.HandleEventFunc
 				handler.HandleEventFunc = func(
@@ -397,7 +397,7 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func ScheduleTimeout", func() {
+		Describe("func ScheduleTimeout()", func() {
 			t := time.Now()
 
 			BeforeEach(func() {
@@ -451,7 +451,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func InstanceID", func() {
+	Describe("func InstanceID()", func() {
 		It("returns the instance ID", func() {
 			called := false
 			handler.HandleEventFunc = func(
@@ -476,7 +476,7 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log", func() {
+	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
