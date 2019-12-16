@@ -17,7 +17,7 @@ type configurer struct {
 }
 
 func (c *configurer) VisitRichApplication(ctx context.Context, cfg configkit.RichApplication) error {
-	c.engine.roles = cfg.MessageTypes().Roles
+	c.engine.roles = cfg.MessageTypes().All()
 
 	return cfg.RichHandlers().AcceptRichVisitor(ctx, c)
 }
