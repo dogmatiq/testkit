@@ -16,9 +16,9 @@ const (
 	// sizes.
 	TransactionIDIcon Icon = "⨀"
 
-	// MessageIDIcon is the icon shown directly before a message ID.
-	// It is an "equals sign", indicating that this message "has exactly" the
-	// displayed ID.
+	// MessageIDIcon is the icon shown directly before a message ID. It is an
+	// "equals sign", indicating that this message "has exactly" the displayed
+	// ID.
 	MessageIDIcon Icon = "="
 
 	// CausationIDIcon is the icon shown directly before a message causation ID.
@@ -26,29 +26,30 @@ const (
 	// happened "because of" the displayed ID.
 	CausationIDIcon Icon = "∵"
 
-	// CorrelationIDIcon is the icon shown directly before a message correlation ID.
-	// It is the mathematical "member of set" symbol, indicating that this message
-	// belongs to the set of messages that came about because of the displayed ID.
+	// CorrelationIDIcon is the icon shown directly before a message correlation
+	// ID. It is the mathematical "member of set" symbol, indicating that this
+	// message belongs to the set of messages that came about because of the
+	// displayed ID.
 	CorrelationIDIcon Icon = "⋲"
 
-	// InboundIcon is the icon shown to indicate that a message is "inbound" to a handler.
-	// It is a downward pointing arrow, as inbound messages could be considered as
-	// being "downloaded" from the network or queue.
+	// InboundIcon is the icon shown to indicate that a message is "inbound" to
+	// a handler. It is a downward pointing arrow, as inbound messages could be
+	// considered as being "downloaded" from the network or queue.
 	InboundIcon Icon = "▼"
 
 	// InboundErrorIcon is a variant of InboundIcon used when there is an error
-	// condition. It is an hollow version of the regular inbound icon, indicating
-	// that the requirement remains "unfulfilled".
+	// condition. It is an hollow version of the regular inbound icon,
+	// indicating that the requirement remains "unfulfilled".
 	InboundErrorIcon Icon = "▽"
 
-	// OutboundIcon is the icon shown to indicate that a message is "outbound" from
-	// a handler. It is an upward pointing arrow, as outbound messages could be
-	// considered as being "uploaded" to the network or queue.
+	// OutboundIcon is the icon shown to indicate that a message is "outbound"
+	// from a handler. It is an upward pointing arrow, as outbound messages
+	// could be considered as being "uploaded" to the network or queue.
 	OutboundIcon Icon = "▲"
 
-	// OutboundErrorIcon is a variant of OutboundIcon used when there is an error
-	// condition. It is an hollow version of the regular inbound icon, indicating
-	// that the requirement remains "unfulfilled".
+	// OutboundErrorIcon is a variant of OutboundIcon used when there is an
+	// error condition. It is an hollow version of the regular inbound icon,
+	// indicating that the requirement remains "unfulfilled".
 	OutboundErrorIcon Icon = "△"
 
 	// RetryIcon is an icon used instead of InboundIcon when a message is being
@@ -60,9 +61,9 @@ const (
 	// It is a heavy cross, indicating a failure.
 	ErrorIcon Icon = "✖"
 
-	// AggregateIcon is the icon shown when a log message relates to an aggregate
-	// message handler. It is the mathematical "therefore" symbol, representing the
-	// decision making as a result of the message.
+	// AggregateIcon is the icon shown when a log message relates to an
+	// aggregate message handler. It is the mathematical "therefore" symbol,
+	// representing the decision making as a result of the message.
 	AggregateIcon Icon = "∴"
 
 	// ProcessIcon is the icon shown when a log message relates to a process
@@ -75,18 +76,19 @@ const (
 	// representing the integration of two systems.
 	IntegrationIcon Icon = "⨝"
 
-	// ProjectionIcon is the icon shown when a log message relates to a projection
-	// message handler. It is the mathematical "sum" symbol , representing the
-	// aggregation of events.
+	// ProjectionIcon is the icon shown when a log message relates to a
+	// projection message handler. It is the mathematical "sum" symbol ,
+	// representing the aggregation of events.
 	ProjectionIcon Icon = "Σ"
 
-	// SystemIcon is an icon shown when a log message relates to the internals of
-	// the engine. It is a sprocket, representing the inner workings of the
+	// SystemIcon is an icon shown when a log message relates to the internals
+	// of the engine. It is a sprocket, representing the inner workings of the
 	// machine.
 	SystemIcon Icon = "⚙"
 
-	// SeparatorIcon is an icon used to separate strings of unrelated text inside a
-	// log message. It is a large bullet, intended to have a large visual impact.
+	// SeparatorIcon is an icon used to separate strings of unrelated text
+	// inside a log message. It is a large bullet, intended to have a large
+	// visual impact.
 	SeparatorIcon Icon = "●"
 )
 

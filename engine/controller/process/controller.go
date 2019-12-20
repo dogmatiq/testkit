@@ -39,7 +39,8 @@ func NewController(
 	}
 }
 
-// Identity returns the identity of the handler that is managed by this controller.
+// Identity returns the identity of the handler that is managed by this
+// controller.
 func (c *Controller) Identity() configkit.Identity {
 	return c.identity
 }
@@ -219,7 +220,7 @@ func (c *Controller) routeTimeout(
 	return "", false, nil
 }
 
-// handle calls the appropriate method on the handler based on the  message role.
+// handle calls the appropriate method on the handler based on the message role.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
 	if s.env.Role == message.EventRole {
 		return c.handler.HandleEvent(ctx, s, s.env.Message)

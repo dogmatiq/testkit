@@ -35,8 +35,8 @@ func newRunnerOptions(options []RunnerOption) *runnerOptions {
 	return ro
 }
 
-// WithEngineOptions returns a RunnerOption that applies optional settings to the
-// engine used by the test-runner.
+// WithEngineOptions returns a RunnerOption that applies optional settings to
+// the engine used by the test-runner.
 func WithEngineOptions(options ...engine.Option) RunnerOption {
 	return func(ro *runnerOptions) {
 		ro.engineOptions = append(ro.engineOptions, options...)

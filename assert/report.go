@@ -23,12 +23,12 @@ type Report struct {
 	// Outcome is a brief description of the outcome of the assertion.
 	Outcome string
 
-	// Explanation is a brief description of what actually happened during the test
-	// as it relates to this assertion.
+	// Explanation is a brief description of what actually happened during the
+	// test as it relates to this assertion.
 	Explanation string
 
-	// Sections contains arbitrary "sections" that are added to the report by the
-	// assertion.
+	// Sections contains arbitrary "sections" that are added to the report by
+	// the assertion.
 	Sections []*ReportSection
 
 	// SubReports contains the reports of any sub-assertions.

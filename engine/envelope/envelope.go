@@ -12,12 +12,13 @@ type Envelope struct {
 	// MessageID is a unique identifier for the message.
 	MessageID string
 
-	// CausationID is the ID of the message that was being handled when the message
-	// identified by MessageID was produced.
+	// CausationID is the ID of the message that was being handled when the
+	// message identified by MessageID was produced.
 	CausationID string
 
-	// CorrelationID is the ID of the "root" message that entered the application
-	// to cause the message identified by MessageID, either directly or indirectly.
+	// CorrelationID is the ID of the "root" message that entered the
+	// application to cause the message identified by MessageID, either directly
+	// or indirectly.
 	CorrelationID string
 
 	// Message is the application-defined message that the envelope represents.
@@ -90,8 +91,8 @@ func new(
 	}
 }
 
-// NewCommand constructs a new envelope as a child of e, indicating that
-// the command message m is caused by e.Message.
+// NewCommand constructs a new envelope as a child of e, indicating that the
+// command message m is caused by e.Message.
 //
 // t is the time at which the message was created.
 func (e *Envelope) NewCommand(
@@ -103,8 +104,8 @@ func (e *Envelope) NewCommand(
 	return e.new(id, m, message.CommandRole, t, o)
 }
 
-// NewEvent constructs a new envelope as a child of e, indicating that
-// the event message m is caused by e.Message.
+// NewEvent constructs a new envelope as a child of e, indicating that the event
+// message m is caused by e.Message.
 //
 // t is the time at which the message was created.
 func (e *Envelope) NewEvent(
@@ -116,11 +117,11 @@ func (e *Envelope) NewEvent(
 	return e.new(id, m, message.EventRole, t, o)
 }
 
-// NewTimeout constructs a new envelope as a child of e, indicating that
-// the timeout message m is caused by e.Message.
+// NewTimeout constructs a new envelope as a child of e, indicating that the
+// timeout message m is caused by e.Message.
 //
-// t is the time at which the message was created.
-// s is the time at which the timeout is scheduled to occur.
+// t is the time at which the message was created. s is the time at which the
+// timeout is scheduled to occur.
 func (e *Envelope) NewTimeout(
 	id string,
 	m dogma.Message,

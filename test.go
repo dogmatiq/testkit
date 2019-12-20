@@ -122,8 +122,8 @@ func (t *Test) AdvanceTimeTo(
 	return t.advanceTime(now, a, options)
 }
 
-// advanceTime artificially advances the engine's notion of the current time
-// to a specific time.
+// advanceTime artificially advances the engine's notion of the current time to
+// a specific time.
 func (t *Test) advanceTime(
 	now time.Time,
 	a assert.Assertion,
@@ -141,6 +141,7 @@ func (t *Test) advanceTime(
 }
 
 // dispatch disaptches m to the engine.
+//
 // It fails the test if the engine returns an error.
 func (t *Test) dispatch(
 	m dogma.Message,
@@ -158,6 +159,7 @@ func (t *Test) dispatch(
 }
 
 // tick ticks the engine.
+//
 // It fails the test if the engine returns an error.
 func (t *Test) tick(
 	options []engine.OperationOption,

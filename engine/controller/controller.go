@@ -11,16 +11,18 @@ import (
 
 // Controller orchestrates the handling of a message by Dogma message handler.
 type Controller interface {
-	// Identity returns the identity of the handler that is managed by this controller.
+	// Identity returns the identity of the handler that is managed by this
+	// controller.
 	Identity() configkit.Identity
 
 	// Type returns the name of the handler that is managed by this controller.
 	Type() configkit.HandlerType
 
-	// Tick instructs the controller to perform an implementation-defined "tick".
+	// Tick instructs the controller to perform an implementation-defined
+	// "tick".
 	//
-	// It returns the messages produced by the handler that need to be dispatched
-	// by the engine.
+	// It returns the messages produced by the handler that need to be
+	// dispatched by the engine.
 	//
 	// now is the current time, according to the engine, which may not match the
 	// system time.
@@ -32,8 +34,8 @@ type Controller interface {
 
 	// Handle handles a message.
 	//
-	// It returns the messages produced by the handler that need to be dispatched
-	// by the engine.
+	// It returns the messages produced by the handler that need to be
+	// dispatched by the engine.
 	//
 	// now is the current time, according to the engine, which may not match the
 	// system time.

@@ -33,8 +33,8 @@ type MessageAssertion struct {
 	// role.
 	best *envelope.Envelope
 
-	// sim is a ranking of the similarity between the type of the expected message,
-	// and the current best-match.
+	// sim is a ranking of the similarity between the type of the expected
+	// message, and the current best-match.
 	sim compare.TypeSimilarity
 
 	// equal is true if the best-match message compared as equal to the expected
@@ -42,11 +42,13 @@ type MessageAssertion struct {
 	// message has an unexpected role.
 	equal bool
 
-	// tracker observers the handlers and messages that are involved in the test.
+	// tracker observers the handlers and messages that are involved in the
+	// test.
 	tracker tracker
 }
 
-// CommandExecuted returns an assertion that passes if m is executed as a command.
+// CommandExecuted returns an assertion that passes if m is executed as a
+// command.
 func CommandExecuted(m dogma.Message) Assertion {
 	return &MessageAssertion{
 		expected: m,
@@ -82,9 +84,9 @@ func (a *MessageAssertion) Ok() bool {
 
 // BuildReport generates a report about the assertion.
 //
-// ok is true if the assertion is considered to have passed. This may not be
-// the same value as returned from Ok() when this assertion is used as
-// sub-assertion inside a composite.
+// ok is true if the assertion is considered to have passed. This may not be the
+// same value as returned from Ok() when this assertion is used as sub-assertion
+// inside a composite.
 func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
@@ -179,8 +181,9 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
-		// note this language here is deliberately vague, it doesn't imply whether it
-		// currently is or isn't a pointer, just questions if it should be.
+		// note this language here is deliberately vague, it doesn't imply
+		// whether it currently is or isn't a pointer, just questions if it
+		// should be.
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
@@ -218,8 +221,8 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 		s.AppendListItem("verify that EventRecorded() is the correct assertion, did you mean CommandExecuted()?")
 	}
 
-	// the "best-match" is equal to the expected message. this means that only the
-	// roles were mismatched.
+	// the "best-match" is equal to the expected message. this means that only
+	// the roles were mismatched.
 	if a.equal {
 		rep.Explanation = inflect(
 			a.best.Role,
@@ -245,8 +248,9 @@ func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
-		// note this language here is deliberately vague, it doesn't imply whether it
-		// currently is or isn't a pointer, just questions if it should be.
+		// note this language here is deliberately vague, it doesn't imply
+		// whether it currently is or isn't a pointer, just questions if it
+		// should be.
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 

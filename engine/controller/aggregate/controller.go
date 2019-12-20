@@ -37,7 +37,8 @@ func NewController(
 	}
 }
 
-// Identity returns the identity of the handler that is managed by this controller.
+// Identity returns the identity of the handler that is managed by this
+// controller.
 func (c *Controller) Identity() configkit.Identity {
 	return c.identity
 }

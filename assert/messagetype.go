@@ -27,11 +27,12 @@ type MessageTypeAssertion struct {
 	// role.
 	best *envelope.Envelope
 
-	// sim is a ranking of the similarity between the type of the expected message,
-	// and the current best-match.
+	// sim is a ranking of the similarity between the type of the expected
+	// message, and the current best-match.
 	sim compare.TypeSimilarity
 
-	// tracker observers the handlers and messages that are involved in the test.
+	// tracker observers the handlers and messages that are involved in the
+	// test.
 	tracker tracker
 }
 
@@ -72,9 +73,9 @@ func (a *MessageTypeAssertion) Ok() bool {
 
 // BuildReport generates a report about the assertion.
 //
-// ok is true if the assertion is considered to have passed. This may not be
-// the same value as returned from Ok() when this assertion is used as
-// sub-assertion inside a composite.
+// ok is true if the assertion is considered to have passed. This may not be the
+// same value as returned from Ok() when this assertion is used as sub-assertion
+// inside a composite.
 func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
@@ -157,8 +158,8 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 		a.best.Origin.HandlerName,
 		a.best.Origin.HandlerType,
 	)
-	// note this language here is deliberately vague, it doesn't imply whether it
-	// currently is or isn't a pointer, just questions if it should be.
+	// note this language here is deliberately vague, it doesn't imply whether
+	// it currently is or isn't a pointer, just questions if it should be.
 	s.AppendListItem("check the message type, should it be a pointer?")
 
 	a.buildDiff(rep)
@@ -196,8 +197,9 @@ func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 			a.best.Origin.HandlerName,
 			a.best.Origin.HandlerType,
 		)
-		// note this language here is deliberately vague, it doesn't imply whether it
-		// currently is or isn't a pointer, just questions if it should be.
+		// note this language here is deliberately vague, it doesn't imply
+		// whether it currently is or isn't a pointer, just questions if it
+		// should be.
 		s.AppendListItem("check the message type, should it be a pointer?")
 
 		a.buildDiff(rep)

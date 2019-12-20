@@ -81,7 +81,8 @@ func WithCurrentTime(t time.Time) OperationOption {
 	}
 }
 
-// operationOptions is a container for the options set via OperationOption values.
+// operationOptions is a container for the options set via OperationOption
+// values.
 type operationOptions struct {
 	now             time.Time
 	observers       fact.ObserverGroup

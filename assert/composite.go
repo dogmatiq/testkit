@@ -16,23 +16,26 @@ type CompositeAssertion struct {
 	// SubAssertions is the set of assertions in the container.
 	SubAssertions []Assertion
 
-	// Predicate is a function that determines whether or not the assertion passes,
-	// based on the number of child assertions that passed.
+	// Predicate is a function that determines whether or not the assertion
+	// passes, based on the number of child assertions that passed.
 	//
-	// It returns true if the assertion passed, and may optionally return a message
-	// to be displayed in either case.
+	// It returns true if the assertion passed, and may optionally return a
+	// message to be displayed in either case.
 	Predicate func(int) (string, bool)
 
-	// ok is a pointer to the assertion's result. It is nil if Ok() has not been
-	// called.
+	// ok is a pointer to the assertion's result.
+	//
+	// It is nil if Ok() has not been called.
 	ok *bool
 
-	// outcome is the messagestring from the predicate function. It is populated by
-	// Ok().
+	// outcome is the messagestring from the predicate function.
+	//
+	// It is populated by Ok().
 	outcome string
 }
 
-// AllOf returns an assertion that passes if all of the given sub-assertions pass.
+// AllOf returns an assertion that passes if all of the given sub-assertions
+// pass.
 func AllOf(subs ...Assertion) Assertion {
 	n := len(subs)
 
@@ -163,9 +166,9 @@ func (a *CompositeAssertion) Ok() bool {
 
 // BuildReport generates a report about the assertion.
 //
-// ok is true if the assertion is considered to have passed. This may not be
-// the same value as returned from Ok() when this assertion is used as
-// sub-assertion inside a composite.
+// ok is true if the assertion is considered to have passed. This may not be the
+// same value as returned from Ok() when this assertion is used as sub-assertion
+// inside a composite.
 func (a *CompositeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	a.Ok() // populate a.ok and a.outcome
 

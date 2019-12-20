@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/dogmatiq/configkit"
-
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/controller"
@@ -204,9 +203,9 @@ func (e *Engine) dispatch(
 				e.controllers[env.Origin.HandlerName],
 			}
 		} else {
-			// for all other message types check to see the role matches the expected
-			// role from the configuration, and if so dispatch it to all of the handlers
-			// associated with that type
+			// for all other message types check to see the role matches the
+			// expected role from the configuration, and if so dispatch it to
+			// all of the handlers associated with that type
 			r, ok := e.roles[env.Type]
 			if !ok {
 				continue
@@ -285,8 +284,9 @@ func (e *Engine) handle(
 	return envs, err
 }
 
-// ExecuteCommand enqueues a command for execution. It panics if the command is
-// not routed to any handlers.
+// ExecuteCommand enqueues a command for execution.
+//
+// It panics if the command is not routed to any handlers.
 func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	t := message.TypeOf(m)
 	e.roles[t].MustBe(message.CommandRole)
@@ -294,8 +294,9 @@ func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	return e.Dispatch(ctx, m)
 }
 
-// RecordEvent records the occurrence of an event. It is not an error to record
-// an event that is not routed to any handlers.
+// RecordEvent records the occurrence of an event.
+//
+// It is not an error to record an event that is not routed to any handlers.
 func (e *Engine) RecordEvent(ctx context.Context, m dogma.Message) error {
 	return e.Dispatch(ctx, m)
 }

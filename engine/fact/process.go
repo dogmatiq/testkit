@@ -23,8 +23,8 @@ type ProcessEventIgnored struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessTimeoutIgnored indicates that a process message handler ignored
-// a timeout message because its instance no longer exists.
+// ProcessTimeoutIgnored indicates that a process message handler ignored a
+// timeout message because its instance no longer exists.
 type ProcessTimeoutIgnored struct {
 	HandlerName string
 	Handler     dogma.ProcessMessageHandler
@@ -41,8 +41,8 @@ type ProcessInstanceNotFound struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessInstanceBegun indicates that a process message handler began a
-// process instance while handling an event.
+// ProcessInstanceBegun indicates that a process message handler began a process
+// instance while handling an event.
 type ProcessInstanceBegun struct {
 	HandlerName string
 	Handler     dogma.ProcessMessageHandler
@@ -51,8 +51,8 @@ type ProcessInstanceBegun struct {
 	Envelope    *envelope.Envelope
 }
 
-// ProcessInstanceEnded indicates that a process message handler destroyed
-// a process instance while handling an event or timeout.
+// ProcessInstanceEnded indicates that a process message handler destroyed a
+// process instance while handling an event or timeout.
 type ProcessInstanceEnded struct {
 	HandlerName string
 	Handler     dogma.ProcessMessageHandler

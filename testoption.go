@@ -13,7 +13,8 @@ type TestOption func(*testOptions)
 // Verbose returns a test option that enables or disables verbose test output
 // for an individual test.
 //
-// By default, tests produce verbose output if the -v flag is passed to "go test".
+// By default, tests produce verbose output if the -v flag is passed to "go
+// test".
 func Verbose(enabled bool) TestOption {
 	return func(to *testOptions) {
 		to.verbose = enabled
@@ -41,8 +42,8 @@ type testOptions struct {
 func newTestOptions(options []TestOption, verbose *bool) *testOptions {
 	var v bool
 	if verbose == nil {
-		// note: testing.Verbose() is called here instead of in New() so that New()
-		// can be called during package initialization, at which time
+		// note: testing.Verbose() is called here instead of in New() so that
+		// New() can be called during package initialization, at which time
 		// testing.Verbose() will always return false.
 		v = testing.Verbose()
 	} else {

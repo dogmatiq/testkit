@@ -5,16 +5,17 @@ import (
 	"reflect"
 )
 
-// TypeSimilarity measures the similarity between two types.
-// The higher the number, the more similar the types are.
+// TypeSimilarity measures the similarity between two types. The higher the
+// number, the more similar the types are.
 type TypeSimilarity uint64
 
 const (
-	// SameTypes is a TypeSimilarity value indicating that two types are identical.
+	// SameTypes is a TypeSimilarity value indicating that two types are
+	// identical.
 	SameTypes TypeSimilarity = math.MaxUint64
 
-	// UnrelatedTypes is a TypeSimilarity value that indicates that two types are
-	// totally unrelated.
+	// UnrelatedTypes is a TypeSimilarity value that indicates that two types
+	// are totally unrelated.
 	UnrelatedTypes TypeSimilarity = 0
 )
 

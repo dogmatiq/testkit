@@ -24,8 +24,7 @@ type TickBegun struct {
 	HandlerType configkit.HandlerType
 }
 
-// TickCompleted indicates that a call to Controller.Tick() has
-// completed.
+// TickCompleted indicates that a call to Controller.Tick() has completed.
 type TickCompleted struct {
 	HandlerName string
 	HandlerType configkit.HandlerType
