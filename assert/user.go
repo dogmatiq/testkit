@@ -8,7 +8,7 @@ import (
 
 // AssertionContext is passed to user-defined assertion functions.
 type AssertionContext struct {
-	// Comparitor provides logic for comparing messages and application state.
+	// Comparator provides logic for comparing messages and application state.
 	Comparator compare.Comparator
 
 	// Facts is an ordered slice of the facts that occurred.
