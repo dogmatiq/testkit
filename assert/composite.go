@@ -167,8 +167,8 @@ func (a *CompositeAssertion) Ok() bool {
 // BuildReport generates a report about the assertion.
 //
 // ok is true if the assertion is considered to have passed. This may not be the
-// same value as returned from Ok() when this assertion is used as sub-assertion
-// inside a composite.
+// same value as returned from Ok() when this assertion is used as a
+// sub-assertion inside a composite.
 func (a *CompositeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	a.Ok() // populate a.ok and a.outcome
 
