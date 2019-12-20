@@ -69,7 +69,7 @@ func (a *userDefined) Ok() bool {
 // BuildReport generates a report about the assertion.
 //
 // ok is true if the assertion is considered to have passed. This may not be
-// the same value as returned from Ok() when this assertion is used as
+// the same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
 func (a *userDefined) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
