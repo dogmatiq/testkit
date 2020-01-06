@@ -2,7 +2,7 @@ package testkit_test
 
 import "fmt"
 
-// mockT is a mock of the T interface.
+// mockT is a mock of the tHelper interface.
 type mockT struct {
 	Logs []string
 }
