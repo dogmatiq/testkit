@@ -7,6 +7,10 @@ import (
 	"github.com/dogmatiq/configkit/message"
 )
 
+// inflect formats a string, inflecting words to suit the given message role r.
+//
+// For example, if r is message.EventRole, the generic string "<produced>" is
+// replaced with the event-specific terminology "recorded".
 func inflect(r message.Role, f string, v ...interface{}) string {
 	r.MustBe(message.CommandRole, message.EventRole)
 
