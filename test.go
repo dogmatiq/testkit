@@ -29,7 +29,9 @@ type Test struct {
 // Prepare prepares the application for the test by executing the given set of
 // messages without any assertions.
 func (t *Test) Prepare(messages ...dogma.Message) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if t.verbose {
 		t.logHeading("PREPARING APPLICATION FOR TEST")
@@ -49,7 +51,9 @@ func (t *Test) ExecuteCommand(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if t.verbose {
 		t.logHeading("EXECUTING TEST COMMAND")
@@ -69,7 +73,9 @@ func (t *Test) RecordEvent(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if t.verbose {
 		t.logHeading("RECORDING TEST EVENT")
@@ -89,7 +95,9 @@ func (t *Test) AdvanceTimeBy(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if delta < 0 {
 		panic("delta must be positive")
@@ -109,7 +117,9 @@ func (t *Test) AdvanceTimeTo(
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if now.Before(t.now) {
 		panic("time must be greater than the current time")
@@ -129,7 +139,9 @@ func (t *Test) advanceTime(
 	a assert.Assertion,
 	options []engine.OperationOption,
 ) *Test {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	t.now = now
 
@@ -148,7 +160,9 @@ func (t *Test) dispatch(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	opts := t.options(options, a)
 
@@ -165,7 +179,9 @@ func (t *Test) tick(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	opts := t.options(options, a)
 
@@ -181,7 +197,9 @@ func (t *Test) options(
 	options []engine.OperationOption,
 	a assert.Assertion,
 ) (opts []engine.OperationOption) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
@@ -196,7 +214,9 @@ func (t *Test) options(
 }
 
 func (t *Test) begin(a assert.Assertion) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	if a == nil {
 		panic("assertion must not be nil")
@@ -211,7 +231,9 @@ func (t *Test) begin(a assert.Assertion) {
 }
 
 func (t *Test) end(a assert.Assertion) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	r := t.renderer
 	if r == nil {
@@ -235,7 +257,9 @@ func (t *Test) end(a assert.Assertion) {
 }
 
 func (t *Test) logHeading(f string, v ...interface{}) {
-	t.t.Helper()
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
 
 	t.t.Logf(
 		"--- %s ---",
