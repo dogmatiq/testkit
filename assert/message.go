@@ -3,6 +3,7 @@ package assert
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
@@ -188,11 +189,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
-	render.WriteDiff(
-		&rep.Section(messageDiffSection).Content,
-		render.Message(r, a.expected),
-		render.Message(r, a.best.Message),
-	)
+	a.buildDiff(r, rep)
 }
 
 // buildDiff adds a "message diff" section to the result.
@@ -264,10 +261,14 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	s := rep.Section(suggestionsSection)
 
 	allDisabled := true
+	var relevant []string
+
 	for _, ht := range configkit.HandlerTypes {
 		e := t.enabled[ht]
 
 		if ht.IsProducerOf(t.role) {
+			relevant = append(relevant, ht.String())
+
 			if e {
 				allDisabled = false
 			} else {
@@ -284,7 +285,10 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	}
 
 	if len(t.engagedOrder) == 0 {
-		rep.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
+		rep.Explanation = fmt.Sprintf(
+			"no relevant handlers (%s) were engaged",
+			strings.Join(relevant, " or "),
+		)
 		s.AppendListItem("check the application's routing configuration")
 		return
 	}
