@@ -8,6 +8,7 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -43,7 +44,7 @@ var _ = Describe("func WithStartTime()", func() {
 
 		New(app).
 			Begin(
-				&mockT{},
+				&testingmock.T{},
 				WithStartTime(now),
 				WithOperationOptions(
 					engine.EnableProjections(true),
