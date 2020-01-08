@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/compare"
@@ -263,7 +264,9 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	s := rep.Section(suggestionsSection)
 
 	allDisabled := true
-	for ht, e := range t.enabled {
+	for _, ht := range configkit.HandlerTypes {
+		e := t.enabled[ht]
+
 		if ht.IsProducerOf(t.role) {
 			if e {
 				allDisabled = false
