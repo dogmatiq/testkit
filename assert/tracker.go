@@ -19,9 +19,10 @@ type tracker struct {
 	// produced.
 	produced int
 
-	// engaged is the set of handlers that *could* have produced the expected
-	// message.
-	engaged map[string]configkit.HandlerType
+	// engagedOrder and engagedType track the set of handlers that *could* have
+	// produced the expected message.
+	engagedOrder []string
+	engagedType  map[string]configkit.HandlerType
 
 	// enabled is the set of handler types that are enabled during the test.
 	enabled map[configkit.HandlerType]bool
@@ -47,11 +48,14 @@ func (t *tracker) Notify(f fact.Fact) {
 
 func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
 	if ht.IsProducerOf(t.role) {
-		if t.engaged == nil {
-			t.engaged = map[string]configkit.HandlerType{}
+		if t.engagedType == nil {
+			t.engagedType = map[string]configkit.HandlerType{}
 		}
 
-		t.engaged[n] = ht
+		if _, ok := t.engagedType[n]; !ok {
+			t.engagedOrder = append(t.engagedOrder, n)
+			t.engagedType[n] = ht
+		}
 	}
 }
 

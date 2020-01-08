@@ -280,7 +280,7 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 		return
 	}
 
-	if len(t.engaged) == 0 {
+	if len(t.engagedOrder) == 0 {
 		rep.Explanation = "no relevant handlers (aggregates or integrations) were engaged"
 		s.AppendListItem("check the application's routing configuration")
 		return
@@ -294,7 +294,7 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
 	}
 
-	for n, t := range t.engaged {
-		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t)
+	for _, n := range t.engagedOrder {
+		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t.engagedType[n])
 	}
 }
