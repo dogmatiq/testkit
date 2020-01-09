@@ -43,7 +43,7 @@ type HandlingBegun struct {
 }
 
 // HandlingCompleted indicates that a message has been handled by a specific
-// handler, either successfully or unsucessfully.
+// handler, either successfully or unsuccessfully.
 type HandlingCompleted struct {
 	HandlerName string
 	HandlerType configkit.HandlerType

@@ -2,7 +2,7 @@ package envelope
 
 import "github.com/dogmatiq/configkit"
 
-// Origin describes the hanlder that produced a message in an envelope.
+// Origin describes the handler that produced a message in an envelope.
 type Origin struct {
 	// HandlerName is the name of the handler that produced this message.
 	HandlerName string

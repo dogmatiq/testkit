@@ -18,7 +18,7 @@ func CommandTypeExecuted(m dogma.Message) Assertion {
 	}
 }
 
-// EventTypeRecorded returns an assertion that passes if a message witn the same
+// EventTypeRecorded returns an assertion that passes if a message with the same
 // type as m is recorded as an event.
 func EventTypeRecorded(m dogma.Message) Assertion {
 	return &messageTypeAssertion{
