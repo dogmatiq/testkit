@@ -16,36 +16,23 @@ import (
 )
 
 var _ = Describe("type userAssertion", func() {
-	var (
-		aggregate *AggregateMessageHandler
-		app       dogma.Application
-	)
+	var app dogma.Application
 
 	BeforeEach(func() {
-		aggregate = &AggregateMessageHandler{
-			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<aggregate>", "<aggregate-key>")
-				c.ConsumesCommandType(MessageA{})
-				c.ProducesEventType(MessageB{})
-			},
-			RouteCommandToInstanceFunc: func(dogma.Message) string {
-				return "<aggregate-instance>"
-			},
-			HandleCommandFunc: func(
-				s dogma.AggregateCommandScope,
-				m dogma.Message,
-			) {
-				s.Create()
-				s.RecordEvent(
-					MessageB{Value: "<value>"},
-				)
-			},
-		}
-
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
-				c.RegisterAggregate(aggregate)
+
+				c.RegisterAggregate(&AggregateMessageHandler{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "<aggregate-key>")
+						c.ConsumesCommandType(MessageA{})
+						c.ProducesEventType(MessageB{})
+					},
+					RouteCommandToInstanceFunc: func(dogma.Message) string {
+						return "<aggregate-instance>"
+					},
+				})
 			},
 		}
 	})
