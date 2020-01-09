@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/internal/testingmock"
 	"github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -43,12 +44,12 @@ var _ = Describe("type Test", func() {
 
 	Context("when verbose logging is enabled", func() {
 		var (
-			t    *mockT
+			t    *testingmock.T
 			test *Test
 		)
 
 		BeforeEach(func() {
-			t = &mockT{}
+			t = &testingmock.T{}
 			test = New(app).Begin(t, Verbose(true))
 		})
 
