@@ -62,9 +62,11 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 	defer must.Recover(&err)
 	w := count.NewWriter(next)
 
-	writeIcon(w, r.Ok)
-
-	must.WriteByte(w, ' ')
+	if r.Ok {
+		must.WriteString(w, "✓ ")
+	} else {
+		must.WriteString(w, "✗ ")
+	}
 
 	must.WriteString(w, r.Criteria)
 
