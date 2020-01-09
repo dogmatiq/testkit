@@ -60,37 +60,39 @@ var _ = Describe("type userAssertion", func() {
 		gomega.Expect(t.Failed).To(gomega.Equal(!ok))
 	}
 
-	DescribeTable(
-		"func Should()",
-		test,
-		Entry(
-			"assertion passed",
-			Should(
-				"<criteria>",
-				func(AssertionContext) error {
-					return nil
-				},
+	Describe("func Should()", func() {
+		DescribeTable(
+			"assertion reports",
+			test,
+			Entry(
+				"assertion passed",
+				Should(
+					"<criteria>",
+					func(AssertionContext) error {
+						return nil
+					},
+				),
+				true, // ok
+				`--- ASSERTION REPORT ---`,
+				``,
+				`✓ <criteria>`,
 			),
-			true, // ok
-			`--- ASSERTION REPORT ---`,
-			``,
-			`✓ <criteria>`,
-		),
-		Entry(
-			"assertion failed",
-			Should(
-				"<criteria>",
-				func(AssertionContext) error {
-					return errors.New("<explanation>")
-				},
+			Entry(
+				"assertion failed",
+				Should(
+					"<criteria>",
+					func(AssertionContext) error {
+						return errors.New("<explanation>")
+					},
+				),
+				false, // ok
+				`--- ASSERTION REPORT ---`,
+				``,
+				`✗ <criteria> (the user-defined assertion returned a non-nil error)`,
+				``,
+				`  | EXPLANATION`,
+				`  |     <explanation>`,
 			),
-			false, // ok
-			`--- ASSERTION REPORT ---`,
-			``,
-			`✗ <criteria> (the user-defined assertion returned a non-nil error)`,
-			``,
-			`  | EXPLANATION`,
-			`  |     <explanation>`,
-		),
-	)
+		)
+	})
 })
