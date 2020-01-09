@@ -29,14 +29,14 @@ func Should(
 	cr string,
 	fn func(AssertionContext) error,
 ) Assertion {
-	return &userDefined{
+	return &userAssertion{
 		criteria: cr,
 		assert:   fn,
 	}
 }
 
-// userDefined is a user-defined assertion.
-type userDefined struct {
+// userAssertion is a user-defined assertion.
+type userAssertion struct {
 	criteria string
 	assert   func(AssertionContext) error
 	ctx      AssertionContext
@@ -45,19 +45,19 @@ type userDefined struct {
 }
 
 // Notify the observer of a fact.
-func (a *userDefined) Notify(f fact.Fact) {
+func (a *userAssertion) Notify(f fact.Fact) {
 	a.ctx.Facts = append(a.ctx.Facts, f)
 }
 
 // Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *userDefined) Prepare(c compare.Comparator) {
+func (a *userAssertion) Prepare(c compare.Comparator) {
 	a.ctx.Comparator = c
 }
 
 // Ok returns true if the assertion passed.
-func (a *userDefined) Ok() bool {
+func (a *userAssertion) Ok() bool {
 	if !a.done {
 		a.err = a.assert(a.ctx)
 		a.done = true
@@ -71,7 +71,7 @@ func (a *userDefined) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be
 // the same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *userDefined) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *userAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk:   ok,
 		Ok:       a.Ok(),
