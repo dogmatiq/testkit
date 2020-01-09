@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/assert"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
@@ -66,7 +65,7 @@ var _ = Describe("type userAssertion", func() {
 		test,
 		Entry(
 			"assertion passed",
-			assert.Should(
+			Should(
 				"<criteria>",
 				func(AssertionContext) error {
 					return nil
@@ -79,7 +78,7 @@ var _ = Describe("type userAssertion", func() {
 		),
 		Entry(
 			"assertion failed",
-			assert.Should(
+			Should(
 				"<criteria>",
 				func(AssertionContext) error {
 					return errors.New("<explanation>")

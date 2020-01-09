@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/assert"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -151,7 +150,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"command executed as expected",
 			nil, // setup
-			assert.CommandExecuted(MessageC{Value: "<value>"}),
+			CommandExecuted(MessageC{Value: "<value>"}),
 			true, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -160,7 +159,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"no matching command executed",
 			nil, // setup
-			assert.CommandExecuted(MessageX{Value: "<value>"}),
+			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -178,7 +177,7 @@ var _ = Describe("type messageAssertion", func() {
 				process.HandleEventFunc = nil
 				message = MessageB{}
 			},
-			assert.CommandExecuted(MessageX{Value: "<value>"}),
+			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -195,7 +194,7 @@ var _ = Describe("type messageAssertion", func() {
 			func() {
 				process.HandleEventFunc = nil
 			},
-			assert.CommandExecuted(MessageX{Value: "<value>"}),
+			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -215,7 +214,7 @@ var _ = Describe("type messageAssertion", func() {
 					engine.EnableProcesses(false),
 				)
 			},
-			assert.CommandExecuted(MessageX{Value: "<value>"}),
+			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -241,7 +240,7 @@ var _ = Describe("type messageAssertion", func() {
 					engine.EnableProcesses(false),
 				)
 			},
-			assert.CommandExecuted(MessageX{Value: "<value>"}),
+			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -256,7 +255,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar event recorded with a different type",
 			nil, // setup
-			assert.CommandExecuted(&MessageC{Value: "<value>"}), // note: message type is pointer
+			CommandExecuted(&MessageC{Value: "<value>"}), // note: message type is pointer
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -276,7 +275,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar command executed with a different value",
 			nil, // setup
-			assert.CommandExecuted(MessageC{Value: "<different>"}),
+			CommandExecuted(MessageC{Value: "<different>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -296,7 +295,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"expected message recorded as an event rather than executed as a command",
 			nil, // setup
-			assert.CommandExecuted(MessageB{Value: "<value>"}),
+			CommandExecuted(MessageB{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -312,7 +311,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar message with a different value recorded as an event rather than executed as a command",
 			nil, // setup
-			assert.CommandExecuted(MessageB{Value: "<different>"}),
+			CommandExecuted(MessageB{Value: "<different>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -333,7 +332,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar message with a different type recorded as an event rather than executed as a command",
 			nil, // setup
-			assert.CommandExecuted(&MessageB{Value: "<value>"}), // note: message type is pointer
+			CommandExecuted(&MessageB{Value: "<value>"}), // note: message type is pointer
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -360,7 +359,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"event recorded as expected",
 			nil, // setup
-			assert.EventRecorded(MessageB{Value: "<value>"}),
+			EventRecorded(MessageB{Value: "<value>"}),
 			true, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -369,7 +368,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"no matching event recorded",
 			nil, // setup
-			assert.EventRecorded(MessageX{Value: "<value>"}),
+			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -391,7 +390,7 @@ var _ = Describe("type messageAssertion", func() {
 					engine.EnableIntegrations(false),
 				)
 			},
-			assert.EventRecorded(MessageX{Value: "<value>"}),
+			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -412,7 +411,7 @@ var _ = Describe("type messageAssertion", func() {
 					engine.EnableAggregates(false),
 				)
 			},
-			assert.EventRecorded(MessageX{Value: "<value>"}),
+			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -430,7 +429,7 @@ var _ = Describe("type messageAssertion", func() {
 			func() {
 				aggregate.HandleCommandFunc = nil
 			},
-			assert.EventRecorded(MessageX{Value: "<value>"}),
+			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -448,7 +447,7 @@ var _ = Describe("type messageAssertion", func() {
 				integration.HandleCommandFunc = nil
 				message = MessageB{}
 			},
-			assert.EventRecorded(MessageX{Value: "<value>"}),
+			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -463,7 +462,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar event recorded with a different type",
 			nil, // setup
-			assert.EventRecorded(&MessageB{Value: "<value>"}), // note: message type is pointer
+			EventRecorded(&MessageB{Value: "<value>"}), // note: message type is pointer
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -483,7 +482,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar event recorded with a different value",
 			nil, // setup
-			assert.EventRecorded(MessageB{Value: "<different>"}),
+			EventRecorded(MessageB{Value: "<different>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -503,7 +502,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"expected message executed as a command rather than recorded as an event",
 			nil, // setup
-			assert.EventRecorded(MessageC{Value: "<value>"}),
+			EventRecorded(MessageC{Value: "<value>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -519,7 +518,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar message with a different value executed as a command rather than recorded as an event",
 			nil, // setup
-			assert.EventRecorded(MessageC{Value: "<different>"}),
+			EventRecorded(MessageC{Value: "<different>"}),
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
@@ -540,7 +539,7 @@ var _ = Describe("type messageAssertion", func() {
 		Entry(
 			"similar message with a different type executed as a command rather than recorded as an event",
 			nil, // setup
-			assert.EventRecorded(&MessageC{Value: "<value>"}), // note: message type is pointer
+			EventRecorded(&MessageC{Value: "<value>"}), // note: message type is pointer
 			false, // ok
 			`--- ASSERTION REPORT ---`,
 			``,
