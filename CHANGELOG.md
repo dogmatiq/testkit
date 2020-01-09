@@ -17,6 +17,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 - **[BC]** Flatten fields from `Envelope.Correlation` directly into `Envelope`
 - Test logs and assertion reports now display the file and line number of the test operation
 
+### Removed
+
+- **[BC]** Removed the `assert.CompositeAssertion` type
+- **[BC]** Removed the `assert.MessageAssertion` type
+- **[BC]** Removed the `assert.MessageTypeAssertion` type
+
 ### Fixed
 
 - `assert.CommandExecuted()` now renders the correct suggestions when it fails due to mismatched message role

@@ -14,8 +14,25 @@ import (
 	"github.com/dogmatiq/testkit/render"
 )
 
-// MessageAssertion asserts that a specific message is produced.
-type MessageAssertion struct {
+// CommandExecuted returns an assertion that passes if m is executed as a
+// command.
+func CommandExecuted(m dogma.Message) Assertion {
+	return &messageAssertion{
+		expected: m,
+		role:     message.CommandRole,
+	}
+}
+
+// EventRecorded returns an assertion that passes if m is recorded as an event.
+func EventRecorded(m dogma.Message) Assertion {
+	return &messageAssertion{
+		expected: m,
+		role:     message.EventRole,
+	}
+}
+
+// messageAssertion asserts that a specific message is produced.
+type messageAssertion struct {
 	// Expected is the message that is expected to be produced.
 	expected dogma.Message
 
@@ -49,29 +66,12 @@ type MessageAssertion struct {
 	tracker tracker
 }
 
-// CommandExecuted returns an assertion that passes if m is executed as a
-// command.
-func CommandExecuted(m dogma.Message) Assertion {
-	return &MessageAssertion{
-		expected: m,
-		role:     message.CommandRole,
-	}
-}
-
-// EventRecorded returns an assertion that passes if m is recorded as an event.
-func EventRecorded(m dogma.Message) Assertion {
-	return &MessageAssertion{
-		expected: m,
-		role:     message.EventRole,
-	}
-}
-
 // Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *MessageAssertion) Prepare(c compare.Comparator) {
+func (a *messageAssertion) Prepare(c compare.Comparator) {
 	// reset everything
-	*a = MessageAssertion{
+	*a = messageAssertion{
 		expected: a.expected,
 		role:     a.role,
 		cmp:      c,
@@ -80,7 +80,7 @@ func (a *MessageAssertion) Prepare(c compare.Comparator) {
 }
 
 // Ok returns true if the assertion passed.
-func (a *MessageAssertion) Ok() bool {
+func (a *messageAssertion) Ok() bool {
 	return a.ok
 }
 
@@ -89,7 +89,7 @@ func (a *MessageAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *messageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
@@ -116,7 +116,7 @@ func (a *MessageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 }
 
 // Notify updates the assertion's state in response to a new fact.
-func (a *MessageAssertion) Notify(f fact.Fact) {
+func (a *messageAssertion) Notify(f fact.Fact) {
 	if a.ok {
 		return
 	}
@@ -135,7 +135,7 @@ func (a *MessageAssertion) Notify(f fact.Fact) {
 
 // messageProduced updates the assertion's state to reflect the fact that a
 // message has been produced.
-func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
+func (a *messageAssertion) messageProduced(env *envelope.Envelope) {
 	if !a.cmp.MessageIsEqual(env.Message, a.expected) {
 		a.updateBestMatch(env)
 		return
@@ -151,7 +151,7 @@ func (a *MessageAssertion) messageProduced(env *envelope.Envelope) {
 }
 
 // updateBestMatch replaces a.best with env if it is a better match.
-func (a *MessageAssertion) updateBestMatch(env *envelope.Envelope) {
+func (a *messageAssertion) updateBestMatch(env *envelope.Envelope) {
 	sim := compare.FuzzyTypeComparison(
 		reflect.TypeOf(a.expected),
 		reflect.TypeOf(env.Message),
@@ -165,7 +165,7 @@ func (a *MessageAssertion) updateBestMatch(env *envelope.Envelope) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available and it is of the expected role.
-func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.sim == compare.SameTypes {
@@ -193,7 +193,7 @@ func (a *MessageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 }
 
 // buildDiff adds a "message diff" section to the result.
-func (a *MessageAssertion) buildDiff(r render.Renderer, rep *Report) {
+func (a *messageAssertion) buildDiff(r render.Renderer, rep *Report) {
 	render.WriteDiff(
 		&rep.Section("Message Diff").Content,
 		render.Message(r, a.expected),
@@ -203,7 +203,7 @@ func (a *MessageAssertion) buildDiff(r render.Renderer, rep *Report) {
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *MessageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	s.AppendListItem(inflect(

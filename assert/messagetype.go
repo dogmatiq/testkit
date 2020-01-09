@@ -9,8 +9,26 @@ import (
 	"github.com/dogmatiq/testkit/render"
 )
 
-// MessageTypeAssertion asserts that a specific message is produced.
-type MessageTypeAssertion struct {
+// CommandTypeExecuted returns an assertion that passes if a message with the
+// same type as m is executed as a command.
+func CommandTypeExecuted(m dogma.Message) Assertion {
+	return &messageTypeAssertion{
+		expected: message.TypeOf(m),
+		role:     message.CommandRole,
+	}
+}
+
+// EventTypeRecorded returns an assertion that passes if a message witn the same
+// type as m is recorded as an event.
+func EventTypeRecorded(m dogma.Message) Assertion {
+	return &messageTypeAssertion{
+		expected: message.TypeOf(m),
+		role:     message.EventRole,
+	}
+}
+
+// messageTypeAssertion asserts that a specific message is produced.
+type messageTypeAssertion struct {
 	// Expected is the type of the message that is expected to be produced.
 	expected message.Type
 
@@ -36,30 +54,12 @@ type MessageTypeAssertion struct {
 	tracker tracker
 }
 
-// CommandTypeExecuted returns an assertion that passes if a message with the
-// same type as m is executed as a command.
-func CommandTypeExecuted(m dogma.Message) Assertion {
-	return &MessageTypeAssertion{
-		expected: message.TypeOf(m),
-		role:     message.CommandRole,
-	}
-}
-
-// EventTypeRecorded returns an assertion that passes if a message witn the same
-// type as m is recorded as an event.
-func EventTypeRecorded(m dogma.Message) Assertion {
-	return &MessageTypeAssertion{
-		expected: message.TypeOf(m),
-		role:     message.EventRole,
-	}
-}
-
 // Prepare is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *MessageTypeAssertion) Prepare(c compare.Comparator) {
+func (a *messageTypeAssertion) Prepare(c compare.Comparator) {
 	// reset everything
-	*a = MessageTypeAssertion{
+	*a = messageTypeAssertion{
 		expected: a.expected,
 		role:     a.role,
 		tracker:  tracker{role: a.role},
@@ -67,7 +67,7 @@ func (a *MessageTypeAssertion) Prepare(c compare.Comparator) {
 }
 
 // Ok returns true if the assertion passed.
-func (a *MessageTypeAssertion) Ok() bool {
+func (a *messageTypeAssertion) Ok() bool {
 	return a.ok
 }
 
@@ -76,7 +76,7 @@ func (a *MessageTypeAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *messageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
@@ -103,7 +103,7 @@ func (a *MessageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 }
 
 // Notify updates the assertion's state in response to a new fact.
-func (a *MessageTypeAssertion) Notify(f fact.Fact) {
+func (a *messageTypeAssertion) Notify(f fact.Fact) {
 	if a.ok {
 		return
 	}
@@ -122,7 +122,7 @@ func (a *MessageTypeAssertion) Notify(f fact.Fact) {
 
 // messageProduced updates the assertion's state to reflect the fact that a
 // message has been produced.
-func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
+func (a *messageTypeAssertion) messageProduced(env *envelope.Envelope) {
 	sim := compare.FuzzyTypeComparison(
 		a.expected.ReflectType(),
 		env.Type.ReflectType(),
@@ -139,7 +139,7 @@ func (a *MessageTypeAssertion) messageProduced(env *envelope.Envelope) {
 }
 
 // buildDiff adds a "message type diff" section to the result.
-func (a *MessageTypeAssertion) buildDiff(rep *Report) {
+func (a *messageTypeAssertion) buildDiff(rep *Report) {
 	render.WriteDiff(
 		&rep.Section("Message Type Diff").Content,
 		a.expected.String(),
@@ -149,7 +149,7 @@ func (a *MessageTypeAssertion) buildDiff(rep *Report) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available and it is of the expected role.
-func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	rep.Explanation = inflect(
@@ -167,7 +167,7 @@ func (a *MessageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *MessageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	s.AppendListItem(inflect(
