@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Add `assert.Should()` for specifying user-defined assertions
+
 ### Changed
 
 - **[BC]** Switched from `enginekit` to `configkit` for application configurations
