@@ -119,5 +119,16 @@ func (r DefaultRenderer) WriteProjectionMessageHandler(
 }
 
 func (r DefaultRenderer) write(w io.Writer, v interface{}) (int, error) {
-	return dapper.Write(w, v)
+	return printer.Write(w, v)
+}
+
+// printer is the Dapper printer used to render values.
+var printer = dapper.Printer{
+	Config: dapper.Config{
+		Filters: []dapper.Filter{
+			dapper.TimeFilter,
+			dapper.DurationFilter,
+		},
+		OmitPackagePaths: true,
+	},
 }

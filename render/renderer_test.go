@@ -82,12 +82,7 @@ var _ = Describe("type DefaultRenderer", func() {
 						),
 					)
 				},
-				"*fixtures.AggregateMessageHandler{",
-				"    NewFunc:                    nil",
-				"    ConfigureFunc:              nil",
-				"    RouteCommandToInstanceFunc: nil",
-				"    HandleCommandFunc:          nil",
-				"}",
+				"*fixtures.AggregateMessageHandler{<zero>}",
 			)
 		})
 	})
@@ -104,14 +99,7 @@ var _ = Describe("type DefaultRenderer", func() {
 						),
 					)
 				},
-				"*fixtures.ProcessMessageHandler{",
-				"    NewFunc:                  nil",
-				"    ConfigureFunc:            nil",
-				"    RouteEventToInstanceFunc: nil",
-				"    HandleEventFunc:          nil",
-				"    HandleTimeoutFunc:        nil",
-				"    TimeoutHintFunc:          nil",
-				"}",
+				"*fixtures.ProcessMessageHandler{<zero>}",
 			)
 		})
 	})
@@ -128,11 +116,7 @@ var _ = Describe("type DefaultRenderer", func() {
 						),
 					)
 				},
-				"*fixtures.IntegrationMessageHandler{",
-				"    ConfigureFunc:     nil",
-				"    HandleCommandFunc: nil",
-				"    TimeoutHintFunc:   nil",
-				"}",
+				"*fixtures.IntegrationMessageHandler{<zero>}",
 			)
 		})
 	})
@@ -149,13 +133,7 @@ var _ = Describe("type DefaultRenderer", func() {
 						),
 					)
 				},
-				"*fixtures.ProjectionMessageHandler{",
-				"    ConfigureFunc:       nil",
-				"    HandleEventFunc:     nil",
-				"    ResourceVersionFunc: nil",
-				"    CloseResourceFunc:   nil",
-				"    TimeoutHintFunc:     nil",
-				"}",
+				"*fixtures.ProjectionMessageHandler{<zero>}",
 			)
 		})
 	})
