@@ -62,14 +62,9 @@ var _ = Describe("func AggregateMessageHandler()", func() {
 				DefaultRenderer{},
 				&fixtures.AggregateMessageHandler{},
 			),
-		).To(Equal(join(
-			"*fixtures.AggregateMessageHandler{",
-			"    NewFunc:                    nil",
-			"    ConfigureFunc:              nil",
-			"    RouteCommandToInstanceFunc: nil",
-			"    HandleCommandFunc:          nil",
-			"}",
-		)))
+		).To(Equal(
+			"*fixtures.AggregateMessageHandler{<zero>}",
+		))
 	})
 })
 
@@ -80,16 +75,9 @@ var _ = Describe("func ProcessMessageHandler()", func() {
 				DefaultRenderer{},
 				&fixtures.ProcessMessageHandler{},
 			),
-		).To(Equal(join(
-			"*fixtures.ProcessMessageHandler{",
-			"    NewFunc:                  nil",
-			"    ConfigureFunc:            nil",
-			"    RouteEventToInstanceFunc: nil",
-			"    HandleEventFunc:          nil",
-			"    HandleTimeoutFunc:        nil",
-			"    TimeoutHintFunc:          nil",
-			"}",
-		)))
+		).To(Equal(
+			"*fixtures.ProcessMessageHandler{<zero>}",
+		))
 	})
 })
 
@@ -100,13 +88,9 @@ var _ = Describe("func IntegrationMessageHandler()", func() {
 				DefaultRenderer{},
 				&fixtures.IntegrationMessageHandler{},
 			),
-		).To(Equal(join(
-			"*fixtures.IntegrationMessageHandler{",
-			"    ConfigureFunc:     nil",
-			"    HandleCommandFunc: nil",
-			"    TimeoutHintFunc:   nil",
-			"}",
-		)))
+		).To(Equal(
+			"*fixtures.IntegrationMessageHandler{<zero>}",
+		))
 	})
 })
 
@@ -117,15 +101,9 @@ var _ = Describe("func ProjectionMessageHandler()", func() {
 				DefaultRenderer{},
 				&fixtures.ProjectionMessageHandler{},
 			),
-		).To(Equal(join(
-			"*fixtures.ProjectionMessageHandler{",
-			"    ConfigureFunc:       nil",
-			"    HandleEventFunc:     nil",
-			"    ResourceVersionFunc: nil",
-			"    CloseResourceFunc:   nil",
-			"    TimeoutHintFunc:     nil",
-			"}",
-		)))
+		).To(Equal(
+			"*fixtures.ProjectionMessageHandler{<zero>}",
+		))
 	})
 })
 
