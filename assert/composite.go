@@ -130,15 +130,22 @@ func (a *compositeAssertion) Notify(f fact.Fact) {
 	}
 }
 
-// Prepare is called to prepare the assertion for a new test.
+// Begin is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *compositeAssertion) Prepare(c compare.Comparator) {
+func (a *compositeAssertion) Begin(c compare.Comparator) {
 	a.ok = nil
 	a.outcome = ""
 
 	for _, sub := range a.SubAssertions {
-		sub.Prepare(c)
+		sub.Begin(c)
+	}
+}
+
+// End is called once the test is complete.
+func (a *compositeAssertion) End() {
+	for _, sub := range a.SubAssertions {
+		sub.End()
 	}
 }
 

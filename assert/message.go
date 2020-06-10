@@ -66,10 +66,10 @@ type messageAssertion struct {
 	tracker tracker
 }
 
-// Prepare is called to prepare the assertion for a new test.
+// Begin is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *messageAssertion) Prepare(c compare.Comparator) {
+func (a *messageAssertion) Begin(c compare.Comparator) {
 	// reset everything
 	*a = messageAssertion{
 		expected: a.expected,
@@ -77,6 +77,10 @@ func (a *messageAssertion) Prepare(c compare.Comparator) {
 		cmp:      c,
 		tracker:  tracker{role: a.role},
 	}
+}
+
+// End is called once the test is complete.
+func (a *messageAssertion) End() {
 }
 
 // Ok returns true if the assertion passed.

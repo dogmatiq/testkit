@@ -15,7 +15,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = Describe("type messageAssertion", func() {
+var _ = Context("message assertions", func() {
 	var (
 		aggregate   *AggregateMessageHandler
 		process     *ProcessMessageHandler

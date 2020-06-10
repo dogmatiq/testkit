@@ -40,7 +40,6 @@ type userAssertion struct {
 	criteria string
 	assert   func(AssertionContext) error
 	ctx      AssertionContext
-	done     bool
 	err      error
 }
 
@@ -49,20 +48,20 @@ func (a *userAssertion) Notify(f fact.Fact) {
 	a.ctx.Facts = append(a.ctx.Facts, f)
 }
 
-// Prepare is called to prepare the assertion for a new test.
+// Begin is called to prepare the assertion for a new test.
 //
 // c is the comparator used to compare messages and other entities.
-func (a *userAssertion) Prepare(c compare.Comparator) {
+func (a *userAssertion) Begin(c compare.Comparator) {
 	a.ctx.Comparator = c
+}
+
+// End is called once the test is complete.
+func (a *userAssertion) End() {
+	a.err = a.assert(a.ctx)
 }
 
 // Ok returns true if the assertion passed.
 func (a *userAssertion) Ok() bool {
-	if !a.done {
-		a.err = a.assert(a.ctx)
-		a.done = true
-	}
-
 	return a.err == nil
 }
 

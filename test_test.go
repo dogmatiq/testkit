@@ -126,20 +126,14 @@ var _ = Describe("type Test", func() {
 
 type noopAssertion struct{}
 
-func (noopAssertion) Prepare(compare.Comparator) {
-}
-
-func (noopAssertion) Ok() bool {
-	return true
-}
-
+func (noopAssertion) Begin(compare.Comparator) {}
+func (noopAssertion) End()                     {}
+func (noopAssertion) Ok() bool                 { return true }
+func (noopAssertion) Notify(fact.Fact)         {}
 func (noopAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
 	return &assert.Report{
 		TreeOk:   ok,
 		Ok:       ok,
 		Criteria: "pass unconditionally",
 	}
-}
-
-func (noopAssertion) Notify(fact.Fact) {
 }
