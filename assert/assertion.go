@@ -11,10 +11,13 @@ import (
 type Assertion interface {
 	fact.Observer
 
-	// Prepare is called to prepare the assertion for a new test.
+	// Begin is called to prepare the assertion for a new test.
 	//
 	// c is the comparator used to compare messages and other entities.
-	Prepare(c compare.Comparator)
+	Begin(c compare.Comparator)
+
+	// End is called once the test is complete.
+	End()
 
 	// Ok returns true if the assertion passed.
 	Ok() bool

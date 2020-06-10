@@ -227,13 +227,15 @@ func (t *Test) begin(a assert.Assertion) {
 		c = compare.DefaultComparator{}
 	}
 
-	a.Prepare(c)
+	a.Begin(c)
 }
 
 func (t *Test) end(a assert.Assertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
+
+	a.End()
 
 	r := t.renderer
 	if r == nil {

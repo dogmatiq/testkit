@@ -14,7 +14,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = Describe("type userAssertion", func() {
+var _ = Context("user assertions", func() {
 	var app dogma.Application
 
 	BeforeEach(func() {
