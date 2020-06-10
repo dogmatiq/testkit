@@ -168,7 +168,18 @@ func (t *T) Fatalf(format string, args ...interface{}) {
 	t.FailNow()
 }
 
+// Parallel signals that this test is to be run in parallel with (and only with)
+// other parallel tests.
+//
+// It is a no-op in this implementation, but is included to increase
+// compatibility with the *testing.T type.
+func (t *T) Parallel() {
+}
+
 // Helper marks the calling function as a test helper function.
+//
+// It is a no-op in this implementation, but is included to increase
+// compatibility with the *testing.T type.
 func (t *T) Helper() {
 }
 
