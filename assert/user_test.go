@@ -1,7 +1,6 @@
 package assert_test
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
@@ -68,9 +67,7 @@ var _ = Context("user assertions", func() {
 				"assertion passed",
 				Should(
 					"<criteria>",
-					func(AssertionContext) error {
-						return nil
-					},
+					func(*T) {},
 				),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
@@ -81,14 +78,14 @@ var _ = Context("user assertions", func() {
 				"assertion failed",
 				Should(
 					"<criteria>",
-					func(AssertionContext) error {
-						return errors.New("<explanation>")
+					func(t *T) {
+						t.Fatal("<explanation>")
 					},
 				),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ <criteria> (the user-defined assertion returned a non-nil error)`,
+				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     <explanation>`,
