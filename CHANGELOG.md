@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## Changed
 
-- **[BC]** Changed `assert.Should()` to provide a `testing.T`-like value, instead of using an error to indicate an assertion failure
+- **[BC]** `assert.Should()` now provides an `assert.T` to the user instead of checking the `error` return value
 - **[BC]** Rename `assert.Assertion.Prepare()` to `Begin()`
 - **[BC]** Add `verbose` parameter to `assert.Assertion.BuildReport()`
 
