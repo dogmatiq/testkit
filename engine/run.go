@@ -49,8 +49,10 @@ func RunTimeScaled(
 	t time.Time,
 	opts ...OperationOption,
 ) error {
+	start := time.Now()
+
 	if t.IsZero() {
-		t = time.Now()
+		t = start
 	}
 
 	// Add a slot at the start of the options for the WithCurrentTime() option.
@@ -60,7 +62,7 @@ func RunTimeScaled(
 	)
 
 	for {
-		elapsed := linger.Multiply(time.Since(t), f)
+		elapsed := linger.Multiply(time.Since(start), f)
 		opts[0] = WithCurrentTime(t.Add(elapsed))
 
 		if err := e.Tick(ctx, opts...); err != nil {
