@@ -1,14 +1,17 @@
 package assert_test
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
+	"github.com/dogmatiq/testkit/assert"
 	. "github.com/dogmatiq/testkit/assert"
+	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
+	"github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	"github.com/onsi/gomega"
@@ -64,7 +67,7 @@ var _ = Context("composite assertions", func() {
 		It("panics if no sub-assertions are provided", func() {
 			gomega.Expect(func() {
 				AllOf()
-			}).To(gomega.Panic())
+			}).To(gomega.PanicWith("no sub-assertions provided"))
 		})
 
 		DescribeTable(
@@ -72,97 +75,41 @@ var _ = Context("composite assertions", func() {
 			test,
 			Entry(
 				"single sub-assertion is flattened",
-				AllOf(
-					Should(
-						"<sub-criteria>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				AllOf(pass),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✓ <sub-criteria>`,
+				`✓ <always pass>`,
 			),
 			Entry(
 				"all sub-assertions passed",
-				AllOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				AllOf(pass, pass),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✓ all of`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✓ <sub-criteria 2>`,
+				`    ✓ <always pass>`,
+				`    ✓ <always pass>`,
 			),
 			Entry(
 				"some of the sub-assertions passed",
-				AllOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation>")
-						},
-					),
-				),
+				AllOf(pass, fail),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ all of (1 of the sub-assertions failed)`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✗ <sub-criteria 2> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation>`,
+				`    ✓ <always pass>`,
+				`    ✗ <always fail>`,
 			),
 			Entry(
 				"none of the sub-assertions passed",
-				AllOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 1>")
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 2>")
-						},
-					),
-				),
+				AllOf(fail, fail),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ all of (2 of the sub-assertions failed)`,
-				`    ✗ <sub-criteria 1> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation 1>`,
-				`    `,
-				`    ✗ <sub-criteria 2> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation 2>`,
+				`    ✗ <always fail>`,
+				`    ✗ <always fail>`,
 			),
 		)
 	})
@@ -171,7 +118,7 @@ var _ = Context("composite assertions", func() {
 		It("panics if no sub-assertions are provided", func() {
 			gomega.Expect(func() {
 				AnyOf()
-			}).To(gomega.Panic())
+			}).To(gomega.PanicWith("no sub-assertions provided"))
 		})
 
 		DescribeTable(
@@ -179,94 +126,41 @@ var _ = Context("composite assertions", func() {
 			test,
 			Entry(
 				"single sub-assertion is flattened",
-				AnyOf(
-					Should(
-						"<sub-criteria>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				AnyOf(pass),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✓ <sub-criteria>`,
+				`✓ <always pass>`,
 			),
 			Entry(
 				"all sub-assertions passed",
-				AnyOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				AnyOf(pass, pass),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✓ any of`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✓ <sub-criteria 2>`,
+				`    ✓ <always pass>`,
+				`    ✓ <always pass>`,
 			),
 			Entry(
 				"some of the sub-assertions passed",
-				AnyOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation>")
-						},
-					),
-				),
+				AnyOf(pass, fail),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✓ any of`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✗ <sub-criteria 2>`,
+				`    ✓ <always pass>`,
+				`    ✗ <always fail>`,
 			),
 			Entry(
 				"none of the sub-assertions passed",
-				AnyOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 1>")
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 2>")
-						},
-					),
-				),
+				AnyOf(fail, fail),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ any of (all 2 of the sub-assertions failed)`,
-				`    ✗ <sub-criteria 1> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation 1>`,
-				`    `,
-				`    ✗ <sub-criteria 2> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation 2>`,
+				`    ✗ <always fail>`,
+				`    ✗ <always fail>`,
 			),
 		)
 	})
@@ -275,7 +169,7 @@ var _ = Context("composite assertions", func() {
 		It("panics if no sub-assertions are provided", func() {
 			gomega.Expect(func() {
 				NoneOf()
-			}).To(gomega.Panic())
+			}).To(gomega.PanicWith("no sub-assertions provided"))
 		})
 
 		DescribeTable(
@@ -283,92 +177,67 @@ var _ = Context("composite assertions", func() {
 			test,
 			Entry(
 				"single sub-assertion is not flattened",
-				NoneOf(
-					Should(
-						"<sub-criteria>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				NoneOf(pass),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ none of (the sub-assertion passed unexpectedly)`,
-				`    ✓ <sub-criteria>`,
+				`    ✓ <always pass>`,
 			),
 			Entry(
 				"all sub-assertions passed",
-				NoneOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-				),
+				NoneOf(pass, pass),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ none of (2 of the sub-assertions passed unexpectedly)`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✓ <sub-criteria 2>`,
+				`    ✓ <always pass>`,
+				`    ✓ <always pass>`,
 			),
 			Entry(
 				"some of the sub-assertions passed",
-				NoneOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return nil
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation>")
-						},
-					),
-				),
+				NoneOf(pass, fail),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✗ none of (1 of the sub-assertions passed unexpectedly)`,
-				`    ✓ <sub-criteria 1>`,
-				`    ✗ <sub-criteria 2> (the user-defined assertion returned a non-nil error)`,
-				`    `,
-				`      | EXPLANATION`,
-				`      |     <explanation>`,
+				`    ✓ <always pass>`,
+				`    ✗ <always fail>`,
 			),
 			Entry(
 				"none of the sub-assertions passed",
-				NoneOf(
-					Should(
-						"<sub-criteria 1>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 1>")
-						},
-					),
-					Should(
-						"<sub-criteria 2>",
-						func(AssertionContext) error {
-							return errors.New("<explanation 2>")
-						},
-					),
-				),
+				NoneOf(fail, fail),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✓ none of`,
-				`    ✗ <sub-criteria 1>`,
-				`    ✗ <sub-criteria 2>`,
+				`    ✗ <always fail>`,
+				`    ✗ <always fail>`,
 			),
 		)
 	})
 })
+
+type constAssertion bool
+
+const (
+	pass constAssertion = true
+	fail constAssertion = false
+)
+
+func (a constAssertion) Begin(compare.Comparator) {}
+func (a constAssertion) End()                     {}
+func (a constAssertion) Ok() bool                 { return bool(a) }
+func (a constAssertion) Notify(fact.Fact)         {}
+func (a constAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
+	c := "<always fail>"
+	if a {
+		c = "<always pass>"
+	}
+
+	return &assert.Report{
+		TreeOk:   ok,
+		Ok:       bool(a),
+		Criteria: c,
+	}
+}
