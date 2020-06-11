@@ -93,7 +93,7 @@ func (a *messageAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *messageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *messageAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,

@@ -130,7 +130,7 @@ func (noopAssertion) Begin(compare.Comparator) {}
 func (noopAssertion) End()                     {}
 func (noopAssertion) Ok() bool                 { return true }
 func (noopAssertion) Notify(fact.Fact)         {}
-func (noopAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
+func (noopAssertion) BuildReport(ok, verbose bool, r render.Renderer) *assert.Report {
 	return &assert.Report{
 		TreeOk:   ok,
 		Ok:       ok,

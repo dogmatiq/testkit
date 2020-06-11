@@ -229,7 +229,7 @@ func (a constAssertion) Begin(compare.Comparator) {}
 func (a constAssertion) End()                     {}
 func (a constAssertion) Ok() bool                 { return bool(a) }
 func (a constAssertion) Notify(fact.Fact)         {}
-func (a constAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
+func (a constAssertion) BuildReport(ok, verbose bool, r render.Renderer) *assert.Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"
