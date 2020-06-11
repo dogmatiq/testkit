@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
@@ -15,9 +16,15 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	messageIDs  envelope.MessageIDGenerator
+	messageIDs envelope.MessageIDGenerator
+	roles      map[message.Type]message.Role
+
+	// m protects the controllers, routes and resetters collections. The
+	// collections themselves are static and hence may be read without acquiring
+	// the mutex, but m must be held in order to call any method on a
+	// controller, or to call a resetter.
+	m           cosyne.Mutex
 	controllers map[string]controller.Controller
-	roles       map[message.Type]message.Role
 	routes      map[message.Type][]controller.Controller
 	resetters   []func()
 }
@@ -30,8 +37,8 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 	eo := newEngineOptions(options)
 
 	e := &Engine{
-		controllers: map[string]controller.Controller{},
 		roles:       map[message.Type]message.Role{},
+		controllers: map[string]controller.Controller{},
 		routes:      map[message.Type][]controller.Controller{},
 		resetters:   eo.resetters,
 	}
@@ -51,6 +58,9 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
+	e.m.Lock(context.Background())
+	defer e.m.Unlock()
+
 	e.messageIDs.Reset()
 
 	for _, c := range e.controllers {
@@ -79,7 +89,11 @@ func (e *Engine) Tick(
 		},
 	)
 
-	err := e.tick(ctx, oo)
+	err := e.m.Lock(ctx)
+	if err == nil {
+		defer e.m.Unlock()
+		err = e.tick(ctx, oo)
+	}
 
 	oo.observers.Notify(
 		fact.TickCycleCompleted{
@@ -171,7 +185,11 @@ func (e *Engine) Dispatch(
 		},
 	)
 
-	err := e.dispatch(ctx, oo, env)
+	err := e.m.Lock(ctx)
+	if err == nil {
+		defer e.m.Unlock()
+		err = e.dispatch(ctx, oo, env)
+	}
 
 	oo.observers.Notify(
 		fact.DispatchCycleCompleted{
