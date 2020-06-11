@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 ## Added
 
 - **[BC]** Add `assert.Assertion.End()`
+- Add `engine.Run()` and `RunTimeScaled()`
 - `engine.Engine` now protects its internal state with a mutex, allowing concurrent use
 
 ## Changed
