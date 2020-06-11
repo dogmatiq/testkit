@@ -155,6 +155,7 @@ var (
 
 const (
 	suggestionsSection     = "Suggestions"
+	logSection             = "Log Messages"
 	messageDiffSection     = "Message Diff"
 	messageTypeDiffSection = "Message Type Diff"
 )
