@@ -2,6 +2,9 @@ package assert
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
+	"sync"
 
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -62,12 +65,13 @@ func (a *userAssertion) End() {
 		}
 	}()
 
+	a.t.caller = callerName(0)
 	a.assert(&a.t)
 }
 
 // Ok returns true if the assertion passed.
 func (a *userAssertion) Ok() bool {
-	return !a.t.failed
+	return a.t.skipped || !a.t.failed
 }
 
 // BuildReport generates a report about the assertion.
@@ -82,22 +86,25 @@ func (a *userAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report
 		Criteria: a.t.name,
 	}
 
-	if ok || a.Ok() {
-		return rep
-	}
-
-	if a.t.failed {
-		rep.Outcome = "the user-defined assertion failed"
-	} else if a.t.skipped {
+	if a.t.skipped {
 		rep.Outcome = "the user-defined assertion was skipped"
+	} else if a.t.failed {
+		rep.Outcome = "the user-defined assertion failed"
 	}
 
-	if len(a.t.messages) == 1 && a.t.explanation != "" {
-		// If there is only one log message, and it was supplied by Error(),
-		// Errorf(), Fatal(), or Fatalf(), show it as the explanation, rather
-		// than in a logging section.
-		rep.Explanation = a.t.explanation
+	if !verbose && (ok || a.Ok()) {
 		return rep
+	}
+
+	rep.Explanation = a.t.explanation
+
+	if len(a.t.messages) != 0 {
+		s := rep.Section(logSection)
+
+		for _, m := range a.t.messages {
+			s.Content.WriteString(m)
+			s.Content.WriteByte('\n')
+		}
 	}
 
 	return rep
@@ -112,12 +119,16 @@ type T struct {
 	// Facts is an ordered slice of the facts that occurred.
 	Facts []fact.Fact
 
-	name        string
+	name string
+
+	m           sync.RWMutex
 	skipped     bool
 	failed      bool
 	explanation string
 	messages    []string
 	cleanup     []func()
+	caller      string
+	helpers     map[string]struct{}
 }
 
 type abortUserAssertion struct{}
@@ -130,24 +141,24 @@ func (t *T) Cleanup(fn func()) {
 
 // Error is equivalent to Log() followed by Fail().
 func (t *T) Error(args ...interface{}) {
-	t.log(true, fmt.Sprint(args...))
-	t.Fail()
+	t.Log(args...)
+	t.fail("Error")
 }
 
 // Errorf is equivalent to Logf() followed by Fail().
 func (t *T) Errorf(format string, args ...interface{}) {
-	t.log(true, fmt.Sprintf(format, args...))
-	t.Fail()
+	t.Logf(format, args...)
+	t.fail("Errorf")
 }
 
 // Fail marks the function as having failed but continues execution.
 func (t *T) Fail() {
-	t.failed = true
+	t.fail("Fail")
 }
 
 // FailNow marks the function as having failed and stops its execution.
 func (t *T) FailNow() {
-	t.failed = true
+	t.fail("FailNow")
 	panic(abortUserAssertion{})
 }
 
@@ -158,14 +169,16 @@ func (t *T) Failed() bool {
 
 // Fatal is equivalent to Log() followed by FailNow().
 func (t *T) Fatal(args ...interface{}) {
-	t.log(true, fmt.Sprint(args...))
-	t.FailNow()
+	t.Log(args...)
+	t.fail("Fatal")
+	panic(abortUserAssertion{})
 }
 
 // Fatalf is equivalent to Logf() followed by FailNow().
 func (t *T) Fatalf(format string, args ...interface{}) {
-	t.log(true, fmt.Sprintf(format, args...))
-	t.FailNow()
+	t.Logf(format, args...)
+	t.fail("Fatalf")
+	panic(abortUserAssertion{})
 }
 
 // Parallel signals that this test is to be run in parallel with (and only with)
@@ -181,41 +194,55 @@ func (t *T) Parallel() {
 // It is a no-op in this implementation, but is included to increase
 // compatibility with the *testing.T type.
 func (t *T) Helper() {
+	t.m.Lock()
+	defer t.m.Unlock()
+
+	if t.helpers == nil {
+		t.helpers = map[string]struct{}{}
+	}
+
+	t.helpers[callerName(1)] = struct{}{}
 }
 
 // Log formats its arguments using default formatting, analogous to Println(),
 // and records the text in the assertion report.
 func (t *T) Log(args ...interface{}) {
-	t.log(false, fmt.Sprint(args...))
+	m := fmt.Sprint(args...)
+	t.messages = append(t.messages, m)
 }
 
 // Logf formats its arguments according to the format, analogous to Printf(),
 // and records the text in the assertion report.
 func (t *T) Logf(format string, args ...interface{}) {
-	t.log(false, fmt.Sprintf(format, args...))
+	m := fmt.Sprintf(format, args...)
+	t.messages = append(t.messages, m)
 }
 
 // Name returns the name of the running test.
 func (t *T) Name() string {
+	// TODO: https://github.com/onsi/ginkgo/issues/582
+	//
+	// It would be good if we could get some more context here, but for the time
+	// being we are keeping the testkit.T interface compatible with Ginkgo's
+	// GinkgoTInterface, which does not have a Name() method.
 	return t.name
 }
 
 // Skip is equivalent to Log() followed by SkipNow().
 func (t *T) Skip(args ...interface{}) {
 	t.Log(args...)
-	t.SkipNow()
+	t.skip("Skip")
 }
 
 // SkipNow marks the test as having been skipped and stops its execution.
 func (t *T) SkipNow() {
-	t.skipped = true
-	panic(abortUserAssertion{})
+	t.skip("SkipNow")
 }
 
 // Skipf is equivalent to Logf() followed by SkipNow().
 func (t *T) Skipf(format string, args ...interface{}) {
 	t.Logf(format, args...)
-	t.SkipNow()
+	t.skip("Skipf")
 }
 
 // Skipped reports whether the test was skipped.
@@ -223,10 +250,92 @@ func (t *T) Skipped() bool {
 	return t.skipped
 }
 
-func (t *T) log(fail bool, s string) {
-	t.messages = append(t.messages, s)
+// skip marks the test as failed and sets the explanation message to m.
+func (t *T) skip(fn string) {
+	t.skipped = true
+	t.explain(fn)
+	panic(abortUserAssertion{})
+}
 
-	if fail && t.explanation == "" {
-		t.explanation = s
+// fail marks the test as failed and sets the explanation message to m.
+func (t *T) fail(fn string) {
+	t.failed = true
+	t.explain(fn)
+}
+
+// explain populates t.explanation, including file/line information.
+func (t *T) explain(fn string) {
+	if t.explanation != "" {
+		return
 	}
+
+	frame, direct := t.findFrame(3) // skip explain(), fail() / skip(), and their caller.
+
+	file := "???"
+	if frame.File != "" {
+		file = filepath.Base(frame.File)
+	}
+
+	line := frame.Line
+	if line == 0 {
+		line = 1
+	}
+
+	if direct {
+		t.explanation = fmt.Sprintf("%s() called at %s:%d", fn, file, line)
+	} else {
+		t.explanation = fmt.Sprintf("%s() called indirectly by call at %s:%d", fn, file, line)
+	}
+}
+
+// findFrame searches, starting after skip frames, for the first caller frame
+// in a function not marked as a helper and returns that frame.
+//
+// The search stops if it finds a method of userAssertion.
+//
+// It is assumed that t.m is already locked.
+func (t *T) findFrame(skip int) (runtime.Frame, bool) {
+	frames := stack(skip, 50)
+	var first, prev runtime.Frame
+
+	for {
+		frame, more := frames.Next()
+		if first.PC == 0 {
+			first = frame
+		}
+
+		if frame.Function == t.caller {
+			return prev, prev == first
+		}
+
+		_, isHelper := t.helpers[frame.Function]
+
+		if !isHelper || !more {
+			return frame, frame == first
+		}
+
+		prev = frame
+	}
+}
+
+// callerName gives the function name (qualified with a package path)
+// for the caller after skip frames (where 0 means the current function).
+func callerName(skip int) string {
+	frames := stack(skip, 1)
+	frame, _ := frames.Next()
+	return frame.Function
+}
+
+// stack returns a frames *above the caller* on the stack.
+func stack(skip, max int) *runtime.Frames {
+	var pc [50]uintptr
+
+	// Add 3 extra frames to account for the caller, this function and
+	// runtime.Callers() itself.
+	n := runtime.Callers(skip+3, pc[:max])
+	if n == 0 {
+		panic("zero callers found")
+	}
+
+	return runtime.CallersFrames(pc[:n])
 }
