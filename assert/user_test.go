@@ -270,14 +270,21 @@ var _ = Context("user assertions", func() {
 
 		Describe("func Cleanup()", func() {
 			It("registers a function to be executed when the test ends", func() {
-				called := false
+				var order []int
+
 				run(func(t *T) {
 					t.Cleanup(func() {
-						called = true
+						order = append(order, 1)
+					})
+
+					t.Cleanup(func() {
+						order = append(order, 2)
 					})
 				})
 
-				gomega.Expect(called).To(gomega.BeTrue())
+				gomega.Expect(order).To(gomega.Equal(
+					[]int{2, 1},
+				))
 			})
 		})
 
