@@ -34,7 +34,7 @@ func New(
 }
 
 // Begin starts a new test.
-func (r *Runner) Begin(t T, options ...TestOption) *Test {
+func (r *Runner) Begin(t TestingT, options ...TestOption) *Test {
 	return r.BeginContext(
 		context.Background(),
 		t,
@@ -43,7 +43,7 @@ func (r *Runner) Begin(t T, options ...TestOption) *Test {
 }
 
 // BeginContext starts a new test within a context.
-func (r *Runner) BeginContext(ctx context.Context, t T, options ...TestOption) *Test {
+func (r *Runner) BeginContext(ctx context.Context, t TestingT, options ...TestOption) *Test {
 	to := newTestOptions(options, r.verbose)
 
 	opts := to.operationOptions
