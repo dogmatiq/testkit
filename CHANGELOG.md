@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+## Changed
+
+- **[BC]** Renamed `T` to `TestingT`, to avoid conflicts with `*testing.T` when dot-importing
+- **[BC]** Renamed `assert.T` to `S`, to avoid conflicts with `*testing.T` when dot-importing
+
 ## [0.5.0] - 2020-06-11
 
 ## Added

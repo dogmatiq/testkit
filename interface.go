@@ -1,10 +1,10 @@
 package testkit
 
-// T is the interface via which the test framework consumes Go's *testing.T
-// value.
+// TestingT is the interface via which the test framework consumes Go's
+// *testing.T value.
 //
 // It allows use of stand-ins, such as Ginkgo's GinkgoT() value.
-type T interface {
+type TestingT interface {
 	Log(args ...interface{})
 	Logf(f string, args ...interface{})
 	FailNow()
@@ -19,7 +19,7 @@ type T interface {
 // See https://github.com/dogmatiq/testkit/issues/61
 // See https://github.com/onsi/ginkgo/pull/585
 type tHelper interface {
-	T
+	TestingT
 
 	Helper()
 }

@@ -17,7 +17,7 @@ import (
 // Test contains the state of a single test.
 type Test struct {
 	ctx              context.Context
-	t                T
+	t                TestingT
 	verbose          bool
 	engine           *engine.Engine
 	now              time.Time
