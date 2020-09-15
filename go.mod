@@ -12,5 +12,5 @@ require (
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
 	github.com/sergi/go-diff v1.1.0
-	go.uber.org/multierr v1.5.0
+	go.uber.org/multierr v1.6.0
 )
