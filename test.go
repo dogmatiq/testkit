@@ -90,6 +90,8 @@ func (t *Test) RecordEvent(
 
 // AdvanceTimeBy artificially advances the engine's notion of the current time
 // by a fixed duration. The duration must be positive.
+//
+// a may be nil to avoid making any assertion.
 func (t *Test) AdvanceTimeBy(
 	delta time.Duration,
 	a assert.Assertion,
@@ -112,6 +114,8 @@ func (t *Test) AdvanceTimeBy(
 
 // AdvanceTimeTo artificially advances the engine's notion of the current time
 // to a specific time. The time must be greater than the current engine time.
+//
+// a may be nil to avoid making any assertion.
 func (t *Test) AdvanceTimeTo(
 	now time.Time,
 	a assert.Assertion,
@@ -145,9 +149,13 @@ func (t *Test) advanceTime(
 
 	t.now = now
 
-	t.begin(a)
-	t.tick(options, a)
-	t.end(a)
+	if a == nil {
+		t.tick(options, a)
+	} else {
+		t.begin(a)
+		t.tick(options, a)
+		t.end(a)
+	}
 
 	return t
 }
