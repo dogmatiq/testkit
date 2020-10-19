@@ -59,6 +59,28 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
+		Describe("func HasBegun()", func() {
+			It("returns false", func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					Expect(s.HasBegun()).To(BeFalse())
+					return nil
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
 		Describe("func Root()", func() {
 			It("panics", func() {
 				handler.HandleEventFunc = func(
@@ -225,6 +247,28 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
+		})
+
+		Describe("func HasBegun()", func() {
+			It("returns true", func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					Expect(s.HasBegun()).To(BeTrue())
+					return nil
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
 		})
 
 		Describe("func Root()", func() {

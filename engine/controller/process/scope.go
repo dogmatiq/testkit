@@ -33,6 +33,10 @@ func (s *scope) InstanceID() string {
 	return s.instanceID
 }
 
+func (s *scope) HasBegun() bool {
+	return s.exists
+}
+
 func (s *scope) Begin() bool {
 	if s.exists {
 		return false
