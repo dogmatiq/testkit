@@ -56,6 +56,26 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
+		Describe("func Exists()", func() {
+			It("returns false", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(s.Exists()).To(BeFalse())
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
 		Describe("func Root()", func() {
 			It("panics", func() {
 				handler.HandleCommandFunc = func(
@@ -191,6 +211,26 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
+		})
+
+		Describe("func Exists()", func() {
+			It("returns true", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(s.Exists()).To(BeTrue())
+				}
+
+				_, err := controller.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
 		})
 
 		Describe("func Root()", func() {

@@ -32,6 +32,10 @@ func (s *scope) InstanceID() string {
 	return s.instanceID
 }
 
+func (s *scope) Exists() bool {
+	return s.exists
+}
+
 func (s *scope) Create() bool {
 	if s.exists {
 		return false
