@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- `Test.AdvanceTimeBy()` and `AdvanceTimeTo()` can now be called without making any assertions by passing a `nil` assertion
+
 ## [0.6.1] - 2020-10-19
 
 ## Added
