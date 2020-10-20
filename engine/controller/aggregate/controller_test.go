@@ -276,20 +276,6 @@ var _ = Describe("type Controller", func() {
 				))
 			})
 
-			It("does not call New()", func() {
-				handler.NewFunc = func() dogma.AggregateRoot {
-					Fail("unexpected call to New()")
-					return nil
-				}
-
-				controller.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			})
-
 			It("panics if the instance is destroyed without recording an event", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,

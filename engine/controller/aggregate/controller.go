@@ -19,7 +19,7 @@ type Controller struct {
 	handler    dogma.AggregateMessageHandler
 	messageIDs *envelope.MessageIDGenerator
 	produced   message.TypeCollection
-	instances  map[string]dogma.AggregateRoot
+	history    map[string][]*envelope.Envelope
 }
 
 // NewController returns a new controller for the given handler.
@@ -75,9 +75,14 @@ func (c *Controller) Handle(
 		))
 	}
 
-	r, exists := c.instances[id]
+	history, exists := c.history[id]
+	r := c.handler.New()
 
 	if exists {
+		for _, env := range history {
+			r.ApplyEvent(env.Message)
+		}
+
 		obs.Notify(fact.AggregateInstanceLoaded{
 			HandlerName: c.identity.Name,
 			Handler:     c.handler,
@@ -139,12 +144,12 @@ func (c *Controller) Handle(
 	}
 
 	if s.exists {
-		if c.instances == nil {
-			c.instances = map[string]dogma.AggregateRoot{}
+		if c.history == nil {
+			c.history = map[string][]*envelope.Envelope{}
 		}
-		c.instances[id] = s.root
+		c.history[id] = append(c.history[id], s.events...)
 	} else {
-		delete(c.instances, id)
+		delete(c.history, id)
 	}
 
 	return s.events, nil
@@ -152,5 +157,5 @@ func (c *Controller) Handle(
 
 // Reset clears the state of the controller.
 func (c *Controller) Reset() {
-	c.instances = nil
+	c.history = nil
 }
