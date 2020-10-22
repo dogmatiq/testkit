@@ -92,59 +92,61 @@ var _ = Describe("type Test", func() {
 			})
 		})
 
-		Describe("func AdvanceTimeBy()", func() {
-			It("logs file and line information in headings", func() {
-				test.AdvanceTimeBy(
-					3*time.Second,
-					noopAssertion{},
-				)
-				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME BY 3s ---",
-				))
-				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-				))
+		Describe("func AdvanceTime()", func() {
+			When("passed a By() advancer", func() {
+				It("logs file and line information in headings", func() {
+					test.AdvanceTime(
+						ByDuration(3*time.Second),
+						noopAssertion{},
+					)
+					Expect(t.Logs).To(ContainElement(
+						"--- ADVANCING TIME BY 3s ---",
+					))
+					Expect(t.Logs).To(ContainElement(
+						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					))
+				})
+
+				It("can be called without making an assertion", func() {
+					test.AdvanceTime(
+						ByDuration(3*time.Second),
+						nil,
+					)
+					Expect(t.Logs).To(ContainElement(
+						"--- ADVANCING TIME BY 3s ---",
+					))
+					Expect(t.Logs).NotTo(ContainElement(
+						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					))
+				})
 			})
 
-			It("can be called without making an assertion", func() {
-				test.AdvanceTimeBy(
-					3*time.Second,
-					nil,
-				)
-				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME BY 3s ---",
-				))
-				Expect(t.Logs).NotTo(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-				))
-			})
-		})
+			When("passed a ToTime() advancer", func() {
+				It("logs file and line information in headings", func() {
+					test.AdvanceTime(
+						ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
+						noopAssertion{},
+					)
+					Expect(t.Logs).To(ContainElement(
+						"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
+					))
+					Expect(t.Logs).To(ContainElement(
+						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					))
+				})
 
-		Describe("func AdvanceTimeTo()", func() {
-			It("logs file and line information in headings", func() {
-				test.AdvanceTimeTo(
-					time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC),
-					noopAssertion{},
-				)
-				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
-				))
-				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-				))
-			})
-
-			It("can be called without making an assertion", func() {
-				test.AdvanceTimeTo(
-					time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC),
-					nil,
-				)
-				Expect(t.Logs).To(ContainElement(
-					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
-				))
-				Expect(t.Logs).NotTo(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-				))
+				It("can be called without making an assertion", func() {
+					test.AdvanceTime(
+						ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
+						nil,
+					)
+					Expect(t.Logs).To(ContainElement(
+						"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
+					))
+					Expect(t.Logs).NotTo(ContainElement(
+						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					))
+				})
 			})
 		})
 	})

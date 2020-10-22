@@ -88,12 +88,13 @@ func (t *Test) RecordEvent(
 	return t
 }
 
-// AdvanceTimeBy artificially advances the engine's notion of the current time
-// by a fixed duration. The duration must be positive.
+// AdvanceTime artificially advances the engine's notion of the current time
+// according to the given "advancer".
 //
-// a may be nil to avoid making any assertion.
-func (t *Test) AdvanceTimeBy(
-	delta time.Duration,
+// It panics if the advancer returns a time that is before the current engine
+// time.
+func (t *Test) AdvanceTime(
+	ta TimeAdvancer,
 	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
@@ -101,50 +102,14 @@ func (t *Test) AdvanceTimeBy(
 		h.Helper()
 	}
 
-	if delta < 0 {
-		panic("delta must be positive")
-	}
-
-	if t.verbose {
-		t.logHeading("ADVANCING TIME BY %s", delta)
-	}
-
-	return t.advanceTime(t.now.Add(delta), a, options)
-}
-
-// AdvanceTimeTo artificially advances the engine's notion of the current time
-// to a specific time. The time must be greater than the current engine time.
-//
-// a may be nil to avoid making any assertion.
-func (t *Test) AdvanceTimeTo(
-	now time.Time,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
+	now, heading := ta(t.now)
 
 	if now.Before(t.now) {
-		panic("time must be greater than the current time")
+		panic("new time must be after the current time")
 	}
 
 	if t.verbose {
-		t.logHeading("ADVANCING TIME TO %s", now.Format(time.RFC3339))
-	}
-
-	return t.advanceTime(now, a, options)
-}
-
-// advanceTime artificially advances the engine's notion of the current time to
-// a specific time.
-func (t *Test) advanceTime(
-	now time.Time,
-	a assert.Assertion,
-	options []engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
+		t.logHeading("%s", heading)
 	}
 
 	t.now = now
