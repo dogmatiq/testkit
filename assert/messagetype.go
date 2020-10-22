@@ -71,8 +71,17 @@ func (a *messageTypeAssertion) End() {
 }
 
 // Ok returns true if the assertion passed.
-func (a *messageTypeAssertion) Ok() bool {
-	return a.ok
+//
+// If asserted is false, the assertion was a no-op and the value of pass is
+// meaningless.
+func (a *messageTypeAssertion) Ok() (ok bool, asserted bool) {
+	return a.ok, true
+}
+
+// MustOk returns true if the assertion passed.
+func (a *messageTypeAssertion) MustOk() bool {
+	ok, _ := a.Ok()
+	return ok
 }
 
 // BuildReport generates a report about the assertion.

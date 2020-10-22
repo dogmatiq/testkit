@@ -221,7 +221,7 @@ func (t *Test) end(a assert.Assertion) {
 		"--- ASSERTION REPORT ---\n\n",
 	)
 
-	rep := a.BuildReport(a.Ok(), t.verbose, r)
+	rep := a.BuildReport(a.MustOk(), t.verbose, r)
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())
