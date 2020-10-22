@@ -148,6 +148,17 @@ var _ = Describe("type Test", func() {
 					))
 				})
 			})
+
+			It("panics if the advancer produces a time in the past", func() {
+				Expect(func() {
+					test.AdvanceTime(
+						func(time.Time) (time.Time, string) {
+							return time.Time{}, ""
+						},
+						nil,
+					)
+				}).To(PanicWith("new time must be after the current time"))
+			})
 		})
 	})
 })
