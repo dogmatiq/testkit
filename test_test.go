@@ -110,7 +110,7 @@ var _ = Describe("type Test", func() {
 				It("can be called without making an assertion", func() {
 					test.AdvanceTime(
 						ByDuration(3*time.Second),
-						nil,
+						assert.Nothing,
 					)
 					Expect(t.Logs).To(ContainElement(
 						"--- ADVANCING TIME BY 3s ---",
@@ -138,7 +138,7 @@ var _ = Describe("type Test", func() {
 				It("can be called without making an assertion", func() {
 					test.AdvanceTime(
 						ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
-						nil,
+						assert.Nothing,
 					)
 					Expect(t.Logs).To(ContainElement(
 						"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",

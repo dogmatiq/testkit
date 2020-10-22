@@ -38,7 +38,7 @@ func (t *Test) Prepare(messages ...dogma.Message) *Test {
 	}
 
 	for _, m := range messages {
-		t.dispatch(m, nil, nil)
+		t.dispatch(m, nil, assert.Nothing)
 	}
 
 	return t
@@ -95,7 +95,7 @@ func (t *Test) RecordEvent(
 // time.
 func (t *Test) AdvanceTime(
 	ta TimeAdvancer,
-	a assert.Assertion,
+	a assert.OptionalAssertion,
 	options ...engine.OperationOption,
 ) *Test {
 	if h, ok := t.t.(tHelper); ok {
@@ -114,13 +114,9 @@ func (t *Test) AdvanceTime(
 
 	t.now = now
 
-	if a == nil {
-		t.tick(options, a)
-	} else {
-		t.begin(a)
-		t.tick(options, a)
-		t.end(a)
-	}
+	t.begin(a)
+	t.tick(options, a)
+	t.end(a)
 
 	return t
 }
@@ -131,7 +127,7 @@ func (t *Test) AdvanceTime(
 func (t *Test) dispatch(
 	m dogma.Message,
 	options []engine.OperationOption,
-	a assert.Assertion,
+	a assert.OptionalAssertion,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -150,7 +146,7 @@ func (t *Test) dispatch(
 // It fails the test if the engine returns an error.
 func (t *Test) tick(
 	options []engine.OperationOption,
-	a assert.Assertion,
+	a assert.OptionalAssertion,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -168,7 +164,7 @@ func (t *Test) tick(
 // dispatch() or tick().
 func (t *Test) options(
 	options []engine.OperationOption,
-	a assert.Assertion,
+	a assert.OptionalAssertion,
 ) (opts []engine.OperationOption) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -177,22 +173,14 @@ func (t *Test) options(
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
 	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
-
-	if a != nil {
-		// add the assertion as an observer.
-		opts = append(opts, engine.WithObserver(a))
-	}
+	opts = append(opts, engine.WithObserver(a))
 
 	return
 }
 
-func (t *Test) begin(a assert.Assertion) {
+func (t *Test) begin(a assert.OptionalAssertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
-	}
-
-	if a == nil {
-		panic("assertion must not be nil")
 	}
 
 	c := t.comparator
@@ -203,12 +191,17 @@ func (t *Test) begin(a assert.Assertion) {
 	a.Begin(c)
 }
 
-func (t *Test) end(a assert.Assertion) {
+func (t *Test) end(a assert.OptionalAssertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
 	a.End()
+
+	ok, asserted := a.Ok()
+	if !asserted {
+		return
+	}
 
 	r := t.renderer
 	if r == nil {
@@ -221,7 +214,7 @@ func (t *Test) end(a assert.Assertion) {
 		"--- ASSERTION REPORT ---\n\n",
 	)
 
-	rep := a.BuildReport(a.MustOk(), t.verbose, r)
+	rep := a.BuildReport(ok, t.verbose, r)
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())
