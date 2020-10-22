@@ -6,7 +6,7 @@ import (
 	"github.com/dogmatiq/testkit/render"
 )
 
-// OptionalAssertion is an interface that accept all Assertion types, as well as
+// OptionalAssertion is an interface that accepts all Assertion types, as well as
 // the Nothing value.
 type OptionalAssertion interface {
 	fact.Observer
