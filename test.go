@@ -198,7 +198,7 @@ func (t *Test) end(a assert.OptionalAssertion) {
 
 	a.End()
 
-	ok, asserted := a.Ok()
+	ok, asserted := a.TryOk()
 	if !asserted {
 		return
 	}

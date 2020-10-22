@@ -226,8 +226,8 @@ const (
 
 func (a constAssertion) Begin(compare.Comparator) {}
 func (a constAssertion) End()                     {}
-func (a constAssertion) Ok() (bool, bool)         { return bool(a), true }
-func (a constAssertion) MustOk() bool             { return bool(a) }
+func (a constAssertion) TryOk() (bool, bool)      { return bool(a), true }
+func (a constAssertion) Ok() bool                 { return bool(a) }
 func (a constAssertion) Notify(fact.Fact)         {}
 
 func (a constAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {

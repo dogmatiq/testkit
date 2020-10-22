@@ -70,17 +70,16 @@ func (a *userAssertion) End() {
 	a.assert(&a.s)
 }
 
-// Ok returns true if the assertion passed.
+// TryOk returns true if the assertion passed.
 //
-// If asserted is false, the assertion was a no-op and the value of pass is
-// meaningless.
-func (a *userAssertion) Ok() (ok bool, asserted bool) {
+// If asserted is false, the assertion was a no-op and ok is meaningless.
+func (a *userAssertion) TryOk() (ok bool, asserted bool) {
 	return a.s.skipped || !a.s.failed, true
 }
 
-// MustOk returns true if the assertion passed.
-func (a *userAssertion) MustOk() bool {
-	ok, _ := a.Ok()
+// Ok returns true if the assertion passed.
+func (a *userAssertion) Ok() bool {
+	ok, _ := a.TryOk()
 	return ok
 }
 
@@ -92,7 +91,7 @@ func (a *userAssertion) MustOk() bool {
 func (a *userAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk:   ok,
-		Ok:       a.MustOk(),
+		Ok:       a.Ok(),
 		Criteria: a.s.name,
 	}
 
@@ -102,7 +101,7 @@ func (a *userAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report
 		rep.Outcome = "the user-defined assertion failed"
 	}
 
-	if !verbose && (ok || a.MustOk()) {
+	if !verbose && (ok || a.Ok()) {
 		return rep
 	}
 

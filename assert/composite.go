@@ -149,11 +149,10 @@ func (a *compositeAssertion) End() {
 	}
 }
 
-// Ok returns true if the assertion passed.
+// TryOk returns true if the assertion passed.
 //
-// If asserted is false, the assertion was a no-op and the value of pass is
-// meaningless.
-func (a *compositeAssertion) Ok() (ok bool, asserted bool) {
+// If asserted is false, the assertion was a no-op and ok is meaningless.
+func (a *compositeAssertion) TryOk() (ok bool, asserted bool) {
 	if a.ok != nil {
 		return *a.ok, true
 	}
@@ -161,7 +160,7 @@ func (a *compositeAssertion) Ok() (ok bool, asserted bool) {
 	n := 0
 
 	for _, sub := range a.SubAssertions {
-		if sub.MustOk() {
+		if sub.Ok() {
 			n++
 		}
 	}
@@ -174,9 +173,9 @@ func (a *compositeAssertion) Ok() (ok bool, asserted bool) {
 	return *a.ok, true
 }
 
-// MustOk returns true if the assertion passed.
-func (a *compositeAssertion) MustOk() bool {
-	ok, _ := a.Ok()
+// Ok returns true if the assertion passed.
+func (a *compositeAssertion) Ok() bool {
+	ok, _ := a.TryOk()
 	return ok
 }
 
@@ -186,7 +185,7 @@ func (a *compositeAssertion) MustOk() bool {
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
 func (a *compositeAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
-	a.MustOk() // populate a.ok and a.outcome
+	a.Ok() // populate a.ok and a.outcome
 
 	rep := &Report{
 		TreeOk:   ok,

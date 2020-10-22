@@ -83,17 +83,16 @@ func (a *messageAssertion) Begin(c compare.Comparator) {
 func (a *messageAssertion) End() {
 }
 
-// Ok returns true if the assertion passed.
+// TryOk returns true if the assertion passed.
 //
-// If asserted is false, the assertion was a no-op and the value of pass is
-// meaningless.
-func (a *messageAssertion) Ok() (ok bool, asserted bool) {
+// If asserted is false, the assertion was a no-op and ok is meaningless.
+func (a *messageAssertion) TryOk() (ok bool, asserted bool) {
 	return a.ok, true
 }
 
-// MustOk returns true if the assertion passed.
-func (a *messageAssertion) MustOk() bool {
-	ok, _ := a.Ok()
+// Ok returns true if the assertion passed.
+func (a *messageAssertion) Ok() bool {
+	ok, _ := a.TryOk()
 	return ok
 }
 
