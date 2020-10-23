@@ -83,9 +83,17 @@ func (a *messageAssertion) Begin(c compare.Comparator) {
 func (a *messageAssertion) End() {
 }
 
+// TryOk returns true if the assertion passed.
+//
+// If asserted is false, the assertion was a no-op and ok is meaningless.
+func (a *messageAssertion) TryOk() (ok bool, asserted bool) {
+	return a.ok, true
+}
+
 // Ok returns true if the assertion passed.
 func (a *messageAssertion) Ok() bool {
-	return a.ok
+	ok, _ := a.TryOk()
+	return ok
 }
 
 // BuildReport generates a report about the assertion.

@@ -149,10 +149,12 @@ func (a *compositeAssertion) End() {
 	}
 }
 
-// Ok returns true if the assertion passed.
-func (a *compositeAssertion) Ok() bool {
+// TryOk returns true if the assertion passed.
+//
+// If asserted is false, the assertion was a no-op and ok is meaningless.
+func (a *compositeAssertion) TryOk() (ok bool, asserted bool) {
 	if a.ok != nil {
-		return *a.ok
+		return *a.ok, true
 	}
 
 	n := 0
@@ -168,7 +170,13 @@ func (a *compositeAssertion) Ok() bool {
 	a.ok = &ok
 	a.outcome = m
 
-	return *a.ok
+	return *a.ok, true
+}
+
+// Ok returns true if the assertion passed.
+func (a *compositeAssertion) Ok() bool {
+	ok, _ := a.TryOk()
+	return ok
 }
 
 // BuildReport generates a report about the assertion.

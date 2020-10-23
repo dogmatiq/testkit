@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Added
 
 - Add `Test.AdvanceTime()`, `ByDuration()` and `ToTime()`
+- Add `assert.OptionalAssertion` and `assert.Nothing`
+- **[BC]** Add `assert.Assertion.TryOk()` (via `OptionalAssertion`)
 
 ### Removed
 
