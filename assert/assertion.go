@@ -41,7 +41,7 @@ type Assertion interface {
 	Ok() bool
 }
 
-// Nothing is an "optional assertion" that always passes and does not build an
+// Nothing is an "optional assertion" that always passes and does not build a
 // report.
 var Nothing OptionalAssertion = noopAssertion{}
 
