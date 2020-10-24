@@ -56,10 +56,8 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		config := configkit.FromAggregate(handler)
-
 		controller = NewController(
-			config,
+			configkit.FromAggregate(handler),
 			&messageIDs,
 			message.NewTypeSet(
 				MessageEType,

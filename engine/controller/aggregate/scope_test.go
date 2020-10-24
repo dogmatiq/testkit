@@ -47,10 +47,8 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		config := configkit.FromAggregate(handler)
-
 		controller = NewController(
-			config,
+			configkit.FromAggregate(handler),
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,

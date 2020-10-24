@@ -55,8 +55,7 @@ func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichI
 	mt := cfg.MessageTypes()
 	c.registerController(
 		integration.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),

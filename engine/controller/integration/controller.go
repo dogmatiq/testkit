@@ -6,7 +6,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -14,22 +13,19 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.IntegrationMessageHandler implementations.
 type Controller struct {
-	identity   configkit.Identity
-	handler    dogma.IntegrationMessageHandler
+	config     configkit.RichIntegration
 	messageIDs *envelope.MessageIDGenerator
 	produced   message.TypeCollection
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	i configkit.Identity,
-	h dogma.IntegrationMessageHandler,
+	c configkit.RichIntegration,
 	g *envelope.MessageIDGenerator,
 	t message.TypeCollection,
 ) *Controller {
 	return &Controller{
-		identity:   i,
-		handler:    h,
+		config:     c,
 		messageIDs: g,
 		produced:   t,
 	}
@@ -38,7 +34,7 @@ func NewController(
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.identity
+	return c.config.Identity()
 }
 
 // Type returns configkit.IntegrationHandlerType.
@@ -64,15 +60,18 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+	ident := c.config.Identity()
+	handler := c.config.Handler()
+
+	if t := handler.TimeoutHint(env.Message); t != 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, t)
 		defer cancel()
 	}
 
 	s := &scope{
-		identity:   c.identity,
-		handler:    c.handler,
+		identity:   ident,
+		handler:    handler,
 		messageIDs: c.messageIDs,
 		observer:   obs,
 		now:        now,
@@ -80,7 +79,7 @@ func (c *Controller) Handle(
 		command:    env,
 	}
 
-	if err := c.handler.HandleCommand(ctx, s, env.Message); err != nil {
+	if err := handler.HandleCommand(ctx, s, env.Message); err != nil {
 		return nil, err
 	}
 

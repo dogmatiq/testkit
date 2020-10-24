@@ -35,11 +35,16 @@ var _ = Describe("type Controller", func() {
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandler{}
+		handler = &IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageX{})
+			},
+		}
 
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+			configkit.FromIntegration(handler),
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,
