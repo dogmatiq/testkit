@@ -11,13 +11,12 @@ import (
 
 var _ = Context("message type assertions", func() {
 	var (
+		app         dogma.Application
 		aggregate   *AggregateMessageHandler
 		process     *ProcessMessageHandler
 		integration *IntegrationMessageHandler
-		app         dogma.Application
-
-		message dogma.Message
-		options []engine.OperationOption
+		message     dogma.Message
+		options     []engine.OperationOption
 	)
 
 	BeforeEach(func() {
