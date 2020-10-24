@@ -7,6 +7,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -65,7 +66,16 @@ func (c *Controller) Handle(
 	ident := c.config.Identity()
 	handler := c.config.Handler()
 
-	id := handler.RouteCommandToInstance(env.Message)
+	var id string
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"RouteCommandToInstance",
+		env.Message,
+		func() {
+			id = handler.RouteCommandToInstance(env.Message)
+		},
+	)
+
 	if id == "" {
 		panic(fmt.Sprintf(
 			"the '%s' aggregate message handler attempted to route a %s command to an empty instance ID",

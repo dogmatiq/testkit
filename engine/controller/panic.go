@@ -18,10 +18,10 @@ type UnexpectedMessage struct {
 	Message dogma.Message
 }
 
-// ConvertUnexpectedMessage calls fn() and converts dogma.UnexpectedMessage
+// ConvertUnexpectedMessagePanic calls fn() and converts dogma.UnexpectedMessage
 // values to an controller.UnexpectedMessage value to provide more context about
 // the failure.
-func ConvertUnexpectedMessage(
+func ConvertUnexpectedMessagePanic(
 	h configkit.RichHandler,
 	method string,
 	m dogma.Message,
@@ -29,6 +29,10 @@ func ConvertUnexpectedMessage(
 ) {
 	defer func() {
 		v := recover()
+
+		if v == nil {
+			return
+		}
 
 		if v == dogma.UnexpectedMessage {
 			v = UnexpectedMessage{
