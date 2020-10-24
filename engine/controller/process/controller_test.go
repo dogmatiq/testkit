@@ -50,6 +50,11 @@ var _ = Describe("type Controller", func() {
 		)
 
 		handler = &ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageX{})
+				c.ProducesCommandType(MessageC{})
+			},
 			// setup routes for "E" (event) messages to an instance ID based on the
 			// message's content
 			RouteEventToInstanceFunc: func(
@@ -70,8 +75,7 @@ var _ = Describe("type Controller", func() {
 		}
 
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+			configkit.FromProcess(handler),
 			&messageIDs,
 			message.NewTypeSet(
 				MessageCType,

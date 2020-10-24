@@ -32,6 +32,11 @@ var _ = Describe("type scope", func() {
 		)
 
 		handler = &ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageX{})
+				c.ProducesCommandType(MessageC{})
+			},
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
 				m dogma.Message,
@@ -46,9 +51,7 @@ var _ = Describe("type scope", func() {
 		}
 
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
-			&messageIDs,
+			configkit.FromProcess(handler), &messageIDs,
 			message.NewTypeSet(
 				MessageBType,
 				MessageCType,

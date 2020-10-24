@@ -40,8 +40,7 @@ func (c *configurer) VisitRichProcess(_ context.Context, cfg configkit.RichProce
 	mt := cfg.MessageTypes()
 	c.registerController(
 		process.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),
