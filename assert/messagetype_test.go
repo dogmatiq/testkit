@@ -15,7 +15,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = Context("message assertions", func() {
+var _ = Context("message type assertions", func() {
 	var (
 		aggregate   *AggregateMessageHandler
 		process     *ProcessMessageHandler
@@ -42,7 +42,7 @@ var _ = Context("message assertions", func() {
 			) {
 				s.Create()
 				s.RecordEvent(
-					MessageB{Value: "<value>"},
+					MessageB{},
 				)
 			},
 		}
@@ -63,7 +63,7 @@ var _ = Context("message assertions", func() {
 			) error {
 				s.Begin()
 				s.ExecuteCommand(
-					MessageC{Value: "<value>"},
+					MessageC{},
 				)
 
 				return nil
@@ -82,7 +82,7 @@ var _ = Context("message assertions", func() {
 				m dogma.Message,
 			) error {
 				s.RecordEvent(
-					MessageD{Value: "<value>"},
+					MessageD{},
 				)
 
 				return nil
@@ -144,27 +144,27 @@ var _ = Context("message assertions", func() {
 		gomega.Expect(t.Failed).To(gomega.Equal(!ok))
 	}
 
-	Describe("func CommandExecuted()", func() {
+	Describe("func CommandTypeExecuted()", func() {
 		DescribeTable(
 			"assertion reports",
 			test,
 			Entry(
-				"command executed as expected",
+				"command type executed as expected",
 				nil, // setup
-				CommandExecuted(MessageC{Value: "<value>"}),
+				CommandTypeExecuted(MessageC{}),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✓ execute a specific 'fixtures.MessageC' command`,
+				`✓ execute any 'fixtures.MessageC' command`,
 			),
 			Entry(
-				"no matching command executed",
+				"no matching command types executed",
 				nil, // setup
-				CommandExecuted(MessageX{Value: "<value>"}),
+				CommandTypeExecuted(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed the expected command`,
@@ -178,11 +178,11 @@ var _ = Context("message assertions", func() {
 					process.HandleEventFunc = nil
 					message = MessageB{}
 				},
-				CommandExecuted(MessageX{Value: "<value>"}),
+				CommandTypeExecuted(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -195,11 +195,11 @@ var _ = Context("message assertions", func() {
 				func() {
 					process.HandleEventFunc = nil
 				},
-				CommandExecuted(MessageX{Value: "<value>"}),
+				CommandTypeExecuted(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -208,18 +208,18 @@ var _ = Context("message assertions", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 			Entry(
-				"no matching command executed and all relevant handler types disabled",
+				"no matching command type executed and all relevant handler types disabled",
 				func() {
 					options = append(
 						options,
 						engine.EnableProcesses(false),
 					)
 				},
-				CommandExecuted(MessageX{Value: "<value>"}),
+				CommandTypeExecuted(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -231,21 +231,21 @@ var _ = Context("message assertions", func() {
 				// Note: the report produced from this test is actually the same as
 				// the test above because there is only one relevant handler type
 				// (process) that can be disabled. It is kept for completeness and
-				// uniformity with the test suite for EventRecorded(). Additionally,
+				// uniformity with the test suite for EventTypeRecorded(). Additionally,
 				// the assertion report content will likely diverge from the test
 				// above upon completion of https://github.com/dogmatiq/testkit/issues/66.
-				"no matching command executed and no relevant handler types engaged",
+				"no matching command type executed and no relevant handler types engaged",
 				func() {
 					options = append(
 						options,
 						engine.EnableProcesses(false),
 					)
 				},
-				CommandExecuted(MessageX{Value: "<value>"}),
+				CommandTypeExecuted(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -254,13 +254,13 @@ var _ = Context("message assertions", func() {
 				`  |     • enable process handlers using the EnableHandlerType() option`,
 			),
 			Entry(
-				"similar command executed with a different type",
-				nil, // setup
-				CommandExecuted(&MessageC{Value: "<value>"}), // note: message type is pointer
-				false, // ok
+				"command of a similar type executed",
+				nil,                              // setup
+				CommandTypeExecuted(&MessageC{}), // note: message type is pointer
+				false,                            // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific '*fixtures.MessageC' command`,
+				`✗ execute any '*fixtures.MessageC' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a command of a similar type was executed by the '<process>' process message handler`,
@@ -268,114 +268,69 @@ var _ = Context("message assertions", func() {
 				`  | SUGGESTIONS`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageC{`,
-				`  |         Value: "<value>"`,
-				`  |     }`,
+				`  | MESSAGE TYPE DIFF`,
+				`  |     [-*-]fixtures.MessageC`,
 			),
 			Entry(
-				"similar command executed with a different value",
+				"expected message type recorded as an event rather than executed as a command",
 				nil, // setup
-				CommandExecuted(MessageC{Value: "<different>"}),
+				CommandTypeExecuted(MessageB{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageC' command`,
+				`✗ execute any 'fixtures.MessageB' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a similar command was executed by the '<process>' process message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the content of the message`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageC{`,
-				`  |         Value: "<[-differ-]{+valu+}e[-nt-]>"`,
-				`  |     }`,
-			),
-			Entry(
-				"expected message recorded as an event rather than executed as a command",
-				nil, // setup
-				CommandExecuted(MessageB{Value: "<value>"}),
-				false, // ok
-				`--- ASSERTION REPORT ---`,
-				``,
-				`✗ execute a specific 'fixtures.MessageB' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     the expected message was recorded as an event by the '<aggregate>' aggregate message handler`,
+				`  |     a message of this type was recorded as an event by the '<aggregate>' aggregate message handler`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?`,
+				`  |     • verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?`,
 			),
 			Entry(
-				"similar message with a different value recorded as an event rather than executed as a command",
-				nil, // setup
-				CommandExecuted(MessageB{Value: "<different>"}),
-				false, // ok
+				"a message with a similar type recorded as an event rather than executed as a command",
+				nil,                              // setup
+				CommandTypeExecuted(&MessageB{}), // note: message type is pointer
+				false,                            // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ execute a specific 'fixtures.MessageB' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a similar message was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageB{`,
-				`  |         Value: "<[-differ-]{+valu+}e[-nt-]>"`,
-				`  |     }`,
-			),
-			Entry(
-				"similar message with a different type recorded as an event rather than executed as a command",
-				nil, // setup
-				CommandExecuted(&MessageB{Value: "<value>"}), // note: message type is pointer
-				false, // ok
-				`--- ASSERTION REPORT ---`,
-				``,
-				`✗ execute a specific '*fixtures.MessageB' command`,
+				`✗ execute any '*fixtures.MessageB' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a message of a similar type was recorded as an event by the '<aggregate>' aggregate message handler`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?`,
+				`  |     • verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageB{`,
-				`  |         Value: "<value>"`,
-				`  |     }`,
+				`  | MESSAGE TYPE DIFF`,
+				`  |     [-*-]fixtures.MessageB`,
 			),
 		)
 	})
 
-	Describe("func EventRecorded()", func() {
+	Describe("func EventTypeRecorded()", func() {
 		DescribeTable(
 			"assertion reports",
 			test,
 			Entry(
-				"event recorded as expected",
+				"event type recorded as expected",
 				nil, // setup
-				EventRecorded(MessageB{Value: "<value>"}),
+				EventTypeRecorded(MessageB{}),
 				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✓ record a specific 'fixtures.MessageB' event`,
+				`✓ record any 'fixtures.MessageB' event`,
 			),
 			Entry(
-				"no matching event recorded",
+				"no matching event type recorded",
 				nil, // setup
-				EventRecorded(MessageX{Value: "<value>"}),
+				EventTypeRecorded(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageX' event`,
+				`✗ record any 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded the expected event`,
@@ -385,7 +340,7 @@ var _ = Context("message assertions", func() {
 				`  |     • verify the logic within the '<integration>' integration message handler`,
 			),
 			Entry(
-				"no matching event recorded and all relevant handler types disabled",
+				"no matching event type recorded and all relevant handler types disabled",
 				func() {
 					options = append(
 						options,
@@ -393,11 +348,11 @@ var _ = Context("message assertions", func() {
 						engine.EnableIntegrations(false),
 					)
 				},
-				EventRecorded(MessageX{Value: "<value>"}),
+				EventTypeRecorded(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageX' event`,
+				`✗ record any 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -407,18 +362,18 @@ var _ = Context("message assertions", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 			),
 			Entry(
-				"no matching event recorded and no relevant handler types engaged",
+				"no matching event type recorded and no relevant handler types engaged",
 				func() {
 					options = append(
 						options,
 						engine.EnableAggregates(false),
 					)
 				},
-				EventRecorded(MessageX{Value: "<value>"}),
+				EventTypeRecorded(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageX' event`,
+				`✗ record any 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handlers (aggregate or integration) were engaged`,
@@ -432,11 +387,11 @@ var _ = Context("message assertions", func() {
 				func() {
 					aggregate.HandleCommandFunc = nil
 				},
-				EventRecorded(MessageX{Value: "<value>"}),
+				EventTypeRecorded(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageX' event`,
+				`✗ record any 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -450,11 +405,11 @@ var _ = Context("message assertions", func() {
 					integration.HandleCommandFunc = nil
 					message = MessageB{}
 				},
-				EventRecorded(MessageX{Value: "<value>"}),
+				EventTypeRecorded(MessageX{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageX' event`,
+				`✗ record any 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -463,13 +418,13 @@ var _ = Context("message assertions", func() {
 				`  |     • verify the logic within the '<integration>' integration message handler`,
 			),
 			Entry(
-				"similar event recorded with a different type",
-				nil, // setup
-				EventRecorded(&MessageB{Value: "<value>"}), // note: message type is pointer
-				false, // ok
+				"event of a similar type recorded",
+				nil,                            // setup
+				EventTypeRecorded(&MessageB{}), // note: message type is pointer
+				false,                          // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific '*fixtures.MessageB' event`,
+				`✗ record any '*fixtures.MessageB' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     an event of a similar type was recorded by the '<aggregate>' aggregate message handler`,
@@ -477,89 +432,44 @@ var _ = Context("message assertions", func() {
 				`  | SUGGESTIONS`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageB{`,
-				`  |         Value: "<value>"`,
-				`  |     }`,
+				`  | MESSAGE TYPE DIFF`,
+				`  |     [-*-]fixtures.MessageB`,
 			),
 			Entry(
-				"similar event recorded with a different value",
+				"expected message type executed as a command rather than recorded as an event",
 				nil, // setup
-				EventRecorded(MessageB{Value: "<different>"}),
+				EventTypeRecorded(MessageC{}),
 				false, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageB' event`,
+				`✗ record any 'fixtures.MessageC' event`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a similar event was recorded by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the content of the message`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageB{`,
-				`  |         Value: "<[-differ-]{+valu+}e[-nt-]>"`,
-				`  |     }`,
-			),
-			Entry(
-				"expected message executed as a command rather than recorded as an event",
-				nil, // setup
-				EventRecorded(MessageC{Value: "<value>"}),
-				false, // ok
-				`--- ASSERTION REPORT ---`,
-				``,
-				`✗ record a specific 'fixtures.MessageC' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     the expected message was executed as a command by the '<process>' process message handler`,
+				`  |     a message of this type was executed as a command by the '<process>' process message handler`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<process>' process message handler intended to execute a command of this type`,
-				`  |     • verify that EventRecorded() is the correct assertion, did you mean CommandExecuted()?`,
+				`  |     • verify that EventTypeRecorded() is the correct assertion, did you mean CommandTypeExecuted()?`,
 			),
 			Entry(
-				"similar message with a different value executed as a command rather than recorded as an event",
-				nil, // setup
-				EventRecorded(MessageC{Value: "<different>"}),
-				false, // ok
+				"a message with a similar type executed as a command rather than recorded as an event",
+				nil,                            // setup
+				EventTypeRecorded(&MessageC{}), // note: message type is pointer
+				false,                          // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ record a specific 'fixtures.MessageC' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a similar message was executed as a command by the '<process>' process message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<process>' process message handler intended to execute a command of this type`,
-				`  |     • verify that EventRecorded() is the correct assertion, did you mean CommandExecuted()?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageC{`,
-				`  |         Value: "<[-differ-]{+valu+}e[-nt-]>"`,
-				`  |     }`,
-			),
-			Entry(
-				"similar message with a different type executed as a command rather than recorded as an event",
-				nil, // setup
-				EventRecorded(&MessageC{Value: "<value>"}), // note: message type is pointer
-				false, // ok
-				`--- ASSERTION REPORT ---`,
-				``,
-				`✗ record a specific '*fixtures.MessageC' event`,
+				`✗ record any '*fixtures.MessageC' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a message of a similar type was executed as a command by the '<process>' process message handler`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<process>' process message handler intended to execute a command of this type`,
-				`  |     • verify that EventRecorded() is the correct assertion, did you mean CommandExecuted()?`,
+				`  |     • verify that EventTypeRecorded() is the correct assertion, did you mean CommandTypeExecuted()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageC{`,
-				`  |         Value: "<value>"`,
-				`  |     }`,
+				`  | MESSAGE TYPE DIFF`,
+				`  |     [-*-]fixtures.MessageC`,
 			),
 		)
 	})
