@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -60,18 +61,27 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	ident := c.config.Identity()
 	handler := c.config.Handler()
 
-	if t := handler.TimeoutHint(env.Message); t != 0 {
+	var t time.Duration
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"IntegrationMessageHandler",
+		"TimeoutHint",
+		env.Message,
+		func() {
+			t = handler.TimeoutHint(env.Message)
+		},
+	)
+
+	if t != 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, t)
 		defer cancel()
 	}
 
 	s := &scope{
-		identity:   ident,
-		handler:    handler,
+		config:     c.config,
 		messageIDs: c.messageIDs,
 		observer:   obs,
 		now:        now,
@@ -79,11 +89,18 @@ func (c *Controller) Handle(
 		command:    env,
 	}
 
-	if err := handler.HandleCommand(ctx, s, env.Message); err != nil {
-		return nil, err
-	}
+	var err error
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"IntegrationMessageHandler",
+		"HandleCommand",
+		env.Message,
+		func() {
+			err = handler.HandleCommand(ctx, s, env.Message)
+		},
+	)
 
-	return s.events, nil
+	return s.events, err
 }
 
 // Reset does nothing.

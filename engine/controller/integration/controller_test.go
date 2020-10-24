@@ -16,6 +16,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -207,6 +208,62 @@ var _ = Describe("type Controller", func() {
 			)
 
 			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+			handler.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("IntegrationMessageHandler"),
+						"Method":    Equal("HandleCommand"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+			handler.TimeoutHintFunc = func(
+				dogma.Message,
+			) time.Duration {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("IntegrationMessageHandler"),
+						"Method":    Equal("TimeoutHint"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
 		})
 	})
 
