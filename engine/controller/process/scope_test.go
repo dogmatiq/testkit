@@ -34,8 +34,8 @@ var _ = Describe("type scope", func() {
 		handler = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "<key>")
-				c.ConsumesEventType(MessageX{})
-				c.ProducesCommandType(MessageC{})
+				c.ConsumesEventType(MessageE{})
+				c.ProducesCommandType(MessageX{})
 			},
 			RouteEventToInstanceFunc: func(
 				_ context.Context,

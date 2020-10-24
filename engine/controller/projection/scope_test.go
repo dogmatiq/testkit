@@ -26,10 +26,15 @@ var _ = Describe("type scope", func() {
 	)
 
 	BeforeEach(func() {
-		handler = &ProjectionMessageHandler{}
+		handler = &ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageE{})
+			},
+		}
+
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+			configkit.FromProjection(handler),
 		)
 	})
 

@@ -67,10 +67,7 @@ func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichI
 func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichProjection) error {
 	mt := cfg.MessageTypes()
 	c.registerController(
-		projection.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
-		),
+		projection.NewController(cfg),
 		mt.Consumed,
 	)
 
