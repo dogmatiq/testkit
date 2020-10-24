@@ -69,6 +69,7 @@ func (c *Controller) Handle(
 	var id string
 	controller.ConvertUnexpectedMessagePanic(
 		c.config,
+		"AggregateMessageHandler",
 		"RouteCommandToInstance",
 		env.Message,
 		func() {
@@ -89,7 +90,15 @@ func (c *Controller) Handle(
 
 	if exists {
 		for _, env := range history {
-			r.ApplyEvent(env.Message)
+			controller.ConvertUnexpectedMessagePanic(
+				c.config,
+				"AggregateRoot",
+				"ApplyEvent",
+				env.Message,
+				func() {
+					r.ApplyEvent(env.Message)
+				},
+			)
 		}
 
 		obs.Notify(fact.AggregateInstanceLoaded{
@@ -119,8 +128,7 @@ func (c *Controller) Handle(
 
 	s := &scope{
 		instanceID: id,
-		identity:   ident,
-		handler:    handler,
+		config:     c.config,
 		messageIDs: c.messageIDs,
 		observer:   obs,
 		now:        now,
@@ -130,7 +138,15 @@ func (c *Controller) Handle(
 		command:    env,
 	}
 
-	handler.HandleCommand(s, env.Message)
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"AggregateMessageHandler",
+		"HandleCommand",
+		env.Message,
+		func() {
+			handler.HandleCommand(s, env.Message)
+		},
+	)
 
 	if len(s.events) == 0 {
 		if s.created {

@@ -16,6 +16,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -300,6 +301,141 @@ var _ = Describe("type Controller", func() {
 					)
 				}).To(Panic())
 			})
+		})
+
+		It("provides more context to UnexpectedMessage panics from RouteCommandToInstance()", func() {
+			handler.RouteCommandToInstanceFunc = func(dogma.Message) string {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateMessageHandler"),
+						"Method":    Equal("RouteCommandToInstance"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+			handler.HandleCommandFunc = func(
+				dogma.AggregateCommandScope,
+				dogma.Message,
+			) {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateMessageHandler"),
+						"Method":    Equal("HandleCommand"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with new events", func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(MessageE1)
+			}
+
+			handler.NewFunc = func() dogma.AggregateRoot {
+				return &AggregateRoot{
+					ApplyEventFunc: func(dogma.Message, interface{}) {
+						panic(dogma.UnexpectedMessage)
+					},
+				}
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateRoot"),
+						"Method":    Equal("ApplyEvent"),
+						"Message":   Equal(MessageE1),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with historical events", func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(MessageE1)
+			}
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
+
+			handler.HandleCommandFunc = nil
+			handler.NewFunc = func() dogma.AggregateRoot {
+				return &AggregateRoot{
+					ApplyEventFunc: func(dogma.Message, interface{}) {
+						panic(dogma.UnexpectedMessage)
+					},
+				}
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateRoot"),
+						"Method":    Equal("ApplyEvent"),
+						"Message":   Equal(MessageE1),
+					},
+				),
+			))
 		})
 	})
 

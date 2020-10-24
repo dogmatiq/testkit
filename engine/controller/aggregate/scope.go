@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -14,8 +15,7 @@ import (
 // scope is an implementation of dogma.AggregateCommandScope.
 type scope struct {
 	instanceID string
-	identity   configkit.Identity
-	handler    dogma.AggregateMessageHandler
+	config     configkit.RichAggregate
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	root       dogma.AggregateRoot
@@ -45,8 +45,8 @@ func (s *scope) Create() bool {
 	s.created = true
 
 	s.observer.Notify(fact.AggregateInstanceCreated{
-		HandlerName: s.identity.Name,
-		Handler:     s.handler,
+		HandlerName: s.config.Identity().Name,
+		Handler:     s.config.Handler(),
 		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.command,
@@ -64,8 +64,8 @@ func (s *scope) Destroy() {
 	s.destroyed = true
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
-		HandlerName: s.identity.Name,
-		Handler:     s.handler,
+		HandlerName: s.config.Identity().Name,
+		Handler:     s.config.Handler(),
 		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.command,
@@ -88,19 +88,27 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to record events of type %T",
-			s.identity.Name,
+			s.config.Identity().Name,
 			m,
 		))
 	}
 
-	s.root.ApplyEvent(m)
+	controller.ConvertUnexpectedMessagePanic(
+		s.config,
+		"AggregateRoot",
+		"ApplyEvent",
+		m,
+		func() {
+			s.root.ApplyEvent(m)
+		},
+	)
 
 	env := s.command.NewEvent(
 		s.messageIDs.Next(),
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.identity.Name,
+			HandlerName: s.config.Identity().Name,
 			HandlerType: configkit.AggregateHandlerType,
 			InstanceID:  s.instanceID,
 		},
@@ -109,8 +117,8 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
-		HandlerName:   s.identity.Name,
-		Handler:       s.handler,
+		HandlerName:   s.config.Identity().Name,
+		Handler:       s.config.Handler(),
 		InstanceID:    s.instanceID,
 		Root:          s.root,
 		Envelope:      s.command,
@@ -120,8 +128,8 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByAggregate{
-		HandlerName:  s.identity.Name,
-		Handler:      s.handler,
+		HandlerName:  s.config.Identity().Name,
+		Handler:      s.config.Handler(),
 		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.command,
