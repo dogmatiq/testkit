@@ -24,7 +24,8 @@ var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
-		controller *Controller
+		config     configkit.RichIntegration
+		ctrl       *Controller
 		command    *envelope.Envelope
 	)
 
@@ -43,8 +44,10 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.FromIntegration(handler),
+		config = configkit.FromIntegration(handler)
+
+		ctrl = NewController(
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,
@@ -57,7 +60,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -65,13 +68,13 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.IntegrationHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.IntegrationHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.IntegrationHandlerType))
 		})
 	})
 
 	Describe("func Tick()", func() {
 		It("does not return any envelopes", func() {
-			envelopes, err := controller.Tick(
+			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -82,7 +85,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not record any facts", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Tick(
+			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
@@ -105,7 +108,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -128,7 +131,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			now := time.Now()
-			events, err := controller.Handle(
+			events, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				now,
@@ -169,7 +172,7 @@ var _ = Describe("type Controller", func() {
 				return expected
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -196,7 +199,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -209,7 +212,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Reset()", func() {
 		It("does nothing", func() {
-			controller.Reset()
+			ctrl.Reset()
 		})
 	})
 })

@@ -24,7 +24,8 @@ var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandler
-		controller *Controller
+		config     configkit.RichAggregate
+		ctrl       *Controller
 		command    *envelope.Envelope
 	)
 
@@ -56,8 +57,10 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.FromAggregate(handler),
+		config = configkit.FromAggregate(handler)
+
+		ctrl = NewController(
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageEType,
@@ -69,7 +72,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -77,13 +80,13 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.AggregateHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.AggregateHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.AggregateHandlerType))
 		})
 	})
 
 	Describe("func Tick()", func() {
 		It("does not return any envelopes", func() {
-			envelopes, err := controller.Tick(
+			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -94,7 +97,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not record any facts", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Tick(
+			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
@@ -115,7 +118,7 @@ var _ = Describe("type Controller", func() {
 				Expect(m).To(Equal(MessageC1))
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -137,7 +140,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			now := time.Now()
-			events, err := controller.Handle(
+			events, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				now,
@@ -175,7 +178,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			Expect(func() {
-				controller.Handle(
+				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -187,7 +190,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -211,7 +214,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -229,7 +232,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -249,7 +252,7 @@ var _ = Describe("type Controller", func() {
 					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -261,7 +264,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -289,7 +292,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -310,7 +313,7 @@ var _ = Describe("type Controller", func() {
 				s.RecordEvent(MessageE1) // event must be recorded when creating
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -321,10 +324,10 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("removes all instances", func() {
-			controller.Reset()
+			ctrl.Reset()
 
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),

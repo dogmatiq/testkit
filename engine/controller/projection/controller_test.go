@@ -20,9 +20,10 @@ var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (
-		handler    *ProjectionMessageHandler
-		controller *Controller
-		event      = envelope.NewEvent(
+		handler *ProjectionMessageHandler
+		config  configkit.RichProjection
+		ctrl    *Controller
+		event   = envelope.NewEvent(
 			"1000",
 			MessageA1,
 			time.Now(),
@@ -37,14 +38,14 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.FromProjection(handler),
-		)
+		config = configkit.FromProjection(handler)
+
+		ctrl = NewController(config)
 	})
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -52,13 +53,13 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.ProjectionHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.ProjectionHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.ProjectionHandlerType))
 		})
 	})
 
 	Describe("func Tick()", func() {
 		It("does not return any envelopes", func() {
-			envelopes, err := controller.Tick(
+			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -69,7 +70,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not record any facts", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Tick(
+			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
@@ -93,7 +94,7 @@ var _ = Describe("type Controller", func() {
 				return true, nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -116,7 +117,7 @@ var _ = Describe("type Controller", func() {
 				return false, expected
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -136,7 +137,7 @@ var _ = Describe("type Controller", func() {
 				return nil, expected
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -159,7 +160,7 @@ var _ = Describe("type Controller", func() {
 				return false, nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -187,7 +188,7 @@ var _ = Describe("type Controller", func() {
 				return false, nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -208,7 +209,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -237,7 +238,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -265,7 +266,7 @@ var _ = Describe("type Controller", func() {
 				return true, nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -278,7 +279,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Reset()", func() {
 		It("does nothing", func() {
-			controller.Reset()
+			ctrl.Reset()
 		})
 	})
 })

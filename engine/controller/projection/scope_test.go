@@ -16,9 +16,9 @@ import (
 
 var _ = Describe("type scope", func() {
 	var (
-		handler    *ProjectionMessageHandler
-		controller *Controller
-		event      = envelope.NewEvent(
+		handler *ProjectionMessageHandler
+		ctrl    *Controller
+		event   = envelope.NewEvent(
 			"1000",
 			MessageA1,
 			time.Now(),
@@ -33,7 +33,7 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		controller = NewController(
+		ctrl = NewController(
 			configkit.FromProjection(handler),
 		)
 	})
@@ -52,7 +52,7 @@ var _ = Describe("type scope", func() {
 				return true, nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -77,7 +77,7 @@ var _ = Describe("type scope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),
