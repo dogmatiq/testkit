@@ -32,6 +32,11 @@ var _ = Describe("type scope", func() {
 		)
 
 		handler = &AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
 				switch m.(type) {
 				case MessageA:
@@ -42,9 +47,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config := configkit.FromAggregate(handler)
+
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,

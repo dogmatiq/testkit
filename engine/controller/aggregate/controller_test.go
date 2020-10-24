@@ -36,6 +36,11 @@ var _ = Describe("type Controller", func() {
 		)
 
 		handler = &AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageX{})
+			},
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
@@ -51,9 +56,10 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
+		config := configkit.FromAggregate(handler)
+
 		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageEType,

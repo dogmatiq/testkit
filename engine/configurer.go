@@ -26,8 +26,7 @@ func (c *configurer) VisitRichAggregate(_ context.Context, cfg configkit.RichAgg
 	mt := cfg.MessageTypes()
 	c.registerController(
 		aggregate.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),
