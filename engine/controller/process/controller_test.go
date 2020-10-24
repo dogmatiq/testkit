@@ -17,6 +17,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -867,6 +868,135 @@ var _ = Describe("type Controller", func() {
 					event,
 				)
 			})
+		})
+
+		It("provides more context to UnexpectedMessage panics from RouteEventToInstance()", func() {
+			handler.RouteEventToInstanceFunc = func(
+				context.Context,
+				dogma.Message,
+			) (string, bool, error) {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("RouteEventToInstance"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
+			handler.HandleEventFunc = func(
+				context.Context,
+				dogma.ProcessEventScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("HandleEvent"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleTimeout()", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProcessEventScope,
+				_ dogma.Message,
+			) error {
+				s.Begin()
+				return nil
+			}
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			handler.HandleTimeoutFunc = func(
+				context.Context,
+				dogma.ProcessTimeoutScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					timeout,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("HandleTimeout"),
+						"Message":   Equal(timeout.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+			handler.TimeoutHintFunc = func(
+				dogma.Message,
+			) time.Duration {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("TimeoutHint"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
 		})
 	})
 

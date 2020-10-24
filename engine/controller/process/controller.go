@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -85,7 +86,18 @@ func (c *Controller) Handle(
 	ident := c.config.Identity()
 	handler := c.config.Handler()
 
-	if t := handler.TimeoutHint(env.Message); t != 0 {
+	var t time.Duration
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProcessMessageHandler",
+		"TimeoutHint",
+		env.Message,
+		func() {
+			t = handler.TimeoutHint(env.Message)
+		},
+	)
+
+	if t != 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, t)
 		defer cancel()
@@ -126,8 +138,7 @@ func (c *Controller) Handle(
 
 	s := &scope{
 		instanceID: id,
-		identity:   ident,
-		handler:    handler,
+		config:     c.config,
 		messageIDs: c.messageIDs,
 		observer:   obs,
 		now:        now,
@@ -177,7 +188,21 @@ func (c *Controller) routeEvent(
 	ident := c.config.Identity()
 	handler := c.config.Handler()
 
-	id, ok, err := handler.RouteEventToInstance(ctx, env.Message)
+	var (
+		id  string
+		ok  bool
+		err error
+	)
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProcessMessageHandler",
+		"RouteEventToInstance",
+		env.Message,
+		func() {
+			id, ok, err = handler.RouteEventToInstance(ctx, env.Message)
+		},
+	)
+
 	if err != nil {
 		return "", false, err
 	}
@@ -225,11 +250,27 @@ func (c *Controller) routeTimeout(
 
 // handle calls the appropriate method on the handler based on the message role.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
-	if s.env.Role == message.EventRole {
-		return c.config.Handler().HandleEvent(ctx, s, s.env.Message)
+	method := "HandleEvent"
+	if s.env.Role == message.TimeoutRole {
+		method = "HandleTimeout"
 	}
 
-	return c.config.Handler().HandleTimeout(ctx, s, s.env.Message)
+	var err error
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProcessMessageHandler",
+		method,
+		s.env.Message,
+		func() {
+			if s.env.Role == message.EventRole {
+				err = c.config.Handler().HandleEvent(ctx, s, s.env.Message)
+			} else {
+				err = c.config.Handler().HandleTimeout(ctx, s, s.env.Message)
+			}
+		},
+	)
+
+	return err
 }
 
 // update stores the process root and its pending timeouts.
