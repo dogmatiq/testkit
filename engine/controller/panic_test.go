@@ -7,14 +7,25 @@ import (
 	. "github.com/dogmatiq/testkit/engine/controller"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
+	config := configkit.FromProjection(
+		&ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageE{})
+			},
+		},
+	)
+
 	It("calls the function", func() {
 		called := false
 
 		ConvertUnexpectedMessagePanic(
-			nil,
+			config,
+			"<interface>",
 			"<method>",
 			MessageA1,
 			func() {
@@ -28,7 +39,8 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 	It("propagates panic values", func() {
 		Expect(func() {
 			ConvertUnexpectedMessagePanic(
-				nil,
+				config,
+				"<interface>",
 				"<method>",
 				MessageA1,
 				func() {
@@ -39,18 +51,10 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 	})
 
 	It("converts UnexpectedMessage values", func() {
-		config := configkit.FromProjection(
-			&ProjectionMessageHandler{
-				ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-					c.Identity("<name>", "<key>")
-					c.ConsumesEventType(MessageE{})
-				},
-			},
-		)
-
 		Expect(func() {
 			ConvertUnexpectedMessagePanic(
 				config,
+				"<interface>",
 				"<method>",
 				MessageA1,
 				func() {
@@ -58,11 +62,17 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 				},
 			)
 		}).To(PanicWith(
-			UnexpectedMessage{
-				Handler: config,
-				Method:  "<method>",
-				Message: MessageA1,
-			},
+			MatchAllFields(
+				Fields{
+					"Handler":   Equal(config),
+					"Interface": Equal("<interface>"),
+					"Method":    Equal("<method>"),
+					"Message":   Equal(MessageA1),
+					"PanicFunc": Not(BeEmpty()),
+					"PanicFile": Not(BeEmpty()),
+					"PanicLine": Not(BeZero()),
+				},
+			),
 		))
 	})
 })
