@@ -16,6 +16,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -24,7 +25,8 @@ var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandler
-		controller *Controller
+		config     configkit.RichAggregate
+		ctrl       *Controller
 		command    *envelope.Envelope
 	)
 
@@ -36,6 +38,11 @@ var _ = Describe("type Controller", func() {
 		)
 
 		handler = &AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageX{})
+			},
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
@@ -51,9 +58,10 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+		config = configkit.FromAggregate(handler)
+
+		ctrl = NewController(
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageEType,
@@ -65,7 +73,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -73,13 +81,13 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.AggregateHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.AggregateHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.AggregateHandlerType))
 		})
 	})
 
 	Describe("func Tick()", func() {
 		It("does not return any envelopes", func() {
-			envelopes, err := controller.Tick(
+			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -90,7 +98,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not record any facts", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Tick(
+			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
@@ -111,7 +119,7 @@ var _ = Describe("type Controller", func() {
 				Expect(m).To(Equal(MessageC1))
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -133,7 +141,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			now := time.Now()
-			events, err := controller.Handle(
+			events, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				now,
@@ -171,7 +179,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			Expect(func() {
-				controller.Handle(
+				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -183,7 +191,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -207,7 +215,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -225,7 +233,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -245,7 +253,7 @@ var _ = Describe("type Controller", func() {
 					s.RecordEvent(MessageE1) // event must be recorded when creating
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -257,7 +265,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -285,7 +293,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -293,6 +301,141 @@ var _ = Describe("type Controller", func() {
 					)
 				}).To(Panic())
 			})
+		})
+
+		It("provides more context to UnexpectedMessage panics from RouteCommandToInstance()", func() {
+			handler.RouteCommandToInstanceFunc = func(dogma.Message) string {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateMessageHandler"),
+						"Method":    Equal("RouteCommandToInstance"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+			handler.HandleCommandFunc = func(
+				dogma.AggregateCommandScope,
+				dogma.Message,
+			) {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateMessageHandler"),
+						"Method":    Equal("HandleCommand"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with new events", func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(MessageE1)
+			}
+
+			handler.NewFunc = func() dogma.AggregateRoot {
+				return &AggregateRoot{
+					ApplyEventFunc: func(dogma.Message, interface{}) {
+						panic(dogma.UnexpectedMessage)
+					},
+				}
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateRoot"),
+						"Method":    Equal("ApplyEvent"),
+						"Message":   Equal(MessageE1),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with historical events", func() {
+			handler.HandleCommandFunc = func(
+				s dogma.AggregateCommandScope,
+				_ dogma.Message,
+			) {
+				s.Create()
+				s.RecordEvent(MessageE1)
+			}
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
+
+			handler.HandleCommandFunc = nil
+			handler.NewFunc = func() dogma.AggregateRoot {
+				return &AggregateRoot{
+					ApplyEventFunc: func(dogma.Message, interface{}) {
+						panic(dogma.UnexpectedMessage)
+					},
+				}
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("AggregateRoot"),
+						"Method":    Equal("ApplyEvent"),
+						"Message":   Equal(MessageE1),
+					},
+				),
+			))
 		})
 	})
 
@@ -306,7 +449,7 @@ var _ = Describe("type Controller", func() {
 				s.RecordEvent(MessageE1) // event must be recorded when creating
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -317,10 +460,10 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("removes all instances", func() {
-			controller.Reset()
+			ctrl.Reset()
 
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),

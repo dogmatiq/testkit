@@ -26,8 +26,7 @@ func (c *configurer) VisitRichAggregate(_ context.Context, cfg configkit.RichAgg
 	mt := cfg.MessageTypes()
 	c.registerController(
 		aggregate.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),
@@ -41,8 +40,7 @@ func (c *configurer) VisitRichProcess(_ context.Context, cfg configkit.RichProce
 	mt := cfg.MessageTypes()
 	c.registerController(
 		process.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),
@@ -56,8 +54,7 @@ func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichI
 	mt := cfg.MessageTypes()
 	c.registerController(
 		integration.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
+			cfg,
 			&c.engine.messageIDs,
 			mt.Produced,
 		),
@@ -70,10 +67,7 @@ func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichI
 func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichProjection) error {
 	mt := cfg.MessageTypes()
 	c.registerController(
-		projection.NewController(
-			cfg.Identity(),
-			cfg.Handler(),
-		),
+		projection.NewController(cfg),
 		mt.Consumed,
 	)
 

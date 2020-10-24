@@ -6,7 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -14,25 +14,22 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	identity configkit.Identity
-	handler  dogma.ProjectionMessageHandler
+	config configkit.RichProjection
 }
 
 // NewController returns a new controller for the given handler.
 func NewController(
-	i configkit.Identity,
-	h dogma.ProjectionMessageHandler,
+	c configkit.RichProjection,
 ) *Controller {
 	return &Controller{
-		identity: i,
-		handler:  h,
+		config: c,
 	}
 }
 
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.identity
+	return c.config.Identity()
 }
 
 // Type returns configkit.ProjectionHandlerType.
@@ -58,15 +55,27 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
-	if t := c.handler.TimeoutHint(env.Message); t != 0 {
+	handler := c.config.Handler()
+
+	var t time.Duration
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProjectionMessageHandler",
+		"TimeoutHint",
+		env.Message,
+		func() {
+			t = handler.TimeoutHint(env.Message)
+		},
+	)
+
+	if t != 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, t)
 		defer cancel()
 	}
 
 	s := &scope{
-		identity: c.identity,
-		handler:  c.handler,
+		config:   c.config,
 		observer: obs,
 		event:    env,
 	}
@@ -81,7 +90,7 @@ func (c *Controller) Handle(
 	// handled, the resource version is updated to a non-empty value, indicating
 	// that the message has been processed.
 	res := []byte(env.MessageID)
-	cur, err := c.handler.ResourceVersion(ctx, res)
+	cur, err := handler.ResourceVersion(ctx, res)
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +101,24 @@ func (c *Controller) Handle(
 		return nil, nil
 	}
 
-	ok, err := c.handler.HandleEvent(
-		ctx,
-		res,
-		nil,       // current version
-		[]byte{1}, // next version
-		s,
+	var ok bool
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProjectionMessageHandler",
+		"HandleEvent",
 		env.Message,
+		func() {
+			ok, err = handler.HandleEvent(
+				ctx,
+				res,
+				nil,       // current version
+				[]byte{1}, // next version
+				s,
+				env.Message,
+			)
+		},
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +126,7 @@ func (c *Controller) Handle(
 	// If this call to handle actually applied the event, close the resource as
 	// we'll never invoke the handler with this message again.
 	if ok {
-		return nil, c.handler.CloseResource(ctx, res)
+		return nil, handler.CloseResource(ctx, res)
 	}
 
 	return nil, nil

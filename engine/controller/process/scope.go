@@ -15,8 +15,7 @@ import (
 // dogma.ProcessTimeoutScope.
 type scope struct {
 	instanceID string
-	identity   configkit.Identity
-	handler    dogma.ProcessMessageHandler
+	config     configkit.RichProcess
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
@@ -45,8 +44,8 @@ func (s *scope) Begin() bool {
 	s.exists = true
 
 	s.observer.Notify(fact.ProcessInstanceBegun{
-		HandlerName: s.identity.Name,
-		Handler:     s.handler,
+		HandlerName: s.config.Identity().Name,
+		Handler:     s.config.Handler(),
 		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.env,
@@ -65,8 +64,8 @@ func (s *scope) End() {
 	s.pending = nil
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
-		HandlerName: s.identity.Name,
-		Handler:     s.handler,
+		HandlerName: s.config.Identity().Name,
+		Handler:     s.config.Handler(),
 		InstanceID:  s.instanceID,
 		Root:        s.root,
 		Envelope:    s.env,
@@ -89,7 +88,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to execute commands of type %T",
-			s.identity.Name,
+			s.config.Identity().Name,
 			m,
 		))
 	}
@@ -99,7 +98,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.identity.Name,
+			HandlerName: s.config.Identity().Name,
 			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
@@ -108,8 +107,8 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	s.commands = append(s.commands, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
-		HandlerName:     s.identity.Name,
-		Handler:         s.handler,
+		HandlerName:     s.config.Identity().Name,
+		Handler:         s.config.Handler(),
 		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -132,7 +131,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		s.now,
 		t,
 		envelope.Origin{
-			HandlerName: s.identity.Name,
+			HandlerName: s.config.Identity().Name,
 			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
@@ -145,8 +144,8 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	}
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
-		HandlerName:     s.identity.Name,
-		Handler:         s.handler,
+		HandlerName:     s.config.Identity().Name,
+		Handler:         s.config.Handler(),
 		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -160,8 +159,8 @@ func (s *scope) ScheduledFor() time.Time {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
-		HandlerName:  s.identity.Name,
-		Handler:      s.handler,
+		HandlerName:  s.config.Identity().Name,
+		Handler:      s.config.Handler(),
 		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.env,

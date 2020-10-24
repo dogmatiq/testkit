@@ -20,7 +20,7 @@ var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
-		controller *Controller
+		ctrl       *Controller
 		command    *envelope.Envelope
 	)
 
@@ -31,11 +31,16 @@ var _ = Describe("type scope", func() {
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandler{}
+		handler = &IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageX{})
+			},
+		}
 
-		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+		ctrl = NewController(
+			configkit.FromIntegration(handler),
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,
@@ -61,7 +66,7 @@ var _ = Describe("type scope", func() {
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
 			now := time.Now()
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				now,
@@ -98,7 +103,7 @@ var _ = Describe("type scope", func() {
 			}
 
 			Expect(func() {
-				controller.Handle(
+				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -122,7 +127,7 @@ var _ = Describe("type scope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),

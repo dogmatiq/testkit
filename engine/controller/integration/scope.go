@@ -13,8 +13,7 @@ import (
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	identity   configkit.Identity
-	handler    dogma.IntegrationMessageHandler
+	config     configkit.RichIntegration
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
@@ -27,7 +26,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to record events of type %T",
-			s.identity.Name,
+			s.config.Identity().Name,
 			m,
 		))
 	}
@@ -37,7 +36,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.identity.Name,
+			HandlerName: s.config.Identity().Name,
 			HandlerType: configkit.IntegrationHandlerType,
 		},
 	)
@@ -45,8 +44,8 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
-		HandlerName:   s.identity.Name,
-		Handler:       s.handler,
+		HandlerName:   s.config.Identity().Name,
+		Handler:       s.config.Handler(),
 		Envelope:      s.command,
 		EventEnvelope: env,
 	})
@@ -54,8 +53,8 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
-		HandlerName:  s.identity.Name,
-		Handler:      s.handler,
+		HandlerName:  s.config.Identity().Name,
+		Handler:      s.config.Handler(),
 		Envelope:     s.command,
 		LogFormat:    f,
 		LogArguments: v,

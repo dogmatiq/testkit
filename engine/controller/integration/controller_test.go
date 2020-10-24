@@ -16,6 +16,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -24,7 +25,8 @@ var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
-		controller *Controller
+		config     configkit.RichIntegration
+		ctrl       *Controller
 		command    *envelope.Envelope
 	)
 
@@ -35,11 +37,18 @@ var _ = Describe("type Controller", func() {
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandler{}
+		handler = &IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageX{})
+			},
+		}
 
-		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+		config = configkit.FromIntegration(handler)
+
+		ctrl = NewController(
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageBType,
@@ -52,7 +61,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -60,13 +69,13 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.IntegrationHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.IntegrationHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.IntegrationHandlerType))
 		})
 	})
 
 	Describe("func Tick()", func() {
 		It("does not return any envelopes", func() {
-			envelopes, err := controller.Tick(
+			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -77,7 +86,7 @@ var _ = Describe("type Controller", func() {
 
 		It("does not record any facts", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Tick(
+			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
@@ -100,7 +109,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -123,7 +132,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			now := time.Now()
-			events, err := controller.Handle(
+			events, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				now,
@@ -164,7 +173,7 @@ var _ = Describe("type Controller", func() {
 				return expected
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -191,7 +200,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -200,11 +209,67 @@ var _ = Describe("type Controller", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 		})
+
+		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+			handler.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("IntegrationMessageHandler"),
+						"Method":    Equal("HandleCommand"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+			handler.TimeoutHintFunc = func(
+				dogma.Message,
+			) time.Duration {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("IntegrationMessageHandler"),
+						"Method":    Equal("TimeoutHint"),
+						"Message":   Equal(command.Message),
+					},
+				),
+			))
+		})
 	})
 
 	Describe("func Reset()", func() {
 		It("does nothing", func() {
-			controller.Reset()
+			ctrl.Reset()
 		})
 	})
 })

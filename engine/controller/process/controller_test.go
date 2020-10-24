@@ -17,6 +17,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ controller.Controller = &Controller{}
@@ -25,7 +26,8 @@ var _ = Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandler
-		controller *Controller
+		config     configkit.RichProcess
+		ctrl       *Controller
 		event      *envelope.Envelope
 		timeout    *envelope.Envelope
 	)
@@ -50,6 +52,11 @@ var _ = Describe("type Controller", func() {
 		)
 
 		handler = &ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageE{})
+				c.ProducesCommandType(MessageX{})
+			},
 			// setup routes for "E" (event) messages to an instance ID based on the
 			// message's content
 			RouteEventToInstanceFunc: func(
@@ -69,9 +76,10 @@ var _ = Describe("type Controller", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
+		config = configkit.FromProcess(handler)
+
+		ctrl = NewController(
+			config,
 			&messageIDs,
 			message.NewTypeSet(
 				MessageCType,
@@ -83,7 +91,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Identity()", func() {
 		It("returns the handler identity", func() {
-			Expect(controller.Identity()).To(Equal(
+			Expect(ctrl.Identity()).To(Equal(
 				configkit.MustNewIdentity("<name>", "<key>"),
 			))
 		})
@@ -91,7 +99,7 @@ var _ = Describe("type Controller", func() {
 
 	Describe("func Type()", func() {
 		It("returns configkit.ProcessHandlerType", func() {
-			Expect(controller.Type()).To(Equal(configkit.ProcessHandlerType))
+			Expect(ctrl.Type()).To(Equal(configkit.ProcessHandlerType))
 		})
 	})
 
@@ -125,7 +133,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				createdTime,
@@ -137,7 +145,7 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("returns timeouts that are ready to be handled", func() {
-			timeouts, err := controller.Tick(
+			timeouts, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time, // advance time
@@ -171,7 +179,7 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("does not return the same timeouts multiple times", func() {
-			timeouts, err := controller.Tick(
+			timeouts, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time, // advance time
@@ -180,7 +188,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(timeouts).To(HaveLen(2))
 
-			timeouts, err = controller.Tick(
+			timeouts, err = ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time, // advance time
@@ -197,7 +205,7 @@ var _ = Describe("type Controller", func() {
 				time.Now(),
 			)
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				createdTime,
@@ -215,7 +223,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err = controller.Handle(
+			_, err = ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -224,7 +232,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			// expect only the timeout from the E2 instance.
-			timeouts, err := controller.Tick(
+			timeouts, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -272,7 +280,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -294,7 +302,7 @@ var _ = Describe("type Controller", func() {
 					return expected
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -318,7 +326,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -364,7 +372,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -388,7 +396,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -416,7 +424,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -446,7 +454,7 @@ var _ = Describe("type Controller", func() {
 						return nil
 					}
 
-					_, err := controller.Handle(
+					_, err := ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -458,7 +466,7 @@ var _ = Describe("type Controller", func() {
 
 				It("records a fact", func() {
 					buf := &fact.Buffer{}
-					_, err := controller.Handle(
+					_, err := ctrl.Handle(
 						context.Background(),
 						buf,
 						time.Now(),
@@ -488,7 +496,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -511,7 +519,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -533,7 +541,7 @@ var _ = Describe("type Controller", func() {
 					return expected
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -556,7 +564,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -601,7 +609,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -624,7 +632,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				envelopes, err := controller.Handle(
+				envelopes, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
@@ -652,7 +660,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -673,7 +681,7 @@ var _ = Describe("type Controller", func() {
 						return nil
 					}
 
-					_, err := controller.Handle(
+					_, err := ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -694,7 +702,7 @@ var _ = Describe("type Controller", func() {
 						return nil
 					}
 
-					_, err := controller.Handle(
+					_, err := ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -706,7 +714,7 @@ var _ = Describe("type Controller", func() {
 
 				It("records a fact", func() {
 					buf := &fact.Buffer{}
-					_, err := controller.Handle(
+					_, err := ctrl.Handle(
 						context.Background(),
 						buf,
 						time.Now(),
@@ -738,7 +746,7 @@ var _ = Describe("type Controller", func() {
 				return "<instance>", true, expected
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -757,7 +765,7 @@ var _ = Describe("type Controller", func() {
 			}
 
 			Expect(func() {
-				controller.Handle(
+				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -769,7 +777,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance does not exist", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -793,7 +801,7 @@ var _ = Describe("type Controller", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -814,7 +822,7 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -828,7 +836,7 @@ var _ = Describe("type Controller", func() {
 
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -853,13 +861,142 @@ var _ = Describe("type Controller", func() {
 					return nil
 				}
 
-				controller.Handle(
+				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
 			})
+		})
+
+		It("provides more context to UnexpectedMessage panics from RouteEventToInstance()", func() {
+			handler.RouteEventToInstanceFunc = func(
+				context.Context,
+				dogma.Message,
+			) (string, bool, error) {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("RouteEventToInstance"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
+			handler.HandleEventFunc = func(
+				context.Context,
+				dogma.ProcessEventScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("HandleEvent"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from HandleTimeout()", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				s dogma.ProcessEventScope,
+				_ dogma.Message,
+			) error {
+				s.Begin()
+				return nil
+			}
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			handler.HandleTimeoutFunc = func(
+				context.Context,
+				dogma.ProcessTimeoutScope,
+				dogma.Message,
+			) error {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					timeout,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("HandleTimeout"),
+						"Message":   Equal(timeout.Message),
+					},
+				),
+			))
+		})
+
+		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+			handler.TimeoutHintFunc = func(
+				dogma.Message,
+			) time.Duration {
+				panic(dogma.UnexpectedMessage)
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(PanicWith(
+				MatchFields(
+					IgnoreExtras,
+					Fields{
+						"Handler":   Equal(config),
+						"Interface": Equal("ProcessMessageHandler"),
+						"Method":    Equal("TimeoutHint"),
+						"Message":   Equal(event.Message),
+					},
+				),
+			))
 		})
 	})
 
@@ -874,7 +1011,7 @@ var _ = Describe("type Controller", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -887,10 +1024,10 @@ var _ = Describe("type Controller", func() {
 		})
 
 		It("removes all instances", func() {
-			controller.Reset()
+			ctrl.Reset()
 
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),

@@ -20,7 +20,7 @@ var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandler
-		controller *Controller
+		ctrl       *Controller
 		event      *envelope.Envelope
 	)
 
@@ -32,6 +32,11 @@ var _ = Describe("type scope", func() {
 		)
 
 		handler = &ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageE{})
+				c.ProducesCommandType(MessageX{})
+			},
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
 				m dogma.Message,
@@ -45,10 +50,8 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		controller = NewController(
-			configkit.MustNewIdentity("<name>", "<key>"),
-			handler,
-			&messageIDs,
+		ctrl = NewController(
+			configkit.FromProcess(handler), &messageIDs,
 			message.NewTypeSet(
 				MessageBType,
 				MessageCType,
@@ -70,7 +73,7 @@ var _ = Describe("type scope", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -93,7 +96,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -114,7 +117,7 @@ var _ = Describe("type scope", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -135,7 +138,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -167,7 +170,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -189,7 +192,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -211,7 +214,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -233,7 +236,7 @@ var _ = Describe("type scope", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -260,7 +263,7 @@ var _ = Describe("type scope", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -282,7 +285,7 @@ var _ = Describe("type scope", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -304,7 +307,7 @@ var _ = Describe("type scope", func() {
 					return nil
 				}
 
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
@@ -325,7 +328,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -351,7 +354,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				buf := &fact.Buffer{}
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
@@ -391,7 +394,7 @@ var _ = Describe("type scope", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
 				now := time.Now()
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					now,
@@ -431,7 +434,7 @@ var _ = Describe("type scope", func() {
 				}
 
 				Expect(func() {
-					controller.Handle(
+					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
@@ -463,7 +466,7 @@ var _ = Describe("type scope", func() {
 			It("records a fact", func() {
 				buf := &fact.Buffer{}
 				now := time.Now()
-				_, err := controller.Handle(
+				_, err := ctrl.Handle(
 					context.Background(),
 					buf,
 					now,
@@ -508,7 +511,7 @@ var _ = Describe("type scope", func() {
 				return nil
 			}
 
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -534,7 +537,7 @@ var _ = Describe("type scope", func() {
 
 		It("records a fact", func() {
 			buf := &fact.Buffer{}
-			_, err := controller.Handle(
+			_, err := ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),

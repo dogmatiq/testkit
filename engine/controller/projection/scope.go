@@ -4,15 +4,13 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // scope is an implementation of dogma.ProjectionEventScope.
 type scope struct {
-	identity configkit.Identity
-	handler  dogma.ProjectionMessageHandler
+	config   configkit.RichProjection
 	observer fact.Observer
 	event    *envelope.Envelope
 }
@@ -23,8 +21,8 @@ func (s *scope) RecordedAt() time.Time {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
-		HandlerName:  s.identity.Name,
-		Handler:      s.handler,
+		HandlerName:  s.config.Identity().Name,
+		Handler:      s.config.Handler(),
 		Envelope:     s.event,
 		LogFormat:    f,
 		LogArguments: v,
