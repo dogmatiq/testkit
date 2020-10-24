@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -54,18 +55,27 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
-	ident := c.config.Identity()
 	handler := c.config.Handler()
 
-	if t := handler.TimeoutHint(env.Message); t != 0 {
+	var t time.Duration
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProjectionMessageHandler",
+		"TimeoutHint",
+		env.Message,
+		func() {
+			t = handler.TimeoutHint(env.Message)
+		},
+	)
+
+	if t != 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, t)
 		defer cancel()
 	}
 
 	s := &scope{
-		identity: ident,
-		handler:  handler,
+		config:   c.config,
 		observer: obs,
 		event:    env,
 	}
@@ -91,14 +101,24 @@ func (c *Controller) Handle(
 		return nil, nil
 	}
 
-	ok, err := handler.HandleEvent(
-		ctx,
-		res,
-		nil,       // current version
-		[]byte{1}, // next version
-		s,
+	var ok bool
+	controller.ConvertUnexpectedMessagePanic(
+		c.config,
+		"ProjectionMessageHandler",
+		"HandleEvent",
 		env.Message,
+		func() {
+			ok, err = handler.HandleEvent(
+				ctx,
+				res,
+				nil,       // current version
+				[]byte{1}, // next version
+				s,
+				env.Message,
+			)
+		},
 	)
+
 	if err != nil {
 		return nil, err
 	}
