@@ -1,15 +1,11 @@
 package assert_test
 
 import (
-	"strings"
-
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/internal/testingmock"
 	"github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -40,26 +36,17 @@ var _ = Context("composite assertions", func() {
 
 	test := func(
 		assertion Assertion,
-		ok bool,
-		report ...string,
+		expectOk bool,
+		expectReport ...string,
 	) {
-		t := &testingmock.T{
-			FailSilently: true,
-		}
-
-		testkit.
-			New(app).
-			Begin(t).
-			ExecuteCommand(
-				MessageA{},
-				assertion,
-			)
-
-		logs := strings.TrimSpace(strings.Join(t.Logs, "\n"))
-		lines := strings.Split(logs, "\n")
-
-		gomega.Expect(lines).To(gomega.Equal(report))
-		gomega.Expect(t.Failed).To(gomega.Equal(!ok))
+		runTest(
+			app,
+			MessageA{},
+			assertion,
+			nil, //options
+			expectOk,
+			expectReport,
+		)
 	}
 
 	Describe("func AllOf()", func() {
@@ -230,7 +217,7 @@ func (a constAssertion) TryOk() (bool, bool)      { return bool(a), true }
 func (a constAssertion) Ok() bool                 { return bool(a) }
 func (a constAssertion) Notify(fact.Fact)         {}
 
-func (a constAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
+func (a constAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"

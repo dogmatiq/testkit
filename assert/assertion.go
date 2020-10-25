@@ -29,7 +29,7 @@ type OptionalAssertion interface {
 	// ok is true if the assertion is considered to have passed. This may not be
 	// the same value as returned from Ok() when this assertion is used as a
 	// sub-assertion inside a composite.
-	BuildReport(ok, verbose bool, r render.Renderer) *Report
+	BuildReport(ok bool, r render.Renderer) *Report
 }
 
 // An Assertion is a predicate for determining whether some specific criteria
@@ -51,6 +51,6 @@ func (noopAssertion) Notify(fact.Fact)         {}
 func (noopAssertion) Begin(compare.Comparator) {}
 func (noopAssertion) End()                     {}
 func (noopAssertion) TryOk() (bool, bool)      { return false, false }
-func (noopAssertion) BuildReport(bool, bool, render.Renderer) *Report {
+func (noopAssertion) BuildReport(bool, render.Renderer) *Report {
 	panic("not implemented")
 }

@@ -3,16 +3,14 @@ package testkit
 import (
 	"context"
 
-	"github.com/dogmatiq/testkit/engine/fact"
-
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/engine/fact"
 )
 
 // A Runner executes tests.
 type Runner struct {
-	engine  *engine.Engine
-	verbose *bool
+	engine *engine.Engine
 }
 
 // New returns a test runner.
@@ -27,10 +25,7 @@ func New(
 		panic(err)
 	}
 
-	return &Runner{
-		e,
-		ro.verbose,
-	}
+	return &Runner{e}
 }
 
 // Begin starts a new test.
@@ -44,30 +39,22 @@ func (r *Runner) Begin(t TestingT, options ...TestOption) *Test {
 
 // BeginContext starts a new test within a context.
 func (r *Runner) BeginContext(ctx context.Context, t TestingT, options ...TestOption) *Test {
-	to := newTestOptions(options, r.verbose)
+	to := newTestOptions(options)
 
-	opts := to.operationOptions
+	r.engine.Reset()
 
-	// log all facts to the 't' object, if verbose is enabled.
-	if to.verbose {
-		opts = append(
-			opts,
+	return &Test{
+		ctx:    ctx,
+		t:      t,
+		engine: r.engine,
+		now:    to.time,
+		operationOptions: append(
+			to.operationOptions,
 			engine.WithObserver(
 				fact.NewLogger(func(s string) {
 					log(t, s)
 				}),
 			),
-		)
-	}
-
-	r.engine.Reset()
-
-	return &Test{
-		ctx:              ctx,
-		t:                t,
-		verbose:          to.verbose,
-		engine:           r.engine,
-		now:              to.time,
-		operationOptions: opts,
+		),
 	}
 }

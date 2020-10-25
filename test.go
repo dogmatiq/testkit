@@ -18,7 +18,6 @@ import (
 type Test struct {
 	ctx              context.Context
 	t                TestingT
-	verbose          bool
 	engine           *engine.Engine
 	now              time.Time
 	operationOptions []engine.OperationOption
@@ -33,9 +32,7 @@ func (t *Test) Prepare(messages ...dogma.Message) *Test {
 		h.Helper()
 	}
 
-	if t.verbose {
-		t.logHeading("PREPARING APPLICATION FOR TEST")
-	}
+	t.logHeading("PREPARING APPLICATION FOR TEST")
 
 	for _, m := range messages {
 		t.dispatch(m, nil, assert.Nothing)
@@ -55,9 +52,7 @@ func (t *Test) ExecuteCommand(
 		h.Helper()
 	}
 
-	if t.verbose {
-		t.logHeading("EXECUTING TEST COMMAND")
-	}
+	t.logHeading("EXECUTING TEST COMMAND")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -77,9 +72,7 @@ func (t *Test) RecordEvent(
 		h.Helper()
 	}
 
-	if t.verbose {
-		t.logHeading("RECORDING TEST EVENT")
-	}
+	t.logHeading("RECORDING TEST EVENT")
 
 	t.begin(a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
@@ -108,9 +101,7 @@ func (t *Test) AdvanceTime(
 		panic("new time must be after the current time")
 	}
 
-	if t.verbose {
-		t.logHeading("%s", heading)
-	}
+	t.logHeading("%s", heading)
 
 	t.now = now
 
@@ -214,7 +205,7 @@ func (t *Test) end(a assert.OptionalAssertion) {
 		"--- ASSERTION REPORT ---\n\n",
 	)
 
-	rep := a.BuildReport(ok, t.verbose, r)
+	rep := a.BuildReport(ok, r)
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())

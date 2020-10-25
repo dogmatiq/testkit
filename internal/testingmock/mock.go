@@ -1,6 +1,9 @@
 package testingmock
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // T is a mock of the testkit.tHelper interface.
 type T struct {
@@ -11,12 +14,14 @@ type T struct {
 
 // Log is an implementation of testing.TB.Log().
 func (t *T) Log(args ...interface{}) {
-	t.Logs = append(t.Logs, fmt.Sprintln(args...))
+	lines := strings.Split(fmt.Sprint(args...), "\n")
+	t.Logs = append(t.Logs, lines...)
 }
 
 // Logf is an implementation of testing.TB.Logf().
 func (t *T) Logf(f string, args ...interface{}) {
-	t.Logs = append(t.Logs, fmt.Sprintf(f, args...))
+	lines := strings.Split(fmt.Sprintf(f, args...), "\n")
+	t.Logs = append(t.Logs, lines...)
 }
 
 // FailNow is an implementation of testing.TB.FailNow().
