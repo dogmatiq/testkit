@@ -1,6 +1,8 @@
 package testkit_test
 
 import (
+	"context"
+	"errors"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -8,6 +10,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
+	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	"github.com/dogmatiq/testkit/render"
@@ -17,36 +20,47 @@ import (
 
 var _ = Describe("type Test", func() {
 	var (
-		app  *Application
-		t    *testingmock.T
-		test *Test
+		app        *Application
+		aggregate  *AggregateMessageHandler
+		projection *ProjectionMessageHandler
+		t          *testingmock.T
+		test       *Test
 	)
 
 	BeforeEach(func() {
+		aggregate = &AggregateMessageHandler{
+			RouteCommandToInstanceFunc: func(m dogma.Message) string {
+				return "<instance>"
+			},
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<aggregate>", "<aggregate-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
+		}
+
+		projection = &ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<projection>", "<projection-key>")
+				c.ConsumesEventType(MessageE{})
+			},
+		}
+
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
-				c.RegisterAggregate(&AggregateMessageHandler{
-					RouteCommandToInstanceFunc: func(m dogma.Message) string {
-						return "<instance>"
-					},
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
-						c.ConsumesCommandType(MessageC{})
-						c.ProducesEventType(MessageE{})
-					},
-				})
-				c.RegisterProjection(&ProjectionMessageHandler{
-					ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-						c.Identity("<projection>", "<projection-key>")
-						c.ConsumesEventType(MessageE{})
-					},
-				})
+				c.RegisterAggregate(aggregate)
+				c.RegisterProjection(projection)
 			},
 		}
 
 		t = &testingmock.T{}
-		test = New(app).Begin(t)
+		test = New(app).Begin(
+			t,
+			WithOperationOptions(
+				engine.EnableProjections(true),
+			),
+		)
 	})
 
 	Describe("func Prepare()", func() {
@@ -66,6 +80,22 @@ var _ = Describe("type Test", func() {
 			)
 			Expect(t.Logs).To(ContainElement(
 				"--- EXECUTING TEST COMMAND ---",
+			))
+		})
+
+		It("logs if the engine returns an error", func() {
+			projection.HandleEventFunc = func(
+				_ context.Context,
+				_, _, _ []byte,
+				_ dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) (bool, error) {
+				return false, errors.New("<error>")
+			}
+
+			test.Prepare(MessageE1)
+			Expect(t.Logs).To(ContainElement(
+				"--- PREPARING APPLICATION FOR TEST --xx-",
 			))
 		})
 	})

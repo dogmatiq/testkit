@@ -11,6 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/render"
 )
 
@@ -126,9 +127,9 @@ func (t *Test) dispatch(
 
 	opts := t.options(options, a)
 
+	defer t.recover()
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
+		t.logErrorReport(err)
 	}
 }
 
@@ -145,9 +146,22 @@ func (t *Test) tick(
 
 	opts := t.options(options, a)
 
+	defer t.recover()
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
+		t.logErrorReport(err)
+	}
+}
+
+// recover attempts to log meaningful information about panics that occur within
+// the engine.
+func (t *Test) recover() {
+	switch v := recover().(type) {
+	case controller.UnexpectedMessage:
+		t.logUnexpectedMessageReport(v)
+	case nil:
+		return
+	default:
+		panic(v)
 	}
 }
 
@@ -189,9 +203,14 @@ func (t *Test) end(a assert.OptionalAssertion) {
 
 	a.End()
 
-	ok, asserted := a.TryOk()
-	if !asserted {
-		return
+	if ok, asserted := a.TryOk(); asserted {
+		t.logAssertionReport(ok, a)
+	}
+}
+
+func (t *Test) logAssertionReport(ok bool, a assert.OptionalAssertion) {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
 	}
 
 	r := t.renderer
@@ -213,6 +232,25 @@ func (t *Test) end(a assert.OptionalAssertion) {
 	if !rep.TreeOk {
 		t.t.FailNow()
 	}
+}
+
+func (t *Test) logErrorReport(err error) {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	t.t.Log("--- ERROR REPORT ---\n\n")
+	t.t.Log(err)
+	t.t.FailNow()
+}
+
+func (t *Test) logUnexpectedMessageReport(v controller.UnexpectedMessage) {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	t.t.Log("--- UNEXPECTED MESSAGE REPORT ---\n\n")
+	t.t.FailNow()
 }
 
 func (t *Test) logHeading(f string, v ...interface{}) {
