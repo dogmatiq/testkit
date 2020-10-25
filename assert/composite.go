@@ -184,7 +184,7 @@ func (a *compositeAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *compositeAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
+func (a *compositeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	a.Ok() // populate a.ok and a.outcome
 
 	rep := &Report{
@@ -196,7 +196,7 @@ func (a *compositeAssertion) BuildReport(ok, verbose bool, r render.Renderer) *R
 
 	for _, sub := range a.SubAssertions {
 		rep.Append(
-			sub.BuildReport(ok, verbose, r),
+			sub.BuildReport(ok, r),
 		)
 	}
 

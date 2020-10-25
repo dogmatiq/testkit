@@ -20,6 +20,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Removed
 
 - **[BC]** Remove `Test.AdvanceTimeTo()` and `AdvanceTimeBy()`
+- **[BC]** Remove `verbose` parameter `assert.Assertion.BuildReport()`
+- **[BC]** Remove `RunnerVerbose()` and `Verbose()` options
+
+### Changed
+
+- The `-v` (verbose) option to `go test` no longer affects testkit's behavior, full logs are always rendered
 
 ## [0.6.2] - 2020-10-19
 

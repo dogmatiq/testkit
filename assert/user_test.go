@@ -1,8 +1,6 @@
 package assert_test
 
 import (
-	"strings"
-
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
@@ -37,26 +35,17 @@ var _ = Context("user assertions", func() {
 
 	test := func(
 		fn func(*S),
-		ok bool,
-		report ...string,
+		expectOk bool,
+		expectReport ...string,
 	) {
-		t := &testingmock.T{
-			FailSilently: true,
-		}
-
-		testkit.
-			New(app).
-			Begin(t, testkit.Verbose(false)).
-			ExecuteCommand(
-				MessageA{},
-				Should("<criteria>", fn),
-			)
-
-		logs := strings.TrimSpace(strings.Join(t.Logs, "\n"))
-		lines := strings.Split(logs, "\n")
-
-		gomega.Expect(lines).To(gomega.Equal(report))
-		gomega.Expect(t.Failed).To(gomega.Equal(!ok))
+		runTest(
+			app,
+			MessageA{},
+			Should("<criteria>", fn),
+			nil, // options
+			expectOk,
+			expectReport,
+		)
 	}
 
 	Describe("func Should()", func() {
@@ -82,7 +71,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at user_test.go:77`,
+				`  |     Fail() called at user_test.go:66`,
 			),
 			Entry(
 				"assertion skipped",
@@ -93,21 +82,20 @@ var _ = Context("user assertions", func() {
 				`--- ASSERTION REPORT ---`,
 				``,
 				`✓ <criteria> (the user-defined assertion was skipped)`,
+				``,
+				`  | EXPLANATION`,
+				`  |     SkipNow() called at user_test.go:79`,
 			),
 			Entry(
 				"assertion logged a message with Log()",
 				func(s *S) {
 					s.Log("<message>")
-					s.Fail() // must fail for log to be shown
 				},
-				false, // ok
+				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ <criteria> (the user-defined assertion failed)`,
+				`✓ <criteria>`,
 				``,
-				`  | EXPLANATION`,
-				`  |     Fail() called at user_test.go:101`,
-				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
 			),
@@ -115,16 +103,12 @@ var _ = Context("user assertions", func() {
 				"assertion logged a message with Logf()",
 				func(s *S) {
 					s.Logf("<format %s>", "value")
-					s.Fail() // must fail for log to be shown
 				},
-				false, // ok
+				true, // ok
 				`--- ASSERTION REPORT ---`,
 				``,
-				`✗ <criteria> (the user-defined assertion failed)`,
+				`✓ <criteria>`,
 				``,
-				`  | EXPLANATION`,
-				`  |     Fail() called at user_test.go:118`,
-				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
 			),
@@ -139,7 +123,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Error() called at user_test.go:134`,
+				`  |     Error() called at user_test.go:118`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
@@ -155,7 +139,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Errorf() called at user_test.go:150`,
+				`  |     Errorf() called at user_test.go:134`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
@@ -171,7 +155,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatal() called at user_test.go:166`,
+				`  |     Fatal() called at user_test.go:150`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
@@ -187,7 +171,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatalf() called at user_test.go:182`,
+				`  |     Fatalf() called at user_test.go:166`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
@@ -208,7 +192,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at user_test.go:203`,
+				`  |     Fail() called indirectly by call at user_test.go:187`,
 			),
 			Entry(
 				"assertion failed with fn marked as a helper",
@@ -222,7 +206,7 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at user_test.go:217`,
+				`  |     Fail() called at user_test.go:201`,
 			),
 			Entry(
 				"assertion failed within helper, with fn also marked as a helper",
@@ -242,12 +226,12 @@ var _ = Context("user assertions", func() {
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at user_test.go:237`,
+				`  |     Fail() called indirectly by call at user_test.go:221`,
 			),
 		)
 	})
 
-	Describe("type T", func() {
+	Describe("type S", func() {
 		var run func(func(*S)) *testingmock.T
 
 		BeforeEach(func() {

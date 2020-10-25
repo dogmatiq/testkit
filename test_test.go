@@ -16,7 +16,11 @@ import (
 )
 
 var _ = Describe("type Test", func() {
-	var app *Application
+	var (
+		app  *Application
+		t    *testingmock.T
+		test *Test
+	)
 
 	BeforeEach(func() {
 		app = &Application{
@@ -40,125 +44,98 @@ var _ = Describe("type Test", func() {
 				})
 			},
 		}
+
+		t = &testingmock.T{}
+		test = New(app).Begin(t)
 	})
 
-	Context("when verbose logging is enabled", func() {
-		var (
-			t    *testingmock.T
-			test *Test
-		)
-
-		BeforeEach(func() {
-			t = &testingmock.T{}
-			test = New(app).Begin(t, Verbose(true))
+	Describe("func Prepare()", func() {
+		It("logs a heading", func() {
+			test.Prepare()
+			Expect(t.Logs).To(ContainElement(
+				"--- PREPARING APPLICATION FOR TEST ---",
+			))
 		})
+	})
 
-		Describe("func Prepare()", func() {
+	Describe("func ExecuteCommand()", func() {
+		It("logs a heading", func() {
+			test.ExecuteCommand(
+				MessageC1,
+				noopAssertion{},
+			)
+			Expect(t.Logs).To(ContainElement(
+				"--- EXECUTING TEST COMMAND ---",
+			))
+		})
+	})
+
+	Describe("func RecordEvent()", func() {
+		It("logs a heading", func() {
+			test.RecordEvent(
+				MessageE1,
+				noopAssertion{},
+			)
+			Expect(t.Logs).To(ContainElement(
+				"--- RECORDING TEST EVENT ---",
+			))
+		})
+	})
+
+	Describe("func AdvanceTime()", func() {
+		When("passed a By() advancer", func() {
 			It("logs a heading", func() {
-				test.Prepare()
-				Expect(t.Logs).To(ContainElement(
-					"--- PREPARING APPLICATION FOR TEST ---",
-				))
-			})
-		})
-
-		Describe("func ExecuteCommand()", func() {
-			It("logs file and line information in headings", func() {
-				test.ExecuteCommand(
-					MessageC1,
+				test.AdvanceTime(
+					ByDuration(3*time.Second),
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
-					"--- EXECUTING TEST COMMAND ---",
+					"--- ADVANCING TIME BY 3s ---",
 				))
+			})
+
+			It("can be called without making an assertion", func() {
+				test.AdvanceTime(
+					ByDuration(3*time.Second),
+					assert.Nothing,
+				)
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					"--- ADVANCING TIME BY 3s ---",
 				))
 			})
 		})
 
-		Describe("func RecordEvent()", func() {
-			It("logs file and line information in headings", func() {
-				test.RecordEvent(
-					MessageE1,
+		When("passed a ToTime() advancer", func() {
+			It("logs a heading", func() {
+				test.AdvanceTime(
+					ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
 					noopAssertion{},
 				)
 				Expect(t.Logs).To(ContainElement(
-					"--- RECORDING TEST EVENT ---",
+					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
 				))
+			})
+
+			It("can be called without making an assertion", func() {
+				test.AdvanceTime(
+					ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
+					assert.Nothing,
+				)
 				Expect(t.Logs).To(ContainElement(
-					"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
+					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
 				))
 			})
 		})
 
-		Describe("func AdvanceTime()", func() {
-			When("passed a By() advancer", func() {
-				It("logs file and line information in headings", func() {
-					test.AdvanceTime(
-						ByDuration(3*time.Second),
-						noopAssertion{},
-					)
-					Expect(t.Logs).To(ContainElement(
-						"--- ADVANCING TIME BY 3s ---",
-					))
-					Expect(t.Logs).To(ContainElement(
-						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-					))
-				})
-
-				It("can be called without making an assertion", func() {
-					test.AdvanceTime(
-						ByDuration(3*time.Second),
-						assert.Nothing,
-					)
-					Expect(t.Logs).To(ContainElement(
-						"--- ADVANCING TIME BY 3s ---",
-					))
-					Expect(t.Logs).NotTo(ContainElement(
-						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-					))
-				})
-			})
-
-			When("passed a ToTime() advancer", func() {
-				It("logs file and line information in headings", func() {
-					test.AdvanceTime(
-						ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
-						noopAssertion{},
-					)
-					Expect(t.Logs).To(ContainElement(
-						"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
-					))
-					Expect(t.Logs).To(ContainElement(
-						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-					))
-				})
-
-				It("can be called without making an assertion", func() {
-					test.AdvanceTime(
-						ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
-						assert.Nothing,
-					)
-					Expect(t.Logs).To(ContainElement(
-						"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
-					))
-					Expect(t.Logs).NotTo(ContainElement(
-						"--- ASSERTION REPORT ---\n\n✓ pass unconditionally\n\n",
-					))
-				})
-			})
-
-			It("panics if the advancer produces a time in the past", func() {
-				Expect(func() {
-					test.AdvanceTime(
-						func(time.Time) (time.Time, string) {
-							return time.Time{}, ""
-						},
-						nil,
-					)
-				}).To(PanicWith("new time must be after the current time"))
-			})
+		It("panics if the advancer produces a time in the past", func() {
+			Expect(func() {
+				test.AdvanceTime(
+					func(time.Time) (time.Time, string) {
+						return time.Time{}, ""
+					},
+					nil,
+				)
+			}).To(PanicWith("new time must be after the current time"))
 		})
 	})
 })
@@ -170,8 +147,7 @@ func (noopAssertion) End()                     {}
 func (noopAssertion) TryOk() (bool, bool)      { return true, true }
 func (noopAssertion) Ok() bool                 { return true }
 func (noopAssertion) Notify(fact.Fact)         {}
-
-func (noopAssertion) BuildReport(ok, verbose bool, r render.Renderer) *assert.Report {
+func (noopAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
 	return &assert.Report{
 		TreeOk:   ok,
 		Ok:       ok,

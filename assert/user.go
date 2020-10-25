@@ -88,7 +88,7 @@ func (a *userAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be
 // the same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *userAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report {
+func (a *userAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk:   ok,
 		Ok:       a.Ok(),
@@ -99,10 +99,6 @@ func (a *userAssertion) BuildReport(ok, verbose bool, r render.Renderer) *Report
 		rep.Outcome = "the user-defined assertion was skipped"
 	} else if a.s.failed {
 		rep.Outcome = "the user-defined assertion failed"
-	}
-
-	if !verbose && (ok || a.Ok()) {
-		return rep
 	}
 
 	rep.Explanation = a.s.explanation
