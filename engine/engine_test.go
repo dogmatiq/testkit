@@ -27,6 +27,9 @@ var _ = Describe("type Engine", func() {
 				c.ConsumesCommandType(MessageA{})
 				c.ProducesEventType(MessageE{})
 			},
+			RouteCommandToInstanceFunc: func(dogma.Message) string {
+				return "<instance>"
+			},
 		}
 
 		process = &ProcessMessageHandler{
@@ -35,6 +38,9 @@ var _ = Describe("type Engine", func() {
 				c.ConsumesEventType(MessageB{})
 				c.ConsumesEventType(MessageE{}) // shared with <projection>
 				c.ProducesCommandType(MessageC{})
+			},
+			RouteEventToInstanceFunc: func(context.Context, dogma.Message) (string, bool, error) {
+				return "<instance>", true, nil
 			},
 		}
 
@@ -74,6 +80,42 @@ var _ = Describe("type Engine", func() {
 			Expect(func() {
 				engine.Dispatch(context.Background(), MessageX1)
 			}).To(Panic())
+		})
+	})
+
+	Describe("func CommandExecutor()", func() {
+		It("returns a dogma.CommandExecutor that dispatches to the engine", func() {
+			called := false
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateCommandScope,
+				m dogma.Message,
+			) {
+				called = true
+				Expect(m).To(Equal(MessageA1))
+			}
+
+			err := engine.CommandExecutor().ExecuteCommand(context.Background(), MessageA1)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+	})
+
+	Describe("func EventRecorder()", func() {
+		It("returns a dogma.EventRecorder that dispatches to the engine", func() {
+			called := false
+			process.HandleEventFunc = func(
+				_ context.Context,
+				_ dogma.ProcessEventScope,
+				m dogma.Message,
+			) error {
+				called = true
+				Expect(m).To(Equal(MessageE1))
+				return nil
+			}
+
+			err := engine.EventRecorder().RecordEvent(context.Background(), MessageE1)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
 		})
 	})
 })

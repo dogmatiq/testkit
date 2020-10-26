@@ -302,19 +302,39 @@ func (e *Engine) handle(
 	return envs, err
 }
 
+// CommandExecutor returns a dogma.CommandExecutor that dispatches commands
+// messages to e using the given options.
+func (e *Engine) CommandExecutor(options ...OperationOption) dogma.CommandExecutor {
+	return dispatcher{e, options}
+}
+
+// EventRecorder returns a dogma.EventRecorder that dispatches event messages to
+// e using the given options.
+func (e *Engine) EventRecorder(options ...OperationOption) dogma.EventRecorder {
+	return dispatcher{e, options}
+}
+
+// dispatcher is an implementation of both dogma.CommandExecutor and
+// dogma.EventRecorder that dispatches messages to an engine with a fixed set of
+// options.
+type dispatcher struct {
+	engine  *Engine
+	options []OperationOption
+}
+
 // ExecuteCommand enqueues a command for execution.
 //
 // It panics if the command is not routed to any handlers.
-func (e *Engine) ExecuteCommand(ctx context.Context, m dogma.Message) error {
+func (d dispatcher) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	t := message.TypeOf(m)
-	e.roles[t].MustBe(message.CommandRole)
+	d.engine.roles[t].MustBe(message.CommandRole)
 
-	return e.Dispatch(ctx, m)
+	return d.engine.Dispatch(ctx, m, d.options...)
 }
 
 // RecordEvent records the occurrence of an event.
 //
 // It is not an error to record an event that is not routed to any handlers.
-func (e *Engine) RecordEvent(ctx context.Context, m dogma.Message) error {
-	return e.Dispatch(ctx, m)
+func (d dispatcher) RecordEvent(ctx context.Context, m dogma.Message) error {
+	return d.engine.Dispatch(ctx, m, d.options...)
 }
