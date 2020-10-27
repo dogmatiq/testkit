@@ -302,7 +302,7 @@ func (e *Engine) handle(
 	return envs, err
 }
 
-// CommandExecutor returns a dogma.CommandExecutor that dispatches commands
+// CommandExecutor returns a dogma.CommandExecutor that dispatches command
 // messages to e using the given options.
 func (e *Engine) CommandExecutor(options ...OperationOption) dogma.CommandExecutor {
 	return dispatcher{e, options}
