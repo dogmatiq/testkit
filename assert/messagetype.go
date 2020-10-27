@@ -160,7 +160,7 @@ func (a *messageTypeAssertion) buildDiff(rep *Report) {
 }
 
 // buildResultExpectedRole builds the assertion result when there is a
-// "best-match" message available and it is of the expected role.
+// "best-match" message available but it is of an unexpected role.
 func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
