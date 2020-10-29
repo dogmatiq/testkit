@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - Add `Test.AdvanceTime()`, `ByDuration()` and `ToTime()`
 - Add `assert.OptionalAssertion` and `assert.Nothing`
+- Add `engine.CommandExecutor`
+- Add `engine.EventRecorder`
 - **[BC]** Add `assert.Assertion.TryOk()` (via `OptionalAssertion`)
 
 ### Removed
@@ -22,6 +24,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 - **[BC]** Remove `Test.AdvanceTimeTo()` and `AdvanceTimeBy()`
 - **[BC]** Remove `verbose` parameter `assert.Assertion.BuildReport()`
 - **[BC]** Remove `RunnerVerbose()` and `Verbose()` options
+- **[BC]** Remove `Engine.ExecuteCommand()` and `RecordEvent()`
 
 ### Changed
 
