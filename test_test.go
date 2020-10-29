@@ -1,16 +1,14 @@
 package testkit_test
 
 import (
+	"context"
 	"time"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/assert"
-	"github.com/dogmatiq/testkit/compare"
-	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -62,7 +60,7 @@ var _ = Describe("type Test", func() {
 		It("logs a heading", func() {
 			test.ExecuteCommand(
 				MessageC1,
-				noopAssertion{},
+				assert.Nothing,
 			)
 			Expect(t.Logs).To(ContainElement(
 				"--- EXECUTING TEST COMMAND ---",
@@ -74,7 +72,7 @@ var _ = Describe("type Test", func() {
 		It("logs a heading", func() {
 			test.RecordEvent(
 				MessageE1,
-				noopAssertion{},
+				assert.Nothing,
 			)
 			Expect(t.Logs).To(ContainElement(
 				"--- RECORDING TEST EVENT ---",
@@ -87,7 +85,7 @@ var _ = Describe("type Test", func() {
 			It("logs a heading", func() {
 				test.AdvanceTime(
 					ByDuration(3*time.Second),
-					noopAssertion{},
+					assert.Nothing,
 				)
 				Expect(t.Logs).To(ContainElement(
 					"--- ADVANCING TIME BY 3s ---",
@@ -109,7 +107,7 @@ var _ = Describe("type Test", func() {
 			It("logs a heading", func() {
 				test.AdvanceTime(
 					ToTime(time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)),
-					noopAssertion{},
+					assert.Nothing,
 				)
 				Expect(t.Logs).To(ContainElement(
 					"--- ADVANCING TIME TO 2100-01-02T03:04:05Z ---",
@@ -138,19 +136,33 @@ var _ = Describe("type Test", func() {
 			}).To(PanicWith("new time must be after the current time"))
 		})
 	})
+
+	Describe("func Call()", func() {
+		It("logs a heading", func() {
+			test.Call(
+				func() error {
+					return nil
+				},
+				assert.Nothing,
+			)
+
+			Expect(t.Logs).To(ContainElement(
+				"--- CALLING USER-DEFINED FUNCTION ---",
+			))
+		})
+
+		XIt("can make assertions about commands executed via the supplied executor", func() {
+			test = New(app).
+				Begin(GinkgoT())
+
+			e := test.CommandExecutor()
+
+			test.Call(
+				func() error {
+					return e.ExecuteCommand(context.Background(), MessageC1)
+				},
+				assert.CommandExecuted(MessageC2),
+			)
+		})
+	})
 })
-
-type noopAssertion struct{}
-
-func (noopAssertion) Begin(compare.Comparator) {}
-func (noopAssertion) End()                     {}
-func (noopAssertion) TryOk() (bool, bool)      { return true, true }
-func (noopAssertion) Ok() bool                 { return true }
-func (noopAssertion) Notify(fact.Fact)         {}
-func (noopAssertion) BuildReport(ok bool, r render.Renderer) *assert.Report {
-	return &assert.Report{
-		TreeOk:   ok,
-		Ok:       ok,
-		Criteria: "pass unconditionally",
-	}
-}

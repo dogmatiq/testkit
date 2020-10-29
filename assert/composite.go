@@ -132,13 +132,14 @@ func (a *compositeAssertion) Notify(f fact.Fact) {
 
 // Begin is called to prepare the assertion for a new test.
 //
-// c is the comparator used to compare messages and other entities.
-func (a *compositeAssertion) Begin(c compare.Comparator) {
+// op is the operation that is making the assertion. c is the comparator
+// used to compare messages and other entities.
+func (a *compositeAssertion) Begin(op Operation, c compare.Comparator) {
 	a.ok = nil
 	a.outcome = ""
 
 	for _, sub := range a.SubAssertions {
-		sub.Begin(c)
+		sub.Begin(op, c)
 	}
 }
 
@@ -149,12 +150,10 @@ func (a *compositeAssertion) End() {
 	}
 }
 
-// TryOk returns true if the assertion passed.
-//
-// If asserted is false, the assertion was a no-op and ok is meaningless.
-func (a *compositeAssertion) TryOk() (ok bool, asserted bool) {
+// Ok returns true if the assertion passed.
+func (a *compositeAssertion) Ok() bool {
 	if a.ok != nil {
-		return *a.ok, true
+		return *a.ok
 	}
 
 	n := 0
@@ -170,13 +169,7 @@ func (a *compositeAssertion) TryOk() (ok bool, asserted bool) {
 	a.ok = &ok
 	a.outcome = m
 
-	return *a.ok, true
-}
-
-// Ok returns true if the assertion passed.
-func (a *compositeAssertion) Ok() bool {
-	ok, _ := a.TryOk()
-	return ok
+	return *a.ok
 }
 
 // BuildReport generates a report about the assertion.

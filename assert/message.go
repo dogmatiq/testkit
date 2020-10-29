@@ -68,8 +68,9 @@ type messageAssertion struct {
 
 // Begin is called to prepare the assertion for a new test.
 //
-// c is the comparator used to compare messages and other entities.
-func (a *messageAssertion) Begin(c compare.Comparator) {
+// op is the operation that is making the assertion. c is the comparator used to
+// compare messages and other entities.
+func (a *messageAssertion) Begin(_ Operation, c compare.Comparator) {
 	// reset everything
 	*a = messageAssertion{
 		expected: a.expected,
@@ -83,17 +84,9 @@ func (a *messageAssertion) Begin(c compare.Comparator) {
 func (a *messageAssertion) End() {
 }
 
-// TryOk returns true if the assertion passed.
-//
-// If asserted is false, the assertion was a no-op and ok is meaningless.
-func (a *messageAssertion) TryOk() (ok bool, asserted bool) {
-	return a.ok, true
-}
-
 // Ok returns true if the assertion passed.
 func (a *messageAssertion) Ok() bool {
-	ok, _ := a.TryOk()
-	return ok
+	return a.ok
 }
 
 // BuildReport generates a report about the assertion.
@@ -136,6 +129,8 @@ func (a *messageAssertion) Notify(f fact.Fact) {
 	a.tracker.Notify(f)
 
 	switch x := f.(type) {
+	case fact.DispatchCycleBegun:
+		a.messageProduced(x.Envelope)
 	case fact.EventRecordedByAggregate:
 		a.messageProduced(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:

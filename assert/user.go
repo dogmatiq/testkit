@@ -44,8 +44,10 @@ func (a *userAssertion) Notify(f fact.Fact) {
 
 // Begin is called to prepare the assertion for a new test.
 //
-// c is the comparator used to compare messages and other entities.
-func (a *userAssertion) Begin(c compare.Comparator) {
+// op is the operation that is making the assertion. c is the comparator
+// used to compare messages and other entities.
+func (a *userAssertion) Begin(op Operation, c compare.Comparator) {
+	a.s.Operation = op
 	a.s.Comparator = c
 }
 
@@ -119,6 +121,9 @@ func (a *userAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 // criteria to be enforced. It is analogous the *testing.T type that is passed
 // to tests in the native Go test runner.
 type S struct {
+	// Operation is the test operation that made the assertion.
+	Operation Operation
+
 	// Comparator provides logic for comparing messages and application state.
 	compare.Comparator
 
