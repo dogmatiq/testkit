@@ -1,6 +1,9 @@
 package assert
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -11,6 +14,11 @@ import (
 type tracker struct {
 	// role is the role that the message is expecting to find.
 	role message.Role
+
+	// matchDispatchCycle, if true, tracks messages that originate from a
+	// command executor or event recorder, not just those that originate from
+	// handlers within the application.
+	matchDispatchCycle bool
 
 	// total is the total number of messages that were produced.
 	total int
@@ -33,6 +41,9 @@ func (t *tracker) Notify(f fact.Fact) {
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
 		t.enabled = x.EnabledHandlers
+		if t.matchDispatchCycle {
+			t.messageProduced(x.Envelope.Role)
+		}
 	case fact.TickCycleBegun:
 		t.enabled = x.EnabledHandlers
 	case fact.HandlingBegun:
@@ -64,5 +75,64 @@ func (t *tracker) messageProduced(r message.Role) {
 
 	if r == t.role {
 		t.produced++
+	}
+}
+
+// buildResultNoMatch is a helper used by MessageAssertion and
+// MessageTypeAssertion when there is no "best-match".
+func buildResultNoMatch(rep *Report, t *tracker) {
+	s := rep.Section(suggestionsSection)
+
+	allDisabled := true
+	var relevant []string
+
+	for _, ht := range configkit.HandlerTypes {
+		e := t.enabled[ht]
+
+		if ht.IsProducerOf(t.role) {
+			relevant = append(relevant, ht.String())
+
+			if e {
+				allDisabled = false
+			} else {
+				s.AppendListItem(
+					fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", ht),
+				)
+			}
+		}
+	}
+
+	if !t.matchDispatchCycle {
+		if allDisabled {
+			rep.Explanation = "no relevant handler types were enabled"
+			return
+		}
+
+		if len(t.engagedOrder) == 0 {
+			rep.Explanation = fmt.Sprintf(
+				"no relevant handlers (%s) were engaged",
+				strings.Join(relevant, " or "),
+			)
+			s.AppendListItem("check the application's routing configuration")
+			return
+		}
+	}
+
+	if t.total == 0 {
+		rep.Explanation = "no messages were produced at all"
+	} else if t.produced == 0 {
+		rep.Explanation = inflect(t.role, "no <messages> were <produced> at all")
+	} else if t.matchDispatchCycle {
+		rep.Explanation = inflect(t.role, "nothing <produced> the expected <message>")
+	} else {
+		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
+	}
+
+	if t.matchDispatchCycle {
+		s.AppendListItem("verify the logic within the code that uses the <dispatcher>")
+	}
+
+	for _, n := range t.engagedOrder {
+		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t.engagedType[n])
 	}
 }

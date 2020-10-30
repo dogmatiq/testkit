@@ -1,11 +1,8 @@
 package assert
 
 import (
-	"fmt"
 	"reflect"
-	"strings"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/compare"
@@ -70,13 +67,16 @@ type messageAssertion struct {
 //
 // op is the operation that is making the assertion. c is the comparator used to
 // compare messages and other entities.
-func (a *messageAssertion) Begin(_ Operation, c compare.Comparator) {
+func (a *messageAssertion) Begin(op Operation, c compare.Comparator) {
 	// reset everything
 	*a = messageAssertion{
 		expected: a.expected,
 		role:     a.role,
 		cmp:      c,
-		tracker:  tracker{role: a.role},
+		tracker: tracker{
+			role:               a.role,
+			matchDispatchCycle: op == CallOperation,
+		},
 	}
 }
 
@@ -130,7 +130,9 @@ func (a *messageAssertion) Notify(f fact.Fact) {
 
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
-		a.messageProduced(x.Envelope)
+		if a.tracker.matchDispatchCycle {
+			a.messageProduced(x.Envelope)
+		}
 	case fact.EventRecordedByAggregate:
 		a.messageProduced(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:
@@ -176,20 +178,38 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 	s := rep.Section(suggestionsSection)
 
 	if a.sim == compare.SameTypes {
-		rep.Explanation = inflect(
-			a.role,
-			"a similar <message> was <produced> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.role,
+				"a similar <message> was <produced> via a <dispatcher>",
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.role,
+				"a similar <message> was <produced> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
+
 		s.AppendListItem("check the content of the message")
 	} else {
-		rep.Explanation = inflect(
-			a.role,
-			"a <message> of a similar type was <produced> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.role,
+				"a <message> of a similar type was <produced> via a <dispatcher>",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.role,
+				"a <message> of a similar type was <produced> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
+
 		// note this language here is deliberately vague, it doesn't imply
 		// whether it currently is or isn't a pointer, just questions if it
 		// should be.
@@ -213,12 +233,19 @@ func (a *messageAssertion) buildDiff(r render.Renderer, rep *Report) {
 func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	s.AppendListItem(inflect(
-		a.best.Role,
-		"verify that the '%s' %s message handler intended to <produce> an <message> of this type",
-		a.best.Origin.HandlerName,
-		a.best.Origin.HandlerType,
-	))
+	if a.best.Origin == nil {
+		s.AppendListItem(inflect(
+			a.best.Role,
+			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
+		))
+	} else {
+		s.AppendListItem(inflect(
+			a.best.Role,
+			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
+			a.best.Origin.HandlerName,
+			a.best.Origin.HandlerType,
+		))
+	}
 
 	if a.role == message.CommandRole {
 		s.AppendListItem("verify that CommandExecuted() is the correct assertion, did you mean EventRecorded()?")
@@ -229,30 +256,52 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 	// the "best-match" is equal to the expected message. this means that only
 	// the roles were mismatched.
 	if a.equal {
-		rep.Explanation = inflect(
-			a.best.Role,
-			"the expected message was <produced> as a <message> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"the expected message was <produced> as a <message> via a <dispatcher>",
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"the expected message was <produced> as a <message> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
 
 		return // skip diff rendering
 	}
 
 	if a.sim == compare.SameTypes {
-		rep.Explanation = inflect(
-			a.best.Role,
-			"a similar message was <produced> as an <message> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a similar message was <produced> as a <message> via a <dispatcher>",
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a similar message was <produced> as a <message> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
 	} else {
-		rep.Explanation = inflect(
-			a.best.Role,
-			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
+
 		// note this language here is deliberately vague, it doesn't imply
 		// whether it currently is or isn't a pointer, just questions if it
 		// should be.
@@ -260,55 +309,4 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 	}
 
 	a.buildDiff(r, rep)
-}
-
-// buildResultNoMatch is a helper used by MessageAssertion and
-// MessageTypeAssertion when there is no "best-match".
-func buildResultNoMatch(rep *Report, t *tracker) {
-	s := rep.Section(suggestionsSection)
-
-	allDisabled := true
-	var relevant []string
-
-	for _, ht := range configkit.HandlerTypes {
-		e := t.enabled[ht]
-
-		if ht.IsProducerOf(t.role) {
-			relevant = append(relevant, ht.String())
-
-			if e {
-				allDisabled = false
-			} else {
-				s.AppendListItem(
-					fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", ht),
-				)
-			}
-		}
-	}
-
-	if allDisabled {
-		rep.Explanation = "no relevant handler types were enabled"
-		return
-	}
-
-	if len(t.engagedOrder) == 0 {
-		rep.Explanation = fmt.Sprintf(
-			"no relevant handlers (%s) were engaged",
-			strings.Join(relevant, " or "),
-		)
-		s.AppendListItem("check the application's routing configuration")
-		return
-	}
-
-	if t.total == 0 {
-		rep.Explanation = "no messages were produced at all"
-	} else if t.produced == 0 {
-		rep.Explanation = inflect(t.role, "no <messages> were <produced> at all")
-	} else {
-		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
-	}
-
-	for _, n := range t.engagedOrder {
-		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t.engagedType[n])
-	}
 }

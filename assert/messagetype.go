@@ -58,12 +58,15 @@ type messageTypeAssertion struct {
 //
 // op is the operation that is making the assertion. c is the comparator used to
 // compare messages and other entities.
-func (a *messageTypeAssertion) Begin(_ Operation, c compare.Comparator) {
+func (a *messageTypeAssertion) Begin(op Operation, c compare.Comparator) {
 	// reset everything
 	*a = messageTypeAssertion{
 		expected: a.expected,
 		role:     a.role,
-		tracker:  tracker{role: a.role},
+		tracker: tracker{
+			role:               a.role,
+			matchDispatchCycle: op == CallOperation,
+		},
 	}
 }
 
@@ -71,17 +74,9 @@ func (a *messageTypeAssertion) Begin(_ Operation, c compare.Comparator) {
 func (a *messageTypeAssertion) End() {
 }
 
-// TryOk returns true if the assertion passed.
-//
-// If asserted is false, the assertion was a no-op and ok is meaningless.
-func (a *messageTypeAssertion) TryOk() (ok bool, asserted bool) {
-	return a.ok, true
-}
-
 // Ok returns true if the assertion passed.
 func (a *messageTypeAssertion) Ok() bool {
-	ok, _ := a.TryOk()
-	return ok
+	return a.ok
 }
 
 // BuildReport generates a report about the assertion.
@@ -124,6 +119,10 @@ func (a *messageTypeAssertion) Notify(f fact.Fact) {
 	a.tracker.Notify(f)
 
 	switch x := f.(type) {
+	case fact.DispatchCycleBegun:
+		if a.tracker.matchDispatchCycle {
+			a.messageProduced(x.Envelope)
+		}
 	case fact.EventRecordedByAggregate:
 		a.messageProduced(x.EventEnvelope)
 	case fact.EventRecordedByIntegration:
@@ -165,12 +164,20 @@ func (a *messageTypeAssertion) buildDiff(rep *Report) {
 func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	rep.Explanation = inflect(
-		a.role,
-		"a <message> of a similar type was <produced> by the '%s' %s message handler",
-		a.best.Origin.HandlerName,
-		a.best.Origin.HandlerType,
-	)
+	if a.best.Origin == nil {
+		rep.Explanation = inflect(
+			a.role,
+			"a <message> of a similar type was <produced> via a <dispatcher>",
+		)
+	} else {
+		rep.Explanation = inflect(
+			a.role,
+			"a <message> of a similar type was <produced> by the '%s' %s message handler",
+			a.best.Origin.HandlerName,
+			a.best.Origin.HandlerType,
+		)
+	}
+
 	// note this language here is deliberately vague, it doesn't imply whether
 	// it currently is or isn't a pointer, just questions if it should be.
 	s.AppendListItem("check the message type, should it be a pointer?")
@@ -183,12 +190,19 @@ func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	s.AppendListItem(inflect(
-		a.best.Role,
-		"verify that the '%s' %s message handler intended to <produce> an <message> of this type",
-		a.best.Origin.HandlerName,
-		a.best.Origin.HandlerType,
-	))
+	if a.best.Origin == nil {
+		s.AppendListItem(inflect(
+			a.best.Role,
+			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
+		))
+	} else {
+		s.AppendListItem(inflect(
+			a.best.Role,
+			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
+			a.best.Origin.HandlerName,
+			a.best.Origin.HandlerType,
+		))
+	}
 
 	if a.role == message.CommandRole {
 		s.AppendListItem("verify that CommandTypeExecuted() is the correct assertion, did you mean EventTypeRecorded()?")
@@ -197,19 +211,36 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 	}
 
 	if a.sim == compare.SameTypes {
-		rep.Explanation = inflect(
-			a.best.Role,
-			"a message of this type was <produced> as an <message> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of this type was <produced> as a <message> via a <dispatcher>",
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of this type was <produced> as a <message> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
 	} else {
-		rep.Explanation = inflect(
-			a.best.Role,
-			"a message of a similar type was <produced> as an <message> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
-			a.best.Origin.HandlerType,
-		)
+		if a.best.Origin == nil {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		} else {
+			rep.Explanation = inflect(
+				a.best.Role,
+				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
+				a.best.Origin.HandlerName,
+				a.best.Origin.HandlerType,
+			)
+		}
+
 		// note this language here is deliberately vague, it doesn't imply
 		// whether it currently is or isn't a pointer, just questions if it
 		// should be.

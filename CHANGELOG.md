@@ -18,7 +18,6 @@ The format is based on [Keep a Changelog], and this project adheres to
 - Add `assert.Nothing`
 - Add `engine.CommandExecutor`
 - Add `engine.EventRecorder`
-- **[BC]** Add `assert.Assertion.TryOk()` (via `OptionalAssertion`)
 - **[BC]** Add `op` parameter to `assert.Assertion.Begin()`
 
 ### Removed

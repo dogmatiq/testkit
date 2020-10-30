@@ -19,11 +19,13 @@ func inflect(r message.Role, f string, v ...interface{}) string {
 		f = strings.ReplaceAll(f, "<messages>", "commands")
 		f = strings.ReplaceAll(f, "<produce>", "execute")
 		f = strings.ReplaceAll(f, "<produced>", "executed")
+		f = strings.ReplaceAll(f, "<dispatcher>", "dogma.CommandExecutor")
 	} else {
 		f = strings.ReplaceAll(f, "<message>", "event")
 		f = strings.ReplaceAll(f, "<messages>", "events")
 		f = strings.ReplaceAll(f, "<produce>", "record")
 		f = strings.ReplaceAll(f, "<produced>", "recorded")
+		f = strings.ReplaceAll(f, "<dispatcher>", "dogma.EventRecorder")
 	}
 
 	f = strings.ReplaceAll(f, "an command", "a command")
