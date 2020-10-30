@@ -3,6 +3,7 @@ package assert_test
 import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -41,8 +42,9 @@ var _ = Context("composite assertions", func() {
 	) {
 		runTest(
 			app,
-			MessageA{},
-			assertion,
+			func(t *testkit.Test) {
+				t.ExecuteCommand(MessageA{}, assertion)
+			},
 			nil, //options
 			expectOk,
 			expectReport,

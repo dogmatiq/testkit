@@ -3,6 +3,7 @@ package assert_test
 import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine"
 	. "github.com/onsi/ginkgo"
@@ -35,7 +36,15 @@ var _ = Context("message type assertions", func() {
 			setup()
 		}
 
-		runTest(app, message, assertion, options, expectOk, expectReport)
+		runTest(
+			app,
+			func(t *testkit.Test) {
+				t.ExecuteCommand(message, assertion)
+			},
+			options,
+			expectOk,
+			expectReport,
+		)
 	}
 
 	DescribeTable(
