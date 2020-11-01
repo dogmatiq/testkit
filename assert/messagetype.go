@@ -229,8 +229,6 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 			rep.Explanation = inflect(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
-				a.best.Origin.HandlerName,
-				a.best.Origin.HandlerType,
 			)
 		} else {
 			rep.Explanation = inflect(

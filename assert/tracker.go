@@ -20,6 +20,9 @@ type tracker struct {
 	// handlers within the application.
 	matchDispatchCycle bool
 
+	// cycleBegun is true if at least one dispatch or tick cycle was started.
+	cycleBegun bool
+
 	// total is the total number of messages that were produced.
 	total int
 
@@ -40,11 +43,13 @@ type tracker struct {
 func (t *tracker) Notify(f fact.Fact) {
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
+		t.cycleBegun = true
 		t.enabled = x.EnabledHandlers
 		if t.matchDispatchCycle {
 			t.messageProduced(x.Envelope.Role)
 		}
 	case fact.TickCycleBegun:
+		t.cycleBegun = true
 		t.enabled = x.EnabledHandlers
 	case fact.HandlingBegun:
 		t.updateEngaged(x.HandlerName, x.HandlerType)
@@ -86,35 +91,37 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	allDisabled := true
 	var relevant []string
 
-	for _, ht := range configkit.HandlerTypes {
-		e := t.enabled[ht]
+	if t.cycleBegun {
+		for _, ht := range configkit.HandlerTypes {
+			e := t.enabled[ht]
 
-		if ht.IsProducerOf(t.role) {
-			relevant = append(relevant, ht.String())
+			if ht.IsProducerOf(t.role) {
+				relevant = append(relevant, ht.String())
 
-			if e {
-				allDisabled = false
-			} else {
-				s.AppendListItem(
-					fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", ht),
-				)
+				if e {
+					allDisabled = false
+				} else {
+					s.AppendListItem(
+						fmt.Sprintf("enable %s handlers using the EnableHandlerType() option", ht),
+					)
+				}
 			}
 		}
-	}
 
-	if !t.matchDispatchCycle {
-		if allDisabled {
-			rep.Explanation = "no relevant handler types were enabled"
-			return
-		}
+		if !t.matchDispatchCycle {
+			if allDisabled {
+				rep.Explanation = "no relevant handler types were enabled"
+				return
+			}
 
-		if len(t.engagedOrder) == 0 {
-			rep.Explanation = fmt.Sprintf(
-				"no relevant handlers (%s) were engaged",
-				strings.Join(relevant, " or "),
-			)
-			s.AppendListItem("check the application's routing configuration")
-			return
+			if len(t.engagedOrder) == 0 {
+				rep.Explanation = fmt.Sprintf(
+					"no relevant handlers (%s) were engaged",
+					strings.Join(relevant, " or "),
+				)
+				s.AppendListItem("check the application's routing configuration")
+				return
+			}
 		}
 	}
 
@@ -128,11 +135,11 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
 	}
 
-	if t.matchDispatchCycle {
-		s.AppendListItem("verify the logic within the code that uses the <dispatcher>")
-	}
-
 	for _, n := range t.engagedOrder {
 		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t.engagedType[n])
+	}
+
+	if t.matchDispatchCycle {
+		s.AppendListItem(inflect(t.role, "verify the logic within the code that uses the <dispatcher>"))
 	}
 }

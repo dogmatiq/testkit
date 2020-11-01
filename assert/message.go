@@ -198,8 +198,6 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 			rep.Explanation = inflect(
 				a.role,
 				"a <message> of a similar type was <produced> via a <dispatcher>",
-				a.best.Origin.HandlerName,
-				a.best.Origin.HandlerType,
 			)
 		} else {
 			rep.Explanation = inflect(
