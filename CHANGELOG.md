@@ -14,10 +14,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Added
 
 - Add `Test.AdvanceTime()`, `ByDuration()` and `ToTime()`
-- Add `assert.OptionalAssertion` and `assert.Nothing`
+- Add `Test.Call()`
+- Add `assert.Nothing`
 - Add `engine.CommandExecutor`
 - Add `engine.EventRecorder`
-- **[BC]** Add `assert.Assertion.TryOk()` (via `OptionalAssertion`)
+- **[BC]** Add `op` parameter to `assert.Assertion.Begin()`
 
 ### Removed
 

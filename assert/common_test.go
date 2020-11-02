@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
-	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	"github.com/onsi/gomega"
@@ -95,8 +94,7 @@ func newTestApp() (
 
 func runTest(
 	app dogma.Application,
-	message dogma.Message,
-	assertion Assertion,
+	op func(*testkit.Test),
 	options []engine.OperationOption,
 	expectOk bool,
 	expectReport []string,
@@ -115,16 +113,14 @@ func runTest(
 		options...,
 	)
 
-	testkit.
+	test := testkit.
 		New(app).
 		Begin(
 			t,
 			testkit.WithOperationOptions(opts...),
-		).
-		ExecuteCommand(
-			message,
-			assertion,
 		)
+
+	op(test)
 
 	logs := strings.TrimSpace(strings.Join(t.Logs, "\n"))
 	lines := strings.Split(logs, "\n")

@@ -19,6 +19,8 @@ type Test struct {
 	ctx              context.Context
 	t                TestingT
 	engine           *engine.Engine
+	executor         engine.CommandExecutor
+	recorder         engine.EventRecorder
 	now              time.Time
 	operationOptions []engine.OperationOption
 	comparator       compare.Comparator
@@ -54,7 +56,7 @@ func (t *Test) ExecuteCommand(
 
 	t.logHeading("EXECUTING TEST COMMAND")
 
-	t.begin(a)
+	t.begin(assert.ExecuteCommandOperation, a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
 
@@ -74,7 +76,7 @@ func (t *Test) RecordEvent(
 
 	t.logHeading("RECORDING TEST EVENT")
 
-	t.begin(a)
+	t.begin(assert.RecordEventOperation, a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
 
@@ -88,7 +90,7 @@ func (t *Test) RecordEvent(
 // time.
 func (t *Test) AdvanceTime(
 	ta TimeAdvancer,
-	a assert.OptionalAssertion,
+	a assert.Assertion,
 	options ...engine.OperationOption,
 ) *Test {
 	if h, ok := t.t.(tHelper); ok {
@@ -105,11 +107,65 @@ func (t *Test) AdvanceTime(
 
 	t.now = now
 
-	t.begin(a)
+	t.begin(assert.AdvanceTimeOperation, a)
 	t.tick(options, a)
 	t.end(a)
 
 	return t
+}
+
+// Call makes an assertion about the application's behavior within a
+// user-defined function.
+//
+// Code executed within fn() can make use of the command executor and event
+// recorder returned by t.CommandExecutor() and t.EventRecorder(), respectively.
+func (t *Test) Call(
+	fn func() error,
+	a assert.Assertion,
+	options ...engine.OperationOption,
+) *Test {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	t.executor.Engine = t.engine
+	t.recorder.Engine = t.engine
+
+	opts := t.options(options, a)
+	t.executor.Options = opts
+	t.recorder.Options = opts
+
+	defer func() {
+		// Ensure that the executor and recorder only use the options from this
+		// test while used within Call().
+		t.executor.Options = nil
+		t.recorder.Options = nil
+	}()
+
+	t.logHeading("CALLING USER-DEFINED FUNCTION")
+
+	t.begin(assert.CallOperation, a)
+
+	if err := fn(); err != nil {
+		t.t.Log(err)
+		t.t.FailNow()
+	}
+
+	t.end(a)
+
+	return t
+}
+
+// CommandExecutor returns a dogma.CommandExecutor which can be used to execute
+// commands within the context of this test.
+func (t *Test) CommandExecutor() dogma.CommandExecutor {
+	return &t.executor
+}
+
+// EventRecorder returns a dogma.EventRecorder which can be used to record
+// events within the context of this test.
+func (t *Test) EventRecorder() dogma.EventRecorder {
+	return &t.recorder
 }
 
 // dispatch disaptches m to the engine.
@@ -118,7 +174,7 @@ func (t *Test) AdvanceTime(
 func (t *Test) dispatch(
 	m dogma.Message,
 	options []engine.OperationOption,
-	a assert.OptionalAssertion,
+	a assert.Assertion,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -137,7 +193,7 @@ func (t *Test) dispatch(
 // It fails the test if the engine returns an error.
 func (t *Test) tick(
 	options []engine.OperationOption,
-	a assert.OptionalAssertion,
+	a assert.Assertion,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -155,7 +211,7 @@ func (t *Test) tick(
 // dispatch() or tick().
 func (t *Test) options(
 	options []engine.OperationOption,
-	a assert.OptionalAssertion,
+	a assert.Assertion,
 ) (opts []engine.OperationOption) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
@@ -169,7 +225,7 @@ func (t *Test) options(
 	return
 }
 
-func (t *Test) begin(a assert.OptionalAssertion) {
+func (t *Test) begin(op assert.Operation, a assert.Assertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
@@ -179,20 +235,15 @@ func (t *Test) begin(a assert.OptionalAssertion) {
 		c = compare.DefaultComparator{}
 	}
 
-	a.Begin(c)
+	a.Begin(op, c)
 }
 
-func (t *Test) end(a assert.OptionalAssertion) {
+func (t *Test) end(a assert.Assertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
 	a.End()
-
-	ok, asserted := a.TryOk()
-	if !asserted {
-		return
-	}
 
 	r := t.renderer
 	if r == nil {
@@ -205,7 +256,7 @@ func (t *Test) end(a assert.OptionalAssertion) {
 		"--- ASSERTION REPORT ---\n\n",
 	)
 
-	rep := a.BuildReport(ok, r)
+	rep := a.BuildReport(a.Ok(), r)
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())

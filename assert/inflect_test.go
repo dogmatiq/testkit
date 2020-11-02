@@ -33,5 +33,8 @@ var _ = Describe("func inflect()", func() {
 
 		entry(message.CommandRole, "the <message> was <produced>", "the command was executed"),
 		entry(message.EventRole, "the <message> was <produced>", "the event was recorded"),
+
+		entry(message.CommandRole, "via a <dispatcher>", "via a dogma.CommandExecutor"),
+		entry(message.EventRole, "via a <dispatcher>", "via a dogma.EventRecorder"),
 	)
 })

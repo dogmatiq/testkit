@@ -15,19 +15,21 @@ func inflect(r message.Role, f string, v ...interface{}) string {
 	r.MustBe(message.CommandRole, message.EventRole)
 
 	if r == message.CommandRole {
-		f = strings.Replace(f, "<message>", "command", -1)
-		f = strings.Replace(f, "<messages>", "commands", -1)
-		f = strings.Replace(f, "<produce>", "execute", -1)
-		f = strings.Replace(f, "<produced>", "executed", -1)
+		f = strings.ReplaceAll(f, "<message>", "command")
+		f = strings.ReplaceAll(f, "<messages>", "commands")
+		f = strings.ReplaceAll(f, "<produce>", "execute")
+		f = strings.ReplaceAll(f, "<produced>", "executed")
+		f = strings.ReplaceAll(f, "<dispatcher>", "dogma.CommandExecutor")
 	} else {
-		f = strings.Replace(f, "<message>", "event", -1)
-		f = strings.Replace(f, "<messages>", "events", -1)
-		f = strings.Replace(f, "<produce>", "record", -1)
-		f = strings.Replace(f, "<produced>", "recorded", -1)
+		f = strings.ReplaceAll(f, "<message>", "event")
+		f = strings.ReplaceAll(f, "<messages>", "events")
+		f = strings.ReplaceAll(f, "<produce>", "record")
+		f = strings.ReplaceAll(f, "<produced>", "recorded")
+		f = strings.ReplaceAll(f, "<dispatcher>", "dogma.EventRecorder")
 	}
 
-	f = strings.Replace(f, "an command", "a command", -1)
-	f = strings.Replace(f, "a event", "an event", -1)
+	f = strings.ReplaceAll(f, "an command", "a command")
+	f = strings.ReplaceAll(f, "a event", "an event")
 
 	return fmt.Sprintf(f, v...)
 }

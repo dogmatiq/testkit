@@ -3,6 +3,7 @@ package assert_test
 import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -41,8 +42,9 @@ var _ = Context("composite assertions", func() {
 	) {
 		runTest(
 			app,
-			MessageA{},
-			assertion,
+			func(t *testkit.Test) {
+				t.ExecuteCommand(MessageA{}, assertion)
+			},
 			nil, //options
 			expectOk,
 			expectReport,
@@ -211,12 +213,10 @@ const (
 	fail constAssertion = false
 )
 
-func (a constAssertion) Begin(compare.Comparator) {}
-func (a constAssertion) End()                     {}
-func (a constAssertion) TryOk() (bool, bool)      { return bool(a), true }
-func (a constAssertion) Ok() bool                 { return bool(a) }
-func (a constAssertion) Notify(fact.Fact)         {}
-
+func (a constAssertion) Begin(Operation, compare.Comparator) {}
+func (a constAssertion) End()                                {}
+func (a constAssertion) Ok() bool                            { return bool(a) }
+func (a constAssertion) Notify(fact.Fact)                    {}
 func (a constAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	c := "<always fail>"
 	if a {

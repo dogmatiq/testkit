@@ -44,8 +44,10 @@ func (a *userAssertion) Notify(f fact.Fact) {
 
 // Begin is called to prepare the assertion for a new test.
 //
-// c is the comparator used to compare messages and other entities.
-func (a *userAssertion) Begin(c compare.Comparator) {
+// op is the operation that is making the assertion. c is the comparator
+// used to compare messages and other entities.
+func (a *userAssertion) Begin(op Operation, c compare.Comparator) {
+	a.s.Operation = op
 	a.s.Comparator = c
 }
 
@@ -70,17 +72,9 @@ func (a *userAssertion) End() {
 	a.assert(&a.s)
 }
 
-// TryOk returns true if the assertion passed.
-//
-// If asserted is false, the assertion was a no-op and ok is meaningless.
-func (a *userAssertion) TryOk() (ok bool, asserted bool) {
-	return a.s.skipped || !a.s.failed, true
-}
-
 // Ok returns true if the assertion passed.
 func (a *userAssertion) Ok() bool {
-	ok, _ := a.TryOk()
-	return ok
+	return a.s.skipped || !a.s.failed
 }
 
 // BuildReport generates a report about the assertion.
@@ -119,6 +113,9 @@ func (a *userAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 // criteria to be enforced. It is analogous the *testing.T type that is passed
 // to tests in the native Go test runner.
 type S struct {
+	// Operation is the test operation that made the assertion.
+	Operation Operation
+
 	// Comparator provides logic for comparing messages and application state.
 	compare.Comparator
 
