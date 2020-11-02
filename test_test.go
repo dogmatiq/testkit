@@ -151,7 +151,7 @@ var _ = Describe("type Test", func() {
 			))
 		})
 
-		XIt("can make assertions about commands executed via the supplied executor", func() {
+		It("can make assertions about commands executed via the supplied executor", func() {
 			test = New(app).
 				Begin(GinkgoT())
 
