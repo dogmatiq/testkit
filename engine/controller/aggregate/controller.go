@@ -148,24 +148,13 @@ func (c *Controller) Handle(
 		},
 	)
 
-	if len(s.events) == 0 {
-		if s.created {
-			panic(fmt.Sprintf(
-				"the '%s' aggregate message handler created the '%s' instance without recording an event while handling a %s command",
-				ident.Name,
-				id,
-				message.TypeOf(env.Message),
-			))
-		}
-
-		if s.destroyed {
-			panic(fmt.Sprintf(
-				"the '%s' aggregate message handler destroyed the '%s' instance without recording an event while handling a %s command",
-				ident.Name,
-				id,
-				message.TypeOf(env.Message),
-			))
-		}
+	if len(s.events) == 0 && s.destroyed {
+		panic(fmt.Sprintf(
+			"the '%s' aggregate message handler destroyed the '%s' instance without recording an event while handling a %s command",
+			ident.Name,
+			id,
+			message.TypeOf(env.Message),
+		))
 	}
 
 	if s.exists {
