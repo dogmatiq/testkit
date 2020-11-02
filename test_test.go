@@ -1,7 +1,6 @@
 package testkit_test
 
 import (
-	"context"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -149,20 +148,6 @@ var _ = Describe("type Test", func() {
 			Expect(t.Logs).To(ContainElement(
 				"--- CALLING USER-DEFINED FUNCTION ---",
 			))
-		})
-
-		It("can make assertions about commands executed via the supplied executor", func() {
-			test = New(app).
-				Begin(GinkgoT())
-
-			e := test.CommandExecutor()
-
-			test.Call(
-				func() error {
-					return e.ExecuteCommand(context.Background(), MessageC1)
-				},
-				assert.CommandExecuted(MessageC2),
-			)
 		})
 	})
 })
