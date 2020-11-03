@@ -135,7 +135,6 @@ var _ = Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
-				s.Create()
 				s.RecordEvent(MessageE1)
 				s.RecordEvent(MessageE2)
 			}
@@ -223,24 +222,6 @@ var _ = Describe("type Controller", func() {
 					)
 				}).To(Panic())
 			})
-
-			It("panics if the instance is created without recording an event", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					s.Create()
-				}
-
-				Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(Panic())
-			})
 		})
 
 		When("the instance exists", func() {
@@ -249,8 +230,7 @@ var _ = Describe("type Controller", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.Create()
-					s.RecordEvent(MessageE1) // event must be recorded when creating
+					s.RecordEvent(MessageE1) // record event to create the instance
 				}
 
 				_, err := ctrl.Handle(
@@ -361,7 +341,6 @@ var _ = Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
-				s.Create()
 				s.RecordEvent(MessageE1)
 			}
 
@@ -398,7 +377,6 @@ var _ = Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
-				s.Create()
 				s.RecordEvent(MessageE1)
 			}
 
@@ -445,8 +423,7 @@ var _ = Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				m dogma.Message,
 			) {
-				s.Create()
-				s.RecordEvent(MessageE1) // event must be recorded when creating
+				s.RecordEvent(MessageE1) // record event to create the instance
 			}
 
 			_, err := ctrl.Handle(

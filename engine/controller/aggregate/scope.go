@@ -21,7 +21,6 @@ type scope struct {
 	root       dogma.AggregateRoot
 	now        time.Time
 	exists     bool
-	created    bool // true if Create() returned true at least once
 	destroyed  bool // true if Destroy() returned true at least once
 	produced   message.TypeCollection
 	command    *envelope.Envelope
@@ -32,34 +31,12 @@ func (s *scope) InstanceID() string {
 	return s.instanceID
 }
 
-func (s *scope) Exists() bool {
-	return s.exists
-}
-
-func (s *scope) Create() bool {
-	if s.exists {
-		return false
-	}
-
-	s.exists = true
-	s.created = true
-
-	s.observer.Notify(fact.AggregateInstanceCreated{
-		HandlerName: s.config.Identity().Name,
-		Handler:     s.config.Handler(),
-		InstanceID:  s.instanceID,
-		Root:        s.root,
-		Envelope:    s.command,
-	})
-
-	return true
-}
-
 func (s *scope) Destroy() {
 	if !s.exists {
-		panic("can not destroy non-existent instance")
+		return
 	}
 
+	s.root = s.config.Handler().New()
 	s.exists = false
 	s.destroyed = true
 
@@ -73,16 +50,20 @@ func (s *scope) Destroy() {
 }
 
 func (s *scope) Root() dogma.AggregateRoot {
-	if !s.exists {
-		panic("can not access aggregate root of non-existent instance")
-	}
-
 	return s.root
 }
 
 func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.exists {
-		panic("can not record event against non-existent instance")
+		s.observer.Notify(fact.AggregateInstanceCreated{
+			HandlerName: s.config.Identity().Name,
+			Handler:     s.config.Handler(),
+			InstanceID:  s.instanceID,
+			Root:        s.root,
+			Envelope:    s.command,
+		})
+
+		s.exists = true
 	}
 
 	if !s.produced.HasM(m) {

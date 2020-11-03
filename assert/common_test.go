@@ -31,7 +31,6 @@ func newTestApp() (
 			s dogma.AggregateCommandScope,
 			m dogma.Message,
 		) {
-			s.Create()
 			s.RecordEvent(
 				MessageB{Value: "<value>"},
 			)

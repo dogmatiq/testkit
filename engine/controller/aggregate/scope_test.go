@@ -60,54 +60,14 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
-		Describe("func Exists()", func() {
-			It("returns false", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					Expect(s.Exists()).To(BeFalse())
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
 		Describe("func Root()", func() {
-			It("panics", func() {
+			It("returns a new root", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.Root()
-				}
-
-				Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(Panic())
-			})
-		})
-
-		Describe("func Create()", func() {
-			It("returns true", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					Expect(s.Create()).To(BeTrue())
-					s.RecordEvent(MessageE1) // event must be recorded when creating
+					r := s.Root()
+					Expect(r).To(Equal(&AggregateRoot{}))
 				}
 
 				_, err := ctrl.Handle(
@@ -119,14 +79,15 @@ var _ = Describe("type scope", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 			})
+		})
 
-			It("records a fact", func() {
+		Describe("func Destroy()", func() {
+			It("does not record a fact", func() {
 				handler.HandleCommandFunc = func(
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.Create()
-					s.RecordEvent(MessageE1) // event must be recorded when creating
+					s.Destroy()
 				}
 
 				buf := &fact.Buffer{}
@@ -134,6 +95,31 @@ var _ = Describe("type scope", func() {
 					context.Background(),
 					buf,
 					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts()).NotTo(ContainElement(
+					BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
+				))
+			})
+		})
+
+		Describe("func RecordEvent()", func() {
+			It("records facts about instance creation and the event", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.RecordEvent(MessageE1)
+				}
+
+				now := time.Now()
+				buf := &fact.Buffer{}
+				_, err := ctrl.Handle(
+					context.Background(),
+					buf,
+					now,
 					command,
 				)
 
@@ -147,46 +133,25 @@ var _ = Describe("type scope", func() {
 						Envelope:    command,
 					},
 				))
-			})
-		})
-
-		Describe("func Destroy()", func() {
-			It("panics", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					s.Destroy()
-				}
-
-				Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(Panic())
-			})
-		})
-
-		Describe("func RecordEvent()", func() {
-			It("panics", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					s.RecordEvent(MessageB1)
-				}
-
-				Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(Panic())
+				Expect(buf.Facts()).To(ContainElement(
+					fact.EventRecordedByAggregate{
+						HandlerName: "<name>",
+						Handler:     handler,
+						InstanceID:  "<instance>",
+						Root:        &AggregateRoot{},
+						Envelope:    command,
+						EventEnvelope: command.NewEvent(
+							"1",
+							MessageE1,
+							now,
+							envelope.Origin{
+								HandlerName: "<name>",
+								HandlerType: configkit.AggregateHandlerType,
+								InstanceID:  "<instance>",
+							},
+						),
+					},
+				))
 			})
 		})
 	})
@@ -197,8 +162,7 @@ var _ = Describe("type scope", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
-				s.Create()
-				s.RecordEvent(MessageE1) // event must be recorded when creating
+				s.RecordEvent(MessageE1) // record event to create the instance
 			}
 
 			_, err := ctrl.Handle(
@@ -215,26 +179,6 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
-		})
-
-		Describe("func Exists()", func() {
-			It("returns true", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					Expect(s.Exists()).To(BeTrue())
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
 		})
 
 		Describe("func Root()", func() {
@@ -254,50 +198,6 @@ var _ = Describe("type scope", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
-		Describe("func Create()", func() {
-			It("returns false", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					Expect(s.Create()).To(BeFalse())
-					s.RecordEvent(MessageE1) // event must be recorded when creating
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-
-			It("does not record a fact", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					s.Create()
-					s.RecordEvent(MessageE1) // event must be recorded when creating
-				}
-
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).NotTo(ContainElement(
-					BeAssignableToTypeOf(fact.AggregateInstanceCreated{}),
-				))
 			})
 		})
 
@@ -373,6 +273,21 @@ var _ = Describe("type scope", func() {
 							},
 						),
 					},
+				))
+			})
+
+			It("does not record a fact about instance creation", func() {
+				buf := &fact.Buffer{}
+				_, err := ctrl.Handle(
+					context.Background(),
+					buf,
+					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts()).NotTo(ContainElement(
+					BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
 				))
 			})
 

@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- **[BC]** Remove aggregate `Create()` and `Exists()` methods (complies with Dogma v0.8.0)
+
 ## [0.7.0] - 2020-11-02
 
 ### Added
