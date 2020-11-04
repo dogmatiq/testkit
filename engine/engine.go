@@ -56,6 +56,17 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 	return e, nil
 }
 
+// MustNew returns a new engine that uses the given app configuration, or panics
+// if unable to do so.
+func MustNew(app dogma.Application, options ...Option) *Engine {
+	e, err := New(app, options...)
+	if err != nil {
+		panic(err)
+	}
+
+	return e
+}
+
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
 	e.m.Lock(context.Background())
