@@ -3,6 +3,7 @@ package render_test
 import (
 	"strings"
 
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
 	. "github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
@@ -29,11 +30,19 @@ var _ = Describe("func AggregateRoot()", func() {
 		Expect(
 			AggregateRoot(
 				DefaultRenderer{},
-				&fixtures.AggregateRoot{Value: "<value>"},
+				&fixtures.AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						fixtures.MessageA1,
+					},
+				},
 			),
 		).To(Equal(join(
 			"*fixtures.AggregateRoot{",
-			`    Value:          "<value>"`,
+			`    AppliedEvents:  {`,
+			`        fixtures.MessageA{`,
+			`            Value: "A1"`,
+			`        }`,
+			`    }`,
 			`    ApplyEventFunc: nil`,
 			"}",
 		)))

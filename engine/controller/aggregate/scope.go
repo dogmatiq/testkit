@@ -47,10 +47,6 @@ func (s *scope) Destroy() {
 	})
 }
 
-func (s *scope) Root() dogma.AggregateRoot {
-	return s.root
-}
-
 func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.exists {
 		s.observer.Notify(fact.AggregateInstanceCreated{

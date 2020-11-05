@@ -50,6 +50,7 @@ var _ = Describe("type CommandExecutor", func() {
 		It("dispatches to the engine", func() {
 			called := false
 			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				_ dogma.AggregateCommandScope,
 				m dogma.Message,
 			) {

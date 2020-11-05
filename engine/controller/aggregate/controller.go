@@ -144,7 +144,7 @@ func (c *Controller) Handle(
 		"HandleCommand",
 		env.Message,
 		func() {
-			handler.HandleCommand(s, env.Message)
+			handler.HandleCommand(r, s, env.Message)
 		},
 	)
 

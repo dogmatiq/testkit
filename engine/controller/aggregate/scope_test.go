@@ -60,30 +60,10 @@ var _ = Describe("type scope", func() {
 	})
 
 	When("the instance does not exist", func() {
-		Describe("func Root()", func() {
-			It("returns a new root", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					r := s.Root()
-					Expect(r).To(Equal(&AggregateRoot{}))
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
 		Describe("func Destroy()", func() {
 			It("does not record a fact", func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
@@ -108,6 +88,7 @@ var _ = Describe("type scope", func() {
 		Describe("func RecordEvent()", func() {
 			It("records facts about instance creation and the event", func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
@@ -129,8 +110,12 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+						Envelope: command,
 					},
 				))
 				Expect(buf.Facts()).To(ContainElement(
@@ -138,8 +123,12 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
 							MessageE1,
@@ -159,6 +148,7 @@ var _ = Describe("type scope", func() {
 	When("the instance exists", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
@@ -181,29 +171,10 @@ var _ = Describe("type scope", func() {
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
-		Describe("func Root()", func() {
-			It("returns the root", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					Expect(s.Root()).To(Equal(&AggregateRoot{}))
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
 		Describe("func Destroy()", func() {
 			It("records a fact", func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
@@ -234,8 +205,9 @@ var _ = Describe("type scope", func() {
 		Describe("func RecordEvent()", func() {
 			BeforeEach(func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					m dogma.Message,
+					_ dogma.Message,
 				) {
 					s.RecordEvent(MessageB1)
 				}
@@ -259,8 +231,13 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+								MessageB1,
+							},
+						},
+						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
 							MessageB1,
@@ -292,6 +269,7 @@ var _ = Describe("type scope", func() {
 
 			It("records facts about instance creation and the event if called after Destroy()", func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
@@ -314,8 +292,12 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+						Envelope: command,
 					},
 				))
 				Expect(buf.Facts()).To(ContainElement(
@@ -323,8 +305,12 @@ var _ = Describe("type scope", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
 							MessageE1,
@@ -341,8 +327,9 @@ var _ = Describe("type scope", func() {
 
 			It("panics if the event type is not configured to be produced", func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					m dogma.Message,
+					_ dogma.Message,
 				) {
 					s.RecordEvent(MessageZ1)
 				}
@@ -363,6 +350,7 @@ var _ = Describe("type scope", func() {
 		It("returns the instance ID", func() {
 			called := false
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
@@ -385,6 +373,7 @@ var _ = Describe("type scope", func() {
 	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {

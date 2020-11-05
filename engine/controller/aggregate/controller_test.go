@@ -112,6 +112,7 @@ var _ = Describe("type Controller", func() {
 		It("forwards the message to the handler", func() {
 			called := false
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				_ dogma.AggregateCommandScope,
 				m dogma.Message,
 			) {
@@ -132,6 +133,7 @@ var _ = Describe("type Controller", func() {
 
 		It("returns the recorded events", func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
@@ -208,6 +210,25 @@ var _ = Describe("type Controller", func() {
 				))
 			})
 
+			It("passes a new aggregate root", func() {
+				handler.HandleCommandFunc = func(
+					r dogma.AggregateRoot,
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(r).To(Equal(&AggregateRoot{}))
+				}
+
+				_, err := ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
 			It("panics if New() returns nil", func() {
 				handler.NewFunc = func() dogma.AggregateRoot {
 					return nil
@@ -227,6 +248,7 @@ var _ = Describe("type Controller", func() {
 		When("the instance exists", func() {
 			BeforeEach(func() {
 				handler.HandleCommandFunc = func(
+					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
@@ -241,6 +263,8 @@ var _ = Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
+
+				handler.HandleCommandFunc = nil
 			})
 
 			It("records a fact", func() {
@@ -258,10 +282,39 @@ var _ = Describe("type Controller", func() {
 						HandlerName: "<name>",
 						Handler:     handler,
 						InstanceID:  "<instance-C1>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Root: &AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+						Envelope: command,
 					},
 				))
+			})
+
+			It("passes an aggregate root with historical events applied", func() {
+				handler.HandleCommandFunc = func(
+					r dogma.AggregateRoot,
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					Expect(r).To(Equal(
+						&AggregateRoot{
+							AppliedEvents: []dogma.Message{
+								MessageE1,
+							},
+						},
+					))
+				}
+
+				_, err := ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
 
@@ -292,6 +345,7 @@ var _ = Describe("type Controller", func() {
 
 		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
 			handler.HandleCommandFunc = func(
+				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
 				dogma.Message,
 			) {
@@ -320,6 +374,7 @@ var _ = Describe("type Controller", func() {
 
 		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with new events", func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
@@ -328,7 +383,7 @@ var _ = Describe("type Controller", func() {
 
 			handler.NewFunc = func() dogma.AggregateRoot {
 				return &AggregateRoot{
-					ApplyEventFunc: func(dogma.Message, interface{}) {
+					ApplyEventFunc: func(dogma.Message) {
 						panic(dogma.UnexpectedMessage)
 					},
 				}
@@ -356,6 +411,7 @@ var _ = Describe("type Controller", func() {
 
 		It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with historical events", func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
 				_ dogma.Message,
 			) {
@@ -372,7 +428,7 @@ var _ = Describe("type Controller", func() {
 			handler.HandleCommandFunc = nil
 			handler.NewFunc = func() dogma.AggregateRoot {
 				return &AggregateRoot{
-					ApplyEventFunc: func(dogma.Message, interface{}) {
+					ApplyEventFunc: func(dogma.Message) {
 						panic(dogma.UnexpectedMessage)
 					},
 				}
@@ -402,8 +458,9 @@ var _ = Describe("type Controller", func() {
 	Describe("func Reset()", func() {
 		BeforeEach(func() {
 			handler.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				m dogma.Message,
+				_ dogma.Message,
 			) {
 				s.RecordEvent(MessageE1) // record event to create the instance
 			}
