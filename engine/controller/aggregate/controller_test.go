@@ -263,24 +263,6 @@ var _ = Describe("type Controller", func() {
 					},
 				))
 			})
-
-			It("panics if the instance is destroyed without recording an event", func() {
-				handler.HandleCommandFunc = func(
-					s dogma.AggregateCommandScope,
-					_ dogma.Message,
-				) {
-					s.Destroy()
-				}
-
-				Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(Panic())
-			})
 		})
 
 		It("provides more context to UnexpectedMessage panics from RouteCommandToInstance()", func() {

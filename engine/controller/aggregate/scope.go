@@ -21,7 +21,6 @@ type scope struct {
 	root       dogma.AggregateRoot
 	now        time.Time
 	exists     bool
-	destroyed  bool // true if Destroy() returned true at least once
 	produced   message.TypeCollection
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
@@ -38,7 +37,6 @@ func (s *scope) Destroy() {
 
 	s.root = s.config.Handler().New()
 	s.exists = false
-	s.destroyed = true
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
 		HandlerName: s.config.Identity().Name,

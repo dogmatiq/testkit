@@ -207,7 +207,6 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.RecordEvent(MessageE1) // event must be recorded when destroying
 					s.Destroy()
 				}
 
@@ -288,6 +287,55 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).NotTo(ContainElement(
 					BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
+				))
+			})
+
+			It("records facts about instance creation and the event if called after Destroy()", func() {
+				handler.HandleCommandFunc = func(
+					s dogma.AggregateCommandScope,
+					_ dogma.Message,
+				) {
+					s.Destroy()
+					s.RecordEvent(MessageE1)
+				}
+
+				now := time.Now()
+				buf := &fact.Buffer{}
+				_, err := ctrl.Handle(
+					context.Background(),
+					buf,
+					now,
+					command,
+				)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buf.Facts()).To(ContainElement(
+					fact.AggregateInstanceCreated{
+						HandlerName: "<name>",
+						Handler:     handler,
+						InstanceID:  "<instance>",
+						Root:        &AggregateRoot{},
+						Envelope:    command,
+					},
+				))
+				Expect(buf.Facts()).To(ContainElement(
+					fact.EventRecordedByAggregate{
+						HandlerName: "<name>",
+						Handler:     handler,
+						InstanceID:  "<instance>",
+						Root:        &AggregateRoot{},
+						Envelope:    command,
+						EventEnvelope: command.NewEvent(
+							"1",
+							MessageE1,
+							now,
+							envelope.Origin{
+								HandlerName: "<name>",
+								HandlerType: configkit.AggregateHandlerType,
+								InstanceID:  "<instance>",
+							},
+						),
+					},
 				))
 			})
 
