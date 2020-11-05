@@ -207,7 +207,6 @@ var _ = Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Message,
 				) {
-					s.RecordEvent(MessageE1) // event must be recorded when destroying
 					s.Destroy()
 				}
 
