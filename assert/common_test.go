@@ -28,6 +28,7 @@ func newTestApp() (
 			return "<aggregate-instance>"
 		},
 		HandleCommandFunc: func(
+			_ dogma.AggregateRoot,
 			s dogma.AggregateCommandScope,
 			m dogma.Message,
 		) {

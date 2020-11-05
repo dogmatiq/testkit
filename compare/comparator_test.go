@@ -1,6 +1,7 @@
 package compare_test
 
 import (
+	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/compare"
 	. "github.com/onsi/ginkgo"
@@ -36,30 +37,50 @@ var _ = Describe("type DefaultComparator", func() {
 	})
 
 	Describe("func AggregateRootIsEqual()", func() {
-		It("returns true if tlues have the same type and value", func() {
+		It("returns true if the values have the same type and value", func() {
 			Expect(comparator.AggregateRootIsEqual(
-				&AggregateRoot{Value: "<foo>"},
-				&AggregateRoot{Value: "<foo>"},
+				&AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						MessageA1,
+					},
+				},
+				&AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						MessageA1,
+					},
+				},
 			)).To(BeTrue())
 		})
 
 		It("returns false if the values have the same type with different values", func() {
 			Expect(comparator.AggregateRootIsEqual(
-				&AggregateRoot{Value: "<foo>"},
-				&AggregateRoot{Value: "<bar>"},
+				&AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						MessageA1,
+					},
+				},
+				&AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						MessageA2,
+					},
+				},
 			)).To(BeFalse())
 		})
 
 		It("returns false if the values are different types", func() {
 			Expect(comparator.AggregateRootIsEqual(
-				&AggregateRoot{Value: "<foo>"},
+				&AggregateRoot{
+					AppliedEvents: []dogma.Message{
+						"<foo>",
+					},
+				},
 				&struct{ AggregateRoot }{},
 			)).To(BeFalse())
 		})
 	})
 
 	Describe("func ProcessRootIsEqual()", func() {
-		It("returns true if tlues have the same type and value", func() {
+		It("returns true if the values have the same type and value", func() {
 			Expect(comparator.ProcessRootIsEqual(
 				&ProcessRoot{Value: "<foo>"},
 				&ProcessRoot{Value: "<foo>"},

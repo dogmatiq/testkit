@@ -3,6 +3,7 @@ package render
 import (
 	"io"
 
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
 	"github.com/dogmatiq/iago/iotest"
 	"github.com/dogmatiq/iago/must"
@@ -39,12 +40,20 @@ var _ = Describe("type DefaultRenderer", func() {
 					return must.Must(
 						DefaultRenderer{}.WriteAggregateRoot(
 							w,
-							&fixtures.AggregateRoot{Value: "<value>"},
+							&fixtures.AggregateRoot{
+								AppliedEvents: []dogma.Message{
+									fixtures.MessageA1,
+								},
+							},
 						),
 					)
 				},
 				"*fixtures.AggregateRoot{",
-				`    Value:          "<value>"`,
+				`    AppliedEvents:  {`,
+				`        fixtures.MessageA{`,
+				`            Value: "A1"`,
+				`        }`,
+				`    }`,
 				`    ApplyEventFunc: nil`,
 				"}",
 			)
