@@ -31,6 +31,14 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		))
 	}
 
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not record event of type %T, it is invalid: %s",
+			m,
+			err,
+		))
+	}
+
 	env := s.command.NewEvent(
 		s.messageIDs.Next(),
 		m,

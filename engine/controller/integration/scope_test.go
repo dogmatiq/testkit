@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -107,6 +108,28 @@ var _ = Describe("type scope", func() {
 					command,
 				)
 			}).To(PanicWith("the '<name>' handler is not configured to record events of type fixtures.MessageX"))
+		})
+
+		It("panics if the event is invalid", func() {
+			handler.HandleCommandFunc = func(
+				_ context.Context,
+				s dogma.IntegrationCommandScope,
+				_ dogma.Message,
+			) error {
+				s.RecordEvent(MessageE{
+					Value: errors.New("<invalid>"),
+				})
+				return nil
+			}
+
+			Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					command,
+				)
+			}).To(PanicWith("can not record event of type fixtures.MessageE, it is invalid: <invalid>"))
 		})
 	})
 

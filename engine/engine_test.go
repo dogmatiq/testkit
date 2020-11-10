@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
@@ -76,6 +77,14 @@ var _ = Describe("type Engine", func() {
 	})
 
 	Describe("func Dispatch()", func() {
+		It("panics if the message is invalid", func() {
+			Expect(func() {
+				engine.Dispatch(context.Background(), MessageA{
+					Value: errors.New("<invalid>"),
+				})
+			}).To(PanicWith("can not dispatch invalid fixtures.MessageA message: <invalid>"))
+		})
+
 		It("panics if the message type is unrecognized", func() {
 			Expect(func() {
 				engine.Dispatch(context.Background(), MessageX1)

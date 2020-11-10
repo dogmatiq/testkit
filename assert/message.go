@@ -1,6 +1,7 @@
 package assert
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/dogmatiq/configkit/message"
@@ -14,6 +15,13 @@ import (
 // CommandExecuted returns an assertion that passes if m is executed as a
 // command.
 func CommandExecuted(m dogma.Message) Assertion {
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not assert that this command will be executed, it is invalid: %s",
+			err,
+		))
+	}
+
 	return &messageAssertion{
 		expected: m,
 		role:     message.CommandRole,
@@ -22,6 +30,13 @@ func CommandExecuted(m dogma.Message) Assertion {
 
 // EventRecorded returns an assertion that passes if m is recorded as an event.
 func EventRecorded(m dogma.Message) Assertion {
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not assert that this event will be recorded, it is invalid: %s",
+			err,
+		))
+	}
+
 	return &messageAssertion{
 		expected: m,
 		role:     message.EventRole,

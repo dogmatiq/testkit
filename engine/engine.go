@@ -161,11 +161,21 @@ func (e *Engine) tick(
 // Dispatch processes a message.
 //
 // It is not an error to process a message that is not routed to any handlers.
+//
+// It panics if the message is invalid.
 func (e *Engine) Dispatch(
 	ctx context.Context,
 	m dogma.Message,
 	options ...OperationOption,
 ) error {
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not dispatch invalid %T message: %s",
+			m,
+			err,
+		))
+	}
+
 	oo := newOperationOptions(options)
 	t := message.TypeOf(m)
 

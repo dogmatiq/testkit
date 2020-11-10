@@ -56,6 +56,14 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		))
 	}
 
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not record event of type %T, it is invalid: %s",
+			m,
+			err,
+		))
+	}
+
 	if !s.exists {
 		s.observer.Notify(fact.AggregateInstanceCreated{
 			HandlerName: s.config.Identity().Name,
