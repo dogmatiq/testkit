@@ -48,6 +48,14 @@ func (s *scope) Destroy() {
 }
 
 func (s *scope) RecordEvent(m dogma.Message) {
+	if !s.produced.HasM(m) {
+		panic(fmt.Sprintf(
+			"the '%s' handler is not configured to record events of type %T",
+			s.config.Identity().Name,
+			m,
+		))
+	}
+
 	if !s.exists {
 		s.observer.Notify(fact.AggregateInstanceCreated{
 			HandlerName: s.config.Identity().Name,
@@ -58,14 +66,6 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		})
 
 		s.exists = true
-	}
-
-	if !s.produced.HasM(m) {
-		panic(fmt.Sprintf(
-			"the '%s' handler is not configured to record events of type %T",
-			s.config.Identity().Name,
-			m,
-		))
 	}
 
 	controller.ConvertUnexpectedMessagePanic(

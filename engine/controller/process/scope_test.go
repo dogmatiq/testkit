@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/controller/process"
@@ -35,7 +33,8 @@ var _ = Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "<key>")
 				c.ConsumesEventType(MessageE{})
-				c.ProducesCommandType(MessageX{})
+				c.ProducesCommandType(MessageC{})
+				c.SchedulesTimeoutType(MessageT{})
 			},
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
@@ -50,12 +49,12 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config := configkit.FromProcess(handler)
+
 		ctrl = NewController(
-			configkit.FromProcess(handler), &messageIDs,
-			message.NewTypeSet(
-				MessageBType,
-				MessageCType,
-			),
+			config,
+			&messageIDs,
+			config.MessageTypes().Produced,
 		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
@@ -187,7 +186,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ExecuteCommand(MessageB1)
+					s.ExecuteCommand(MessageC1)
 					return nil
 				}
 
@@ -209,7 +208,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(MessageB1, time.Now())
+					s.ScheduleTimeout(MessageC1, time.Now())
 					return nil
 				}
 
@@ -386,7 +385,7 @@ var _ = Describe("type scope", func() {
 						return err
 					}
 
-					s.ExecuteCommand(MessageB1)
+					s.ExecuteCommand(MessageC1)
 					return nil
 				}
 			})
@@ -411,7 +410,7 @@ var _ = Describe("type scope", func() {
 						Envelope:    event,
 						CommandEnvelope: event.NewCommand(
 							"1",
-							MessageB1,
+							MessageC1,
 							now,
 							envelope.Origin{
 								HandlerName: "<name>",
@@ -458,7 +457,7 @@ var _ = Describe("type scope", func() {
 						return err
 					}
 
-					s.ScheduleTimeout(MessageB1, t)
+					s.ScheduleTimeout(MessageT1, t)
 					return nil
 				}
 			})
@@ -483,7 +482,7 @@ var _ = Describe("type scope", func() {
 						Envelope:    event,
 						TimeoutEnvelope: event.NewTimeout(
 							"1",
-							MessageB1,
+							MessageT1,
 							now,
 							t,
 							envelope.Origin{

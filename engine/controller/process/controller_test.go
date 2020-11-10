@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/controller"
@@ -55,7 +53,8 @@ var _ = Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "<key>")
 				c.ConsumesEventType(MessageE{})
-				c.ProducesCommandType(MessageX{})
+				c.ProducesCommandType(MessageC{})
+				c.SchedulesTimeoutType(MessageT{})
 			},
 			// setup routes for "E" (event) messages to an instance ID based on the
 			// message's content
@@ -81,9 +80,7 @@ var _ = Describe("type Controller", func() {
 		ctrl = NewController(
 			config,
 			&messageIDs,
-			message.NewTypeSet(
-				MessageCType,
-			),
+			config.MessageTypes().Produced,
 		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
@@ -605,7 +602,7 @@ var _ = Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(MessageB2, now.Add(-1))
+					s.ScheduleTimeout(MessageT2, now.Add(-1))
 					return nil
 				}
 
@@ -628,7 +625,7 @@ var _ = Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(MessageB2, now.Add(1))
+					s.ScheduleTimeout(MessageT2, now.Add(1))
 					return nil
 				}
 

@@ -19,7 +19,7 @@ import (
 type Controller struct {
 	config     configkit.RichProcess
 	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeCollection
+	produced   message.TypeRoles
 	instances  map[string]dogma.ProcessRoot
 	timeouts   []*envelope.Envelope
 }
@@ -28,7 +28,7 @@ type Controller struct {
 func NewController(
 	c configkit.RichProcess,
 	g *envelope.MessageIDGenerator,
-	t message.TypeCollection,
+	t message.TypeRoles,
 ) *Controller {
 	return &Controller{
 		config:     c,

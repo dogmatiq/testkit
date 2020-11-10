@@ -21,7 +21,7 @@ type scope struct {
 	now        time.Time
 	root       dogma.ProcessRoot
 	exists     bool
-	produced   message.TypeCollection
+	produced   message.TypeRoles
 	env        *envelope.Envelope // event or timeout
 	commands   []*envelope.Envelope
 	ready      []*envelope.Envelope // timeouts <= now
@@ -81,16 +81,16 @@ func (s *scope) Root() dogma.ProcessRoot {
 }
 
 func (s *scope) ExecuteCommand(m dogma.Message) {
-	if !s.exists {
-		panic("can not execute command against non-existent instance")
-	}
-
-	if !s.produced.HasM(m) {
+	if s.produced[message.TypeOf(m)] != message.CommandRole {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to execute commands of type %T",
 			s.config.Identity().Name,
 			m,
 		))
+	}
+
+	if !s.exists {
+		panic("can not execute command against non-existent instance")
 	}
 
 	env := s.env.NewCommand(
@@ -121,6 +121,14 @@ func (s *scope) RecordedAt() time.Time {
 }
 
 func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
+	if s.produced[message.TypeOf(m)] != message.TimeoutRole {
+		panic(fmt.Sprintf(
+			"the '%s' handler is not configured to schedule timeouts of type %T",
+			s.config.Identity().Name,
+			m,
+		))
+	}
+
 	if !s.exists {
 		panic("can not schedule timeout against non-existent instance")
 	}
