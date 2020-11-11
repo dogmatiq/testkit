@@ -35,7 +35,7 @@ var _ = Describe("func Run()", func() {
 		defer cancel()
 
 		go func() {
-			time.Sleep(15 * time.Millisecond)
+			time.Sleep(16 * time.Millisecond)
 			cancel()
 		}()
 
