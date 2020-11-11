@@ -25,11 +25,10 @@ func (c *configurer) VisitRichApplication(ctx context.Context, cfg configkit.Ric
 func (c *configurer) VisitRichAggregate(_ context.Context, cfg configkit.RichAggregate) error {
 	mt := cfg.MessageTypes()
 	c.registerController(
-		aggregate.NewController(
-			cfg,
-			&c.engine.messageIDs,
-			mt.Produced,
-		),
+		&aggregate.Controller{
+			Config:     cfg,
+			MessageIDs: &c.engine.messageIDs,
+		},
 		mt.Consumed,
 	)
 

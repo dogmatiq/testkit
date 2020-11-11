@@ -15,29 +15,16 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
-	config     configkit.RichAggregate
-	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeCollection
-	history    map[string][]*envelope.Envelope
-}
+	Config     configkit.RichAggregate
+	MessageIDs *envelope.MessageIDGenerator
 
-// NewController returns a new controller for the given handler.
-func NewController(
-	c configkit.RichAggregate,
-	g *envelope.MessageIDGenerator,
-	t message.TypeCollection,
-) *Controller {
-	return &Controller{
-		config:     c,
-		messageIDs: g,
-		produced:   t,
-	}
+	history map[string][]*envelope.Envelope
 }
 
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.config.Identity()
+	return c.Config.Identity()
 }
 
 // Type returns configkit.AggregateHandlerType.
@@ -63,12 +50,12 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	ident := c.config.Identity()
-	handler := c.config.Handler()
+	ident := c.Config.Identity()
+	handler := c.Config.Handler()
 
 	var id string
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"AggregateMessageHandler",
 		"RouteCommandToInstance",
 		env.Message,
@@ -91,7 +78,7 @@ func (c *Controller) Handle(
 	if exists {
 		for _, env := range history {
 			controller.ConvertUnexpectedMessagePanic(
-				c.config,
+				c.Config,
 				"AggregateRoot",
 				"ApplyEvent",
 				env.Message,
@@ -128,18 +115,17 @@ func (c *Controller) Handle(
 
 	s := &scope{
 		instanceID: id,
-		config:     c.config,
-		messageIDs: c.messageIDs,
+		config:     c.Config,
+		messageIDs: c.MessageIDs,
 		observer:   obs,
 		now:        now,
 		root:       r,
 		exists:     exists,
-		produced:   c.produced,
 		command:    env,
 	}
 
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"AggregateMessageHandler",
 		"HandleCommand",
 		env.Message,

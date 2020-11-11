@@ -46,13 +46,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		config := configkit.FromAggregate(handler)
-
-		ctrl = NewController(
-			config,
-			&messageIDs,
-			config.MessageTypes().Produced,
-		)
+		ctrl = &Controller{
+			Config:     configkit.FromAggregate(handler),
+			MessageIDs: &messageIDs,
+		}
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
