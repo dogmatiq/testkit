@@ -77,11 +77,10 @@ var _ = Describe("type Controller", func() {
 
 		config = configkit.FromProcess(handler)
 
-		ctrl = NewController(
-			config,
-			&messageIDs,
-			config.MessageTypes().Produced,
-		)
+		ctrl = &Controller{
+			Config:     config,
+			MessageIDs: &messageIDs,
+		}
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})

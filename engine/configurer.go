@@ -38,11 +38,10 @@ func (c *configurer) VisitRichAggregate(_ context.Context, cfg configkit.RichAgg
 func (c *configurer) VisitRichProcess(_ context.Context, cfg configkit.RichProcess) error {
 	mt := cfg.MessageTypes()
 	c.registerController(
-		process.NewController(
-			cfg,
-			&c.engine.messageIDs,
-			mt.Produced,
-		),
+		&process.Controller{
+			Config:     cfg,
+			MessageIDs: &c.engine.messageIDs,
+		},
 		mt.Consumed,
 	)
 

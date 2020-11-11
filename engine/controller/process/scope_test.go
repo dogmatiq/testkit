@@ -50,13 +50,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		config := configkit.FromProcess(handler)
-
-		ctrl = NewController(
-			config,
-			&messageIDs,
-			config.MessageTypes().Produced,
-		)
+		ctrl = &Controller{
+			Config:     configkit.FromProcess(handler),
+			MessageIDs: &messageIDs,
+		}
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})

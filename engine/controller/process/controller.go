@@ -17,30 +17,17 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	config     configkit.RichProcess
-	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeRoles
-	instances  map[string]dogma.ProcessRoot
-	timeouts   []*envelope.Envelope
-}
+	Config     configkit.RichProcess
+	MessageIDs *envelope.MessageIDGenerator
 
-// NewController returns a new controller for the given handler.
-func NewController(
-	c configkit.RichProcess,
-	g *envelope.MessageIDGenerator,
-	t message.TypeRoles,
-) *Controller {
-	return &Controller{
-		config:     c,
-		messageIDs: g,
-		produced:   t,
-	}
+	instances map[string]dogma.ProcessRoot
+	timeouts  []*envelope.Envelope
 }
 
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.config.Identity()
+	return c.Config.Identity()
 }
 
 // Type returns configkit.ProcessHandlerType.
@@ -83,12 +70,12 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
-	ident := c.config.Identity()
-	handler := c.config.Handler()
+	ident := c.Config.Identity()
+	handler := c.Config.Handler()
 
 	var t time.Duration
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"ProcessMessageHandler",
 		"TimeoutHint",
 		env.Message,
@@ -138,13 +125,12 @@ func (c *Controller) Handle(
 
 	s := &scope{
 		instanceID: id,
-		config:     c.config,
-		messageIDs: c.messageIDs,
+		config:     c.Config,
+		messageIDs: c.MessageIDs,
 		observer:   obs,
 		now:        now,
 		root:       r,
 		exists:     exists,
-		produced:   c.produced,
 		env:        env,
 	}
 
@@ -185,8 +171,8 @@ func (c *Controller) routeEvent(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {
-	ident := c.config.Identity()
-	handler := c.config.Handler()
+	ident := c.Config.Identity()
+	handler := c.Config.Handler()
 
 	var (
 		id  string
@@ -194,7 +180,7 @@ func (c *Controller) routeEvent(
 		err error
 	)
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
 		env.Message,
@@ -239,8 +225,8 @@ func (c *Controller) routeTimeout(
 	}
 
 	obs.Notify(fact.ProcessTimeoutIgnored{
-		HandlerName: c.config.Identity().Name,
-		Handler:     c.config.Handler(),
+		HandlerName: c.Config.Identity().Name,
+		Handler:     c.Config.Handler(),
 		InstanceID:  env.Origin.InstanceID,
 		Envelope:    env,
 	})
@@ -257,15 +243,15 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 
 	var err error
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"ProcessMessageHandler",
 		method,
 		s.env.Message,
 		func() {
 			if s.env.Role == message.EventRole {
-				err = c.config.Handler().HandleEvent(ctx, s, s.env.Message)
+				err = c.Config.Handler().HandleEvent(ctx, s, s.env.Message)
 			} else {
-				err = c.config.Handler().HandleTimeout(ctx, s, s.env.Message)
+				err = c.Config.Handler().HandleTimeout(ctx, s, s.env.Message)
 			}
 		},
 	)
