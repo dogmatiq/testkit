@@ -341,7 +341,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						command,
 					)
-				}).To(Panic())
+				}).To(PanicWith("the '<name>' handler is not configured to record events of type fixtures.MessageZ"))
 			})
 		})
 	})

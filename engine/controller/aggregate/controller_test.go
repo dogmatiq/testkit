@@ -186,7 +186,7 @@ var _ = Describe("type Controller", func() {
 					time.Now(),
 					command,
 				)
-			}).To(Panic())
+			}).To(PanicWith("the '<name>' aggregate message handler attempted to route a fixtures.MessageC command to an empty instance ID"))
 		})
 
 		When("the instance does not exist", func() {
@@ -241,7 +241,7 @@ var _ = Describe("type Controller", func() {
 						time.Now(),
 						command,
 					)
-				}).To(Panic())
+				}).To(PanicWith("the '<name>' aggregate message handler returned a nil root from New()"))
 			})
 		})
 

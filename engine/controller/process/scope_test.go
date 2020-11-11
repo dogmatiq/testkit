@@ -101,7 +101,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(Panic())
+				}).To(PanicWith("can not access process root of non-existent instance"))
 			})
 		})
 
@@ -175,7 +175,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(Panic())
+				}).To(PanicWith("can not end non-existent instance"))
 			})
 		})
 
@@ -197,7 +197,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(Panic())
+				}).To(PanicWith("can not execute command against non-existent instance"))
 			})
 		})
 
@@ -208,7 +208,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(MessageC1, time.Now())
+					s.ScheduleTimeout(MessageT1, time.Now())
 					return nil
 				}
 
@@ -219,7 +219,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(Panic())
+				}).To(PanicWith("can not schedule timeout against non-existent instance"))
 			})
 		})
 	})
@@ -439,7 +439,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(Panic())
+				}).To(PanicWith("the '<name>' handler is not configured to execute commands of type fixtures.MessageZ"))
 			})
 		})
 
@@ -493,6 +493,26 @@ var _ = Describe("type scope", func() {
 						),
 					},
 				))
+			})
+
+			It("panics if the timeout type is not configured to be scheduled", func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					_ dogma.Message,
+				) error {
+					s.ScheduleTimeout(MessageZ1, time.Now())
+					return nil
+				}
+
+				Expect(func() {
+					ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						event,
+					)
+				}).To(PanicWith("the '<name>' handler is not configured to schedule timeouts of type fixtures.MessageZ"))
 			})
 		})
 	})

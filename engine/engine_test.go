@@ -79,7 +79,7 @@ var _ = Describe("type Engine", func() {
 		It("panics if the message type is unrecognized", func() {
 			Expect(func() {
 				engine.Dispatch(context.Background(), MessageX1)
-			}).To(Panic())
+			}).To(PanicWith("the fixtures.MessageX message type is not consumed by any handlers"))
 		})
 	})
 })
