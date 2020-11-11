@@ -428,7 +428,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					m dogma.Message,
 				) error {
-					s.ExecuteCommand(MessageZ1)
+					s.ExecuteCommand(MessageX1)
 					return nil
 				}
 
@@ -439,7 +439,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("the '<name>' handler is not configured to execute commands of type fixtures.MessageZ"))
+				}).To(PanicWith("the '<name>' handler is not configured to execute commands of type fixtures.MessageX"))
 			})
 		})
 
@@ -501,7 +501,7 @@ var _ = Describe("type scope", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.ScheduleTimeout(MessageZ1, time.Now())
+					s.ScheduleTimeout(MessageX1, time.Now())
 					return nil
 				}
 
@@ -512,7 +512,7 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("the '<name>' handler is not configured to schedule timeouts of type fixtures.MessageZ"))
+				}).To(PanicWith("the '<name>' handler is not configured to schedule timeouts of type fixtures.MessageX"))
 			})
 		})
 	})

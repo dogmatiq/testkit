@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/controller"
@@ -41,7 +39,7 @@ var _ = Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "<key>")
 				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageX{})
+				c.ProducesEventType(MessageE{})
 			},
 		}
 
@@ -50,10 +48,7 @@ var _ = Describe("type Controller", func() {
 		ctrl = NewController(
 			config,
 			&messageIDs,
-			message.NewTypeSet(
-				MessageBType,
-				MessageEType,
-			),
+			config.MessageTypes().Produced,
 		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
@@ -126,8 +121,8 @@ var _ = Describe("type Controller", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Message,
 			) error {
-				s.RecordEvent(MessageB1)
-				s.RecordEvent(MessageB2)
+				s.RecordEvent(MessageE1)
+				s.RecordEvent(MessageE2)
 				return nil
 			}
 
@@ -143,7 +138,7 @@ var _ = Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					"1",
-					MessageB1,
+					MessageE1,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",
@@ -152,7 +147,7 @@ var _ = Describe("type Controller", func() {
 				),
 				command.NewEvent(
 					"2",
-					MessageB2,
+					MessageE2,
 					now,
 					envelope.Origin{
 						HandlerName: "<name>",

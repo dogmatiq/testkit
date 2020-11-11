@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/controller/integration"
@@ -35,17 +33,16 @@ var _ = Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "<key>")
 				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageX{})
+				c.ProducesEventType(MessageE{})
 			},
 		}
 
+		config := configkit.FromIntegration(handler)
+
 		ctrl = NewController(
-			configkit.FromIntegration(handler),
+			config,
 			&messageIDs,
-			message.NewTypeSet(
-				MessageBType,
-				MessageEType,
-			),
+			config.MessageTypes().Produced,
 		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
@@ -58,7 +55,7 @@ var _ = Describe("type scope", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Message,
 			) error {
-				s.RecordEvent(MessageB1)
+				s.RecordEvent(MessageE1)
 				return nil
 			}
 		})
@@ -81,7 +78,7 @@ var _ = Describe("type scope", func() {
 					Envelope:    command,
 					EventEnvelope: command.NewEvent(
 						"1",
-						MessageB1,
+						MessageE1,
 						now,
 						envelope.Origin{
 							HandlerName: "<name>",
@@ -98,7 +95,7 @@ var _ = Describe("type scope", func() {
 				s dogma.IntegrationCommandScope,
 				m dogma.Message,
 			) error {
-				s.RecordEvent(MessageZ1)
+				s.RecordEvent(MessageX1)
 				return nil
 			}
 
@@ -109,7 +106,7 @@ var _ = Describe("type scope", func() {
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith("the '<name>' handler is not configured to record events of type fixtures.MessageZ"))
+			}).To(PanicWith("the '<name>' handler is not configured to record events of type fixtures.MessageX"))
 		})
 	})
 

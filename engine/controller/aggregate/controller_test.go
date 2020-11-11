@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/controller"
@@ -41,7 +39,7 @@ var _ = Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "<key>")
 				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageX{})
+				c.ProducesEventType(MessageE{})
 			},
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
@@ -63,9 +61,7 @@ var _ = Describe("type Controller", func() {
 		ctrl = NewController(
 			config,
 			&messageIDs,
-			message.NewTypeSet(
-				MessageEType,
-			),
+			config.MessageTypes().Produced,
 		)
 
 		messageIDs.Reset() // reset after setup for a predictable ID.
