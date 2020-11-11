@@ -52,11 +52,10 @@ func (c *configurer) VisitRichProcess(_ context.Context, cfg configkit.RichProce
 func (c *configurer) VisitRichIntegration(_ context.Context, cfg configkit.RichIntegration) error {
 	mt := cfg.MessageTypes()
 	c.registerController(
-		integration.NewController(
-			cfg,
-			&c.engine.messageIDs,
-			mt.Produced,
-		),
+		&integration.Controller{
+			Config:     cfg,
+			MessageIDs: &c.engine.messageIDs,
+		},
 		mt.Consumed,
 	)
 

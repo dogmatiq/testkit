@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -17,13 +16,12 @@ type scope struct {
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
-	produced   message.TypeCollection
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }
 
 func (s *scope) RecordEvent(m dogma.Message) {
-	if !s.produced.HasM(m) {
+	if !s.config.MessageTypes().Produced.HasM(m) {
 		panic(fmt.Sprintf(
 			"the '%s' handler is not configured to record events of type %T",
 			s.config.Identity().Name,

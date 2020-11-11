@@ -14,28 +14,14 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.IntegrationMessageHandler implementations.
 type Controller struct {
-	config     configkit.RichIntegration
-	messageIDs *envelope.MessageIDGenerator
-	produced   message.TypeCollection
-}
-
-// NewController returns a new controller for the given handler.
-func NewController(
-	c configkit.RichIntegration,
-	g *envelope.MessageIDGenerator,
-	t message.TypeCollection,
-) *Controller {
-	return &Controller{
-		config:     c,
-		messageIDs: g,
-		produced:   t,
-	}
+	Config     configkit.RichIntegration
+	MessageIDs *envelope.MessageIDGenerator
 }
 
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.config.Identity()
+	return c.Config.Identity()
 }
 
 // Type returns configkit.IntegrationHandlerType.
@@ -61,11 +47,11 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	handler := c.config.Handler()
+	handler := c.Config.Handler()
 
 	var t time.Duration
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"IntegrationMessageHandler",
 		"TimeoutHint",
 		env.Message,
@@ -81,17 +67,16 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		config:     c.config,
-		messageIDs: c.messageIDs,
+		config:     c.Config,
+		messageIDs: c.MessageIDs,
 		observer:   obs,
 		now:        now,
-		produced:   c.produced,
 		command:    env,
 	}
 
 	var err error
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"IntegrationMessageHandler",
 		"HandleCommand",
 		env.Message,
