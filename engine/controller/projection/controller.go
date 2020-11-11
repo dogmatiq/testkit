@@ -14,22 +14,13 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	config configkit.RichProjection
-}
-
-// NewController returns a new controller for the given handler.
-func NewController(
-	c configkit.RichProjection,
-) *Controller {
-	return &Controller{
-		config: c,
-	}
+	Config configkit.RichProjection
 }
 
 // Identity returns the identity of the handler that is managed by this
 // controller.
 func (c *Controller) Identity() configkit.Identity {
-	return c.config.Identity()
+	return c.Config.Identity()
 }
 
 // Type returns configkit.ProjectionHandlerType.
@@ -55,11 +46,11 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
 
-	handler := c.config.Handler()
+	handler := c.Config.Handler()
 
 	var t time.Duration
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"ProjectionMessageHandler",
 		"TimeoutHint",
 		env.Message,
@@ -75,7 +66,7 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		config:   c.config,
+		config:   c.Config,
 		observer: obs,
 		event:    env,
 	}
@@ -103,7 +94,7 @@ func (c *Controller) Handle(
 
 	var ok bool
 	controller.ConvertUnexpectedMessagePanic(
-		c.config,
+		c.Config,
 		"ProjectionMessageHandler",
 		"HandleEvent",
 		env.Message,

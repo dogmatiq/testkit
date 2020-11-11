@@ -41,7 +41,9 @@ var _ = Describe("type Controller", func() {
 
 		config = configkit.FromProjection(handler)
 
-		ctrl = NewController(config)
+		ctrl = &Controller{
+			Config: config,
+		}
 	})
 
 	Describe("func Identity()", func() {

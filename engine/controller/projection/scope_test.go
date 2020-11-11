@@ -33,9 +33,9 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
-		ctrl = NewController(
-			configkit.FromProjection(handler),
-		)
+		ctrl = &Controller{
+			Config: configkit.FromProjection(handler),
+		}
 	})
 
 	Describe("func RecordedAt()", func() {
