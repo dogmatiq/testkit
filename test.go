@@ -217,10 +217,10 @@ func (t *Test) options(
 		h.Helper()
 	}
 
+	opts = append(opts, engine.WithObserver(a))
+	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
-	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
-	opts = append(opts, engine.WithObserver(a))
 
 	return
 }
