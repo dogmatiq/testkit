@@ -89,6 +89,14 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		))
 	}
 
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not execute command of type %T, it is invalid: %s",
+			m,
+			err,
+		))
+	}
+
 	if !s.exists {
 		panic("can not execute command against non-existent instance")
 	}
@@ -126,6 +134,14 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 			"the '%s' handler is not configured to schedule timeouts of type %T",
 			s.config.Identity().Name,
 			m,
+		))
+	}
+
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf(
+			"can not schedule timeout of type %T, it is invalid: %s",
+			m,
+			err,
 		))
 	}
 

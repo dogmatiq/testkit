@@ -1,6 +1,8 @@
 package assert_test
 
 import (
+	"errors"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
@@ -8,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
+	"github.com/onsi/gomega"
 )
 
 var _ = Context("message assertions", func() {
@@ -46,6 +49,26 @@ var _ = Context("message assertions", func() {
 			expectReport,
 		)
 	}
+
+	Describe("func CommandExecuted()", func() {
+		It("panics if the message is invalid", func() {
+			gomega.Expect(func() {
+				CommandExecuted(MessageA{
+					Value: errors.New("<invalid>"),
+				})
+			}).To(gomega.PanicWith("can not assert that this command will be executed, it is invalid: <invalid>"))
+		})
+	})
+
+	Describe("func RecordEvent()", func() {
+		It("panics if the message is invalid", func() {
+			gomega.Expect(func() {
+				EventRecorded(MessageA{
+					Value: errors.New("<invalid>"),
+				})
+			}).To(gomega.PanicWith("can not assert that this event will be recorded, it is invalid: <invalid>"))
+		})
+	})
 
 	DescribeTable(
 		"func CommandExecuted()",

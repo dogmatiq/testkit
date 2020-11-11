@@ -2,6 +2,7 @@ package process_test
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -441,6 +442,28 @@ var _ = Describe("type scope", func() {
 					)
 				}).To(PanicWith("the '<name>' handler is not configured to execute commands of type fixtures.MessageX"))
 			})
+
+			It("panics if the command is invalid", func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					m dogma.Message,
+				) error {
+					s.ExecuteCommand(MessageC{
+						Value: errors.New("<invalid>"),
+					})
+					return nil
+				}
+
+				Expect(func() {
+					ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						event,
+					)
+				}).To(PanicWith("can not execute command of type fixtures.MessageC, it is invalid: <invalid>"))
+			})
 		})
 
 		Describe("func ScheduleTimeout()", func() {
@@ -513,6 +536,31 @@ var _ = Describe("type scope", func() {
 						event,
 					)
 				}).To(PanicWith("the '<name>' handler is not configured to schedule timeouts of type fixtures.MessageX"))
+			})
+
+			It("panics if the timeout is invalid", func() {
+				handler.HandleEventFunc = func(
+					_ context.Context,
+					s dogma.ProcessEventScope,
+					m dogma.Message,
+				) error {
+					s.ScheduleTimeout(
+						MessageT{
+							Value: errors.New("<invalid>"),
+						},
+						time.Now(),
+					)
+					return nil
+				}
+
+				Expect(func() {
+					ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						event,
+					)
+				}).To(PanicWith("can not schedule timeout of type fixtures.MessageT, it is invalid: <invalid>"))
 			})
 		})
 	})
