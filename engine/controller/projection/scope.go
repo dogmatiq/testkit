@@ -8,7 +8,8 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
-// scope is an implementation of dogma.ProjectionEventScope.
+// scope is an implementation of dogma.ProjectionEventScope and
+// dogma.ProjectionCompactScope.
 type scope struct {
 	config   configkit.RichProjection
 	observer fact.Observer
@@ -23,7 +24,7 @@ func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
 		HandlerName:  s.config.Identity().Name,
 		Handler:      s.config.Handler(),
-		Envelope:     s.event,
+		Envelope:     s.event, // nil if compacting
 		LogFormat:    f,
 		LogArguments: v,
 	})

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
@@ -389,6 +388,16 @@ var _ = Describe("type Logger", func() {
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
 					Envelope:     command,
+					LogFormat:    "<%s>",
+					LogArguments: []interface{}{"message"},
+				},
+			),
+
+			Entry(
+				"MessageLoggedByProjection (compacting)",
+				"= ----  ∵ ----  ⋲ ----  ▼ Σ    <handler> ● <message>",
+				MessageLoggedByProjection{
+					HandlerName:  "<handler>",
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},

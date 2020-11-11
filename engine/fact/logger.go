@@ -439,16 +439,23 @@ func (l *Logger) log(
 	icons []logging.Icon,
 	text ...string,
 ) {
+	var messageID, causationID, correlationID string
+	if env != nil {
+		messageID = env.MessageID
+		causationID = env.CausationID
+		correlationID = env.CorrelationID
+	}
+
 	l.Log(logging.String(
 		[]logging.IconWithLabel{
 			logging.MessageIDIcon.WithLabel(
-				formatMessageID(env.MessageID),
+				formatMessageID(messageID),
 			),
 			logging.CausationIDIcon.WithLabel(
-				formatMessageID(env.CausationID),
+				formatMessageID(causationID),
 			),
 			logging.CorrelationIDIcon.WithLabel(
-				formatMessageID(env.CorrelationID),
+				formatMessageID(correlationID),
 			),
 		},
 		icons,
