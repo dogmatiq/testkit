@@ -383,6 +383,29 @@ var _ = Describe("type Logger", func() {
 			// projections ...
 
 			Entry(
+				"ProjectionCompactionBegun",
+				"",
+				ProjectionCompactionBegun{},
+			),
+
+			Entry(
+				"ProjectionCompactionCompleted (success)",
+				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● compacted",
+				ProjectionCompactionCompleted{
+					HandlerName: "<handler>",
+				},
+			),
+
+			Entry(
+				"ProjectionCompactionCompleted (failure)",
+				"= ----  ∵ ----  ⋲ ----    Σ ✖  <handler> ● compaction failed: <error>",
+				ProjectionCompactionCompleted{
+					HandlerName: "<handler>",
+					Error:       errors.New("<error>"),
+				},
+			),
+
+			Entry(
 				"MessageLoggedByProjection",
 				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    <handler> ● <message>",
 				MessageLoggedByProjection{
@@ -395,7 +418,7 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"MessageLoggedByProjection (compacting)",
-				"= ----  ∵ ----  ⋲ ----  ▼ Σ    <handler> ● <message>",
+				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● <message>",
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
 					LogFormat:    "<%s>",
