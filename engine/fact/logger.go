@@ -73,6 +73,8 @@ func (l *Logger) Notify(f Fact) {
 		l.eventRecordedByIntegration(x)
 	case MessageLoggedByIntegration:
 		l.messageLoggedByIntegration(x)
+	case ProjectionCompactionCompleted:
+		l.projectionCompactionCompleted(x)
 	case MessageLoggedByProjection:
 		l.messageLoggedByProjection(x)
 	}
@@ -420,15 +422,48 @@ func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
 	)
 }
 
+// projectionCompactionCompleted returns the log message for f.
+func (l *Logger) projectionCompactionCompleted(f ProjectionCompactionCompleted) {
+	if f.Error == nil {
+		l.log(
+			nil,
+			[]logging.Icon{
+				"",
+				logging.ProjectionIcon,
+				"",
+			},
+			f.HandlerName,
+			"compacted",
+		)
+	} else {
+		l.log(
+			nil,
+			[]logging.Icon{
+				"",
+				logging.ProjectionIcon,
+				logging.ErrorIcon,
+			},
+			f.HandlerName,
+			fmt.Sprintf("compaction failed: %s", f.Error),
+		)
+	}
+}
+
 // messageLoggedByProjection returns the log message for f.
 func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
+	icons := []logging.Icon{
+		"",
+		logging.ProjectionIcon,
+		"",
+	}
+
+	if f.Envelope != nil {
+		icons[0] = logging.InboundIcon
+	}
+
 	l.log(
 		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProjectionIcon,
-			"",
-		},
+		icons,
 		f.HandlerName,
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
@@ -439,16 +474,23 @@ func (l *Logger) log(
 	icons []logging.Icon,
 	text ...string,
 ) {
+	var messageID, causationID, correlationID string
+	if env != nil {
+		messageID = env.MessageID
+		causationID = env.CausationID
+		correlationID = env.CorrelationID
+	}
+
 	l.Log(logging.String(
 		[]logging.IconWithLabel{
 			logging.MessageIDIcon.WithLabel(
-				formatMessageID(env.MessageID),
+				formatMessageID(messageID),
 			),
 			logging.CausationIDIcon.WithLabel(
-				formatMessageID(env.CausationID),
+				formatMessageID(causationID),
 			),
 			logging.CorrelationIDIcon.WithLabel(
-				formatMessageID(env.CorrelationID),
+				formatMessageID(correlationID),
 			),
 		},
 		icons,

@@ -11,10 +11,18 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
+// CompactInterval is how frequently projections should be compacted.
+//
+// This interval respects the current engine time, which may not be the same as
+// the "real world" time. See engine.RunTimeScaled().
+const CompactInterval = 1 * time.Hour
+
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
 	Config configkit.RichProjection
+
+	lastCompact time.Time
 }
 
 // Identity returns the identity of the handler that is managed by this
@@ -28,12 +36,17 @@ func (c *Controller) Type() configkit.HandlerType {
 	return configkit.ProjectionHandlerType
 }
 
-// Tick does nothing.
+// Tick always performs projection compaction.
 func (c *Controller) Tick(
-	context.Context,
-	fact.Observer,
-	time.Time,
+	ctx context.Context,
+	obs fact.Observer,
+	now time.Time,
 ) ([]*envelope.Envelope, error) {
+	if now.Sub(c.lastCompact) >= CompactInterval {
+		c.lastCompact = now
+		return nil, c.compact(ctx, obs)
+	}
+
 	return nil, nil
 }
 
@@ -125,4 +138,26 @@ func (c *Controller) Handle(
 
 // Reset does nothing.
 func (c *Controller) Reset() {
+}
+
+// compact performs projection compaction and records facts about it.
+func (c *Controller) compact(ctx context.Context, obs fact.Observer) error {
+	obs.Notify(fact.ProjectionCompactionBegun{
+		HandlerName: c.Config.Identity().Name,
+	})
+
+	err := c.Config.Handler().Compact(
+		ctx,
+		&scope{
+			config:   c.Config,
+			observer: obs,
+		},
+	)
+
+	obs.Notify(fact.ProjectionCompactionCompleted{
+		HandlerName: c.Config.Identity().Name,
+		Error:       err,
+	})
+
+	return err
 }

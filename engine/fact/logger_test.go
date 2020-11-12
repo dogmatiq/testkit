@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
@@ -384,11 +383,44 @@ var _ = Describe("type Logger", func() {
 			// projections ...
 
 			Entry(
+				"ProjectionCompactionBegun",
+				"",
+				ProjectionCompactionBegun{},
+			),
+
+			Entry(
+				"ProjectionCompactionCompleted (success)",
+				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● compacted",
+				ProjectionCompactionCompleted{
+					HandlerName: "<handler>",
+				},
+			),
+
+			Entry(
+				"ProjectionCompactionCompleted (failure)",
+				"= ----  ∵ ----  ⋲ ----    Σ ✖  <handler> ● compaction failed: <error>",
+				ProjectionCompactionCompleted{
+					HandlerName: "<handler>",
+					Error:       errors.New("<error>"),
+				},
+			),
+
+			Entry(
 				"MessageLoggedByProjection",
 				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    <handler> ● <message>",
 				MessageLoggedByProjection{
 					HandlerName:  "<handler>",
 					Envelope:     command,
+					LogFormat:    "<%s>",
+					LogArguments: []interface{}{"message"},
+				},
+			),
+
+			Entry(
+				"MessageLoggedByProjection (compacting)",
+				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● <message>",
+				MessageLoggedByProjection{
+					HandlerName:  "<handler>",
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},

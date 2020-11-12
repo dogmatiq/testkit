@@ -71,15 +71,65 @@ var _ = Describe("type Controller", func() {
 			Expect(envelopes).To(BeEmpty())
 		})
 
-		It("does not record any facts", func() {
+		It("performs projection compaction", func() {
+			expect := errors.New("<error>")
+
+			handler.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				return expect
+			}
+
 			buf := &fact.Buffer{}
 			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
 			)
+			Expect(err).To(Equal(expect))
+			Expect(buf.Facts()).To(Equal(
+				[]fact.Fact{
+					fact.ProjectionCompactionBegun{
+						HandlerName: "<name>",
+					},
+					fact.ProjectionCompactionCompleted{
+						HandlerName: "<name>",
+						Error:       expect,
+					},
+				},
+			))
+		})
+
+		It("does not compact again until CompactDuration has elapsed", func() {
+			handler.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				return errors.New("<called>")
+			}
+
+			start := time.Now()
+			_, err := ctrl.Tick(
+				context.Background(),
+				fact.Ignore,
+				start,
+			)
+			Expect(err).To(MatchError("<called>"))
+
+			_, err = ctrl.Tick(
+				context.Background(),
+				fact.Ignore,
+				start.Add(CompactInterval-1), // should not trigger compaction
+			)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(BeEmpty())
+
+			_, err = ctrl.Tick(
+				context.Background(),
+				fact.Ignore,
+				start.Add(CompactInterval), // should trigger compaction
+			)
+			Expect(err).To(MatchError("<called>"))
 		})
 	})
 

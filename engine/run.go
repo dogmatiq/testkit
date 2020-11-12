@@ -37,7 +37,7 @@ func Run(
 //
 // Each tick is performed using a WithCurrentTime() option that scales time by a
 // factor of f. For example, if f is 2.0, the engine will see time progress by 2
-// for every 1 second of real time.
+// seconds for every 1 second of real time.
 //
 // t is the "epoch time", used as current time for the first tick. If t.IsZero()
 // is true, the current time is used.
