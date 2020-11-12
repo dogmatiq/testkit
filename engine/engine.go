@@ -44,7 +44,8 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 	}
 
 	cfgr := &configurer{
-		engine: e,
+		options: eo,
+		engine:  e,
 	}
 
 	ctx := context.Background()

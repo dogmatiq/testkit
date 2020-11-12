@@ -20,7 +20,8 @@ const CompactInterval = 1 * time.Hour
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	Config configkit.RichProjection
+	Config                configkit.RichProjection
+	CompactDuringHandling bool
 
 	lastCompact time.Time
 }
@@ -44,7 +45,25 @@ func (c *Controller) Tick(
 ) ([]*envelope.Envelope, error) {
 	if now.Sub(c.lastCompact) >= CompactInterval {
 		c.lastCompact = now
-		return nil, c.compact(ctx, obs)
+
+		obs.Notify(fact.ProjectionCompactionBegun{
+			HandlerName: c.Config.Identity().Name,
+		})
+
+		err := c.Config.Handler().Compact(
+			ctx,
+			&scope{
+				config:   c.Config,
+				observer: obs,
+			},
+		)
+
+		obs.Notify(fact.ProjectionCompactionCompleted{
+			HandlerName: c.Config.Identity().Name,
+			Error:       err,
+		})
+
+		return nil, err
 	}
 
 	return nil, nil
@@ -105,6 +124,31 @@ func (c *Controller) Handle(
 		return nil, nil
 	}
 
+	compactResult := make(chan error, 1)
+
+	if c.CompactDuringHandling {
+		// Ensure that notification of facts occurs in the main goroutine as
+		// observers aren't required to be thread-safe.
+		obs.Notify(fact.ProjectionCompactionBegun{
+			HandlerName: c.Config.Identity().Name,
+		})
+
+		// Start a goroutine so that compaction happens in parallel with
+		// handling the message. This is intended to ensure the implementation
+		// can actually handle such parallelism, which is required by the spec.
+		go func() {
+			compactResult <- c.Config.Handler().Compact(
+				ctx,
+				&scope{
+					config:   c.Config,
+					observer: obs,
+				},
+			)
+		}()
+	} else {
+		close(compactResult)
+	}
+
 	var ok bool
 	controller.ConvertUnexpectedMessagePanic(
 		c.Config,
@@ -123,6 +167,15 @@ func (c *Controller) Handle(
 		},
 	)
 
+	compactErr := <-compactResult
+
+	if c.CompactDuringHandling {
+		obs.Notify(fact.ProjectionCompactionCompleted{
+			HandlerName: c.Config.Identity().Name,
+			Error:       compactErr,
+		})
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -130,34 +183,16 @@ func (c *Controller) Handle(
 	// If this call to handle actually applied the event, close the resource as
 	// we'll never invoke the handler with this message again.
 	if ok {
-		return nil, handler.CloseResource(ctx, res)
+		if err := handler.CloseResource(ctx, res); err != nil {
+			return nil, err
+		}
 	}
 
-	return nil, nil
+	// Finally we return the compaction error only if there was no other more
+	// relevant error.
+	return nil, compactErr
 }
 
 // Reset does nothing.
 func (c *Controller) Reset() {
-}
-
-// compact performs projection compaction and records facts about it.
-func (c *Controller) compact(ctx context.Context, obs fact.Observer) error {
-	obs.Notify(fact.ProjectionCompactionBegun{
-		HandlerName: c.Config.Identity().Name,
-	})
-
-	err := c.Config.Handler().Compact(
-		ctx,
-		&scope{
-			config:   c.Config,
-			observer: obs,
-		},
-	)
-
-	obs.Notify(fact.ProjectionCompactionCompleted{
-		HandlerName: c.Config.Identity().Name,
-		Error:       err,
-	})
-
-	return err
 }

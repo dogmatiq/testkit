@@ -385,6 +385,62 @@ var _ = Describe("type Controller", func() {
 				),
 			))
 		})
+
+		When("compact-during-handling is disabled", func() {
+			It("does not perform compaction", func() {
+				handler.CompactFunc = func(
+					context.Context,
+					dogma.ProjectionCompactScope,
+				) error {
+					return errors.New("<error>")
+				}
+
+				_, err := ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		When("compact-during-handling is enabled", func() {
+			BeforeEach(func() {
+				ctrl.CompactDuringHandling = true
+			})
+
+			It("performs projection compaction", func() {
+				expect := errors.New("<error>")
+
+				handler.CompactFunc = func(
+					context.Context,
+					dogma.ProjectionCompactScope,
+				) error {
+					return expect
+				}
+
+				buf := &fact.Buffer{}
+				_, err := ctrl.Handle(
+					context.Background(),
+					buf,
+					time.Now(),
+					event,
+				)
+				Expect(err).To(Equal(expect))
+				Expect(buf.Facts()).To(Equal(
+					[]fact.Fact{
+						fact.ProjectionCompactionBegun{
+							HandlerName: "<name>",
+						},
+						fact.ProjectionCompactionCompleted{
+							HandlerName: "<name>",
+							Error:       expect,
+						},
+					},
+				))
+			})
+		})
 	})
 
 	Describe("func Reset()", func() {
