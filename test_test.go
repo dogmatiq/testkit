@@ -1,6 +1,8 @@
 package testkit_test
 
 import (
+	"time"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
@@ -51,6 +53,29 @@ var _ = Describe("type Test", func() {
 	})
 
 	Describe("func Prepare()", func() {
+		It("logs a heading", func() {
+			test.Prepare(
+				AdvanceTime(ByDuration(3 * time.Second)),
+			)
+			Expect(t.Logs).To(ContainElement(
+				"--- PREPARE: ADVANCING TIME (by 3s) ---",
+			))
+		})
+	})
+
+	Describe("func Expect()", func() {
+		It("logs a heading", func() {
+			test.Expect(
+				AdvanceTime(ByDuration(3*time.Second)),
+				assert.Nothing,
+			)
+			Expect(t.Logs).To(ContainElement(
+				"--- EXPECT: ADVANCING TIME (by 3s) ---",
+			))
+		})
+	})
+
+	Describe("func PrepareX()", func() {
 		It("logs a heading", func() {
 			test.PrepareX()
 			Expect(t.Logs).To(ContainElement(

@@ -51,7 +51,8 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	}
 
 	for _, act := range actions {
-		t.act(act, nil, assert.Nothing)
+		t.logHeading("PREPARE: " + act.Heading())
+		act.Apply(t, assert.Nothing, nil)
 	}
 
 	return t
@@ -63,7 +64,8 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		h.Helper()
 	}
 
-	t.act(act, nil, e)
+	t.logHeading("EXPECT: " + act.Heading())
+	act.Apply(t, e, options)
 }
 
 // ExecuteCommand makes an assertion about the application's behavior when a
@@ -101,37 +103,6 @@ func (t *Test) RecordEvent(
 
 	t.begin(assert.RecordEventOperation, a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
-	t.end(a)
-
-	return t
-}
-
-// AdvanceTime artificially advances the engine's notion of the current time
-// according to the given "advancer".
-//
-// It panics if the advancer returns a time that is before the current engine
-// time.
-func (t *Test) AdvanceTime(
-	ta TimeAdvancer,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	now, heading := ta(t.now)
-
-	if now.Before(t.now) {
-		panic("new time must be after the current time")
-	}
-
-	t.logHeading("%s", heading)
-
-	t.now = now
-
-	t.begin(assert.AdvanceTimeOperation, a)
-	t.tick(options, a)
 	t.end(a)
 
 	return t
@@ -228,24 +199,6 @@ func (t *Test) tick(
 		t.t.Log(err)
 		t.t.FailNow()
 	}
-}
-
-func (t *Test) act(
-	act Action,
-	options []engine.OperationOption,
-	a assert.Assertion,
-) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading(act.Heading())
-
-	act.Apply(
-		t,
-		a,
-		options,
-	)
 }
 
 // options returns the full set of operation options to use for given call to
