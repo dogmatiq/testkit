@@ -50,7 +50,7 @@ var _ = Describe("func WithStartTime()", func() {
 					engine.EnableProjections(true),
 				),
 			).
-			Prepare(MessageA1)
+			PrepareX(MessageA1)
 
 		Expect(called).To(BeTrue())
 	})
