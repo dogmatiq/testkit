@@ -57,6 +57,15 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	return t
 }
 
+// Expect ensures that a single action results in some expected behavior.
+func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	t.act(act, nil, e)
+}
+
 // ExecuteCommand makes an assertion about the application's behavior when a
 // specific command is executed.
 func (t *Test) ExecuteCommand(
