@@ -14,7 +14,11 @@ type runnerOptions struct {
 
 // newRunnerOptions returns a new runnerOptions with the given options.
 func newRunnerOptions(options []RunnerOption) *runnerOptions {
-	ro := &runnerOptions{}
+	ro := &runnerOptions{
+		engineOptions: []engine.Option{
+			engine.EnableProjectionCompactionDuringHandling(true),
+		},
+	}
 
 	for _, opt := range options {
 		opt(ro)

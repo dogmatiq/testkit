@@ -7,6 +7,7 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/assert"
+	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -43,7 +44,12 @@ var _ = Describe("type Test", func() {
 		}
 
 		t = &testingmock.T{}
-		test = New(app).Begin(t)
+		test = New(app).Begin(
+			t,
+			WithOperationOptions(
+				engine.EnableProjections(true),
+			),
+		)
 	})
 
 	Describe("func Prepare()", func() {
@@ -75,6 +81,16 @@ var _ = Describe("type Test", func() {
 			)
 			Expect(t.Logs).To(ContainElement(
 				"--- RECORDING TEST EVENT ---",
+			))
+		})
+
+		It("performs projection compaction", func() {
+			test.RecordEvent(
+				MessageE1,
+				assert.Nothing,
+			)
+			Expect(t.Logs).To(ContainElement(
+				"= ----  ∵ ----  ⋲ ----    Σ    <projection> ● compacted",
 			))
 		})
 	})

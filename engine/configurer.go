@@ -13,7 +13,8 @@ import (
 )
 
 type configurer struct {
-	engine *Engine
+	options *engineOptions
+	engine  *Engine
 }
 
 func (c *configurer) VisitRichApplication(ctx context.Context, cfg configkit.RichApplication) error {
@@ -65,7 +66,8 @@ func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichPr
 	mt := cfg.MessageTypes()
 	c.registerController(
 		&projection.Controller{
-			Config: cfg,
+			Config:                cfg,
+			CompactDuringHandling: c.options.compactDuringHandling,
 		},
 		mt.Consumed,
 	)
