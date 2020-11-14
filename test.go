@@ -43,6 +43,20 @@ func (t *Test) PrepareX(messages ...interface{}) *Test {
 	return t
 }
 
+// Prepare performs a group of actions without making any assertions in order
+// to place the application into a particular state.
+func (t *Test) Prepare(actions ...Action) *Test {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	for _, act := range actions {
+		t.act(act, nil, assert.Nothing)
+	}
+
+	return t
+}
+
 // ExecuteCommand makes an assertion about the application's behavior when a
 // specific command is executed.
 func (t *Test) ExecuteCommand(
@@ -205,6 +219,24 @@ func (t *Test) tick(
 		t.t.Log(err)
 		t.t.FailNow()
 	}
+}
+
+func (t *Test) act(
+	act Action,
+	options []engine.OperationOption,
+	a assert.Assertion,
+) {
+	if h, ok := t.t.(tHelper); ok {
+		h.Helper()
+	}
+
+	t.logHeading(act.Heading())
+
+	act.Apply(
+		t,
+		a,
+		options,
+	)
 }
 
 // options returns the full set of operation options to use for given call to
