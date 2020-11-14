@@ -395,13 +395,21 @@ var _ = Describe("type Controller", func() {
 					return errors.New("<error>")
 				}
 
+				buf := &fact.Buffer{}
 				_, err := ctrl.Handle(
 					context.Background(),
-					fact.Ignore,
+					buf,
 					time.Now(),
 					event,
 				)
 				Expect(err).ShouldNot(HaveOccurred())
+
+				Expect(buf.Facts()).NotTo(ContainElement(
+					BeAssignableToTypeOf(fact.ProjectionCompactionBegun{}),
+				))
+				Expect(buf.Facts()).NotTo(ContainElement(
+					BeAssignableToTypeOf(fact.ProjectionCompactionCompleted{}),
+				))
 			})
 		})
 
