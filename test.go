@@ -27,9 +27,9 @@ type Test struct {
 	renderer         render.Renderer
 }
 
-// Prepare prepares the application for the test by executing the given set of
+// PrepareX prepares the application for the test by executing the given set of
 // messages without any assertions.
-func (t *Test) Prepare(messages ...dogma.Message) *Test {
+func (t *Test) PrepareX(messages ...interface{}) *Test {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
