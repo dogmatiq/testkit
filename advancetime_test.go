@@ -76,7 +76,7 @@ var _ = Describe("func AdvanceTime()", func() {
 
 		Expect(t.Failed).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"changing the clock by -1s results in a time earlier than the current time",
+			"adjusting the clock by -1s would reverse time",
 		))
 	})
 
