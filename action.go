@@ -3,6 +3,7 @@ package testkit
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine"
 )
 
@@ -23,9 +24,13 @@ type Action interface {
 	ExpectOptions() []ExpectOption
 
 	// Apply performs the action within the context of a specific test.
-	Apply(
-		ctx context.Context,
-		t *Test,
-		options []engine.OperationOption,
-	) error
+	Apply(ctx context.Context, s ActionScope) error
+}
+
+// ActionScope encapsulates the state that an action can inspect and manipulate.
+type ActionScope struct {
+	App              configkit.RichApplication
+	Test             *Test
+	Engine           *engine.Engine
+	OperationOptions []engine.OperationOption
 }

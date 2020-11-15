@@ -11,6 +11,7 @@ import (
 
 // A Runner executes tests.
 type Runner struct {
+	app    configkit.RichApplication
 	engine *engine.Engine
 }
 
@@ -23,6 +24,7 @@ func New(
 	ro := newRunnerOptions(options)
 
 	return &Runner{
+		cfg,
 		engine.MustNew(cfg, ro.engineOptions...),
 	}
 }
@@ -45,6 +47,7 @@ func (r *Runner) BeginContext(ctx context.Context, t TestingT, options ...TestOp
 	return &Test{
 		ctx:    ctx,
 		t:      t,
+		app:    r.app,
 		engine: r.engine,
 		now:    to.time,
 		operationOptions: append(
