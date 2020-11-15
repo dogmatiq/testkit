@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/render"
 )
@@ -43,12 +42,8 @@ func (a *userAssertion) Notify(f fact.Fact) {
 }
 
 // Begin is called to prepare the assertion for a new test.
-//
-// op is the operation that is making the assertion. c is the comparator
-// used to compare messages and other entities.
-func (a *userAssertion) Begin(op Operation, c compare.Comparator) {
-	a.s.Operation = op
-	a.s.Comparator = c
+func (a *userAssertion) Begin(o ExpectOptionSet) {
+	a.s.Options = o
 }
 
 // End is called once the test is complete.
@@ -113,11 +108,9 @@ func (a *userAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 // criteria to be enforced. It is analogous the *testing.T type that is passed
 // to tests in the native Go test runner.
 type S struct {
-	// Operation is the test operation that made the assertion.
-	Operation Operation
-
-	// Comparator provides logic for comparing messages and application state.
-	compare.Comparator
+	// Options contains the set of options that dictate the behavior of the
+	// expectation.
+	Options ExpectOptionSet
 
 	// Facts is an ordered slice of the facts that occurred.
 	Facts []fact.Fact

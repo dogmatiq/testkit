@@ -3,8 +3,6 @@ package testkit
 import (
 	"fmt"
 	"time"
-
-	"github.com/dogmatiq/testkit/assert"
 )
 
 // AdvanceTime returns an Action that simulates the passage of time by advancing
@@ -67,7 +65,7 @@ func (act advanceTime) Heading() string {
 func (act advanceTime) Apply(
 	t *Test,
 	e Expectation,
-	options []ExpectOption,
+	o ExpectOptionSet,
 ) {
 	now := act.adj.Step(t.now)
 
@@ -80,8 +78,8 @@ func (act advanceTime) Apply(
 
 	t.now = now
 
-	t.begin(assert.AdvanceTimeOperation, e)
-	t.tick(options, e)
+	t.begin(o, e)
+	t.tick(nil, e)
 	t.end(e)
 }
 

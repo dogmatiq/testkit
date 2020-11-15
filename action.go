@@ -16,6 +16,6 @@ type Action interface {
 	Apply(
 		t *Test,
 		e Expectation,
-		options []ExpectOption,
+		o ExpectOptionSet,
 	)
 }

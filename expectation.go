@@ -2,13 +2,28 @@ package testkit
 
 import (
 	"github.com/dogmatiq/testkit/assert"
-	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/compare"
 )
 
 // An Expectation is a predicate for determining whether some specific criteria
 // was met while performing an action.
 type Expectation = assert.Assertion
 
-// ExpectOption is an option that changes the behavior of engine during a call
-// to Test.Expect().
-type ExpectOption = engine.OperationOption
+// ExpectOptionSet is a set of options that dictate the behavior of the
+// Test.Expect() method.
+type ExpectOptionSet = assert.ExpectOptionSet
+
+// ExpectOption is an option that changes the behavior the Test.Expect() method.
+type ExpectOption func(*ExpectOptionSet)
+
+func newExpectOptions(options []ExpectOption) ExpectOptionSet {
+	o := ExpectOptionSet{
+		MessageComparator: compare.DefaultComparator{},
+	}
+
+	for _, opt := range options {
+		opt(&o)
+	}
+
+	return o
+}
