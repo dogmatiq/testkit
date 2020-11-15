@@ -95,7 +95,7 @@ var _ = Describe("func RecordEvent()", func() {
 			RecordEvent(MessageX1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
 			"can not record event, fixtures.MessageX is a not a recognized message type",
 		))
@@ -108,7 +108,7 @@ var _ = Describe("func RecordEvent()", func() {
 			RecordEvent(MessageC1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
 			"can not record event, fixtures.MessageC is configured as a command",
 		))
@@ -122,7 +122,7 @@ var _ = Describe("func RecordEvent()", func() {
 			assert.EventRecorded(MessageE1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 	})
 
 	It("logs a suitable heading", func() {

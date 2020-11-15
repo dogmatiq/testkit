@@ -42,7 +42,10 @@ var _ = Context("composite assertions", func() {
 		runTest(
 			app,
 			func(t *testkit.Test) {
-				t.ExecuteCommand(MessageA{}, assertion)
+				t.Expect(
+					testkit.ExecuteCommand(MessageA{}),
+					assertion,
+				)
 			},
 			nil, //options
 			expectOk,
