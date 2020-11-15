@@ -70,10 +70,6 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 
 // WithCurrentTime returns an operation option that sets the engine's current
 // time.
-//
-// Note that if this option is used with the test runner, it will take
-// precedence over both the testkit.WithStartTime() option and any adjustments
-// to the test clock made via Test.AdvanceTime().
 func WithCurrentTime(t time.Time) OperationOption {
 	return func(oo *operationOptions) {
 		oo.now = t
