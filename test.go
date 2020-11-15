@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/must"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/render"
@@ -37,15 +36,19 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	}
 
 	for _, act := range actions {
+		s := ActionScope{
+			App:      t.app,
+			TestingT: t.t,
+			Test:     t,
+			Engine:   t.engine,
+		}
+
+		s.OperationOptions = append(s.OperationOptions, t.operationOptions...)
+		s.OperationOptions = append(s.OperationOptions, engine.WithCurrentTime(t.now))
+
 		if err := act.Apply(
 			t.ctx,
-			ActionScope{
-				App:              t.app,
-				TestingT:         t.t,
-				Test:             t,
-				Engine:           t.engine,
-				OperationOptions: t.options(nil, assert.Nothing),
-			},
+			s,
 		); err != nil {
 			t.t.Fatal(err)
 		}
@@ -74,19 +77,24 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 
 	e.Begin(o)
 
+	s := ActionScope{
+		App:      t.app,
+		TestingT: t.t,
+		Test:     t,
+		Engine:   t.engine,
+	}
+
+	s.OperationOptions = append(s.OperationOptions, t.operationOptions...)
+	s.OperationOptions = append(
+		s.OperationOptions,
+		engine.WithCurrentTime(t.now),
+		engine.WithObserver(e),
+	)
+
 	func() {
 		defer e.End()
 
-		if err := act.Apply(
-			t.ctx,
-			ActionScope{
-				App:              t.app,
-				TestingT:         t.t,
-				Test:             t,
-				Engine:           t.engine,
-				OperationOptions: t.options(nil, e),
-			},
-		); err != nil {
+		if err := act.Apply(t.ctx, s); err != nil {
 			t.t.Fatal(err)
 		}
 	}()
@@ -106,24 +114,6 @@ func (t *Test) CommandExecutor() dogma.CommandExecutor {
 // events within the context of this test.
 func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
-}
-
-// options returns the full set of operation options to use for given call to
-// dispatch() or tick().
-func (t *Test) options(
-	options []engine.OperationOption,
-	e Expectation,
-) (opts []engine.OperationOption) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	opts = append(opts, engine.WithObserver(e))
-	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
-	opts = append(opts, t.operationOptions...)         // test-wide options
-	opts = append(opts, options...)                    // per-message options
-
-	return
 }
 
 func (t *Test) buildReport(e Expectation) {
