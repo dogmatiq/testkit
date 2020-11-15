@@ -1,10 +1,5 @@
 package testkit
 
-import (
-	"github.com/dogmatiq/testkit/assert"
-	"github.com/dogmatiq/testkit/engine"
-)
-
 // Action is an interface for any action that can be performed within a test.
 //
 // Actions always attempt to cause some state change within the engine or
@@ -20,7 +15,7 @@ type Action interface {
 	// Apply performs the action within the context of a specific test.
 	Apply(
 		t *Test,
-		a assert.Assertion,
-		options []engine.OperationOption,
+		e Expectation,
+		options []ExpectOption,
 	)
 }
