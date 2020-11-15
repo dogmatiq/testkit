@@ -8,31 +8,49 @@ import (
 	"github.com/dogmatiq/configkit/message"
 )
 
+var substitutions = map[message.Role]map[string]string{
+	message.CommandRole: {
+		"<message>":    "command",
+		"<messages>":   "commands",
+		"<produce>":    "execute",
+		"<produced>":   "executed",
+		"<producing>":  "executing",
+		"<dispatcher>": "dogma.CommandExecutor",
+	},
+	message.EventRole: {
+		"<message>":    "event",
+		"<messages>":   "events",
+		"<produce>":    "record",
+		"<produced>":   "recorded",
+		"<producing>":  "recording",
+		"<dispatcher>": "dogma.EventRecorder",
+	},
+	message.TimeoutRole: {
+		"<message>":   "timeout",
+		"<messages>":  "timeouts",
+		"<produce>":   "schedule",
+		"<produced>":  "scheduled",
+		"<producing>": "scheduling",
+	},
+}
+
+var corrections = map[string]string{
+	"an command": "a command",
+	"a event":    "an event",
+	"an timeout": "a timeout",
+}
+
 // Sprint formats a string, inflecting words in s match the message role r.
 func Sprint(r message.Role, s string) string {
-	switch r {
-	case message.CommandRole:
-		s = strings.ReplaceAll(s, "<message>", "command")
-		s = strings.ReplaceAll(s, "<messages>", "commands")
-		s = strings.ReplaceAll(s, "<produce>", "execute")
-		s = strings.ReplaceAll(s, "<produced>", "executed")
-		s = strings.ReplaceAll(s, "<dispatcher>", "dogma.CommandExecutor")
-	case message.EventRole:
-		s = strings.ReplaceAll(s, "<message>", "event")
-		s = strings.ReplaceAll(s, "<messages>", "events")
-		s = strings.ReplaceAll(s, "<produce>", "record")
-		s = strings.ReplaceAll(s, "<produced>", "recorded")
-		s = strings.ReplaceAll(s, "<dispatcher>", "dogma.EventRecorder")
-	case message.TimeoutRole:
-		s = strings.ReplaceAll(s, "<message>", "timeout")
-		s = strings.ReplaceAll(s, "<messages>", "timeouts")
-		s = strings.ReplaceAll(s, "<produce>", "schedule")
-		s = strings.ReplaceAll(s, "<produced>", "scheduled")
+	for k, v := range substitutions[r] {
+		s = strings.ReplaceAll(s, k, v)
+		s = strings.ReplaceAll(s, strings.ToUpper(k), strings.ToUpper(v))
 	}
 
-	s = strings.ReplaceAll(s, "an command", "a command")
-	s = strings.ReplaceAll(s, "a event", "an event")
-	s = strings.ReplaceAll(s, "an timeout", "a timeout")
+	for k, v := range corrections {
+		s = strings.ReplaceAll(s, k, v)
+		s = strings.ReplaceAll(s, strings.ToUpper(k), strings.ToUpper(v))
+	}
 
 	return s
 }

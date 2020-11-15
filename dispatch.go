@@ -2,7 +2,6 @@ package testkit
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
@@ -11,12 +10,18 @@ import (
 
 // ExecuteCommand returns an Action that executes a command message.
 func ExecuteCommand(m dogma.Message) Action {
-	return executeCommand{m}
+	return dispatch{message.CommandRole, m}
 }
 
-// executeCommand is an implementation of Action that executes a command
-// message.
-type executeCommand struct {
+// RecordEvent returns an Action that records an event message.
+func RecordEvent(m dogma.Message) Action {
+	return dispatch{message.EventRole, m}
+}
+
+// dispatchMessage is an implementation of Action that dispatches a message to
+// the engine.
+type dispatch struct {
+	r message.Role
 	m dogma.Message
 }
 
@@ -25,32 +30,40 @@ type executeCommand struct {
 //
 // Any engine activity as a result of this action is logged beneath this
 // heading.
-func (a executeCommand) Heading() string {
-	return fmt.Sprintf("EXECUTING TEST COMMAND (%T)", a.m)
+func (a dispatch) Heading() string {
+	return inflect.Sprintf(
+		a.r,
+		"<PRODUCING> TEST <MESSAGE> (%T)",
+		a.m,
+	)
 }
 
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
-func (a executeCommand) ExpectOptions() []ExpectOption {
+func (a dispatch) ExpectOptions() []ExpectOption {
 	return nil
 }
 
 // Apply performs the action within the context of a specific test.
-func (a executeCommand) Apply(ctx context.Context, s ActionScope) error {
+func (a dispatch) Apply(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
 	r, ok := s.App.MessageTypes().RoleOf(mt)
 
 	if !ok {
 		return inflect.Errorf(
-			r,
-			"can not execute %T as a command, it is a not a recognized message type",
+			a.r,
+			"can not <produce> <message>, %T is a not a recognized message type",
 			a.m,
 		)
-	} else if r != message.CommandRole {
+	} else if r != a.r {
 		return inflect.Errorf(
-			r,
-			"can not execute %T as a command, it is configured as a <message>",
-			a.m,
+			a.r,
+			"can not <produce> <message>, %s",
+			inflect.Sprintf(
+				r,
+				"%T is configured as a <message>",
+				a.m,
+			),
 		)
 	}
 
