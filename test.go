@@ -229,25 +229,6 @@ func (t *Test) dispatch(
 	}
 }
 
-// tick ticks the engine.
-//
-// It fails the test if the engine returns an error.
-func (t *Test) tick(
-	options []engine.OperationOption,
-	e Expectation,
-) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	opts := t.options(options, e)
-
-	if err := t.engine.Tick(t.ctx, opts...); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
-	}
-}
-
 // options returns the full set of operation options to use for given call to
 // dispatch() or tick().
 func (t *Test) options(
