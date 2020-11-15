@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
+	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -109,6 +110,17 @@ var _ = Describe("func ExecuteCommand()", func() {
 		Expect(t.Logs).To(ContainElement(
 			"can not execute command, fixtures.MessageE is configured as an event",
 		))
+	})
+
+	It("does not satisfy its own expectations", func() {
+		t.FailSilently = true
+
+		test.Expect(
+			ExecuteCommand(MessageC1),
+			assert.CommandExecuted(MessageC1),
+		)
+
+		Expect(t.Failed).To(BeTrue())
 	})
 
 	It("logs a suitable heading", func() {

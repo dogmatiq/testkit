@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func RecordEvent()", func() {
+var _ = Describe("func Call()", func() {
 	var (
 		app       *Application
 		t         *testingmock.T
@@ -32,6 +32,18 @@ var _ = Describe("func RecordEvent()", func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
+				c.RegisterAggregate(&AggregateMessageHandler{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "<aggregate-key>")
+						c.ConsumesCommandType(MessageC{})
+						c.ProducesEventType(MessageE{})
+					},
+					RouteCommandToInstanceFunc: func(
+						dogma.Message,
+					) string {
+						return "<instance>"
+					},
+				})
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "<process-key>")
@@ -61,9 +73,50 @@ var _ = Describe("func RecordEvent()", func() {
 		)
 	})
 
-	It("dispatches the message", func() {
+	It("allows use of the test's executor", func() {
+		e := test.CommandExecutor()
+
 		test.Prepare(
-			RecordEvent(MessageE1),
+			Call(func() {
+				e.ExecuteCommand(
+					context.Background(),
+					MessageC1,
+				)
+			}),
+		)
+
+		Expect(buf.Facts()).To(ContainElement(
+			fact.DispatchCycleBegun{
+				Envelope: &envelope.Envelope{
+					MessageID:     "1",
+					CausationID:   "1",
+					CorrelationID: "1",
+					Message:       MessageC1,
+					Type:          MessageCType,
+					Role:          message.CommandRole,
+					CreatedAt:     startTime,
+				},
+				EngineTime: startTime,
+				EnabledHandlers: map[configkit.HandlerType]bool{
+					configkit.AggregateHandlerType:   true,
+					configkit.IntegrationHandlerType: false,
+					configkit.ProcessHandlerType:     true,
+					configkit.ProjectionHandlerType:  false,
+				},
+			},
+		))
+	})
+
+	It("allows use of the test's recorder", func() {
+		r := test.EventRecorder()
+
+		test.Prepare(
+			Call(func() {
+				r.RecordEvent(
+					context.Background(),
+					MessageE1,
+				)
+			}),
 		)
 
 		Expect(buf.Facts()).To(ContainElement(
@@ -88,56 +141,47 @@ var _ = Describe("func RecordEvent()", func() {
 		))
 	})
 
-	It("fails the test if the message type is unrecognized", func() {
-		t.FailSilently = true
-
-		test.Prepare(
-			RecordEvent(MessageX1),
-		)
-
-		Expect(t.Failed).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
-			"can not record event, fixtures.MessageX is a not a recognized message type",
-		))
-	})
-
-	It("fails the test if the message type is not an event", func() {
-		t.FailSilently = true
-
-		test.Prepare(
-			RecordEvent(MessageC1),
-		)
-
-		Expect(t.Failed).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
-			"can not record event, fixtures.MessageC is configured as a command",
-		))
-	})
-
-	It("does not satisfy its own expectations", func() {
-		t.FailSilently = true
+	It("allows expectations to match commands executed via the test's executor", func() {
+		e := test.CommandExecutor()
 
 		test.Expect(
-			RecordEvent(MessageE1),
+			Call(func() {
+				e.ExecuteCommand(
+					context.Background(),
+					MessageC1,
+				)
+			}),
+			assert.CommandExecuted(MessageC1),
+		)
+	})
+
+	It("allows expectations to match events recorded via the test's recorder", func() {
+		r := test.EventRecorder()
+
+		test.Expect(
+			Call(func() {
+				r.RecordEvent(
+					context.Background(),
+					MessageE1,
+				)
+			}),
 			assert.EventRecorded(MessageE1),
 		)
-
-		Expect(t.Failed).To(BeTrue())
 	})
 
 	It("logs a suitable heading", func() {
 		test.Prepare(
-			RecordEvent(MessageE1),
+			Call(func() {}),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- PREPARE: RECORDING TEST EVENT (fixtures.MessageE) ---",
+			"--- PREPARE: CALLING USER-DEFINED FUNCTION ---",
 		))
 	})
 
-	It("panics if the message is nil", func() {
+	It("panics if the function is nil", func() {
 		Expect(func() {
-			RecordEvent(nil)
-		}).To(PanicWith("RecordEvent(): message must not be nil"))
+			Call(nil)
+		}).To(PanicWith("Call(): function must not be nil"))
 	})
 })
