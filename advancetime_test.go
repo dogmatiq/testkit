@@ -116,7 +116,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			)
 
 			Expect(t.Logs).To(ContainElement(
-				"--- PREPARE: ADVANCING TIME (to 2100-01-02T03:04:05Z) ---",
+				"--- ADVANCING TIME (to 2100-01-02T03:04:05Z) ---",
 			))
 		})
 	})
@@ -146,7 +146,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			)
 
 			Expect(t.Logs).To(ContainElement(
-				"--- PREPARE: ADVANCING TIME (by 3s) ---",
+				"--- ADVANCING TIME (by 3s) ---",
 			))
 		})
 

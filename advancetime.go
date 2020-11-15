@@ -66,18 +66,6 @@ type advanceTime struct {
 	adj TimeAdjustment
 }
 
-// Heading returns a human-readable description of the action, used as a
-// heading within the test report.
-//
-// Any engine activity as a result of this action is logged beneath this
-// heading.
-func (a advanceTime) Heading() string {
-	return fmt.Sprintf(
-		"ADVANCING TIME (%s)",
-		a.adj.Description(),
-	)
-}
-
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
 func (a advanceTime) ExpectOptions() []ExpectOption {
@@ -103,6 +91,12 @@ func (a advanceTime) Apply(ctx context.Context, s ActionScope) error {
 	s.OperationOptions = append(
 		s.OperationOptions,
 		engine.WithCurrentTime(now),
+	)
+
+	logf(
+		s.TestingT,
+		"--- ADVANCING TIME (%s) ---",
+		a.adj.Description(),
 	)
 
 	return s.Engine.Tick(ctx, s.OperationOptions...)

@@ -28,15 +28,6 @@ type call struct {
 	fn func()
 }
 
-// Heading returns a human-readable description of the action, used as a
-// heading within the test report.
-//
-// Any engine activity as a result of this action is logged beneath this
-// heading.
-func (a call) Heading() string {
-	return "CALLING USER-DEFINED FUNCTION"
-}
-
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
 func (a call) ExpectOptions() []ExpectOption {
@@ -62,6 +53,11 @@ func (a call) Apply(ctx context.Context, s ActionScope) error {
 		s.Test.executor.Options = nil
 		s.Test.recorder.Options = nil
 	}()
+
+	log(
+		s.TestingT,
+		"--- CALLING USER-DEFINED FUNCTION ---",
+	)
 
 	a.fn()
 

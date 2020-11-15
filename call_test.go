@@ -175,7 +175,7 @@ var _ = Describe("func Call()", func() {
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- PREPARE: CALLING USER-DEFINED FUNCTION ---",
+			"--- CALLING USER-DEFINED FUNCTION ---",
 		))
 	})
 
