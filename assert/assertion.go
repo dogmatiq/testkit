@@ -41,20 +41,3 @@ type Assertion interface {
 	// sub-assertion inside a composite.
 	BuildReport(ok bool, r render.Renderer) *Report
 }
-
-// Nothing is an assertion that has no requirements.
-var Nothing Assertion = nothingAssertion{}
-
-type nothingAssertion struct{}
-
-func (nothingAssertion) Notify(fact.Fact)      {}
-func (nothingAssertion) Begin(ExpectOptionSet) {}
-func (nothingAssertion) End()                  {}
-func (nothingAssertion) Ok() bool              { return true }
-func (nothingAssertion) BuildReport(ok bool, _ render.Renderer) *Report {
-	return &Report{
-		TreeOk:   ok,
-		Ok:       true,
-		Criteria: "no requirement",
-	}
-}
