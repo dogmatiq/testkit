@@ -22,6 +22,10 @@ import (
 // provide their own TimeAdjustment implementations that model time-related
 // concepts within the application's business domain.
 func AdvanceTime(adj TimeAdjustment) Action {
+	if adj == nil {
+		panic("AdvanceTime(): adjustment must not be nil")
+	}
+
 	return advanceTime{adj}
 }
 
@@ -50,6 +54,10 @@ func ToTime(t time.Time) TimeAdjustment {
 // ByDuration returns a TimeAdjustment that advances the virtual clock by a
 // fixed duration.
 func ByDuration(d time.Duration) TimeAdjustment {
+	if d < 0 {
+		panic("ByDuration(): duration must not be negative")
+	}
+
 	return byDuration(d)
 }
 

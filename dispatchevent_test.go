@@ -122,4 +122,10 @@ var _ = Describe("func RecordEvent()", func() {
 			"--- PREPARE: RECORDING TEST EVENT (fixtures.MessageE) ---",
 		))
 	})
+
+	It("panics if the message is nil", func() {
+		Expect(func() {
+			RecordEvent(nil)
+		}).To(PanicWith("RecordEvent(): message must not be nil"))
+	})
 })
