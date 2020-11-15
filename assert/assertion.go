@@ -6,26 +6,19 @@ import (
 	"github.com/dogmatiq/testkit/render"
 )
 
-// Operation is an enumeration of the test operations that can make assertions.
-type Operation int
+// ExpectOptionSet is a set of options that dictate the behavior of the
+// Test.Expect() method.
+type ExpectOptionSet struct {
+	// MessageComparator compares two messages for equality.
+	MessageComparator compare.Comparator
 
-const (
-	// ExecuteCommandOperation is an operation that makes assertions about what
-	// happens when a command is executed.
-	ExecuteCommandOperation Operation = iota
-
-	// RecordEventOperation is an operation that makes assertions about what
-	// happens when an event is recorded.
-	RecordEventOperation
-
-	// AdvanceTimeOperation is an operation that makes assertions about what
-	// happens when the engine time advances.
-	AdvanceTimeOperation
-
-	// CallOperation is an operation that makes assertions about what happens
-	// when a user-defined function is invoked.
-	CallOperation
-)
+	// MatchMessagesInDispatchCycle controls whether expectations should match
+	// messages from the start of a dispatch cycle.
+	//
+	// If it is false, only messages produced by handlers within the application
+	// are matched.
+	MatchMessagesInDispatchCycle bool
+}
 
 // An Assertion is a predicate for determining whether some specific criteria
 // was met during a test.
@@ -33,10 +26,7 @@ type Assertion interface {
 	fact.Observer
 
 	// Begin is called to prepare the assertion for a new test.
-	//
-	// op is the operation that is making the assertion. c is the comparator
-	// used to compare messages and other entities.
-	Begin(op Operation, c compare.Comparator)
+	Begin(o ExpectOptionSet)
 
 	// End is called once the test is complete.
 	End()
@@ -57,10 +47,10 @@ var Nothing Assertion = nothingAssertion{}
 
 type nothingAssertion struct{}
 
-func (nothingAssertion) Notify(fact.Fact)                    {}
-func (nothingAssertion) Begin(Operation, compare.Comparator) {}
-func (nothingAssertion) End()                                {}
-func (nothingAssertion) Ok() bool                            { return true }
+func (nothingAssertion) Notify(fact.Fact)      {}
+func (nothingAssertion) Begin(ExpectOptionSet) {}
+func (nothingAssertion) End()                  {}
+func (nothingAssertion) Ok() bool              { return true }
 func (nothingAssertion) BuildReport(ok bool, _ render.Renderer) *Report {
 	return &Report{
 		TreeOk:   ok,
