@@ -74,13 +74,4 @@ var _ = Describe("type Test", func() {
 			))
 		})
 	})
-
-	Describe("func PrepareX()", func() {
-		It("logs a heading", func() {
-			test.PrepareX()
-			Expect(t.Logs).To(ContainElement(
-				"--- PREPARING APPLICATION FOR TEST ---",
-			))
-		})
-	})
 })
