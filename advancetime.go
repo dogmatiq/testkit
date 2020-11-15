@@ -78,7 +78,7 @@ func (act advanceTime) Apply(
 
 	if now.Before(t.now) {
 		return fmt.Errorf(
-			"changing the clock %s results in a time earlier than the current time",
+			"adjusting the clock %s would reverse time",
 			act.adj.Description(),
 		)
 	}
