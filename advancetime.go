@@ -71,28 +71,27 @@ func (act advanceTime) ExpectOptions() []ExpectOption {
 	return nil
 }
 
-func (act advanceTime) Apply(
-	ctx context.Context,
-	t *Test,
-	options []engine.OperationOption,
-) error {
-	now := act.adj.Step(t.now)
+func (act advanceTime) Apply(ctx context.Context, s ActionScope) error {
+	now := act.adj.Step(s.Test.now)
 
-	if now.Before(t.now) {
+	if now.Before(s.Test.now) {
 		return fmt.Errorf(
 			"adjusting the clock %s would reverse time",
 			act.adj.Description(),
 		)
 	}
 
-	t.now = now
+	s.Test.now = now
 
 	// There is already an engine.WithCurrentTime() based on t.now in the
-	// options slice. Because we have just updated t.now we need to override it
-	// for this one engine tick.
-	options = append(options, engine.WithCurrentTime(now))
+	// options slice. Because we have just updated s.Test.now we need to
+	// override it for this one engine tick.
+	s.OperationOptions = append(
+		s.OperationOptions,
+		engine.WithCurrentTime(now),
+	)
 
-	return t.engine.Tick(ctx, options...)
+	return s.Engine.Tick(ctx, s.OperationOptions...)
 }
 
 // toTime is a ClockMutation that advances the clock to a specific time.

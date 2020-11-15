@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/assert"
@@ -18,6 +19,7 @@ import (
 type Test struct {
 	ctx              context.Context
 	t                TestingT
+	app              configkit.RichApplication
 	engine           *engine.Engine
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
@@ -53,8 +55,15 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	for _, act := range actions {
 		t.logHeading("PREPARE: " + act.Heading())
 
-		options := t.options(nil, assert.Nothing)
-		if err := act.Apply(t.ctx, t, options); err != nil {
+		if err := act.Apply(
+			t.ctx,
+			ActionScope{
+				App:              t.app,
+				Test:             t,
+				Engine:           t.engine,
+				OperationOptions: t.options(nil, assert.Nothing),
+			},
+		); err != nil {
 			t.t.Log(err)
 			t.t.FailNow()
 		}
@@ -85,7 +94,15 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 
 	t.begin(o, e)
 
-	if err := act.Apply(t.ctx, t, t.options(nil, e)); err != nil {
+	if err := act.Apply(
+		t.ctx,
+		ActionScope{
+			App:              t.app,
+			Test:             t,
+			Engine:           t.engine,
+			OperationOptions: t.options(nil, e),
+		},
+	); err != nil {
 		t.t.Log(err)
 		t.t.FailNow()
 	}
