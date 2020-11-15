@@ -3,6 +3,7 @@ package testkit
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -18,14 +19,12 @@ func New(
 	app dogma.Application,
 	options ...RunnerOption,
 ) *Runner {
+	cfg := configkit.FromApplication(app)
 	ro := newRunnerOptions(options)
 
-	e, err := engine.New(app, ro.engineOptions...)
-	if err != nil {
-		panic(err)
+	return &Runner{
+		engine.MustNew(cfg, ro.engineOptions...),
 	}
-
-	return &Runner{e}
 }
 
 // Begin starts a new test.

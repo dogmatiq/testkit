@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
@@ -25,9 +26,9 @@ var _ = Describe("func Run()", func() {
 			},
 		}
 
-		var err error
-		engine, err = New(app)
-		Expect(err).ShouldNot(HaveOccurred())
+		engine = MustNew(
+			configkit.FromApplication(app),
+		)
 	})
 
 	It("calls tick repeatedly", func() {
@@ -90,9 +91,9 @@ var _ = Describe("func RunTimeScaled()", func() {
 			},
 		}
 
-		var err error
-		engine, err = New(app)
-		Expect(err).ShouldNot(HaveOccurred())
+		engine = MustNew(
+			configkit.FromApplication(app),
+		)
 	})
 
 	It("scales type by the given factor", func() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
@@ -71,9 +72,9 @@ var _ = Describe("type Engine", func() {
 			},
 		}
 
-		var err error
-		engine, err = New(app)
-		Expect(err).ShouldNot(HaveOccurred())
+		engine = MustNew(
+			configkit.FromApplication(app),
+		)
 	})
 
 	Describe("func Dispatch()", func() {
