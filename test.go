@@ -50,9 +50,11 @@ func (t *Test) Prepare(actions ...Action) *Test {
 		h.Helper()
 	}
 
+	o := newExpectOptions(nil)
+
 	for _, act := range actions {
 		t.logHeading("PREPARE: " + act.Heading())
-		act.Apply(t, assert.Nothing, nil)
+		act.Apply(t, assert.Nothing, o)
 	}
 
 	return t
@@ -64,8 +66,10 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		h.Helper()
 	}
 
+	o := newExpectOptions(options)
+
 	t.logHeading("EXPECT: " + act.Heading())
-	act.Apply(t, e, options)
+	act.Apply(t, e, o)
 }
 
 // ExecuteCommand makes an assertion about the application's behavior when a
@@ -81,7 +85,7 @@ func (t *Test) ExecuteCommand(
 
 	t.logHeading("EXECUTING TEST COMMAND")
 
-	t.begin(assert.ExecuteCommandOperation, a)
+	t.begin(assert.ExpectOptionSet{}, a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
 
@@ -101,7 +105,7 @@ func (t *Test) RecordEvent(
 
 	t.logHeading("RECORDING TEST EVENT")
 
-	t.begin(assert.RecordEventOperation, a)
+	t.begin(assert.ExpectOptionSet{}, a)
 	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
 	t.end(a)
 
@@ -138,7 +142,12 @@ func (t *Test) Call(
 
 	t.logHeading("CALLING USER-DEFINED FUNCTION")
 
-	t.begin(assert.CallOperation, a)
+	t.begin(
+		assert.ExpectOptionSet{
+			MatchMessagesInDispatchCycle: true,
+		},
+		a,
+	)
 
 	if err := fn(); err != nil {
 		t.t.Log(err)
@@ -168,13 +177,13 @@ func (t *Test) EventRecorder() dogma.EventRecorder {
 func (t *Test) dispatch(
 	m dogma.Message,
 	options []engine.OperationOption,
-	a assert.Assertion,
+	e Expectation,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
-	opts := t.options(options, a)
+	opts := t.options(options, e)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
 		t.t.Log(err)
@@ -187,13 +196,13 @@ func (t *Test) dispatch(
 // It fails the test if the engine returns an error.
 func (t *Test) tick(
 	options []engine.OperationOption,
-	a assert.Assertion,
+	e Expectation,
 ) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
-	opts := t.options(options, a)
+	opts := t.options(options, e)
 
 	if err := t.engine.Tick(t.ctx, opts...); err != nil {
 		t.t.Log(err)
@@ -205,13 +214,13 @@ func (t *Test) tick(
 // dispatch() or tick().
 func (t *Test) options(
 	options []engine.OperationOption,
-	a assert.Assertion,
+	e Expectation,
 ) (opts []engine.OperationOption) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
-	opts = append(opts, engine.WithObserver(a))
+	opts = append(opts, engine.WithObserver(e))
 	opts = append(opts, engine.WithCurrentTime(t.now)) // current test-wide time
 	opts = append(opts, t.operationOptions...)         // test-wide options
 	opts = append(opts, options...)                    // per-message options
@@ -219,17 +228,20 @@ func (t *Test) options(
 	return
 }
 
-func (t *Test) begin(op assert.Operation, a assert.Assertion) {
+func (t *Test) begin(s assert.ExpectOptionSet, a assert.Assertion) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
 
-	c := t.comparator
-	if c == nil {
-		c = compare.DefaultComparator{}
+	if s.MessageComparator == nil {
+		s.MessageComparator = t.comparator
+
+		if s.MessageComparator == nil {
+			s.MessageComparator = compare.DefaultComparator{}
+		}
 	}
 
-	a.Begin(op, c)
+	a.Begin(s)
 }
 
 func (t *Test) end(a assert.Assertion) {

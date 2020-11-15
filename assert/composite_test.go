@@ -5,7 +5,6 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/assert"
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/render"
 	. "github.com/onsi/ginkgo"
@@ -213,10 +212,10 @@ const (
 	fail constAssertion = false
 )
 
-func (a constAssertion) Begin(Operation, compare.Comparator) {}
-func (a constAssertion) End()                                {}
-func (a constAssertion) Ok() bool                            { return bool(a) }
-func (a constAssertion) Notify(fact.Fact)                    {}
+func (a constAssertion) Begin(ExpectOptionSet) {}
+func (a constAssertion) End()                  {}
+func (a constAssertion) Ok() bool              { return bool(a) }
+func (a constAssertion) Notify(fact.Fact)      {}
 func (a constAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	c := "<always fail>"
 	if a {

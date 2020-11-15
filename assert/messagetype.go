@@ -55,17 +55,14 @@ type messageTypeAssertion struct {
 }
 
 // Begin is called to prepare the assertion for a new test.
-//
-// op is the operation that is making the assertion. c is the comparator used to
-// compare messages and other entities.
-func (a *messageTypeAssertion) Begin(op Operation, c compare.Comparator) {
+func (a *messageTypeAssertion) Begin(o ExpectOptionSet) {
 	// reset everything
 	*a = messageTypeAssertion{
 		expected: a.expected,
 		role:     a.role,
 		tracker: tracker{
 			role:               a.role,
-			matchDispatchCycle: op == CallOperation,
+			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
 		},
 	}
 }
