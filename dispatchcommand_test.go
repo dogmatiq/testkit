@@ -36,7 +36,9 @@ var _ = Describe("func ExecuteCommand()", func() {
 						c.ConsumesCommandType(MessageC{})
 						c.ProducesEventType(MessageE{})
 					},
-					RouteCommandToInstanceFunc: func(m dogma.Message) string {
+					RouteCommandToInstanceFunc: func(
+						dogma.Message,
+					) string {
 						return "<instance>"
 					},
 				})
@@ -92,7 +94,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 
 		Expect(t.Failed).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"can not execute fixtures.MessageX as a command, it is a not a recognized message type",
+			"can not execute command, fixtures.MessageX is a not a recognized message type",
 		))
 	})
 
@@ -105,7 +107,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 
 		Expect(t.Failed).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"can not execute fixtures.MessageE as a command, it is configured as an event",
+			"can not execute command, fixtures.MessageE is configured as an event",
 		))
 	})
 

@@ -1,6 +1,8 @@
 package inflect_test
 
 import (
+	"strings"
+
 	"github.com/dogmatiq/configkit/message"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/internal/inflect"
@@ -22,6 +24,10 @@ var _ = Describe("func Sprint()", func() {
 	DescribeTable(
 		"returns a properly inflected string",
 		func(r message.Role, in, out string) {
+			Expect(Sprint(r, in)).To(Equal(out))
+
+			in = strings.ToUpper(in)
+			out = strings.ToUpper(out)
 			Expect(Sprint(r, in)).To(Equal(out))
 		},
 		entry(message.CommandRole, "a <message>", "a command"),
