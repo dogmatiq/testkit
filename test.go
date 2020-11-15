@@ -50,11 +50,14 @@ func (t *Test) Prepare(actions ...Action) *Test {
 		h.Helper()
 	}
 
-	o := newExpectOptions(nil)
-
 	for _, act := range actions {
 		t.logHeading("PREPARE: " + act.Heading())
-		act.Apply(t, assert.Nothing, o)
+
+		options := t.options(nil, assert.Nothing)
+		if err := act.Apply(t.ctx, t, options); err != nil {
+			t.t.Log(err)
+			t.t.FailNow()
+		}
 	}
 
 	return t
@@ -66,10 +69,26 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		h.Helper()
 	}
 
-	o := newExpectOptions(options)
-
 	t.logHeading("EXPECT: " + act.Heading())
-	act.Apply(t, e, o)
+
+	o := ExpectOptionSet{
+		MessageComparator: compare.DefaultComparator{},
+	}
+
+	act.ConfigureExpect(&o)
+
+	for _, opt := range options {
+		opt(&o)
+	}
+
+	t.begin(o, e)
+
+	if err := act.Apply(t.ctx, t, t.options(nil, e)); err != nil {
+		t.t.Log(err)
+		t.t.FailNow()
+	}
+
+	t.end(e)
 }
 
 // ExecuteCommand makes an assertion about the application's behavior when a

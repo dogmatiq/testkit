@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
@@ -31,7 +30,12 @@ var _ = Describe("func AdvanceTime()", func() {
 			},
 		}
 
-		t = &testingmock.T{}
+		GinkgoT()
+
+		t = &testingmock.T{
+			FailSilently: true,
+		}
+
 		startTime = time.Now()
 		buf = &fact.Buffer{}
 
@@ -64,13 +68,16 @@ var _ = Describe("func AdvanceTime()", func() {
 	})
 
 	It("panics if the mutation produces a time in the past", func() {
-		Expect(func() {
-			test.Prepare(
-				AdvanceTime(
-					ByDuration(-1 * time.Second),
-				),
-			)
-		}).To(PanicWith("changing the clock by -1s results in a time earlier than the current time"))
+		test.Prepare(
+			AdvanceTime(
+				ByDuration(-1 * time.Second),
+			),
+		)
+
+		Expect(t.Failed).To(BeTrue())
+		Expect(t.Logs).To(ContainElement(
+			"changing the clock by -1s results in a time earlier than the current time",
+		))
 	})
 
 	When("passed a ToTime() mutation", func() {

@@ -1,8 +1,11 @@
 package testkit
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/dogmatiq/testkit/engine"
 )
 
 // AdvanceTime returns an Action that simulates the passage of time by advancing
@@ -62,25 +65,28 @@ func (act advanceTime) Heading() string {
 	)
 }
 
+// ConfigureExpect updates the options that configure the expectation.
+func (act advanceTime) ConfigureExpect(*ExpectOptionSet) {
+}
+
 func (act advanceTime) Apply(
+	ctx context.Context,
 	t *Test,
-	e Expectation,
-	o ExpectOptionSet,
-) {
+	options []engine.OperationOption,
+) error {
 	now := act.adj.Step(t.now)
 
 	if now.Before(t.now) {
-		panic(fmt.Sprintf(
+		return fmt.Errorf(
 			"changing the clock %s results in a time earlier than the current time",
 			act.adj.Description(),
-		))
+		)
 	}
 
 	t.now = now
+	options = append(options, engine.WithCurrentTime(now))
 
-	t.begin(o, e)
-	t.tick(nil, e)
-	t.end(e)
+	return t.engine.Tick(ctx, options...)
 }
 
 // toTime is a ClockMutation that advances the clock to a specific time.

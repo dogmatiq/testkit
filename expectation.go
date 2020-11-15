@@ -2,7 +2,6 @@ package testkit
 
 import (
 	"github.com/dogmatiq/testkit/assert"
-	"github.com/dogmatiq/testkit/compare"
 )
 
 // An Expectation is a predicate for determining whether some specific criteria
@@ -15,15 +14,3 @@ type ExpectOptionSet = assert.ExpectOptionSet
 
 // ExpectOption is an option that changes the behavior the Test.Expect() method.
 type ExpectOption func(*ExpectOptionSet)
-
-func newExpectOptions(options []ExpectOption) ExpectOptionSet {
-	o := ExpectOptionSet{
-		MessageComparator: compare.DefaultComparator{},
-	}
-
-	for _, opt := range options {
-		opt(&o)
-	}
-
-	return o
-}
