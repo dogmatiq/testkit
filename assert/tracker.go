@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/internal/inflect"
 )
 
 // tracker is an observer used by assertions that keeps track of common
@@ -128,11 +129,11 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	if t.total == 0 {
 		rep.Explanation = "no messages were produced at all"
 	} else if t.produced == 0 {
-		rep.Explanation = inflect(t.role, "no <messages> were <produced> at all")
+		rep.Explanation = inflect.Sprint(t.role, "no <messages> were <produced> at all")
 	} else if t.matchDispatchCycle {
-		rep.Explanation = inflect(t.role, "nothing <produced> the expected <message>")
+		rep.Explanation = inflect.Sprint(t.role, "nothing <produced> the expected <message>")
 	} else {
-		rep.Explanation = inflect(t.role, "none of the engaged handlers <produced> the expected <message>")
+		rep.Explanation = inflect.Sprint(t.role, "none of the engaged handlers <produced> the expected <message>")
 	}
 
 	for _, n := range t.engagedOrder {
@@ -140,6 +141,6 @@ func buildResultNoMatch(rep *Report, t *tracker) {
 	}
 
 	if t.matchDispatchCycle {
-		s.AppendListItem(inflect(t.role, "verify the logic within the code that uses the <dispatcher>"))
+		s.AppendListItem(inflect.Sprint(t.role, "verify the logic within the code that uses the <dispatcher>"))
 	}
 }
