@@ -64,8 +64,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 				OperationOptions: t.options(nil, assert.Nothing),
 			},
 		); err != nil {
-			t.t.Log(err)
-			t.t.FailNow()
+			t.t.Fatal(err)
 		}
 	}
 
@@ -103,8 +102,7 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 			OperationOptions: t.options(nil, e),
 		},
 	); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
+		t.t.Fatal(err)
 	}
 
 	t.end(e)
@@ -188,8 +186,7 @@ func (t *Test) Call(
 	)
 
 	if err := fn(); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
+		t.t.Fatal(err)
 	}
 
 	t.end(a)
@@ -224,8 +221,7 @@ func (t *Test) dispatch(
 	opts := t.options(options, e)
 
 	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		t.t.Log(err)
-		t.t.FailNow()
+		t.t.Fatal(err)
 	}
 }
 
