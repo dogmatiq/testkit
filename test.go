@@ -29,22 +29,6 @@ type Test struct {
 	renderer         render.Renderer
 }
 
-// PrepareX prepares the application for the test by executing the given set of
-// messages without any assertions.
-func (t *Test) PrepareX(messages ...interface{}) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading("PREPARING APPLICATION FOR TEST")
-
-	for _, m := range messages {
-		t.dispatch(m, nil, assert.Nothing)
-	}
-
-	return t
-}
-
 // Prepare performs a group of actions without making any assertions in order
 // to place the application into a particular state.
 func (t *Test) Prepare(actions ...Action) *Test {
@@ -91,107 +75,27 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		opt(&o)
 	}
 
-	t.begin(o, e)
+	e.Begin(o)
 
-	if err := act.Apply(
-		t.ctx,
-		ActionScope{
-			App:              t.app,
-			Test:             t,
-			Engine:           t.engine,
-			OperationOptions: t.options(nil, e),
-		},
-	); err != nil {
-		t.t.Fatal(err)
-	}
+	func() {
+		defer e.End()
 
-	t.end(e)
-}
-
-// ExecuteCommand makes an assertion about the application's behavior when a
-// specific command is executed.
-func (t *Test) ExecuteCommand(
-	m dogma.Message,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading("EXECUTING TEST COMMAND")
-
-	t.begin(assert.ExpectOptionSet{}, a)
-	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
-	t.end(a)
-
-	return t
-}
-
-// RecordEvent makes an assertion about the application's behavior when a
-// specific event is recorded.
-func (t *Test) RecordEvent(
-	m dogma.Message,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading("RECORDING TEST EVENT")
-
-	t.begin(assert.ExpectOptionSet{}, a)
-	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
-	t.end(a)
-
-	return t
-}
-
-// Call makes an assertion about the application's behavior within a
-// user-defined function.
-//
-// Code executed within fn() can make use of the command executor and event
-// recorder returned by t.CommandExecutor() and t.EventRecorder(), respectively.
-func (t *Test) Call(
-	fn func() error,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.executor.Engine = t.engine
-	t.recorder.Engine = t.engine
-
-	opts := t.options(options, a)
-	t.executor.Options = opts
-	t.recorder.Options = opts
-
-	defer func() {
-		// Ensure that the executor and recorder only use the options from this
-		// test while used within Call().
-		t.executor.Options = nil
-		t.recorder.Options = nil
+		if err := act.Apply(
+			t.ctx,
+			ActionScope{
+				App:              t.app,
+				Test:             t,
+				Engine:           t.engine,
+				OperationOptions: t.options(nil, e),
+			},
+		); err != nil {
+			t.t.Fatal(err)
+		}
 	}()
 
-	t.logHeading("CALLING USER-DEFINED FUNCTION")
-
-	t.begin(
-		assert.ExpectOptionSet{
-			MatchMessagesInDispatchCycle: true,
-		},
-		a,
-	)
-
-	if err := fn(); err != nil {
-		t.t.Fatal(err)
+	if !t.t.Failed() {
+		t.buildReport(e)
 	}
-
-	t.end(a)
-
-	return t
 }
 
 // CommandExecutor returns a dogma.CommandExecutor which can be used to execute
@@ -204,25 +108,6 @@ func (t *Test) CommandExecutor() dogma.CommandExecutor {
 // events within the context of this test.
 func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
-}
-
-// dispatch disaptches m to the engine.
-//
-// It fails the test if the engine returns an error.
-func (t *Test) dispatch(
-	m dogma.Message,
-	options []engine.OperationOption,
-	e Expectation,
-) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	opts := t.options(options, e)
-
-	if err := t.engine.Dispatch(t.ctx, m, opts...); err != nil {
-		t.t.Fatal(err)
-	}
 }
 
 // options returns the full set of operation options to use for given call to
@@ -243,28 +128,10 @@ func (t *Test) options(
 	return
 }
 
-func (t *Test) begin(s assert.ExpectOptionSet, a assert.Assertion) {
+func (t *Test) buildReport(e Expectation) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
-
-	if s.MessageComparator == nil {
-		s.MessageComparator = t.comparator
-
-		if s.MessageComparator == nil {
-			s.MessageComparator = compare.DefaultComparator{}
-		}
-	}
-
-	a.Begin(s)
-}
-
-func (t *Test) end(a assert.Assertion) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	a.End()
 
 	r := t.renderer
 	if r == nil {
@@ -277,7 +144,7 @@ func (t *Test) end(a assert.Assertion) {
 		"--- ASSERTION REPORT ---\n\n",
 	)
 
-	rep := a.BuildReport(a.Ok(), r)
+	rep := e.BuildReport(e.Ok(), r)
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())

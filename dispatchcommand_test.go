@@ -93,7 +93,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(MessageX1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
 			"can not execute command, fixtures.MessageX is a not a recognized message type",
 		))
@@ -106,7 +106,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(MessageE1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
 			"can not execute command, fixtures.MessageE is configured as an event",
 		))
@@ -120,7 +120,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 			assert.CommandExecuted(MessageC1),
 		)
 
-		Expect(t.Failed).To(BeTrue())
+		Expect(t.Failed()).To(BeTrue())
 	})
 
 	It("logs a suitable heading", func() {
