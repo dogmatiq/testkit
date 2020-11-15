@@ -58,26 +58,32 @@ type advanceTime struct {
 	adj TimeAdjustment
 }
 
-func (act advanceTime) Heading() string {
+// Heading returns a human-readable description of the action, used as a
+// heading within the test report.
+//
+// Any engine activity as a result of this action is logged beneath this
+// heading.
+func (a advanceTime) Heading() string {
 	return fmt.Sprintf(
 		"ADVANCING TIME (%s)",
-		act.adj.Description(),
+		a.adj.Description(),
 	)
 }
 
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
-func (act advanceTime) ExpectOptions() []ExpectOption {
+func (a advanceTime) ExpectOptions() []ExpectOption {
 	return nil
 }
 
-func (act advanceTime) Apply(ctx context.Context, s ActionScope) error {
-	now := act.adj.Step(s.Test.now)
+// Apply performs the action within the context of a specific test.
+func (a advanceTime) Apply(ctx context.Context, s ActionScope) error {
+	now := a.adj.Step(s.Test.now)
 
 	if now.Before(s.Test.now) {
 		return fmt.Errorf(
 			"adjusting the clock %s would reverse time",
-			act.adj.Description(),
+			a.adj.Description(),
 		)
 	}
 
@@ -97,6 +103,11 @@ func (act advanceTime) Apply(ctx context.Context, s ActionScope) error {
 // toTime is a ClockMutation that advances the clock to a specific time.
 type toTime time.Time
 
+// Description returns a human-readable string that describes how the clock
+// will be advanced.
+//
+// It should complete the sentence "The clock is being advanced...". For
+// example, "by 10 seconds".
 func (t toTime) Description() string {
 	return fmt.Sprintf(
 		"to %s",
@@ -104,6 +115,10 @@ func (t toTime) Description() string {
 	)
 }
 
+// Step returns the time that the virtual clock should be set to as a result
+// of the adjustment.
+//
+// t is the virtual clock's current time.
 func (t toTime) Step(time.Time) time.Time {
 	return time.Time(t)
 }
@@ -111,6 +126,11 @@ func (t toTime) Step(time.Time) time.Time {
 // ByDuration is a ClockMutation that advances the clock by a fixed duration.
 type byDuration time.Duration
 
+// Description returns a human-readable string that describes how the clock
+// will be advanced.
+//
+// It should complete the sentence "The clock is being advanced...". For
+// example, "by 10 seconds".
 func (d byDuration) Description() string {
 	return fmt.Sprintf(
 		"by %s",
@@ -118,6 +138,10 @@ func (d byDuration) Description() string {
 	)
 }
 
+// Step returns the time that the virtual clock should be set to as a result
+// of the adjustment.
+//
+// t is the virtual clock's current time.
 func (d byDuration) Step(before time.Time) time.Time {
 	return before.Add(time.Duration(d))
 }
