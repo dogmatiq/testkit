@@ -7,6 +7,7 @@ package testkit
 type TestingT interface {
 	Log(args ...interface{})
 	Logf(f string, args ...interface{})
+	Fatal(args ...interface{})
 	FailNow()
 }
 

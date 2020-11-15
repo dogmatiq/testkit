@@ -24,6 +24,17 @@ func (t *T) Logf(f string, args ...interface{}) {
 	t.Logs = append(t.Logs, lines...)
 }
 
+// Fatal is an implementation of testing.TB.Fatal().
+func (t *T) Fatal(args ...interface{}) {
+	lines := strings.Split(fmt.Sprint(args...), "\n")
+	t.Logs = append(t.Logs, lines...)
+	t.Failed = true
+
+	if !t.FailSilently {
+		panic("test failed: " + lines[0])
+	}
+}
+
 // FailNow is an implementation of testing.TB.FailNow().
 func (t *T) FailNow() {
 	t.Failed = true
