@@ -37,10 +37,12 @@ func (t *Test) Prepare(actions ...Action) *Test {
 
 	for _, act := range actions {
 		s := ActionScope{
-			App:      t.app,
-			TestingT: t.t,
-			Test:     t,
-			Engine:   t.engine,
+			App:          t.app,
+			TestingT:     t.t,
+			VirtualClock: &t.now,
+			Executor:     &t.executor,
+			Recorder:     &t.recorder,
+			Engine:       t.engine,
 		}
 
 		s.OperationOptions = append(s.OperationOptions, t.operationOptions...)
@@ -78,10 +80,12 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	e.Begin(o)
 
 	s := ActionScope{
-		App:      t.app,
-		TestingT: t.t,
-		Test:     t,
-		Engine:   t.engine,
+		App:          t.app,
+		TestingT:     t.t,
+		VirtualClock: &t.now,
+		Executor:     &t.executor,
+		Recorder:     &t.recorder,
+		Engine:       t.engine,
 	}
 
 	s.OperationOptions = append(s.OperationOptions, t.operationOptions...)

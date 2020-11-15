@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -24,7 +25,9 @@ type Action interface {
 type ActionScope struct {
 	App              configkit.RichApplication
 	TestingT         TestingT
-	Test             *Test
+	VirtualClock     *time.Time
+	Executor         *engine.CommandExecutor
+	Recorder         *engine.EventRecorder
 	Engine           *engine.Engine
 	OperationOptions []engine.OperationOption
 }

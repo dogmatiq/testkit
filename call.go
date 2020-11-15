@@ -40,18 +40,18 @@ func (a call) ExpectOptions() []ExpectOption {
 
 // Apply performs the action within the context of a specific test.
 func (a call) Apply(ctx context.Context, s ActionScope) error {
-	s.Test.executor.Engine = s.Engine
-	s.Test.recorder.Engine = s.Engine
-	s.Test.executor.Options = s.OperationOptions
-	s.Test.recorder.Options = s.OperationOptions
+	s.Executor.Engine = s.Engine
+	s.Recorder.Engine = s.Engine
+	s.Executor.Options = s.OperationOptions
+	s.Recorder.Options = s.OperationOptions
 
 	defer func() {
 		// Reset the engine and options to nil so that the executor and recorder
 		// can not be used after this Call() action ends.
-		s.Test.executor.Engine = nil
-		s.Test.recorder.Engine = nil
-		s.Test.executor.Options = nil
-		s.Test.recorder.Options = nil
+		s.Executor.Engine = nil
+		s.Recorder.Engine = nil
+		s.Executor.Options = nil
+		s.Recorder.Options = nil
 	}()
 
 	log(

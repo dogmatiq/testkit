@@ -74,19 +74,19 @@ func (a advanceTime) ExpectOptions() []ExpectOption {
 
 // Apply performs the action within the context of a specific test.
 func (a advanceTime) Apply(ctx context.Context, s ActionScope) error {
-	now := a.adj.Step(s.Test.now)
+	now := a.adj.Step(*s.VirtualClock)
 
-	if now.Before(s.Test.now) {
+	if now.Before(*s.VirtualClock) {
 		return fmt.Errorf(
 			"adjusting the clock %s would reverse time",
 			a.adj.Description(),
 		)
 	}
 
-	s.Test.now = now
+	*s.VirtualClock = now
 
-	// There is already an engine.WithCurrentTime() based on t.now in the
-	// options slice. Because we have just updated s.Test.now we need to
+	// There is already an engine.WithCurrentTime() based on the virtual clock
+	// in options slice. Because we have just updated the clock we need to
 	// override it for this one engine tick.
 	s.OperationOptions = append(
 		s.OperationOptions,
