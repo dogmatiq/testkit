@@ -19,13 +19,13 @@ var _ = Context("message assertions", func() {
 		aggregate   *AggregateMessageHandler
 		process     *ProcessMessageHandler
 		integration *IntegrationMessageHandler
-		message     dogma.Message
+		action      testkit.Action
 		options     []engine.OperationOption
 	)
 
 	BeforeEach(func() {
 		app, aggregate, process, integration = newTestApp()
-		message = MessageA{}
+		action = testkit.ExecuteCommand(MessageA{})
 		options = nil
 	})
 
@@ -42,7 +42,7 @@ var _ = Context("message assertions", func() {
 		runTest(
 			app,
 			func(t *testkit.Test) {
-				t.ExecuteCommand(message, assertion)
+				t.Expect(action, assertion)
 			},
 			options,
 			expectOk,
@@ -101,7 +101,7 @@ var _ = Context("message assertions", func() {
 			"no messages produced at all",
 			func() {
 				process.HandleEventFunc = nil
-				message = MessageB{}
+				action = testkit.RecordEvent(MessageB{})
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
@@ -371,7 +371,7 @@ var _ = Context("message assertions", func() {
 			"no events recorded at all",
 			func() {
 				integration.HandleCommandFunc = nil
-				message = MessageB{}
+				action = testkit.RecordEvent(MessageB{})
 			},
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok

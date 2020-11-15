@@ -128,11 +128,11 @@ func runTest(
 	for i, l := range lines {
 		if l == "--- ASSERTION REPORT ---" {
 			gomega.Expect(lines[i:]).To(gomega.Equal(expectReport))
-			gomega.Expect(t.Failed).To(gomega.Equal(!expectOk))
+			gomega.Expect(t.Failed()).To(gomega.Equal(!expectOk))
 			return
 		}
 	}
 
 	gomega.Expect(lines).To(gomega.Equal(expectReport))
-	gomega.Expect(t.Failed).To(gomega.Equal(!expectOk))
+	gomega.Expect(t.Failed()).To(gomega.Equal(!expectOk))
 }

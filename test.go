@@ -108,92 +108,6 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	t.end(e)
 }
 
-// ExecuteCommand makes an assertion about the application's behavior when a
-// specific command is executed.
-func (t *Test) ExecuteCommand(
-	m dogma.Message,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading("EXECUTING TEST COMMAND")
-
-	t.begin(assert.ExpectOptionSet{}, a)
-	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
-	t.end(a)
-
-	return t
-}
-
-// RecordEvent makes an assertion about the application's behavior when a
-// specific event is recorded.
-func (t *Test) RecordEvent(
-	m dogma.Message,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.logHeading("RECORDING TEST EVENT")
-
-	t.begin(assert.ExpectOptionSet{}, a)
-	t.dispatch(m, options, a) // TODO: fail if TypeOf(m)'s role is not correct
-	t.end(a)
-
-	return t
-}
-
-// Call makes an assertion about the application's behavior within a
-// user-defined function.
-//
-// Code executed within fn() can make use of the command executor and event
-// recorder returned by t.CommandExecutor() and t.EventRecorder(), respectively.
-func (t *Test) Call(
-	fn func() error,
-	a assert.Assertion,
-	options ...engine.OperationOption,
-) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.executor.Engine = t.engine
-	t.recorder.Engine = t.engine
-
-	opts := t.options(options, a)
-	t.executor.Options = opts
-	t.recorder.Options = opts
-
-	defer func() {
-		// Ensure that the executor and recorder only use the options from this
-		// test while used within Call().
-		t.executor.Options = nil
-		t.recorder.Options = nil
-	}()
-
-	t.logHeading("CALLING USER-DEFINED FUNCTION")
-
-	t.begin(
-		assert.ExpectOptionSet{
-			MatchMessagesInDispatchCycle: true,
-		},
-		a,
-	)
-
-	if err := fn(); err != nil {
-		t.t.Fatal(err)
-	}
-
-	t.end(a)
-
-	return t
-}
-
 // CommandExecutor returns a dogma.CommandExecutor which can be used to execute
 // commands within the context of this test.
 func (t *Test) CommandExecutor() dogma.CommandExecutor {
@@ -265,6 +179,11 @@ func (t *Test) end(a assert.Assertion) {
 	}
 
 	a.End()
+
+	if t.t.Failed() {
+		// Don't build an assertion report if the test has already failed.
+		return
+	}
 
 	r := t.renderer
 	if r == nil {

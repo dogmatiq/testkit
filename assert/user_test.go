@@ -41,8 +41,8 @@ var _ = Context("user assertions", func() {
 		runTest(
 			app,
 			func(t *testkit.Test) {
-				t.ExecuteCommand(
-					MessageA{},
+				t.Expect(
+					testkit.ExecuteCommand(MessageA{}),
 					Should("<criteria>", fn),
 				)
 			},
@@ -247,8 +247,8 @@ var _ = Context("user assertions", func() {
 				testkit.
 					New(app).
 					Begin(t).
-					ExecuteCommand(
-						MessageA{},
+					Expect(
+						testkit.ExecuteCommand(MessageA{}),
 						Should("<criteria>", fn),
 					)
 
@@ -425,7 +425,7 @@ var _ = Context("user assertions", func() {
 					s.Skip()
 				})
 
-				gomega.Expect(t.Failed).To(gomega.BeFalse())
+				gomega.Expect(t.Failed()).To(gomega.BeFalse())
 			})
 
 			It("aborts execution", func() {
@@ -453,7 +453,7 @@ var _ = Context("user assertions", func() {
 					s.SkipNow()
 				})
 
-				gomega.Expect(t.Failed).To(gomega.BeFalse())
+				gomega.Expect(t.Failed()).To(gomega.BeFalse())
 			})
 
 			It("aborts execution", func() {
@@ -481,7 +481,7 @@ var _ = Context("user assertions", func() {
 					s.Skipf("<format>")
 				})
 
-				gomega.Expect(t.Failed).To(gomega.BeFalse())
+				gomega.Expect(t.Failed()).To(gomega.BeFalse())
 			})
 
 			It("aborts execution", func() {
