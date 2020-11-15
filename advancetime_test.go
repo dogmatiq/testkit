@@ -1,6 +1,7 @@
 package testkit_test
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -65,16 +66,27 @@ var _ = Describe("func AdvanceTime()", func() {
 	It("fails the test if time is reversed", func() {
 		t.FailSilently = true
 
+		target := startTime.Add(-1 * time.Second)
+
 		test.Prepare(
 			AdvanceTime(
-				ByDuration(-1 * time.Second),
+				ToTime(target),
 			),
 		)
 
 		Expect(t.Failed).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"adjusting the clock by -1s would reverse time",
+			fmt.Sprintf(
+				"adjusting the clock to %s would reverse time",
+				target.Format(time.RFC3339),
+			),
 		))
+	})
+
+	It("panics if the adjustment is nil", func() {
+		Expect(func() {
+			AdvanceTime(nil)
+		}).To(PanicWith("AdvanceTime(): adjustment must not be nil"))
 	})
 
 	When("passed a ToTime() adjustment", func() {
@@ -136,6 +148,12 @@ var _ = Describe("func AdvanceTime()", func() {
 			Expect(t.Logs).To(ContainElement(
 				"--- PREPARE: ADVANCING TIME (by 3s) ---",
 			))
+		})
+
+		It("panics if the duration is negative", func() {
+			Expect(func() {
+				ByDuration(-1)
+			}).To(PanicWith("ByDuration(): duration must not be negative"))
 		})
 	})
 })

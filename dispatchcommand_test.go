@@ -120,4 +120,10 @@ var _ = Describe("func ExecuteCommand()", func() {
 			"--- PREPARE: EXECUTING TEST COMMAND (fixtures.MessageC) ---",
 		))
 	})
+
+	It("panics if the message is nil", func() {
+		Expect(func() {
+			ExecuteCommand(nil)
+		}).To(PanicWith("ExecuteCommand(): message must not be nil"))
+	})
 })

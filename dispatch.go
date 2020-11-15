@@ -10,11 +10,19 @@ import (
 
 // ExecuteCommand returns an Action that executes a command message.
 func ExecuteCommand(m dogma.Message) Action {
+	if m == nil {
+		panic("ExecuteCommand(): message must not be nil")
+	}
+
 	return dispatch{message.CommandRole, m}
 }
 
 // RecordEvent returns an Action that records an event message.
 func RecordEvent(m dogma.Message) Action {
+	if m == nil {
+		panic("RecordEvent(): message must not be nil")
+	}
+
 	return dispatch{message.EventRole, m}
 }
 
