@@ -131,7 +131,7 @@ var _ = Describe("func RecordEvent()", func() {
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- PREPARE: RECORDING TEST EVENT (fixtures.MessageE) ---",
+			"--- RECORDING TEST EVENT (fixtures.MessageE) ---",
 		))
 	})
 

@@ -12,13 +12,6 @@ import (
 // Actions always attempt to cause some state change within the engine or
 // application.
 type Action interface {
-	// Heading returns a human-readable description of the action, used as a
-	// heading within the test report.
-	//
-	// Any engine activity as a result of this action is logged beneath this
-	// heading.
-	Heading() string
-
 	// ExpectOptions returns the options to use by default when this action is
 	// used with Test.Expect().
 	ExpectOptions() []ExpectOption
@@ -30,6 +23,7 @@ type Action interface {
 // ActionScope encapsulates the state that an action can inspect and manipulate.
 type ActionScope struct {
 	App              configkit.RichApplication
+	TestingT         TestingT
 	Test             *Test
 	Engine           *engine.Engine
 	OperationOptions []engine.OperationOption

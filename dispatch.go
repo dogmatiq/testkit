@@ -75,5 +75,14 @@ func (a dispatch) Apply(ctx context.Context, s ActionScope) error {
 		)
 	}
 
+	log(
+		s.TestingT,
+		inflect.Sprintf(
+			a.r,
+			"--- <PRODUCING> TEST <MESSAGE> (%T) ---",
+			a.m,
+		),
+	)
+
 	return s.Engine.Dispatch(ctx, a.m, s.OperationOptions...)
 }

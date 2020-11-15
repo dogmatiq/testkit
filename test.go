@@ -37,12 +37,11 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	}
 
 	for _, act := range actions {
-		t.logHeading("PREPARE: " + act.Heading())
-
 		if err := act.Apply(
 			t.ctx,
 			ActionScope{
 				App:              t.app,
+				TestingT:         t.t,
 				Test:             t,
 				Engine:           t.engine,
 				OperationOptions: t.options(nil, assert.Nothing),
@@ -60,8 +59,6 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	if h, ok := t.t.(tHelper); ok {
 		h.Helper()
 	}
-
-	t.logHeading("EXPECT: " + act.Heading())
 
 	o := ExpectOptionSet{
 		MessageComparator: compare.DefaultComparator{},
@@ -84,6 +81,7 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 			t.ctx,
 			ActionScope{
 				App:              t.app,
+				TestingT:         t.t,
 				Test:             t,
 				Engine:           t.engine,
 				OperationOptions: t.options(nil, e),
@@ -152,15 +150,4 @@ func (t *Test) buildReport(e Expectation) {
 	if !rep.TreeOk {
 		t.t.FailNow()
 	}
-}
-
-func (t *Test) logHeading(f string, v ...interface{}) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
-
-	t.t.Logf(
-		"--- %s ---",
-		fmt.Sprintf(f, v...),
-	)
 }

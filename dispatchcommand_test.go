@@ -129,7 +129,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- PREPARE: EXECUTING TEST COMMAND (fixtures.MessageC) ---",
+			"--- EXECUTING TEST COMMAND (fixtures.MessageC) ---",
 		))
 	})
 
