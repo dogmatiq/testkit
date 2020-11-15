@@ -84,6 +84,10 @@ func (act advanceTime) Apply(
 	}
 
 	t.now = now
+
+	// There is already an engine.WithCurrentTime() based on t.now in the
+	// options slice. Because we have just updated t.now we need to override it
+	// for this one engine tick.
 	options = append(options, engine.WithCurrentTime(now))
 
 	return t.engine.Tick(ctx, options...)
