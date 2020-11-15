@@ -30,12 +30,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			},
 		}
 
-		GinkgoT()
-
-		t = &testingmock.T{
-			FailSilently: true,
-		}
-
+		t = &testingmock.T{}
 		startTime = time.Now()
 		buf = &fact.Buffer{}
 
@@ -67,7 +62,9 @@ var _ = Describe("func AdvanceTime()", func() {
 		))
 	})
 
-	It("panics if the mutation produces a time in the past", func() {
+	It("fails the test if time is reversed", func() {
+		t.FailSilently = true
+
 		test.Prepare(
 			AdvanceTime(
 				ByDuration(-1 * time.Second),
@@ -80,7 +77,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		))
 	})
 
-	When("passed a ToTime() mutation", func() {
+	When("passed a ToTime() adjustment", func() {
 		targetTime := time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)
 
 		It("advances the clock to the provided time", func() {
@@ -112,7 +109,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		})
 	})
 
-	When("passed a ByDuration() mutation", func() {
+	When("passed a ByDuration() adjustment", func() {
 		It("advances the clock then performs a tick", func() {
 			test.Prepare(
 				AdvanceTime(ByDuration(3 * time.Second)),
