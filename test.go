@@ -75,7 +75,9 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		MessageComparator: compare.DefaultComparator{},
 	}
 
-	act.ConfigureExpect(&o)
+	for _, opt := range act.ExpectOptions() {
+		opt(&o)
+	}
 
 	for _, opt := range options {
 		opt(&o)
