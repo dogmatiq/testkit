@@ -65,8 +65,10 @@ func (act advanceTime) Heading() string {
 	)
 }
 
-// ConfigureExpect updates the options that configure the expectation.
-func (act advanceTime) ConfigureExpect(*ExpectOptionSet) {
+// ExpectOptions returns the options to use by default when this action is
+// used with Test.Expect().
+func (act advanceTime) ExpectOptions() []ExpectOption {
+	return nil
 }
 
 func (act advanceTime) Apply(

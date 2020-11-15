@@ -18,14 +18,9 @@ type Action interface {
 	// heading.
 	Heading() string
 
-	// ConfigureExpect updates the options that dictate the behavior of
-	// expectations.
-	//
-	// It is called before Apply() when the action is used with the
-	// Test.Expect() method.
-	//
-	// It is not called when the action is used with Test.Prepare().
-	ConfigureExpect(*ExpectOptionSet)
+	// ExpectOptions returns the options to use by default when this action is
+	// used with Test.Expect().
+	ExpectOptions() []ExpectOption
 
 	// Apply performs the action within the context of a specific test.
 	Apply(
