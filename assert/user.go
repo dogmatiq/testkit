@@ -210,9 +210,6 @@ func (s *S) Parallel() {
 }
 
 // Helper marks the calling function as a test helper function.
-//
-// It is a no-op in this implementation, but is included to increase
-// compatibility with the *testing.T type.
 func (s *S) Helper() {
 	s.m.Lock()
 	defer s.m.Unlock()
