@@ -29,6 +29,9 @@ type testOptions struct {
 // newTestOptions returns a new testOptions with the given options.
 func newTestOptions(options []TestOption) *testOptions {
 	ro := &testOptions{
+		engineOptions: []engine.Option{
+			engine.EnableProjectionCompactionDuringHandling(true),
+		},
 		operationOptions: []engine.OperationOption{
 			engine.EnableIntegrations(false),
 			engine.EnableProjections(false),
