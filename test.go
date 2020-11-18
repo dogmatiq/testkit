@@ -11,6 +11,7 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/render"
 )
 
@@ -26,6 +27,49 @@ type Test struct {
 	operationOptions []engine.OperationOption
 	comparator       compare.Comparator
 	renderer         render.Renderer
+}
+
+// Begin starts a new test.
+func Begin(
+	t TestingT,
+	app dogma.Application,
+	options ...TestOption,
+) *Test {
+	return BeginContext(
+		context.Background(),
+		t,
+		app,
+		options...,
+	)
+}
+
+// BeginContext starts a new test within a context.
+func BeginContext(
+	ctx context.Context,
+	t TestingT,
+	app dogma.Application,
+	options ...TestOption,
+) *Test {
+	to := newTestOptions(options)
+
+	cfg := configkit.FromApplication(app)
+	e := engine.MustNew(cfg, to.engineOptions...)
+
+	return &Test{
+		ctx:    ctx,
+		t:      t,
+		app:    cfg,
+		engine: e,
+		now:    to.time,
+		operationOptions: append(
+			to.operationOptions,
+			engine.WithObserver(
+				fact.NewLogger(func(s string) {
+					log(t, s)
+				}),
+			),
+		),
+	}
 }
 
 // Prepare performs a group of actions without making any assertions in order

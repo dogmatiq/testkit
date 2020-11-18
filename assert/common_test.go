@@ -113,12 +113,11 @@ func runTest(
 		options...,
 	)
 
-	test := testkit.
-		New(app).
-		Begin(
-			t,
-			testkit.WithOperationOptions(opts...),
-		)
+	test := testkit.Begin(
+		t,
+		app,
+		testkit.WithOperationOptions(opts...),
+	)
 
 	op(test)
 

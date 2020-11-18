@@ -42,17 +42,16 @@ var _ = Describe("func WithStartTime()", func() {
 			},
 		}
 
-		New(app).
-			Begin(
-				&testingmock.T{},
-				WithStartTime(now),
-				WithOperationOptions(
-					engine.EnableProjections(true),
-				),
-			).
-			Prepare(
-				RecordEvent(MessageA1),
-			)
+		Begin(
+			&testingmock.T{},
+			app,
+			WithStartTime(now),
+			WithOperationOptions(
+				engine.EnableProjections(true),
+			),
+		).Prepare(
+			RecordEvent(MessageA1),
+		)
 
 		Expect(called).To(BeTrue())
 	})
