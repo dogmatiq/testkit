@@ -31,9 +31,7 @@ type Test struct {
 // Prepare performs a group of actions without making any assertions in order
 // to place the application into a particular state.
 func (t *Test) Prepare(actions ...Action) *Test {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
+	t.t.Helper()
 
 	for _, act := range actions {
 		s := ActionScope{
@@ -61,9 +59,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 
 // Expect ensures that a single action results in some expected behavior.
 func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
+	t.t.Helper()
 
 	o := ExpectOptionSet{
 		MessageComparator: compare.DefaultComparator{},
@@ -121,9 +117,7 @@ func (t *Test) EventRecorder() dogma.EventRecorder {
 }
 
 func (t *Test) buildReport(e Expectation) {
-	if h, ok := t.t.(tHelper); ok {
-		h.Helper()
-	}
+	t.t.Helper()
 
 	r := t.renderer
 	if r == nil {
