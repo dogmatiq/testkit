@@ -6,4 +6,5 @@
 [![Documentation](https://img.shields.io/badge/go.dev-reference-007d9c)](https://pkg.go.dev/github.com/dogmatiq/testkit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dogmatiq/testkit)](https://goreportcard.com/report/github.com/dogmatiq/testkit)
 
-Blackbox testing utilities for Dogma applications.
+Blackbox testing utilities for [Dogma](https://github.com/dogmatiq/dogma)
+applications.
