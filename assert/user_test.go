@@ -245,8 +245,7 @@ var _ = Context("user assertions", func() {
 				}
 
 				testkit.
-					New(app).
-					Begin(t).
+					Begin(t, app).
 					Expect(
 						testkit.ExecuteCommand(MessageA{}),
 						Should("<criteria>", fn),

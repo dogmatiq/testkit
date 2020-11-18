@@ -20,6 +20,7 @@ migrate tests from prior versions.
 
 ### Added
 
+- Add `Begin()` and `BeginContext()`
 - Add `Action` interface and associated `ActionScope` type
 - Add `Expectation`
 - Add `Test.Expect()` method and associated `ExpectOption` and `ExpectOptionSet` types
@@ -35,6 +36,8 @@ migrate tests from prior versions.
 
 ### Removed
 
+- **[BC]** Remove `New()` (use `Begin[Context]()` instead)
+- **[BC]** Remove `Runner`
 - **[BC]** Remove `Test.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` methods
 - **[BC]** Remove `TimeAdvancer` function (replaced with `TimeAdjustment` interface)
 

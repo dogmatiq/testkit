@@ -50,8 +50,9 @@ var _ = Describe("func ExecuteCommand()", func() {
 		startTime = time.Now()
 		buf = &fact.Buffer{}
 
-		test = New(app).Begin(
+		test = Begin(
 			t,
+			app,
 			WithStartTime(startTime),
 			WithOperationOptions(
 				engine.WithObserver(buf),
