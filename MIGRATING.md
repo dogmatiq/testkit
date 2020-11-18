@@ -53,7 +53,7 @@ test.Prepare(command, event)
 ```go
 test.Prepare(
     testkit.ExecuteCommand(command),
-    testkit.RecordEvent(command),
+    testkit.RecordEvent(event),
 )
 ```
 
