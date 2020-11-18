@@ -3,6 +3,7 @@ package testkit
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -10,6 +11,7 @@ import (
 
 // A Runner executes tests.
 type Runner struct {
+	app    configkit.RichApplication
 	engine *engine.Engine
 }
 
@@ -18,14 +20,13 @@ func New(
 	app dogma.Application,
 	options ...RunnerOption,
 ) *Runner {
+	cfg := configkit.FromApplication(app)
 	ro := newRunnerOptions(options)
 
-	e, err := engine.New(app, ro.engineOptions...)
-	if err != nil {
-		panic(err)
+	return &Runner{
+		cfg,
+		engine.MustNew(cfg, ro.engineOptions...),
 	}
-
-	return &Runner{e}
 }
 
 // Begin starts a new test.
@@ -46,6 +47,7 @@ func (r *Runner) BeginContext(ctx context.Context, t TestingT, options ...TestOp
 	return &Test{
 		ctx:    ctx,
 		t:      t,
+		app:    r.app,
 		engine: r.engine,
 		now:    to.time,
 		operationOptions: append(

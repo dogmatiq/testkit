@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
+	"github.com/onsi/gomega"
 )
 
 var _ = Context("message type assertions that match messages dispatched directly", func() {
@@ -40,24 +41,24 @@ var _ = Context("message type assertions that match messages dispatched directly
 		runTest(
 			app,
 			func(t *testkit.Test) {
-				t.Call(
-					func() error {
+				t.Expect(
+					testkit.Call(func() {
 						if command != nil {
-							return t.CommandExecutor().ExecuteCommand(
+							err := t.CommandExecutor().ExecuteCommand(
 								context.Background(),
 								command,
 							)
+							gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 						}
 
 						if event != nil {
-							return t.EventRecorder().RecordEvent(
+							err := t.EventRecorder().RecordEvent(
 								context.Background(),
 								event,
 							)
+							gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 						}
-
-						return nil
-					},
+					}),
 					assertion,
 				)
 			},

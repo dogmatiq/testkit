@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/render"
 )
 
@@ -55,17 +56,14 @@ type messageTypeAssertion struct {
 }
 
 // Begin is called to prepare the assertion for a new test.
-//
-// op is the operation that is making the assertion. c is the comparator used to
-// compare messages and other entities.
-func (a *messageTypeAssertion) Begin(op Operation, c compare.Comparator) {
+func (a *messageTypeAssertion) Begin(o ExpectOptionSet) {
 	// reset everything
 	*a = messageTypeAssertion{
 		expected: a.expected,
 		role:     a.role,
 		tracker: tracker{
 			role:               a.role,
-			matchDispatchCycle: op == CallOperation,
+			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
 		},
 	}
 }
@@ -88,7 +86,7 @@ func (a *messageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
-		Criteria: inflect(
+		Criteria: inflect.Sprintf(
 			a.role,
 			"<produce> any '%s' <message>",
 			a.expected,
@@ -165,12 +163,12 @@ func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
-		rep.Explanation = inflect(
+		rep.Explanation = inflect.Sprint(
 			a.role,
 			"a <message> of a similar type was <produced> via a <dispatcher>",
 		)
 	} else {
-		rep.Explanation = inflect(
+		rep.Explanation = inflect.Sprintf(
 			a.role,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
 			a.best.Origin.HandlerName,
@@ -191,12 +189,12 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
-		s.AppendListItem(inflect(
+		s.AppendListItem(inflect.Sprint(
 			a.best.Role,
 			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
 		))
 	} else {
-		s.AppendListItem(inflect(
+		s.AppendListItem(inflect.Sprintf(
 			a.best.Role,
 			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
 			a.best.Origin.HandlerName,
@@ -212,12 +210,12 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 
 	if a.sim == compare.SameTypes {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.best.Role,
 				"a message of this type was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of this type was <produced> as a <message> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,
@@ -226,12 +224,12 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 		}
 	} else {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,

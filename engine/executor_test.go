@@ -3,6 +3,7 @@ package engine_test
 import (
 	"context"
 
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
@@ -37,9 +38,9 @@ var _ = Describe("type CommandExecutor", func() {
 			},
 		}
 
-		var err error
-		engine, err = New(app)
-		Expect(err).ShouldNot(HaveOccurred())
+		engine = MustNew(
+			configkit.FromApplication(app),
+		)
 
 		executor = &CommandExecutor{
 			Engine: engine,

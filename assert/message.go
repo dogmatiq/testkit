@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/render"
 )
 
@@ -79,18 +80,15 @@ type messageAssertion struct {
 }
 
 // Begin is called to prepare the assertion for a new test.
-//
-// op is the operation that is making the assertion. c is the comparator used to
-// compare messages and other entities.
-func (a *messageAssertion) Begin(op Operation, c compare.Comparator) {
+func (a *messageAssertion) Begin(o ExpectOptionSet) {
 	// reset everything
 	*a = messageAssertion{
 		expected: a.expected,
 		role:     a.role,
-		cmp:      c,
+		cmp:      o.MessageComparator,
 		tracker: tracker{
 			role:               a.role,
-			matchDispatchCycle: op == CallOperation,
+			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
 		},
 	}
 }
@@ -113,7 +111,7 @@ func (a *messageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
-		Criteria: inflect(
+		Criteria: inflect.Sprintf(
 			a.role,
 			"<produce> a specific '%s' <message>",
 			message.TypeOf(a.expected),
@@ -194,12 +192,12 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 
 	if a.sim == compare.SameTypes {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.role,
 				"a similar <message> was <produced> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.role,
 				"a similar <message> was <produced> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,
@@ -210,12 +208,12 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 		s.AppendListItem("check the content of the message")
 	} else {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.role,
 				"a <message> of a similar type was <produced> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.role,
 				"a <message> of a similar type was <produced> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,
@@ -247,12 +245,12 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
-		s.AppendListItem(inflect(
+		s.AppendListItem(inflect.Sprint(
 			a.best.Role,
 			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
 		))
 	} else {
-		s.AppendListItem(inflect(
+		s.AppendListItem(inflect.Sprintf(
 			a.best.Role,
 			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
 			a.best.Origin.HandlerName,
@@ -270,12 +268,12 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 	// the roles were mismatched.
 	if a.equal {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.best.Role,
 				"the expected message was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"the expected message was <produced> as a <message> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,
@@ -288,12 +286,12 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 
 	if a.sim == compare.SameTypes {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.best.Role,
 				"a similar message was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a similar message was <produced> as a <message> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,
@@ -302,12 +300,12 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 		}
 	} else {
 		if a.best.Origin == nil {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprint(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
-			rep.Explanation = inflect(
+			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
 				a.best.Origin.HandlerName,

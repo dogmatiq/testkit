@@ -3,7 +3,6 @@ package assert
 import (
 	"fmt"
 
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/render"
 )
@@ -131,15 +130,12 @@ func (a *compositeAssertion) Notify(f fact.Fact) {
 }
 
 // Begin is called to prepare the assertion for a new test.
-//
-// op is the operation that is making the assertion. c is the comparator
-// used to compare messages and other entities.
-func (a *compositeAssertion) Begin(op Operation, c compare.Comparator) {
+func (a *compositeAssertion) Begin(o ExpectOptionSet) {
 	a.ok = nil
 	a.outcome = ""
 
 	for _, sub := range a.SubAssertions {
-		sub.Begin(op, c)
+		sub.Begin(o)
 	}
 }
 

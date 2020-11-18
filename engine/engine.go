@@ -30,10 +30,7 @@ type Engine struct {
 }
 
 // New returns a new engine that uses the given app configuration.
-func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
-	defer configkit.Recover(&err)
-	cfg := configkit.FromApplication(app)
-
+func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error) {
 	eo := newEngineOptions(options)
 
 	e := &Engine{
@@ -50,7 +47,7 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 
 	ctx := context.Background()
 
-	if err := cfg.AcceptRichVisitor(ctx, cfgr); err != nil {
+	if err := app.AcceptRichVisitor(ctx, cfgr); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +56,7 @@ func New(app dogma.Application, options ...Option) (_ *Engine, err error) {
 
 // MustNew returns a new engine that uses the given app configuration, or panics
 // if unable to do so.
-func MustNew(app dogma.Application, options ...Option) *Engine {
+func MustNew(app configkit.RichApplication, options ...Option) *Engine {
 	e, err := New(app, options...)
 	if err != nil {
 		panic(err)

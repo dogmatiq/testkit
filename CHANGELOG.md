@@ -9,6 +9,35 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+This release is a major reworking of the entire testing API with the intent of
+formalizing the idea of a test "action" as a distinct concept from an
+"expectation" (previously known as an assertion).
+
+Please see the [MIGRATING.md] file for more detailed instructions on how to
+migrate tests from prior versions.
+
+### Added
+
+- Add `Action` interface and associated `ActionScope` type
+- Add `Expectation`
+- Add `Test.Expect()` method and associated `ExpectOption` and `ExpectOptionSet` types
+- Add `testkit.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()`
+- Add `TimeAdjuster` interface, for use with `AdvanceTime()`
+- **[BC]** Add `TestingT.Failed()` and `Fatal()` methods
+
+### Changed
+
+- **[BC]** Change `Test.Prepare()` to accept `...Action` (previously `...dogma.Message`)
+- **[BC]** The function passed to `Call()` no longer returns an `error`
+- **[BC]** `engine.New()` and `MustNew()` now accept `configkit.RichApplication` (previously `dogma.Application`)
+
+### Removed
+
+- **[BC]** Remove `Test.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` methods
+- **[BC]** Remove `TimeAdvancer` function (replaced with `TimeAdjustment` interface)
+
 ## [0.10.0] - 2020-11-16
 
 ### Changed
@@ -141,6 +170,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 - Initial release
 
 <!-- references -->
+[MIGRATING.md]: https://github.com/dogmatiq/testkit/blob/master/MIGRATING.md
 [Unreleased]: https://github.com/dogmatiq/testkit
 [0.1.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.0
 [0.1.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.1
