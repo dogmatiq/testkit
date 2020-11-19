@@ -116,8 +116,6 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 				must.WriteByte(iw, '\n')
 			}
 		}
-
-		must.WriteByte(w, '\n')
 	}
 
 	if len(r.SubReports) != 0 {
@@ -155,7 +153,6 @@ var (
 
 const (
 	suggestionsSection     = "Suggestions"
-	logSection             = "Log Messages"
 	messageDiffSection     = "Message Diff"
 	messageTypeDiffSection = "Message Type Diff"
 )
