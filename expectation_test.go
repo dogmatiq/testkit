@@ -15,8 +15,8 @@ const (
 	fail staticExpectation = false
 )
 
-// staticExpectation is is an Expectation that always always produces the same
-// result. It is intended to be used for testing the test system itself.
+// staticExpectation is is an Expectation that always produces the same result.
+// It is intended to be used for testing the test system itself.
 type staticExpectation bool
 
 func (a staticExpectation) Begin(ExpectOptionSet) {}

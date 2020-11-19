@@ -16,7 +16,7 @@ func expectReport(expected ...string) reportMatcher {
 	expected = append(expected, "")
 
 	return func(t *testingmock.T) {
-		// Scan through the logs until we find of the start of the test report,
+		// Scan through the logs until we find the start of the test report,
 		// then assert that the remainder of the log content matches our
 		// expectation.
 		for i, l := range t.Logs {
