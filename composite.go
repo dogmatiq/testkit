@@ -98,7 +98,7 @@ type compositeExpectation struct {
 	// Criteria is a brief description of the expectation that must be met.
 	Criteria string
 
-	// Children is the expectations child expectations.
+	// Children is the expectation's child expectations.
 	Children []Expectation
 
 	// Predicate is a function that determines whether or not the expectation
