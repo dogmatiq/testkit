@@ -79,16 +79,14 @@ func (t *Test) Prepare(actions ...Action) *Test {
 
 	for _, act := range actions {
 		s := ActionScope{
-			App:          t.app,
-			TestingT:     t.t,
-			VirtualClock: &t.now,
-			Executor:     &t.executor,
-			Recorder:     &t.recorder,
-			Engine:       t.engine,
+			App:              t.app,
+			TestingT:         t.t,
+			VirtualClock:     &t.now,
+			Executor:         &t.executor,
+			Recorder:         &t.recorder,
+			Engine:           t.engine,
+			OperationOptions: t.buildOperationOptions(),
 		}
-
-		s.OperationOptions = append(s.OperationOptions, t.operationOptions...)
-		s.OperationOptions = append(s.OperationOptions, engine.WithCurrentTime(t.now))
 
 		if err := act.Apply(
 			t.ctx,
@@ -126,14 +124,11 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		Executor:     &t.executor,
 		Recorder:     &t.recorder,
 		Engine:       t.engine,
+		OperationOptions: append(
+			t.buildOperationOptions(),
+			engine.WithObserver(e),
+		),
 	}
-
-	s.OperationOptions = append(s.OperationOptions, t.operationOptions...)
-	s.OperationOptions = append(
-		s.OperationOptions,
-		engine.WithCurrentTime(t.now),
-		engine.WithObserver(e),
-	)
 
 	func() {
 		defer e.End()
@@ -182,4 +177,11 @@ func (t *Test) buildReport(e Expectation) {
 	if !rep.TreeOk {
 		t.t.FailNow()
 	}
+}
+
+// buildOperationOptions builds the operation options to provide to each action.
+func (t *Test) buildOperationOptions() (options []engine.OperationOption) {
+	options = append(options, t.operationOptions...)
+	options = append(options, engine.WithCurrentTime(t.now))
+	return options
 }
