@@ -23,14 +23,14 @@ func AllOf(children ...Expectation) Expectation {
 	return &compositeExpectation{
 		Criteria: "all of",
 		Children: children,
-		Predicate: func(p int) (string, bool) {
-			if p == n {
+		Predicate: func(passed int) (string, bool) {
+			if passed == n {
 				return "", true
 			}
 
 			return fmt.Sprintf(
 				"%d of the expectations failed",
-				n-p,
+				n-passed,
 			), false
 		},
 	}
@@ -51,8 +51,8 @@ func AnyOf(children ...Expectation) Expectation {
 	return &compositeExpectation{
 		Criteria: "any of",
 		Children: children,
-		Predicate: func(p int) (string, bool) {
-			if p > 0 {
+		Predicate: func(passed int) (string, bool) {
+			if passed > 0 {
 				return "", true
 			}
 
@@ -75,8 +75,8 @@ func NoneOf(children ...Expectation) Expectation {
 	return &compositeExpectation{
 		Criteria: "none of",
 		Children: children,
-		Predicate: func(p int) (string, bool) {
-			if p == 0 {
+		Predicate: func(passed int) (string, bool) {
+			if passed == 0 {
 				return "", true
 			}
 
@@ -86,7 +86,7 @@ func NoneOf(children ...Expectation) Expectation {
 
 			return fmt.Sprintf(
 				"%d of the expectations passed unexpectedly",
-				p,
+				passed,
 			), false
 		},
 	}
