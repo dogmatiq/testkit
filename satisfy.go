@@ -301,14 +301,16 @@ func (t *SatisfyT) logf(format string, args []interface{}) {
 	t.messages = append(t.messages, m)
 }
 
-// skip marks the test as failed and sets the explanation message to m.
+// skip marks the test as skipped. 
+// fn is the name of the function that was called to skip the test.
 func (t *SatisfyT) skip(fn string) {
 	t.skipped = true
 	t.explain(fn)
 	panic(abortSentinel{})
 }
 
-// fail marks the test as failed and sets the explanation message to m.
+// fail marks the test as failed. 
+// fn is the name of the function that was called to indicate failure.
 func (t *SatisfyT) fail(fn string) {
 	t.failed = true
 	t.explain(fn)
@@ -342,7 +344,7 @@ func (t *SatisfyT) explain(fn string) {
 // findFrame searches, starting after skip frames, for the first caller frame
 // in a function not marked as a helper and returns that frame.
 //
-// The search stops if it finds a method of should.
+// The search stops at the frame where the user-supplied expectation function is called.
 //
 // It is assumed that s.m is already locked.
 func (t *SatisfyT) findFrame(skip int) (runtime.Frame, bool) {
@@ -377,7 +379,7 @@ func callerName(skip int) string {
 	return frame.Function
 }
 
-// stack returns a frames *above the caller* on the stack.
+// stack returns frames *above the caller* on the stack.
 func stack(skip, max int) *runtime.Frames {
 	var pc [50]uintptr
 
