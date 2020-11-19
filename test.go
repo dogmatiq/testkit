@@ -171,7 +171,7 @@ func (t *Test) buildReport(e Expectation) {
 	buf := &strings.Builder{}
 	fmt.Fprint(
 		buf,
-		"--- ASSERTION REPORT ---\n\n",
+		"--- TEST REPORT ---\n\n",
 	)
 
 	rep := e.BuildReport(e.Ok(), r)

@@ -55,7 +55,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			CommandTypeExecuted(MessageC{}),
 			true, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✓ execute any 'fixtures.MessageC' command`,
 		),
@@ -64,7 +64,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			CommandTypeExecuted(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageX' command`,
 			``,
@@ -82,7 +82,7 @@ var _ = Context("message type assertions", func() {
 			},
 			CommandTypeExecuted(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageX' command`,
 			``,
@@ -99,7 +99,7 @@ var _ = Context("message type assertions", func() {
 			},
 			CommandTypeExecuted(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageX' command`,
 			``,
@@ -119,7 +119,7 @@ var _ = Context("message type assertions", func() {
 			},
 			CommandTypeExecuted(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageX' command`,
 			``,
@@ -145,7 +145,7 @@ var _ = Context("message type assertions", func() {
 			},
 			CommandTypeExecuted(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageX' command`,
 			``,
@@ -160,7 +160,7 @@ var _ = Context("message type assertions", func() {
 			nil,                              // setup
 			CommandTypeExecuted(&MessageC{}), // note: message type is pointer
 			false,                            // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any '*fixtures.MessageC' command`,
 			``,
@@ -178,7 +178,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			CommandTypeExecuted(MessageB{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any 'fixtures.MessageB' command`,
 			``,
@@ -194,7 +194,7 @@ var _ = Context("message type assertions", func() {
 			nil,                              // setup
 			CommandTypeExecuted(&MessageB{}), // note: message type is pointer
 			false,                            // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute any '*fixtures.MessageB' command`,
 			``,
@@ -219,7 +219,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			EventTypeRecorded(MessageB{}),
 			true, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✓ record any 'fixtures.MessageB' event`,
 		),
@@ -228,7 +228,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			EventTypeRecorded(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageX' event`,
 			``,
@@ -250,7 +250,7 @@ var _ = Context("message type assertions", func() {
 			},
 			EventTypeRecorded(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageX' event`,
 			``,
@@ -271,7 +271,7 @@ var _ = Context("message type assertions", func() {
 			},
 			EventTypeRecorded(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageX' event`,
 			``,
@@ -289,7 +289,7 @@ var _ = Context("message type assertions", func() {
 			},
 			EventTypeRecorded(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageX' event`,
 			``,
@@ -307,7 +307,7 @@ var _ = Context("message type assertions", func() {
 			},
 			EventTypeRecorded(MessageX{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageX' event`,
 			``,
@@ -322,7 +322,7 @@ var _ = Context("message type assertions", func() {
 			nil,                            // setup
 			EventTypeRecorded(&MessageB{}), // note: message type is pointer
 			false,                          // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any '*fixtures.MessageB' event`,
 			``,
@@ -340,7 +340,7 @@ var _ = Context("message type assertions", func() {
 			nil, // setup
 			EventTypeRecorded(MessageC{}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any 'fixtures.MessageC' event`,
 			``,
@@ -356,7 +356,7 @@ var _ = Context("message type assertions", func() {
 			nil,                            // setup
 			EventTypeRecorded(&MessageC{}), // note: message type is pointer
 			false,                          // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record any '*fixtures.MessageC' event`,
 			``,

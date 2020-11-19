@@ -60,7 +60,7 @@ var _ = Context("user assertions", func() {
 				"assertion passed",
 				func(*S) {},
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <criteria>`,
 			),
@@ -70,7 +70,7 @@ var _ = Context("user assertions", func() {
 					s.Fail()
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -83,7 +83,7 @@ var _ = Context("user assertions", func() {
 					s.SkipNow()
 				},
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <criteria> (the user-defined assertion was skipped)`,
 				``,
@@ -96,7 +96,7 @@ var _ = Context("user assertions", func() {
 					s.Log("<message>")
 				},
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <criteria>`,
 				``,
@@ -109,7 +109,7 @@ var _ = Context("user assertions", func() {
 					s.Logf("<format %s>", "value")
 				},
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <criteria>`,
 				``,
@@ -122,7 +122,7 @@ var _ = Context("user assertions", func() {
 					s.Error("<message>")
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -138,7 +138,7 @@ var _ = Context("user assertions", func() {
 					s.Errorf("<format %s>", "value")
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -154,7 +154,7 @@ var _ = Context("user assertions", func() {
 					s.Fatal("<message>")
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -170,7 +170,7 @@ var _ = Context("user assertions", func() {
 					s.Fatalf("<format %s>", "value")
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -191,7 +191,7 @@ var _ = Context("user assertions", func() {
 					helper()
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -205,7 +205,7 @@ var _ = Context("user assertions", func() {
 					s.Fail()
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,
@@ -225,7 +225,7 @@ var _ = Context("user assertions", func() {
 					helper()
 				},
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ <criteria> (the user-defined assertion failed)`,
 				``,

@@ -76,7 +76,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			nil, // setup
 			CommandExecuted(MessageC{Value: "<value>"}),
 			true, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✓ execute a specific 'fixtures.MessageC' command`,
 		),
@@ -85,7 +85,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			nil, // setup
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -105,7 +105,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -123,7 +123,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -144,7 +144,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -171,7 +171,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -187,7 +187,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			nil, // setup
 			CommandExecuted(&MessageA{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific '*fixtures.MessageA' command`,
 			``,
@@ -207,7 +207,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			nil, // setup
 			CommandExecuted(MessageA{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageA' command`,
 			``,
@@ -229,7 +229,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageB{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageB' command`,
 			``,
@@ -247,7 +247,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(MessageB{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageB' command`,
 			``,
@@ -270,7 +270,7 @@ var _ = Context("message assertions that match messages dispatched directly", fu
 			},
 			CommandExecuted(&MessageB{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific '*fixtures.MessageB' command`,
 			``,

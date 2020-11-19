@@ -78,7 +78,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(MessageC{Value: "<value>"}),
 			true, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✓ execute a specific 'fixtures.MessageC' command`,
 		),
@@ -87,7 +87,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -105,7 +105,7 @@ var _ = Context("message assertions", func() {
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -122,7 +122,7 @@ var _ = Context("message assertions", func() {
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -142,7 +142,7 @@ var _ = Context("message assertions", func() {
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -168,7 +168,7 @@ var _ = Context("message assertions", func() {
 			},
 			CommandExecuted(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageX' command`,
 			``,
@@ -183,7 +183,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(&MessageC{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific '*fixtures.MessageC' command`,
 			``,
@@ -203,7 +203,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(MessageC{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageC' command`,
 			``,
@@ -223,7 +223,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(MessageB{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageB' command`,
 			``,
@@ -239,7 +239,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(MessageB{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific 'fixtures.MessageB' command`,
 			``,
@@ -260,7 +260,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			CommandExecuted(&MessageB{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ execute a specific '*fixtures.MessageB' command`,
 			``,
@@ -287,7 +287,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(MessageB{Value: "<value>"}),
 			true, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✓ record a specific 'fixtures.MessageB' event`,
 		),
@@ -296,7 +296,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageX' event`,
 			``,
@@ -318,7 +318,7 @@ var _ = Context("message assertions", func() {
 			},
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageX' event`,
 			``,
@@ -339,7 +339,7 @@ var _ = Context("message assertions", func() {
 			},
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageX' event`,
 			``,
@@ -357,7 +357,7 @@ var _ = Context("message assertions", func() {
 			},
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageX' event`,
 			``,
@@ -375,7 +375,7 @@ var _ = Context("message assertions", func() {
 			},
 			EventRecorded(MessageX{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageX' event`,
 			``,
@@ -390,7 +390,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(&MessageB{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific '*fixtures.MessageB' event`,
 			``,
@@ -410,7 +410,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(MessageB{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageB' event`,
 			``,
@@ -430,7 +430,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(MessageC{Value: "<value>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageC' event`,
 			``,
@@ -446,7 +446,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(MessageC{Value: "<different>"}),
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific 'fixtures.MessageC' event`,
 			``,
@@ -467,7 +467,7 @@ var _ = Context("message assertions", func() {
 			nil, // setup
 			EventRecorded(&MessageC{Value: "<value>"}), // note: message type is pointer
 			false, // ok
-			`--- ASSERTION REPORT ---`,
+			`--- TEST REPORT ---`,
 			``,
 			`✗ record a specific '*fixtures.MessageC' event`,
 			``,

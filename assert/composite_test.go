@@ -67,7 +67,7 @@ var _ = Context("composite assertions", func() {
 				"single sub-assertion is flattened",
 				AllOf(pass),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <always pass>`,
 			),
@@ -75,7 +75,7 @@ var _ = Context("composite assertions", func() {
 				"all sub-assertions passed",
 				AllOf(pass, pass),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ all of`,
 				`    ✓ <always pass>`,
@@ -85,7 +85,7 @@ var _ = Context("composite assertions", func() {
 				"some of the sub-assertions passed",
 				AllOf(pass, fail),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ all of (1 of the sub-assertions failed)`,
 				`    ✓ <always pass>`,
@@ -95,7 +95,7 @@ var _ = Context("composite assertions", func() {
 				"none of the sub-assertions passed",
 				AllOf(fail, fail),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ all of (2 of the sub-assertions failed)`,
 				`    ✗ <always fail>`,
@@ -118,7 +118,7 @@ var _ = Context("composite assertions", func() {
 				"single sub-assertion is flattened",
 				AnyOf(pass),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ <always pass>`,
 			),
@@ -126,7 +126,7 @@ var _ = Context("composite assertions", func() {
 				"all sub-assertions passed",
 				AnyOf(pass, pass),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ any of`,
 				`    ✓ <always pass>`,
@@ -136,7 +136,7 @@ var _ = Context("composite assertions", func() {
 				"some of the sub-assertions passed",
 				AnyOf(pass, fail),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ any of`,
 				`    ✓ <always pass>`,
@@ -146,7 +146,7 @@ var _ = Context("composite assertions", func() {
 				"none of the sub-assertions passed",
 				AnyOf(fail, fail),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ any of (all 2 of the sub-assertions failed)`,
 				`    ✗ <always fail>`,
@@ -169,7 +169,7 @@ var _ = Context("composite assertions", func() {
 				"single sub-assertion is not flattened",
 				NoneOf(pass),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ none of (the sub-assertion passed unexpectedly)`,
 				`    ✓ <always pass>`,
@@ -178,7 +178,7 @@ var _ = Context("composite assertions", func() {
 				"all sub-assertions passed",
 				NoneOf(pass, pass),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ none of (2 of the sub-assertions passed unexpectedly)`,
 				`    ✓ <always pass>`,
@@ -188,7 +188,7 @@ var _ = Context("composite assertions", func() {
 				"some of the sub-assertions passed",
 				NoneOf(pass, fail),
 				false, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✗ none of (1 of the sub-assertions passed unexpectedly)`,
 				`    ✓ <always pass>`,
@@ -198,7 +198,7 @@ var _ = Context("composite assertions", func() {
 				"none of the sub-assertions passed",
 				NoneOf(fail, fail),
 				true, // ok
-				`--- ASSERTION REPORT ---`,
+				`--- TEST REPORT ---`,
 				``,
 				`✓ none of`,
 				`    ✗ <always fail>`,

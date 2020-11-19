@@ -125,7 +125,7 @@ func runTest(
 	lines := strings.Split(logs, "\n")
 
 	for i, l := range lines {
-		if l == "--- ASSERTION REPORT ---" {
+		if l == "--- TEST REPORT ---" {
 			gomega.Expect(lines[i:]).To(gomega.Equal(expectReport))
 			gomega.Expect(t.Failed()).To(gomega.Equal(!expectOk))
 			return
