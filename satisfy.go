@@ -108,7 +108,7 @@ func (e *toSatisfy) BuildReport(ok bool, r render.Renderer) *assert.Report {
 // SatisfyT is used within expectations made via ToSatisfy() to enforce the
 // expectation.
 //
-// It is analogous the *testing.T type that is passed to tests in the native Go
+// It is analogous to the *testing.T type that is passed to tests in the native Go
 // test runner.
 type SatisfyT struct {
 	// Options contains the set of options that dictate the behavior of the
