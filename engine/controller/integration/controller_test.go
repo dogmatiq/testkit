@@ -140,7 +140,7 @@ var _ = Describe("type Controller", func() {
 					MessageE1,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),
@@ -149,7 +149,7 @@ var _ = Describe("type Controller", func() {
 					MessageE2,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),

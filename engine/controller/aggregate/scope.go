@@ -87,7 +87,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.config.Identity().Name,
+			Handler:     s.config,
 			HandlerType: configkit.AggregateHandlerType,
 			InstanceID:  s.instanceID,
 		},

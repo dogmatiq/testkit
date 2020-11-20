@@ -237,7 +237,7 @@ func (e *Engine) dispatch(
 		if env.Role == message.TimeoutRole {
 			// always dispatch timeouts back to their origin handler
 			controllers = []controller.Controller{
-				e.controllers[env.Origin.HandlerName],
+				e.controllers[env.Origin.Handler.Identity().Name],
 			}
 		} else {
 			// for all other message types check to see the role matches the

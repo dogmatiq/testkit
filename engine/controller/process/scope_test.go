@@ -411,7 +411,7 @@ var _ = Describe("type scope", func() {
 							MessageC1,
 							now,
 							envelope.Origin{
-								HandlerName: "<name>",
+								Handler:     config,
 								HandlerType: configkit.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},
@@ -505,7 +505,7 @@ var _ = Describe("type scope", func() {
 							now,
 							t,
 							envelope.Origin{
-								HandlerName: "<name>",
+								Handler:     config,
 								HandlerType: configkit.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},

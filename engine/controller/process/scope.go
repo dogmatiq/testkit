@@ -103,7 +103,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		m,
 		s.now,
 		envelope.Origin{
-			HandlerName: s.config.Identity().Name,
+			Handler:     s.config,
 			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},
@@ -151,7 +151,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		s.now,
 		t,
 		envelope.Origin{
-			HandlerName: s.config.Identity().Name,
+			Handler:     s.config,
 			HandlerType: configkit.ProcessHandlerType,
 			InstanceID:  s.instanceID,
 		},

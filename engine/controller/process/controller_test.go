@@ -43,7 +43,7 @@ var _ = Describe("type Controller", func() {
 			time.Now(),
 			time.Now(),
 			envelope.Origin{
-				HandlerName: "<name>",
+				Handler:     config,
 				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance-E1>",
 			},
@@ -155,7 +155,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
@@ -166,7 +166,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
@@ -242,7 +242,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
@@ -253,7 +253,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
@@ -336,7 +336,7 @@ var _ = Describe("type Controller", func() {
 						MessageC1,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -347,7 +347,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -573,7 +573,7 @@ var _ = Describe("type Controller", func() {
 						MessageC1,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -584,7 +584,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},

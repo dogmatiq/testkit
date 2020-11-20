@@ -366,7 +366,7 @@ var _ = Describe("type Logger", func() {
 						time.Now(),
 						now,
 						envelope.Origin{
-							HandlerName: "<process>",
+							Handler:     process,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance>",
 						},
