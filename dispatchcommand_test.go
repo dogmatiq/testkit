@@ -83,6 +83,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})

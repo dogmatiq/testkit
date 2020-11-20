@@ -13,6 +13,7 @@ type DispatchCycleBegun struct {
 	Envelope            *envelope.Envelope
 	EngineTime          time.Time
 	EnabledHandlerTypes map[configkit.HandlerType]bool
+	EnabledHandlers     map[string]bool
 }
 
 // DispatchCycleCompleted indicates that a call Engine.Dispatch() has completed.
@@ -20,6 +21,7 @@ type DispatchCycleCompleted struct {
 	Envelope            *envelope.Envelope
 	Error               error
 	EnabledHandlerTypes map[configkit.HandlerType]bool
+	EnabledHandlers     map[string]bool
 }
 
 // DispatchBegun indicates that Engine.Dispatch() has been called with a
@@ -50,8 +52,10 @@ type HandlingCompleted struct {
 }
 
 // HandlingSkipped indicates that a message has been not been handled by a
-// specific handler, because handlers of that type are disabled.
+// specific handler, either because all handlers of that type are or the handler
+// itself is disabled.
 type HandlingSkipped struct {
 	Handler  configkit.RichHandler
 	Envelope *envelope.Envelope
+	Explicit bool // true if handler itself was disabled
 }

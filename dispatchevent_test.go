@@ -85,6 +85,7 @@ var _ = Describe("func RecordEvent()", func() {
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})

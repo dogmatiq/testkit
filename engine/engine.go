@@ -95,6 +95,7 @@ func (e *Engine) Tick(
 		fact.TickCycleBegun{
 			EngineTime:          oo.now,
 			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -108,6 +109,7 @@ func (e *Engine) Tick(
 		fact.TickCycleCompleted{
 			Error:               err,
 			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -124,6 +126,17 @@ func (e *Engine) tick(
 	)
 
 	for _, c := range e.controllers {
+		if skip, explicit := e.skipController(c, oo); skip {
+			oo.observers.Notify(
+				fact.TickSkipped{
+					Handler:  c.HandlerConfig(),
+					Explicit: explicit,
+				},
+			)
+
+			continue
+		}
+
 		oo.observers.Notify(
 			fact.TickBegun{
 				Handler: c.HandlerConfig(),
@@ -197,6 +210,7 @@ func (e *Engine) Dispatch(
 			Envelope:            env,
 			EngineTime:          oo.now,
 			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -211,6 +225,7 @@ func (e *Engine) Dispatch(
 			Envelope:            env,
 			Error:               err,
 			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -280,11 +295,12 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	if !oo.enabledHandlerTypes[c.HandlerConfig().HandlerType()] {
+	if skip, explicit := e.skipController(c, oo); skip {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
 				Handler:  c.HandlerConfig(),
 				Envelope: env,
+				Explicit: explicit,
 			},
 		)
 
@@ -309,4 +325,18 @@ func (e *Engine) handle(
 	)
 
 	return envs, err
+}
+
+func (e *Engine) skipController(
+	c controller.Controller,
+	oo *operationOptions,
+) (skip, explicit bool) {
+	cfg := c.HandlerConfig()
+
+	if en, ok := oo.enabledHandlers[cfg.Identity().Name]; ok {
+		return !en, true
+	}
+
+	en := oo.enabledHandlerTypes[cfg.HandlerType()]
+	return !en, false
 }

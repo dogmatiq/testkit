@@ -67,6 +67,21 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	}
 }
 
+// EnableHandler returns an operation option that enables or disables a specific
+// handler.
+//
+// This option takes precedence over any EnableAggregates(), EnableProcesses(),
+// EnableIntegrations() or EnableProjections() options.
+func EnableHandler(name string, enabled bool) OperationOption {
+	if err := configkit.ValidateIdentityName(name); err != nil {
+		panic(err)
+	}
+
+	return func(oo *operationOptions) {
+		oo.enabledHandlers[name] = enabled
+	}
+}
+
 // WithCurrentTime returns an operation option that sets the engine's current
 // time.
 func WithCurrentTime(t time.Time) OperationOption {
@@ -81,6 +96,7 @@ type operationOptions struct {
 	now                 time.Time
 	observers           fact.ObserverGroup
 	enabledHandlerTypes map[configkit.HandlerType]bool
+	enabledHandlers     map[string]bool
 }
 
 // newOperationOptions returns a new operationOptions with the given options.
@@ -93,6 +109,7 @@ func newOperationOptions(options []OperationOption) *operationOptions {
 			configkit.IntegrationHandlerType: true,
 			configkit.ProjectionHandlerType:  true,
 		},
+		enabledHandlers: map[string]bool{},
 	}
 
 	for _, opt := range options {

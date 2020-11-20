@@ -104,6 +104,7 @@ var _ = Describe("func Call()", func() {
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})
@@ -138,6 +139,7 @@ var _ = Describe("func Call()", func() {
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})

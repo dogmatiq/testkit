@@ -94,13 +94,17 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"DispatchCycleBegun",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatching ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⚙    dispatching ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
 					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType: true,
 						configkit.ProcessHandlerType:   true,
+					},
+					EnabledHandlers: map[string]bool{
+						"<enabled>":  true,
+						"<disabled>": false,
 					},
 				},
 			),
@@ -175,12 +179,16 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"TickCycleBegun",
-				"= ----  ∵ ----  ⋲ ----    ⚙    ticking ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
+				"= ----  ∵ ----  ⋲ ----    ⚙    ticking ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 				TickCycleBegun{
 					EngineTime: now,
 					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType: true,
 						configkit.ProcessHandlerType:   true,
+					},
+					EnabledHandlers: map[string]bool{
+						"<enabled>":  true,
+						"<disabled>": false,
 					},
 				},
 			),
