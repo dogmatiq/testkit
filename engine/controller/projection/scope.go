@@ -22,8 +22,7 @@ func (s *scope) RecordedAt() time.Time {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
-		HandlerName:  s.config.Identity().Name,
-		Handler:      s.config.Handler(),
+		Handler:      s.config,
 		Envelope:     s.event, // nil if compacting
 		LogFormat:    f,
 		LogArguments: v,

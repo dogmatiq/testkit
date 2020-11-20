@@ -91,11 +91,11 @@ var _ = Describe("type Controller", func() {
 			Expect(buf.Facts()).To(Equal(
 				[]fact.Fact{
 					fact.ProjectionCompactionBegun{
-						HandlerName: "<name>",
+						Handler: config,
 					},
 					fact.ProjectionCompactionCompleted{
-						HandlerName: "<name>",
-						Error:       expect,
+						Handler: config,
+						Error:   expect,
 					},
 				},
 			))
@@ -439,11 +439,11 @@ var _ = Describe("type Controller", func() {
 				Expect(buf.Facts()).To(Equal(
 					[]fact.Fact{
 						fact.ProjectionCompactionBegun{
-							HandlerName: "<name>",
+							Handler: config,
 						},
 						fact.ProjectionCompactionCompleted{
-							HandlerName: "<name>",
-							Error:       expect,
+							Handler: config,
+							Error:   expect,
 						},
 					},
 				))

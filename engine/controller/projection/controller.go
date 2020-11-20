@@ -47,7 +47,7 @@ func (c *Controller) Tick(
 		c.lastCompact = now
 
 		obs.Notify(fact.ProjectionCompactionBegun{
-			HandlerName: c.Config.Identity().Name,
+			Handler: c.Config,
 		})
 
 		err := c.Config.Handler().Compact(
@@ -59,8 +59,8 @@ func (c *Controller) Tick(
 		)
 
 		obs.Notify(fact.ProjectionCompactionCompleted{
-			HandlerName: c.Config.Identity().Name,
-			Error:       err,
+			Handler: c.Config,
+			Error:   err,
 		})
 
 		return nil, err
@@ -130,7 +130,7 @@ func (c *Controller) Handle(
 		// Ensure that notification of facts occurs in the main goroutine as
 		// observers aren't required to be thread-safe.
 		obs.Notify(fact.ProjectionCompactionBegun{
-			HandlerName: c.Config.Identity().Name,
+			Handler: c.Config,
 		})
 
 		// Start a goroutine so that compaction happens in parallel with
@@ -171,8 +171,8 @@ func (c *Controller) Handle(
 
 	if c.CompactDuringHandling {
 		obs.Notify(fact.ProjectionCompactionCompleted{
-			HandlerName: c.Config.Identity().Name,
-			Error:       compactErr,
+			Handler: c.Config,
+			Error:   compactErr,
 		})
 	}
 

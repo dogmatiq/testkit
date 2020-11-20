@@ -432,7 +432,7 @@ func (l *Logger) projectionCompactionCompleted(f ProjectionCompactionCompleted) 
 				logging.ProjectionIcon,
 				"",
 			},
-			f.HandlerName,
+			f.Handler.Identity().Name,
 			"compacted",
 		)
 	} else {
@@ -443,7 +443,7 @@ func (l *Logger) projectionCompactionCompleted(f ProjectionCompactionCompleted) 
 				logging.ProjectionIcon,
 				logging.ErrorIcon,
 			},
-			f.HandlerName,
+			f.Handler.Identity().Name,
 			fmt.Sprintf("compaction failed: %s", f.Error),
 		)
 	}
@@ -464,7 +464,7 @@ func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
 	l.log(
 		f.Envelope,
 		icons,
-		f.HandlerName,
+		f.Handler.Identity().Name,
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }

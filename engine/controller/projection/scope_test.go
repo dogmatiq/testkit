@@ -17,6 +17,7 @@ import (
 var _ = Describe("type scope", func() {
 	var (
 		handler *ProjectionMessageHandler
+		config  configkit.RichProjection
 		ctrl    *Controller
 		event   = envelope.NewEvent(
 			"1000",
@@ -33,8 +34,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config = configkit.FromProjection(handler)
+
 		ctrl = &Controller{
-			Config: configkit.FromProjection(handler),
+			Config: config,
 		}
 	})
 
@@ -87,10 +90,9 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByProjection{
-					HandlerName: "<name>",
-					Handler:     handler,
-					Envelope:    event,
-					LogFormat:   "<format>",
+					Handler:   config,
+					Envelope:  event,
+					LogFormat: "<format>",
 					LogArguments: []interface{}{
 						"<arg-1>",
 						"<arg-2>",

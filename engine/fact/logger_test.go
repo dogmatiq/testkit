@@ -57,6 +57,13 @@ var _ = Describe("type Logger", func() {
 			},
 		})
 
+		projection := configkit.FromProjection(&ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<projection>", "<projection-key>")
+				c.ConsumesEventType(MessageE{})
+			},
+		})
+
 		DescribeTable(
 			"logs the expected message",
 			func(m string, f Fact) {
@@ -415,26 +422,26 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"ProjectionCompactionCompleted (success)",
-				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● compacted",
+				"= ----  ∵ ----  ⋲ ----    Σ    <projection> ● compacted",
 				ProjectionCompactionCompleted{
-					HandlerName: "<handler>",
+					Handler: projection,
 				},
 			),
 
 			Entry(
 				"ProjectionCompactionCompleted (failure)",
-				"= ----  ∵ ----  ⋲ ----    Σ ✖  <handler> ● compaction failed: <error>",
+				"= ----  ∵ ----  ⋲ ----    Σ ✖  <projection> ● compaction failed: <error>",
 				ProjectionCompactionCompleted{
-					HandlerName: "<handler>",
-					Error:       errors.New("<error>"),
+					Handler: projection,
+					Error:   errors.New("<error>"),
 				},
 			),
 
 			Entry(
 				"MessageLoggedByProjection",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    <handler> ● <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ Σ    <projection> ● <message>",
 				MessageLoggedByProjection{
-					HandlerName:  "<handler>",
+					Handler:      projection,
 					Envelope:     command,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
@@ -443,9 +450,9 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"MessageLoggedByProjection (compacting)",
-				"= ----  ∵ ----  ⋲ ----    Σ    <handler> ● <message>",
+				"= ----  ∵ ----  ⋲ ----    Σ    <projection> ● <message>",
 				MessageLoggedByProjection{
-					HandlerName:  "<handler>",
+					Handler:      projection,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},
 				},
