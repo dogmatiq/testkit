@@ -93,8 +93,8 @@ func (e *Engine) Tick(
 
 	oo.observers.Notify(
 		fact.TickCycleBegun{
-			EngineTime:      oo.now,
-			EnabledHandlers: oo.enabledHandlers,
+			EngineTime:          oo.now,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
 		},
 	)
 
@@ -106,8 +106,8 @@ func (e *Engine) Tick(
 
 	oo.observers.Notify(
 		fact.TickCycleCompleted{
-			Error:           err,
-			EnabledHandlers: oo.enabledHandlers,
+			Error:               err,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
 		},
 	)
 
@@ -194,9 +194,9 @@ func (e *Engine) Dispatch(
 
 	oo.observers.Notify(
 		fact.DispatchCycleBegun{
-			Envelope:        env,
-			EngineTime:      oo.now,
-			EnabledHandlers: oo.enabledHandlers,
+			Envelope:            env,
+			EngineTime:          oo.now,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
 		},
 	)
 
@@ -208,9 +208,9 @@ func (e *Engine) Dispatch(
 
 	oo.observers.Notify(
 		fact.DispatchCycleCompleted{
-			Envelope:        env,
-			Error:           err,
-			EnabledHandlers: oo.enabledHandlers,
+			Envelope:            env,
+			Error:               err,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
 		},
 	)
 
@@ -280,7 +280,7 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	if !oo.enabledHandlers[c.HandlerConfig().HandlerType()] {
+	if !oo.enabledHandlerTypes[c.HandlerConfig().HandlerType()] {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
 				Handler:  c.HandlerConfig(),

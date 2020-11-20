@@ -7,14 +7,12 @@ github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGX
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dogmatiq/configkit v0.9.0 h1:irS6Kb6tRzHtGmEKqNegK9bEatMNeZF64iN1Z46trAc=
-github.com/dogmatiq/configkit v0.9.0/go.mod h1:qukQmrrJT/XhZu1/n+2HQ58zzt2FG0ywIFA394JG+g0=
+github.com/dogmatiq/configkit v0.9.1 h1:gx2egDrmeiel1m8/RwAOk3ZFlvZa1mmElPz9v1K0AzY=
+github.com/dogmatiq/configkit v0.9.1/go.mod h1:lchVdCxCweenWrmm9WlgRH9X7Ppb340CvilcoVdTE8c=
 github.com/dogmatiq/cosyne v0.1.0 h1:j7b5WEZz7d+jfTP3JRgKpCWTsfaf4E1Z0s65A6yW9ic=
 github.com/dogmatiq/cosyne v0.1.0/go.mod h1:/OyJ0EHpWAZFt8/793nFrn6JIr7WSG4Zf+jlowBnCtw=
 github.com/dogmatiq/dapper v0.4.0 h1:WshL6xcW56jxkh1XE/x7sXyzxOvjBFjMcxz1jdjwn60=
 github.com/dogmatiq/dapper v0.4.0/go.mod h1:U32cRxzGYI5owhc/hMKjYLgBTVCdW/s3MdFJHwfDrLQ=
-github.com/dogmatiq/dogma v0.9.0 h1:PGRUqBPVI76HhkxulEEvzxe+693pq9cfQxJWBCpV730=
-github.com/dogmatiq/dogma v0.9.0/go.mod h1:8TdjQ5jjV2DcCPb/jjHPgSrqU66H6092yMEIF5HGx0g=
 github.com/dogmatiq/dogma v0.10.0 h1:2kLivwq72nr6yF3/jpIA5U57IOmPRxeO+I9lE06IebE=
 github.com/dogmatiq/dogma v0.10.0/go.mod h1:8TdjQ5jjV2DcCPb/jjHPgSrqU66H6092yMEIF5HGx0g=
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
@@ -35,7 +33,6 @@ github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfb
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
-github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
 github.com/golang/protobuf v1.4.0-rc.1.0.20200221234624-67d41d38c208/go.mod h1:xKAWHe0F5eneWXFV3EuXVDTCmh+JuBKY0li0aMyXATA=
 github.com/golang/protobuf v1.4.0-rc.2/go.mod h1:LlEzMj4AhA7rCAGe4KMBDvJI+AwstrUpVNzEA03Pprs=
@@ -156,7 +153,7 @@ google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZi
 google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyacEbxg=
 google.golang.org/grpc v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
 google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
-google.golang.org/grpc v1.33.1/go.mod h1:fr5YgcSWrqhRRxogOsw7RzIpsmvOZ6IcH4kBYTpR3n0=
+google.golang.org/grpc v1.33.2/go.mod h1:JMHMWHQWaTccqQQlmk3MJZS+GWXOdAesneDmEnv2fbc=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
 google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=

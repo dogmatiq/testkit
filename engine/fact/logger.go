@@ -91,7 +91,7 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 		},
 		"dispatching",
 		formatEngineTime(f.EngineTime),
-		formatEnabledHandlers(f.EnabledHandlers),
+		formatEnabledHandlerTypes(f.EnabledHandlerTypes),
 	)
 }
 
@@ -153,7 +153,7 @@ func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 		},
 		"ticking",
 		formatEngineTime(f.EngineTime),
-		formatEnabledHandlers(f.EnabledHandlers),
+		formatEnabledHandlerTypes(f.EnabledHandlerTypes),
 	)
 }
 
@@ -510,7 +510,7 @@ func formatEngineTime(t time.Time) string {
 	return "engine time is " + t.Format(time.RFC3339)
 }
 
-func formatEnabledHandlers(e map[configkit.HandlerType]bool) string {
+func formatEnabledHandlerTypes(e map[configkit.HandlerType]bool) string {
 	s := "enabled: "
 
 	first := true

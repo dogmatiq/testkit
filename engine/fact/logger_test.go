@@ -98,7 +98,7 @@ var _ = Describe("type Logger", func() {
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
-					EnabledHandlers: map[configkit.HandlerType]bool{
+					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType: true,
 						configkit.ProcessHandlerType:   true,
 					},
@@ -178,7 +178,7 @@ var _ = Describe("type Logger", func() {
 				"= ----  ∵ ----  ⋲ ----    ⚙    ticking ● engine time is 2006-01-02T15:04:05+07:00 ● enabled: aggregate, process",
 				TickCycleBegun{
 					EngineTime: now,
-					EnabledHandlers: map[configkit.HandlerType]bool{
+					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType: true,
 						configkit.ProcessHandlerType:   true,
 					},

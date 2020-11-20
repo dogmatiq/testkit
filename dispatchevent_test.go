@@ -79,7 +79,7 @@ var _ = Describe("func RecordEvent()", func() {
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,
-				EnabledHandlers: map[configkit.HandlerType]bool{
+				EnabledHandlerTypes: map[configkit.HandlerType]bool{
 					configkit.AggregateHandlerType:   true,
 					configkit.IntegrationHandlerType: false,
 					configkit.ProcessHandlerType:     true,

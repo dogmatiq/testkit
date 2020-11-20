@@ -24,9 +24,10 @@ type Test struct {
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
 	now              time.Time
-	operationOptions []engine.OperationOption
 	comparator       compare.Comparator
 	renderer         render.Renderer
+	enabledHandlers  map[configkit.HandlerType]bool
+	operationOptions []engine.OperationOption
 }
 
 // Begin starts a new test.
@@ -56,11 +57,12 @@ func BeginContext(
 	e := engine.MustNew(cfg, to.engineOptions...)
 
 	return &Test{
-		ctx:    ctx,
-		t:      t,
-		app:    cfg,
-		engine: e,
-		now:    to.time,
+		ctx:             ctx,
+		t:               t,
+		app:             cfg,
+		engine:          e,
+		now:             to.time,
+		enabledHandlers: map[configkit.HandlerType]bool{},
 		operationOptions: append(
 			to.operationOptions,
 			engine.WithObserver(
@@ -155,6 +157,38 @@ func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
 }
 
+// // EnableAggregates returns an operation option that enables or disables
+// // aggregate message handlers.
+// //
+// // All handler types are enabled by default.
+// func EnableAggregates() OperationOption {
+// 	return enableHandlerType(configkit.AggregateHandlerType, enabled)
+// }
+
+// // EnableProcesses returns an operation option that enables or disables process
+// // message handlers.
+// //
+// // All handler types are enabled by default.
+// func EnableProcesses(enabled bool) OperationOption {
+// 	return enableHandlerType(configkit.ProcessHandlerType, enabled)
+// }
+
+// // EnableIntegrations returns an operation option that enables or disables
+// // integration message handlers.
+// //
+// // All handler types are enabled by default.
+// func EnableIntegrations(enabled bool) OperationOption {
+// 	return enableHandlerType(configkit.IntegrationHandlerType, enabled)
+// }
+
+// // EnableProjections returns an operation option that enables or disables
+// // projection message handlers.
+// //
+// // All handler types are enabled by default.
+// func EnableProjections(enabled bool) OperationOption {
+// 	return enableHandlerType(configkit.ProjectionHandlerType, enabled)
+// }
+
 func (t *Test) buildReport(e Expectation) {
 	t.t.Helper()
 
@@ -180,7 +214,12 @@ func (t *Test) buildReport(e Expectation) {
 }
 
 // buildOperationOptions builds the operation options to provide to each action.
-func (t *Test) buildOperationOptions() (options []engine.OperationOption) {
+func (t *Test) buildOperationOptions() []engine.OperationOption {
+	options := []engine.OperationOption{
+		engine.EnableProjections(false),
+		engine.EnableIntegrations(false),
+	}
+
 	options = append(options, t.operationOptions...)
 	options = append(options, engine.WithCurrentTime(t.now))
 	return options

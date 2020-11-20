@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -64,7 +63,7 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	t.MustValidate()
 
 	return func(oo *operationOptions) {
-		oo.enabledHandlers[t] = enabled
+		oo.enabledHandlerTypes[t] = enabled
 	}
 }
 
@@ -79,16 +78,16 @@ func WithCurrentTime(t time.Time) OperationOption {
 // operationOptions is a container for the options set via OperationOption
 // values.
 type operationOptions struct {
-	now             time.Time
-	observers       fact.ObserverGroup
-	enabledHandlers map[configkit.HandlerType]bool
+	now                 time.Time
+	observers           fact.ObserverGroup
+	enabledHandlerTypes map[configkit.HandlerType]bool
 }
 
 // newOperationOptions returns a new operationOptions with the given options.
 func newOperationOptions(options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),
-		enabledHandlers: map[configkit.HandlerType]bool{
+		enabledHandlerTypes: map[configkit.HandlerType]bool{
 			configkit.AggregateHandlerType:   true,
 			configkit.ProcessHandlerType:     true,
 			configkit.IntegrationHandlerType: true,

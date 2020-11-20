@@ -54,7 +54,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		Expect(buf.Facts()).To(ContainElement(
 			fact.TickCycleBegun{
 				EngineTime: startTime.Add(2 * time.Second),
-				EnabledHandlers: map[configkit.HandlerType]bool{
+				EnabledHandlerTypes: map[configkit.HandlerType]bool{
 					configkit.AggregateHandlerType:   true,
 					configkit.IntegrationHandlerType: false,
 					configkit.ProcessHandlerType:     true,
@@ -101,7 +101,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			Expect(buf.Facts()).To(ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: targetTime,
-					EnabledHandlers: map[configkit.HandlerType]bool{
+					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType:   true,
 						configkit.IntegrationHandlerType: false,
 						configkit.ProcessHandlerType:     true,
@@ -131,7 +131,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			Expect(buf.Facts()).To(ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: startTime.Add(3 * time.Second),
-					EnabledHandlers: map[configkit.HandlerType]bool{
+					EnabledHandlerTypes: map[configkit.HandlerType]bool{
 						configkit.AggregateHandlerType:   true,
 						configkit.IntegrationHandlerType: false,
 						configkit.ProcessHandlerType:     true,

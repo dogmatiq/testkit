@@ -10,16 +10,16 @@ import (
 // DispatchCycleBegun indicates that Engine.Dispatch() has been called with a
 // message that is able to be routed to at least one handler.
 type DispatchCycleBegun struct {
-	Envelope        *envelope.Envelope
-	EngineTime      time.Time
-	EnabledHandlers map[configkit.HandlerType]bool
+	Envelope            *envelope.Envelope
+	EngineTime          time.Time
+	EnabledHandlerTypes map[configkit.HandlerType]bool
 }
 
 // DispatchCycleCompleted indicates that a call Engine.Dispatch() has completed.
 type DispatchCycleCompleted struct {
-	Envelope        *envelope.Envelope
-	Error           error
-	EnabledHandlers map[configkit.HandlerType]bool
+	Envelope            *envelope.Envelope
+	Error               error
+	EnabledHandlerTypes map[configkit.HandlerType]bool
 }
 
 // DispatchBegun indicates that Engine.Dispatch() has been called with a

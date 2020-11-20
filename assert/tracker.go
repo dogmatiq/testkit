@@ -45,13 +45,13 @@ func (t *tracker) Notify(f fact.Fact) {
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
 		t.cycleBegun = true
-		t.enabled = x.EnabledHandlers
+		t.enabled = x.EnabledHandlerTypes
 		if t.matchDispatchCycle {
 			t.messageProduced(x.Envelope.Role)
 		}
 	case fact.TickCycleBegun:
 		t.cycleBegun = true
-		t.enabled = x.EnabledHandlers
+		t.enabled = x.EnabledHandlerTypes
 	case fact.HandlingBegun:
 		t.updateEngaged(
 			x.Handler.Identity().Name,
