@@ -53,17 +53,9 @@ var _ = Describe("type Controller", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func Identity()", func() {
-		It("returns the handler identity", func() {
-			Expect(ctrl.Identity()).To(Equal(
-				configkit.MustNewIdentity("<name>", "<key>"),
-			))
-		})
-	})
-
-	Describe("func Type()", func() {
-		It("returns configkit.IntegrationHandlerType", func() {
-			Expect(ctrl.Type()).To(Equal(configkit.IntegrationHandlerType))
+	Describe("func HandlerConfig()", func() {
+		It("returns the handler config", func() {
+			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 
@@ -140,7 +132,7 @@ var _ = Describe("type Controller", func() {
 					MessageE1,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),
@@ -149,7 +141,7 @@ var _ = Describe("type Controller", func() {
 					MessageE2,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.IntegrationHandlerType,
 					},
 				),

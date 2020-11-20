@@ -18,15 +18,10 @@ type Controller struct {
 	MessageIDs *envelope.MessageIDGenerator
 }
 
-// Identity returns the identity of the handler that is managed by this
+// HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) Identity() configkit.Identity {
-	return c.Config.Identity()
-}
-
-// Type returns configkit.IntegrationHandlerType.
-func (c *Controller) Type() configkit.HandlerType {
-	return configkit.IntegrationHandlerType
+func (c *Controller) HandlerConfig() configkit.RichHandler {
+	return c.Config
 }
 
 // Tick does nothing.
@@ -47,8 +42,6 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	handler := c.Config.Handler()
-
 	var t time.Duration
 	controller.ConvertUnexpectedMessagePanic(
 		c.Config,
@@ -56,7 +49,7 @@ func (c *Controller) Handle(
 		"TimeoutHint",
 		env.Message,
 		func() {
-			t = handler.TimeoutHint(env.Message)
+			t = c.Config.Handler().TimeoutHint(env.Message)
 		},
 	)
 
@@ -81,7 +74,7 @@ func (c *Controller) Handle(
 		"HandleCommand",
 		env.Message,
 		func() {
-			err = handler.HandleCommand(ctx, s, env.Message)
+			err = c.Config.Handler().HandleCommand(ctx, s, env.Message)
 		},
 	)
 

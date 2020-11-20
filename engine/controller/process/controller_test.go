@@ -43,7 +43,7 @@ var _ = Describe("type Controller", func() {
 			time.Now(),
 			time.Now(),
 			envelope.Origin{
-				HandlerName: "<name>",
+				Handler:     config,
 				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance-E1>",
 			},
@@ -85,17 +85,9 @@ var _ = Describe("type Controller", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func Identity()", func() {
-		It("returns the handler identity", func() {
-			Expect(ctrl.Identity()).To(Equal(
-				configkit.MustNewIdentity("<name>", "<key>"),
-			))
-		})
-	})
-
-	Describe("func Type()", func() {
-		It("returns configkit.ProcessHandlerType", func() {
-			Expect(ctrl.Type()).To(Equal(configkit.ProcessHandlerType))
+	Describe("func HandlerConfig()", func() {
+		It("returns the handler config", func() {
+			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 
@@ -155,7 +147,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
@@ -166,7 +158,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E1>",
 					},
@@ -242,7 +234,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
@@ -253,7 +245,7 @@ var _ = Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
 						InstanceID:  "<instance-E2>", // E2, not E1!
 					},
@@ -336,7 +328,7 @@ var _ = Describe("type Controller", func() {
 						MessageC1,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -347,7 +339,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -472,9 +464,8 @@ var _ = Describe("type Controller", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessEventIgnored{
-							HandlerName: "<name>",
-							Handler:     handler,
-							Envelope:    event,
+							Handler:  config,
+							Envelope: event,
 						},
 					))
 				})
@@ -574,7 +565,7 @@ var _ = Describe("type Controller", func() {
 						MessageC1,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -585,7 +576,7 @@ var _ = Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							HandlerName: "<name>",
+							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
 							InstanceID:  "<instance-E1>",
 						},
@@ -720,10 +711,9 @@ var _ = Describe("type Controller", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessTimeoutIgnored{
-							HandlerName: "<name>",
-							Handler:     handler,
-							InstanceID:  "<instance-E1>",
-							Envelope:    timeout,
+							Handler:    config,
+							InstanceID: "<instance-E1>",
+							Envelope:   timeout,
 						},
 					))
 				})
@@ -783,10 +773,9 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceNotFound{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-E1>",
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance-E1>",
+						Envelope:   event,
 					},
 				))
 			})
@@ -842,11 +831,10 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceLoaded{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-E1>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance-E1>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 					},
 				))
 			})

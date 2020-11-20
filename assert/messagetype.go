@@ -171,7 +171,7 @@ func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 		rep.Explanation = inflect.Sprintf(
 			a.role,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
-			a.best.Origin.HandlerName,
+			a.best.Origin.Handler.Identity().Name,
 			a.best.Origin.HandlerType,
 		)
 	}
@@ -197,7 +197,7 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 		s.AppendListItem(inflect.Sprintf(
 			a.best.Role,
 			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
-			a.best.Origin.HandlerName,
+			a.best.Origin.Handler.Identity().Name,
 			a.best.Origin.HandlerType,
 		))
 	}
@@ -218,7 +218,7 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of this type was <produced> as a <message> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}
@@ -232,7 +232,7 @@ func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep 
 			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}

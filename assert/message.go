@@ -200,7 +200,7 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 			rep.Explanation = inflect.Sprintf(
 				a.role,
 				"a similar <message> was <produced> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}
@@ -216,7 +216,7 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 			rep.Explanation = inflect.Sprintf(
 				a.role,
 				"a <message> of a similar type was <produced> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}
@@ -253,7 +253,7 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 		s.AppendListItem(inflect.Sprintf(
 			a.best.Role,
 			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
-			a.best.Origin.HandlerName,
+			a.best.Origin.Handler.Identity().Name,
 			a.best.Origin.HandlerType,
 		))
 	}
@@ -276,7 +276,7 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"the expected message was <produced> as a <message> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}
@@ -294,7 +294,7 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a similar message was <produced> as a <message> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}
@@ -308,7 +308,7 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 			rep.Explanation = inflect.Sprintf(
 				a.best.Role,
 				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
-				a.best.Origin.HandlerName,
+				a.best.Origin.Handler.Identity().Name,
 				a.best.Origin.HandlerType,
 			)
 		}

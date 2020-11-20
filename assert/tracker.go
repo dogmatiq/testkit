@@ -53,7 +53,10 @@ func (t *tracker) Notify(f fact.Fact) {
 		t.cycleBegun = true
 		t.enabled = x.EnabledHandlers
 	case fact.HandlingBegun:
-		t.updateEngaged(x.HandlerName, x.HandlerType)
+		t.updateEngaged(
+			x.Handler.Identity().Name,
+			x.Handler.HandlerType(),
+		)
 	case fact.EventRecordedByAggregate:
 		t.messageProduced(x.EventEnvelope.Role)
 	case fact.EventRecordedByIntegration:

@@ -66,17 +66,9 @@ var _ = Describe("type Controller", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func Identity()", func() {
-		It("returns the handler identity", func() {
-			Expect(ctrl.Identity()).To(Equal(
-				configkit.MustNewIdentity("<name>", "<key>"),
-			))
-		})
-	})
-
-	Describe("func Type()", func() {
-		It("returns configkit.AggregateHandlerType", func() {
-			Expect(ctrl.Type()).To(Equal(configkit.AggregateHandlerType))
+	Describe("func HandlerConfig()", func() {
+		It("returns the handler config", func() {
+			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 
@@ -151,7 +143,7 @@ var _ = Describe("type Controller", func() {
 					MessageE1,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.AggregateHandlerType,
 						InstanceID:  "<instance-C1>",
 					},
@@ -161,7 +153,7 @@ var _ = Describe("type Controller", func() {
 					MessageE2,
 					now,
 					envelope.Origin{
-						HandlerName: "<name>",
+						Handler:     config,
 						HandlerType: configkit.AggregateHandlerType,
 						InstanceID:  "<instance-C1>",
 					},
@@ -197,10 +189,9 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceNotFound{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-C1>",
-						Envelope:    command,
+						Handler:    config,
+						InstanceID: "<instance-C1>",
+						Envelope:   command,
 					},
 				))
 			})
@@ -274,9 +265,8 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceLoaded{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-C1>",
+						Handler:    config,
+						InstanceID: "<instance-C1>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,

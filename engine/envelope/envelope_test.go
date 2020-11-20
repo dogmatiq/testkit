@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	. "github.com/dogmatiq/configkit/fixtures"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/onsi/ginkgo"
@@ -60,6 +61,14 @@ var _ = Describe("type Envelope", func() {
 	})
 
 	Describe("func NewCommand()", func() {
+		handler := configkit.FromProcess(&ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<handler>", "<handler-key>")
+				c.ConsumesEventType(MessageE{})
+				c.ProducesCommandType(MessageC{})
+			},
+		})
+
 		It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
@@ -67,7 +76,7 @@ var _ = Describe("type Envelope", func() {
 				time.Now(),
 			)
 			origin := Origin{
-				HandlerName: "<handler>",
+				Handler:     handler,
 				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			}
@@ -95,6 +104,14 @@ var _ = Describe("type Envelope", func() {
 	})
 
 	Describe("func NewEvent()", func() {
+		handler := configkit.FromAggregate(&AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<handler>", "<handler-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
+		})
+
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
@@ -102,7 +119,7 @@ var _ = Describe("type Envelope", func() {
 				time.Now(),
 			)
 			origin := Origin{
-				HandlerName: "<handler>",
+				Handler:     handler,
 				HandlerType: configkit.AggregateHandlerType,
 				InstanceID:  "<instance>",
 			}
@@ -130,6 +147,15 @@ var _ = Describe("type Envelope", func() {
 	})
 
 	Describe("func NewTimeout()", func() {
+		handler := configkit.FromProcess(&ProcessMessageHandler{
+			ConfigureFunc: func(c dogma.ProcessConfigurer) {
+				c.Identity("<handler>", "<handler-key>")
+				c.ConsumesEventType(MessageE{})
+				c.ProducesCommandType(MessageC{})
+				c.SchedulesTimeoutType(MessageT{})
+			},
+		})
+
 		It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
@@ -137,7 +163,7 @@ var _ = Describe("type Envelope", func() {
 				time.Now(),
 			)
 			origin := Origin{
-				HandlerName: "<handler>",
+				Handler:     handler,
 				HandlerType: configkit.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			}

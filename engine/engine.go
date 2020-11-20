@@ -123,13 +123,10 @@ func (e *Engine) tick(
 		queue []*envelope.Envelope
 	)
 
-	for n, c := range e.controllers {
-		t := c.Type()
-
+	for _, c := range e.controllers {
 		oo.observers.Notify(
 			fact.TickBegun{
-				HandlerName: n,
-				HandlerType: t,
+				Handler: c.HandlerConfig(),
 			},
 		)
 
@@ -139,9 +136,8 @@ func (e *Engine) tick(
 
 		oo.observers.Notify(
 			fact.TickCompleted{
-				HandlerName: n,
-				HandlerType: t,
-				Error:       cerr,
+				Handler: c.HandlerConfig(),
+				Error:   cerr,
 			},
 		)
 	}
@@ -237,7 +233,7 @@ func (e *Engine) dispatch(
 		if env.Role == message.TimeoutRole {
 			// always dispatch timeouts back to their origin handler
 			controllers = []controller.Controller{
-				e.controllers[env.Origin.HandlerName],
+				e.controllers[env.Origin.Handler.Identity().Name],
 			}
 		} else {
 			// for all other message types check to see the role matches the
@@ -284,15 +280,11 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	i := c.Identity()
-	t := c.Type()
-
-	if !oo.enabledHandlers[t] {
+	if !oo.enabledHandlers[c.HandlerConfig().HandlerType()] {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
-				HandlerName: i.Name,
-				HandlerType: c.Type(),
-				Envelope:    env,
+				Handler:  c.HandlerConfig(),
+				Envelope: env,
 			},
 		)
 
@@ -301,9 +293,8 @@ func (e *Engine) handle(
 
 	oo.observers.Notify(
 		fact.HandlingBegun{
-			HandlerName: i.Name,
-			HandlerType: t,
-			Envelope:    env,
+			Handler:  c.HandlerConfig(),
+			Envelope: env,
 		},
 	)
 
@@ -311,10 +302,9 @@ func (e *Engine) handle(
 
 	oo.observers.Notify(
 		fact.HandlingCompleted{
-			HandlerName: i.Name,
-			HandlerType: t,
-			Envelope:    env,
-			Error:       err,
+			Handler:  c.HandlerConfig(),
+			Envelope: env,
+			Error:    err,
 		},
 	)
 

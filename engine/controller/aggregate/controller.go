@@ -21,15 +21,10 @@ type Controller struct {
 	history map[string][]*envelope.Envelope
 }
 
-// Identity returns the identity of the handler that is managed by this
+// HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) Identity() configkit.Identity {
-	return c.Config.Identity()
-}
-
-// Type returns configkit.AggregateHandlerType.
-func (c *Controller) Type() configkit.HandlerType {
-	return configkit.AggregateHandlerType
+func (c *Controller) HandlerConfig() configkit.RichHandler {
+	return c.Config
 }
 
 // Tick does nothing.
@@ -50,9 +45,6 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	ident := c.Config.Identity()
-	handler := c.Config.Handler()
-
 	var id string
 	controller.ConvertUnexpectedMessagePanic(
 		c.Config,
@@ -60,20 +52,26 @@ func (c *Controller) Handle(
 		"RouteCommandToInstance",
 		env.Message,
 		func() {
-			id = handler.RouteCommandToInstance(env.Message)
+			id = c.Config.Handler().RouteCommandToInstance(env.Message)
 		},
 	)
 
 	if id == "" {
 		panic(fmt.Sprintf(
 			"the '%s' aggregate message handler attempted to route a %s command to an empty instance ID",
-			ident.Name,
+			c.Config.Identity().Name,
 			message.TypeOf(env.Message),
 		))
 	}
 
 	history, exists := c.history[id]
-	r := handler.New()
+	r := c.Config.Handler().New()
+	if r == nil {
+		panic(fmt.Sprintf(
+			"the '%s' aggregate message handler returned a nil root from New()",
+			c.Config.Identity().Name,
+		))
+	}
 
 	if exists {
 		for _, env := range history {
@@ -89,28 +87,17 @@ func (c *Controller) Handle(
 		}
 
 		obs.Notify(fact.AggregateInstanceLoaded{
-			HandlerName: ident.Name,
-			Handler:     handler,
-			InstanceID:  id,
-			Root:        r,
-			Envelope:    env,
+			Handler:    c.Config,
+			InstanceID: id,
+			Root:       r,
+			Envelope:   env,
 		})
 	} else {
 		obs.Notify(fact.AggregateInstanceNotFound{
-			HandlerName: ident.Name,
-			Handler:     handler,
-			InstanceID:  id,
-			Envelope:    env,
+			Handler:    c.Config,
+			InstanceID: id,
+			Envelope:   env,
 		})
-
-		r = handler.New()
-
-		if r == nil {
-			panic(fmt.Sprintf(
-				"the '%s' aggregate message handler returned a nil root from New()",
-				ident.Name,
-			))
-		}
 	}
 
 	s := &scope{
@@ -130,7 +117,7 @@ func (c *Controller) Handle(
 		"HandleCommand",
 		env.Message,
 		func() {
-			handler.HandleCommand(r, s, env.Message)
+			c.Config.Handler().HandleCommand(r, s, env.Message)
 		},
 	)
 

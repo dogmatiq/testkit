@@ -4,8 +4,8 @@ import "github.com/dogmatiq/configkit"
 
 // Origin describes the handler that produced a message in an envelope.
 type Origin struct {
-	// HandlerName is the name of the handler that produced this message.
-	HandlerName string
+	// Handler is the handler that produced this message.
+	Handler configkit.RichHandler
 
 	// HandlerType is the type of the handler that produced this message.
 	HandlerType configkit.HandlerType
