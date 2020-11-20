@@ -209,11 +209,10 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"TickCompleted (failure)",
-				"= ----  ∵ ----  ⋲ ----    ∴ ✖  <handler> ● <error>",
+				"= ----  ∵ ----  ⋲ ----    ∴ ✖  <aggregate> ● <error>",
 				TickCompleted{
-					HandlerIdentity: configkit.MustNewIdentity("<handler>", "<handler-key>"),
-					HandlerType:     configkit.AggregateHandlerType,
-					Error:           errors.New("<error>"),
+					Handler: aggregate,
+					Error:   errors.New("<error>"),
 				},
 			),
 

@@ -164,10 +164,10 @@ func (l *Logger) tickCompleted(f TickCompleted) {
 			&envelope.Envelope{},
 			[]logging.Icon{
 				"",
-				logging.HandlerTypeIcon(f.HandlerType),
+				logging.HandlerTypeIcon(f.Handler.HandlerType()),
 				logging.ErrorIcon,
 			},
-			f.HandlerIdentity.Name,
+			f.Handler.Identity().Name,
 			f.Error.Error(),
 		)
 	}

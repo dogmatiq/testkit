@@ -124,12 +124,9 @@ func (e *Engine) tick(
 	)
 
 	for _, c := range e.controllers {
-		t := c.HandlerConfig().HandlerType()
-
 		oo.observers.Notify(
 			fact.TickBegun{
-				HandlerIdentity: c.HandlerConfig().Identity(),
-				HandlerType:     t,
+				Handler: c.HandlerConfig(),
 			},
 		)
 
@@ -139,9 +136,8 @@ func (e *Engine) tick(
 
 		oo.observers.Notify(
 			fact.TickCompleted{
-				HandlerIdentity: c.HandlerConfig().Identity(),
-				HandlerType:     t,
-				Error:           cerr,
+				Handler: c.HandlerConfig(),
+				Error:   cerr,
 			},
 		)
 	}
