@@ -157,38 +157,6 @@ func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
 }
 
-// // EnableAggregates returns an operation option that enables or disables
-// // aggregate message handlers.
-// //
-// // All handler types are enabled by default.
-// func EnableAggregates() OperationOption {
-// 	return enableHandlerType(configkit.AggregateHandlerType, enabled)
-// }
-
-// // EnableProcesses returns an operation option that enables or disables process
-// // message handlers.
-// //
-// // All handler types are enabled by default.
-// func EnableProcesses(enabled bool) OperationOption {
-// 	return enableHandlerType(configkit.ProcessHandlerType, enabled)
-// }
-
-// // EnableIntegrations returns an operation option that enables or disables
-// // integration message handlers.
-// //
-// // All handler types are enabled by default.
-// func EnableIntegrations(enabled bool) OperationOption {
-// 	return enableHandlerType(configkit.IntegrationHandlerType, enabled)
-// }
-
-// // EnableProjections returns an operation option that enables or disables
-// // projection message handlers.
-// //
-// // All handler types are enabled by default.
-// func EnableProjections(enabled bool) OperationOption {
-// 	return enableHandlerType(configkit.ProjectionHandlerType, enabled)
-// }
-
 func (t *Test) buildReport(e Expectation) {
 	t.t.Helper()
 
