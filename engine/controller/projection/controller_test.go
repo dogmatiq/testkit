@@ -46,17 +46,9 @@ var _ = Describe("type Controller", func() {
 		}
 	})
 
-	Describe("func Identity()", func() {
-		It("returns the handler identity", func() {
-			Expect(ctrl.Identity()).To(Equal(
-				configkit.MustNewIdentity("<name>", "<key>"),
-			))
-		})
-	})
-
-	Describe("func Type()", func() {
-		It("returns configkit.ProjectionHandlerType", func() {
-			Expect(ctrl.Type()).To(Equal(configkit.ProjectionHandlerType))
+	Describe("func HandlerConfig()", func() {
+		It("returns the handler config", func() {
+			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 

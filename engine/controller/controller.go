@@ -11,12 +11,9 @@ import (
 
 // Controller orchestrates the handling of a message by Dogma message handler.
 type Controller interface {
-	// Identity returns the identity of the handler that is managed by this
+	// HandlerConfig returns the config of the handler that is managed by this
 	// controller.
-	Identity() configkit.Identity
-
-	// Type returns the name of the handler that is managed by this controller.
-	Type() configkit.HandlerType
+	HandlerConfig() configkit.RichHandler
 
 	// Tick instructs the controller to perform an implementation-defined
 	// "tick".

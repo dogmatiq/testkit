@@ -21,15 +21,10 @@ type Controller struct {
 	history map[string][]*envelope.Envelope
 }
 
-// Identity returns the identity of the handler that is managed by this
+// HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) Identity() configkit.Identity {
-	return c.Config.Identity()
-}
-
-// Type returns configkit.AggregateHandlerType.
-func (c *Controller) Type() configkit.HandlerType {
-	return configkit.AggregateHandlerType
+func (c *Controller) HandlerConfig() configkit.RichHandler {
+	return c.Config
 }
 
 // Tick does nothing.

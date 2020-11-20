@@ -79,7 +79,7 @@ func (c *configurer) registerController(
 	ctrl controller.Controller,
 	types map[message.Type]message.Role,
 ) {
-	c.engine.controllers[ctrl.Identity().Name] = ctrl
+	c.engine.controllers[ctrl.HandlerConfig().Identity().Name] = ctrl
 
 	for t := range types {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)

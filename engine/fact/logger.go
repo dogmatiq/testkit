@@ -116,10 +116,10 @@ func (l *Logger) handlingCompleted(f HandlingCompleted) {
 			f.Envelope,
 			[]logging.Icon{
 				logging.InboundErrorIcon,
-				logging.HandlerTypeIcon(f.HandlerType),
+				logging.HandlerTypeIcon(f.Handler.HandlerType()),
 				logging.ErrorIcon,
 			},
-			f.HandlerIdentity.Name,
+			f.Handler.Identity().Name,
 			f.Error.Error(),
 		)
 	}
@@ -131,13 +131,13 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) {
 		f.Envelope,
 		[]logging.Icon{
 			logging.InboundIcon,
-			logging.HandlerTypeIcon(f.HandlerType),
+			logging.HandlerTypeIcon(f.Handler.HandlerType()),
 			"",
 		},
-		f.HandlerIdentity.Name,
+		f.Handler.Identity().Name,
 		fmt.Sprintf(
 			"handler skipped because %s handlers are disabled",
-			f.HandlerType,
+			f.Handler.HandlerType(),
 		),
 	)
 }

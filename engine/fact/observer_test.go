@@ -1,7 +1,8 @@
 package fact_test
 
 import (
-	"github.com/dogmatiq/configkit"
+	"time"
+
 	. "github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,9 +11,8 @@ import (
 var _ = Describe("type ObserverGroup", func() {
 	Describe("func Notify()", func() {
 		It("notifies each of the observers in the group", func() {
-			f := HandlingBegun{
-				HandlerIdentity: configkit.MustNewIdentity("<handler-1>", "<handler-1-key>"),
-			}
+			f := TickCycleBegun{}
+
 			n := 0
 			g := ObserverGroup{
 				ObserverFunc(func(of Fact) {
@@ -35,11 +35,11 @@ var _ = Describe("type ObserverGroup", func() {
 var _ = Describe("type Buffer", func() {
 	Describe("func Notify()", func() {
 		It("appends the fact to the buffer", func() {
-			f1 := HandlingBegun{
-				HandlerIdentity: configkit.MustNewIdentity("<handler-1>", "<handler-1-key>"),
+			f1 := TickCycleBegun{
+				EngineTime: time.Now(),
 			}
-			f2 := HandlingBegun{
-				HandlerIdentity: configkit.MustNewIdentity("<handler-2>", "<handler-2-key>"),
+			f2 := TickCycleBegun{
+				EngineTime: time.Now().Add(1 * time.Second),
 			}
 			b := &Buffer{}
 
@@ -57,9 +57,7 @@ var _ = Describe("type Buffer", func() {
 var _ = Describe("var Ignore", func() {
 	Describe("func Notify()", func() {
 		It("does nothing", func() {
-			Ignore.Notify(HandlingBegun{
-				HandlerIdentity: configkit.MustNewIdentity("<handler-1>", "<handler-1-key>"),
-			})
+			Ignore.Notify(TickCycleBegun{})
 		})
 	})
 })
