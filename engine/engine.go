@@ -126,11 +126,11 @@ func (e *Engine) tick(
 	)
 
 	for _, c := range e.controllers {
-		if skip, explicit := e.skipController(c, oo); skip {
+		if skip, reason := e.skipHandler(c.HandlerConfig(), oo); skip {
 			oo.observers.Notify(
 				fact.TickSkipped{
-					Handler:  c.HandlerConfig(),
-					Explicit: explicit,
+					Handler: c.HandlerConfig(),
+					Reason:  reason,
 				},
 			)
 
@@ -295,12 +295,12 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	if skip, explicit := e.skipController(c, oo); skip {
+	if skip, reason := e.skipHandler(c.HandlerConfig(), oo); skip {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
 				Handler:  c.HandlerConfig(),
 				Envelope: env,
-				Explicit: explicit,
+				Reason:   reason,
 			},
 		)
 
@@ -327,16 +327,16 @@ func (e *Engine) handle(
 	return envs, err
 }
 
-func (e *Engine) skipController(
-	c controller.Controller,
+// skipHandler returns true if a specific handler should be skipped during a
+// call to Dispatch() or Tick().
+func (e *Engine) skipHandler(
+	h configkit.Handler,
 	oo *operationOptions,
-) (skip, explicit bool) {
-	cfg := c.HandlerConfig()
-
-	if en, ok := oo.enabledHandlers[cfg.Identity().Name]; ok {
-		return !en, true
+) (bool, fact.HandlerSkipReason) {
+	if en, ok := oo.enabledHandlers[h.Identity().Name]; ok {
+		return !en, fact.IndividualHandlerDisabled
 	}
 
-	en := oo.enabledHandlerTypes[cfg.HandlerType()]
-	return !en, false
+	en := oo.enabledHandlerTypes[h.HandlerType()]
+	return !en, fact.HandlerTypeDisabled
 }

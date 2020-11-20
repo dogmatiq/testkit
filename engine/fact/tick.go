@@ -35,6 +35,6 @@ type TickCompleted struct {
 // either because all handlers of that type are or the handler itself is
 // disabled.
 type TickSkipped struct {
-	Handler  configkit.RichHandler
-	Explicit bool // true if handler itself was disabled
+	Handler configkit.RichHandler
+	Reason  HandlerSkipReason
 }

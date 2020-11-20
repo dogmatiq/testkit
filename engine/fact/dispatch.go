@@ -57,5 +57,5 @@ type HandlingCompleted struct {
 type HandlingSkipped struct {
 	Handler  configkit.RichHandler
 	Envelope *envelope.Envelope
-	Explicit bool // true if handler itself was disabled
+	Reason   HandlerSkipReason
 }

@@ -116,7 +116,7 @@ var _ = Describe("type Engine", func() {
 						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
-					Explicit: false,
+					Reason: fact.HandlerTypeDisabled,
 				},
 			))
 		})
@@ -154,7 +154,7 @@ var _ = Describe("type Engine", func() {
 						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
-					Explicit: true,
+					Reason: fact.IndividualHandlerDisabled,
 				},
 			))
 		})
@@ -210,8 +210,8 @@ var _ = Describe("type Engine", func() {
 			h, _ := config.RichHandlers().ByName("<aggregate>")
 			Expect(buf.Facts()).To(ContainElement(
 				fact.TickSkipped{
-					Handler:  h,
-					Explicit: false,
+					Handler: h,
+					Reason:  fact.HandlerTypeDisabled,
 				},
 			))
 		})
@@ -228,8 +228,8 @@ var _ = Describe("type Engine", func() {
 			h, _ := config.RichHandlers().ByName("<aggregate>")
 			Expect(buf.Facts()).To(ContainElement(
 				fact.TickSkipped{
-					Handler:  h,
-					Explicit: true,
+					Handler: h,
+					Reason:  fact.IndividualHandlerDisabled,
 				},
 			))
 		})
