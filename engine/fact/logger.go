@@ -167,7 +167,7 @@ func (l *Logger) tickCompleted(f TickCompleted) {
 				logging.HandlerTypeIcon(f.HandlerType),
 				logging.ErrorIcon,
 			},
-			f.HandlerName,
+			f.HandlerIdentity.Name,
 			f.Error.Error(),
 		)
 	}

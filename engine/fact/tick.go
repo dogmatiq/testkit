@@ -20,13 +20,13 @@ type TickCycleCompleted struct {
 
 // TickBegun indicates that a call to Controller.Tick() is being made.
 type TickBegun struct {
-	HandlerName string
-	HandlerType configkit.HandlerType
+	HandlerIdentity configkit.Identity
+	HandlerType     configkit.HandlerType
 }
 
 // TickCompleted indicates that a call to Controller.Tick() has completed.
 type TickCompleted struct {
-	HandlerName string
-	HandlerType configkit.HandlerType
-	Error       error
+	HandlerIdentity configkit.Identity
+	HandlerType     configkit.HandlerType
+	Error           error
 }

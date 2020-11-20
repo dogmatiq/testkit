@@ -213,9 +213,9 @@ var _ = Describe("type Logger", func() {
 				"TickCompleted (failure)",
 				"= ----  ∵ ----  ⋲ ----    ∴ ✖  <handler> ● <error>",
 				TickCompleted{
-					HandlerName: "<handler>",
-					HandlerType: configkit.AggregateHandlerType,
-					Error:       errors.New("<error>"),
+					HandlerIdentity: configkit.MustNewIdentity("<handler>", "<handler-key>"),
+					HandlerType:     configkit.AggregateHandlerType,
+					Error:           errors.New("<error>"),
 				},
 			),
 

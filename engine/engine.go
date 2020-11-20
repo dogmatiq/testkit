@@ -123,13 +123,13 @@ func (e *Engine) tick(
 		queue []*envelope.Envelope
 	)
 
-	for n, c := range e.controllers {
+	for _, c := range e.controllers {
 		t := c.Type()
 
 		oo.observers.Notify(
 			fact.TickBegun{
-				HandlerName: n,
-				HandlerType: t,
+				HandlerIdentity: c.Identity(),
+				HandlerType:     t,
 			},
 		)
 
@@ -139,9 +139,9 @@ func (e *Engine) tick(
 
 		oo.observers.Notify(
 			fact.TickCompleted{
-				HandlerName: n,
-				HandlerType: t,
-				Error:       cerr,
+				HandlerIdentity: c.Identity(),
+				HandlerType:     t,
+				Error:           cerr,
 			},
 		)
 	}
