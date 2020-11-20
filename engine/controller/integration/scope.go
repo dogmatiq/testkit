@@ -50,8 +50,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
-		HandlerName:   s.config.Identity().Name,
-		Handler:       s.config.Handler(),
+		Handler:       s.config,
 		Envelope:      s.command,
 		EventEnvelope: env,
 	})
@@ -59,8 +58,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
-		HandlerName:  s.config.Identity().Name,
-		Handler:      s.config.Handler(),
+		Handler:      s.config,
 		Envelope:     s.command,
 		LogFormat:    f,
 		LogArguments: v,

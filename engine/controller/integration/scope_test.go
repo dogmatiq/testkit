@@ -19,6 +19,7 @@ var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
+		config     configkit.RichIntegration
 		ctrl       *Controller
 		command    *envelope.Envelope
 	)
@@ -38,8 +39,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config = configkit.FromIntegration(handler)
+
 		ctrl = &Controller{
-			Config:     configkit.FromIntegration(handler),
+			Config:     config,
 			MessageIDs: &messageIDs,
 		}
 
@@ -71,9 +74,8 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts()).To(ContainElement(
 				fact.EventRecordedByIntegration{
-					HandlerName: "<name>",
-					Handler:     handler,
-					Envelope:    command,
+					Handler:  config,
+					Envelope: command,
 					EventEnvelope: command.NewEvent(
 						"1",
 						MessageE1,
@@ -154,10 +156,9 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByIntegration{
-					HandlerName: "<name>",
-					Handler:     handler,
-					Envelope:    command,
-					LogFormat:   "<format>",
+					Handler:   config,
+					Envelope:  command,
+					LogFormat: "<format>",
 					LogArguments: []interface{}{
 						"<arg-1>",
 						"<arg-2>",

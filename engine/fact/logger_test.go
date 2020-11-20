@@ -41,6 +41,14 @@ var _ = Describe("type Logger", func() {
 			},
 		})
 
+		integration := configkit.FromIntegration(&IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<integration>", "<integration-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
+		})
+
 		DescribeTable(
 			"logs the expected message",
 			func(m string, f Fact) {
@@ -366,10 +374,10 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"EventRecordedByIntegration",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ⨝    <handler> ● recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ⨝    <integration> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByIntegration{
-					HandlerName: "<handler>",
-					Envelope:    command,
+					Handler:  integration,
+					Envelope: command,
 					EventEnvelope: command.NewEvent(
 						"200",
 						MessageE1,
@@ -380,9 +388,9 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByIntegration",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⨝    <handler> ● <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ⨝    <integration> ● <message>",
 				MessageLoggedByIntegration{
-					HandlerName:  "<handler>",
+					Handler:      integration,
 					Envelope:     command,
 					LogFormat:    "<%s>",
 					LogArguments: []interface{}{"message"},

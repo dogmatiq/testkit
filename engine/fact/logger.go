@@ -401,7 +401,7 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 			logging.IntegrationIcon,
 			"",
 		},
-		f.HandlerName,
+		f.Handler.Identity().Name,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
 		dogma.DescribeMessage(f.EventEnvelope.Message),
@@ -417,7 +417,7 @@ func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
 			logging.IntegrationIcon,
 			"",
 		},
-		f.HandlerName,
+		f.Handler.Identity().Name,
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
