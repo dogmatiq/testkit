@@ -284,15 +284,12 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	i := c.Identity()
-	t := c.Type()
-
-	if !oo.enabledHandlers[t] {
+	if !oo.enabledHandlers[c.Type()] {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
-				HandlerName: i.Name,
-				HandlerType: c.Type(),
-				Envelope:    env,
+				HandlerIdentity: c.Identity(),
+				HandlerType:     c.Type(),
+				Envelope:        env,
 			},
 		)
 
@@ -301,9 +298,9 @@ func (e *Engine) handle(
 
 	oo.observers.Notify(
 		fact.HandlingBegun{
-			HandlerName: i.Name,
-			HandlerType: t,
-			Envelope:    env,
+			HandlerIdentity: c.Identity(),
+			HandlerType:     c.Type(),
+			Envelope:        env,
 		},
 	)
 
@@ -311,10 +308,10 @@ func (e *Engine) handle(
 
 	oo.observers.Notify(
 		fact.HandlingCompleted{
-			HandlerName: i.Name,
-			HandlerType: t,
-			Envelope:    env,
-			Error:       err,
+			HandlerIdentity: c.Identity(),
+			HandlerType:     c.Type(),
+			Envelope:        env,
+			Error:           err,
 		},
 	)
 

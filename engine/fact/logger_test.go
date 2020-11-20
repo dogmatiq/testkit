@@ -134,19 +134,19 @@ var _ = Describe("type Logger", func() {
 				"HandlingCompleted (failure)",
 				"= 0100  ∵ 0100  ⋲ 0100  ▽ ∴ ✖  <handler> ● <error>",
 				HandlingCompleted{
-					HandlerName: "<handler>",
-					HandlerType: configkit.AggregateHandlerType,
-					Envelope:    command,
-					Error:       errors.New("<error>"),
+					HandlerIdentity: configkit.MustNewIdentity("<handler>", "<handler-key>"),
+					HandlerType:     configkit.AggregateHandlerType,
+					Envelope:        command,
+					Error:           errors.New("<error>"),
 				},
 			),
 			Entry(
 				"HandlingSkipped",
 				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> ● handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
-					HandlerName: "<handler>",
-					HandlerType: configkit.AggregateHandlerType,
-					Envelope:    command,
+					HandlerIdentity: configkit.MustNewIdentity("<handler>", "<handler-key>"),
+					HandlerType:     configkit.AggregateHandlerType,
+					Envelope:        command,
 				},
 			),
 

@@ -119,7 +119,7 @@ func (l *Logger) handlingCompleted(f HandlingCompleted) {
 				logging.HandlerTypeIcon(f.HandlerType),
 				logging.ErrorIcon,
 			},
-			f.HandlerName,
+			f.HandlerIdentity.Name,
 			f.Error.Error(),
 		)
 	}
@@ -134,7 +134,7 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) {
 			logging.HandlerTypeIcon(f.HandlerType),
 			"",
 		},
-		f.HandlerName,
+		f.HandlerIdentity.Name,
 		fmt.Sprintf(
 			"handler skipped because %s handlers are disabled",
 			f.HandlerType,

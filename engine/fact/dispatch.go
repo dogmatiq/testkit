@@ -37,24 +37,24 @@ type DispatchCompleted struct {
 // HandlingBegun indicates that a message is about to be handled by a specific
 // handler.
 type HandlingBegun struct {
-	HandlerName string
-	HandlerType configkit.HandlerType
-	Envelope    *envelope.Envelope
+	HandlerIdentity configkit.Identity
+	HandlerType     configkit.HandlerType
+	Envelope        *envelope.Envelope
 }
 
 // HandlingCompleted indicates that a message has been handled by a specific
 // handler, either successfully or unsuccessfully.
 type HandlingCompleted struct {
-	HandlerName string
-	HandlerType configkit.HandlerType
-	Envelope    *envelope.Envelope
-	Error       error
+	HandlerIdentity configkit.Identity
+	HandlerType     configkit.HandlerType
+	Envelope        *envelope.Envelope
+	Error           error
 }
 
 // HandlingSkipped indicates that a message has been not been handled by a
 // specific handler, because handlers of that type are disabled.
 type HandlingSkipped struct {
-	HandlerName string
-	HandlerType configkit.HandlerType
-	Envelope    *envelope.Envelope
+	HandlerIdentity configkit.Identity
+	HandlerType     configkit.HandlerType
+	Envelope        *envelope.Envelope
 }
