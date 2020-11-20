@@ -70,9 +70,6 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
-	ident := c.Config.Identity()
-	handler := c.Config.Handler()
-
 	var t time.Duration
 	controller.ConvertUnexpectedMessagePanic(
 		c.Config,
@@ -80,7 +77,7 @@ func (c *Controller) Handle(
 		"TimeoutHint",
 		env.Message,
 		func() {
-			t = handler.TimeoutHint(env.Message)
+			t = c.Config.Handler().TimeoutHint(env.Message)
 		},
 	)
 
@@ -99,26 +96,24 @@ func (c *Controller) Handle(
 
 	if exists {
 		obs.Notify(fact.ProcessInstanceLoaded{
-			HandlerName: ident.Name,
-			Handler:     handler,
-			InstanceID:  id,
-			Root:        r,
-			Envelope:    env,
+			Handler:    c.Config,
+			InstanceID: id,
+			Root:       r,
+			Envelope:   env,
 		})
 	} else {
 		obs.Notify(fact.ProcessInstanceNotFound{
-			HandlerName: ident.Name,
-			Handler:     handler,
-			InstanceID:  id,
-			Envelope:    env,
+			Handler:    c.Config,
+			InstanceID: id,
+			Envelope:   env,
 		})
 
-		r = handler.New()
+		r = c.Config.Handler().New()
 
 		if r == nil {
 			panic(fmt.Sprintf(
 				"the '%s' process message handler returned a nil root from New()",
-				ident.Name,
+				c.Config.Identity().Name,
 			))
 		}
 	}
@@ -206,9 +201,8 @@ func (c *Controller) routeEvent(
 	}
 
 	obs.Notify(fact.ProcessEventIgnored{
-		HandlerName: ident.Name,
-		Handler:     handler,
-		Envelope:    env,
+		Handler:  c.Config,
+		Envelope: env,
 	})
 
 	return "", false, nil
@@ -225,10 +219,9 @@ func (c *Controller) routeTimeout(
 	}
 
 	obs.Notify(fact.ProcessTimeoutIgnored{
-		HandlerName: c.Config.Identity().Name,
-		Handler:     c.Config.Handler(),
-		InstanceID:  env.Origin.InstanceID,
-		Envelope:    env,
+		Handler:    c.Config,
+		InstanceID: env.Origin.InstanceID,
+		Envelope:   env,
 	})
 
 	return "", false, nil

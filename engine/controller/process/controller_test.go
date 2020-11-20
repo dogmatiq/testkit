@@ -472,9 +472,8 @@ var _ = Describe("type Controller", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessEventIgnored{
-							HandlerName: "<name>",
-							Handler:     handler,
-							Envelope:    event,
+							Handler:  config,
+							Envelope: event,
 						},
 					))
 				})
@@ -720,10 +719,9 @@ var _ = Describe("type Controller", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessTimeoutIgnored{
-							HandlerName: "<name>",
-							Handler:     handler,
-							InstanceID:  "<instance-E1>",
-							Envelope:    timeout,
+							Handler:    config,
+							InstanceID: "<instance-E1>",
+							Envelope:   timeout,
 						},
 					))
 				})
@@ -783,10 +781,9 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceNotFound{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-E1>",
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance-E1>",
+						Envelope:   event,
 					},
 				))
 			})
@@ -842,11 +839,10 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceLoaded{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-E1>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance-E1>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 					},
 				))
 			})

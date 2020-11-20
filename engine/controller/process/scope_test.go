@@ -19,6 +19,7 @@ var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandler
+		config     configkit.RichProcess
 		ctrl       *Controller
 		event      *envelope.Envelope
 	)
@@ -50,8 +51,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config = configkit.FromProcess(handler)
+
 		ctrl = &Controller{
-			Config:     configkit.FromProcess(handler),
+			Config:     config,
 			MessageIDs: &messageIDs,
 		}
 
@@ -145,11 +148,10 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceBegun{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 					},
 				))
 			})
@@ -361,11 +363,10 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceEnded{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 					},
 				))
 			})
@@ -401,11 +402,10 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.CommandExecutedByProcess{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 						CommandEnvelope: event.NewCommand(
 							"1",
 							MessageC1,
@@ -495,11 +495,10 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.TimeoutScheduledByProcess{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
-						Root:        &ProcessRoot{},
-						Envelope:    event,
+						Handler:    config,
+						InstanceID: "<instance>",
+						Root:       &ProcessRoot{},
+						Envelope:   event,
 						TimeoutEnvelope: event.NewTimeout(
 							"1",
 							MessageT1,
@@ -611,12 +610,11 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByProcess{
-					HandlerName: "<name>",
-					Handler:     handler,
-					InstanceID:  "<instance>",
-					Root:        &ProcessRoot{},
-					Envelope:    event,
-					LogFormat:   "<format>",
+					Handler:    config,
+					InstanceID: "<instance>",
+					Root:       &ProcessRoot{},
+					Envelope:   event,
+					LogFormat:  "<format>",
 					LogArguments: []interface{}{
 						"<arg-1>",
 						"<arg-2>",

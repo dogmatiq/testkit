@@ -268,7 +268,7 @@ func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"loaded an existing instance",
 	)
 }
@@ -282,7 +282,7 @@ func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName,
+		f.Handler.Identity().Name,
 		"event ignored because it was not routed to any instance",
 	)
 }
@@ -296,7 +296,7 @@ func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"timeout ignored because the target instance no longer exists",
 	)
 }
@@ -310,7 +310,7 @@ func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance does not yet exist",
 	)
 }
@@ -324,7 +324,7 @@ func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance begun",
 	)
 }
@@ -338,7 +338,7 @@ func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance ended",
 	)
 }
@@ -352,7 +352,7 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"executed a command",
 		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
 		dogma.DescribeMessage(f.CommandEnvelope.Message),
@@ -368,7 +368,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		fmt.Sprintf(
 			"scheduled a timeout for %s",
 			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
@@ -387,7 +387,7 @@ func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 			logging.ProcessIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }

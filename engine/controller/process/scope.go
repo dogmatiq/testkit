@@ -43,11 +43,10 @@ func (s *scope) Begin() bool {
 	s.exists = true
 
 	s.observer.Notify(fact.ProcessInstanceBegun{
-		HandlerName: s.config.Identity().Name,
-		Handler:     s.config.Handler(),
-		InstanceID:  s.instanceID,
-		Root:        s.root,
-		Envelope:    s.env,
+		Handler:    s.config,
+		InstanceID: s.instanceID,
+		Root:       s.root,
+		Envelope:   s.env,
 	})
 
 	return true
@@ -63,11 +62,10 @@ func (s *scope) End() {
 	s.pending = nil
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
-		HandlerName: s.config.Identity().Name,
-		Handler:     s.config.Handler(),
-		InstanceID:  s.instanceID,
-		Root:        s.root,
-		Envelope:    s.env,
+		Handler:    s.config,
+		InstanceID: s.instanceID,
+		Root:       s.root,
+		Envelope:   s.env,
 	})
 }
 
@@ -114,8 +112,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 	s.commands = append(s.commands, env)
 
 	s.observer.Notify(fact.CommandExecutedByProcess{
-		HandlerName:     s.config.Identity().Name,
-		Handler:         s.config.Handler(),
+		Handler:         s.config,
 		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -167,8 +164,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	}
 
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
-		HandlerName:     s.config.Identity().Name,
-		Handler:         s.config.Handler(),
+		Handler:         s.config,
 		InstanceID:      s.instanceID,
 		Root:            s.root,
 		Envelope:        s.env,
@@ -182,8 +178,7 @@ func (s *scope) ScheduledFor() time.Time {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
-		HandlerName:  s.config.Identity().Name,
-		Handler:      s.config.Handler(),
+		Handler:      s.config,
 		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.env,
