@@ -37,11 +37,10 @@ func (s *scope) Destroy() {
 	s.exists = false
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
-		HandlerName: s.config.Identity().Name,
-		Handler:     s.config.Handler(),
-		InstanceID:  s.instanceID,
-		Root:        s.root,
-		Envelope:    s.command,
+		Handler:    s.config,
+		InstanceID: s.instanceID,
+		Root:       s.root,
+		Envelope:   s.command,
 	})
 }
 
@@ -64,11 +63,10 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 	if !s.exists {
 		s.observer.Notify(fact.AggregateInstanceCreated{
-			HandlerName: s.config.Identity().Name,
-			Handler:     s.config.Handler(),
-			InstanceID:  s.instanceID,
-			Root:        s.root,
-			Envelope:    s.command,
+			Handler:    s.config,
+			InstanceID: s.instanceID,
+			Root:       s.root,
+			Envelope:   s.command,
 		})
 
 		s.exists = true
@@ -98,8 +96,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	s.events = append(s.events, env)
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
-		HandlerName:   s.config.Identity().Name,
-		Handler:       s.config.Handler(),
+		Handler:       s.config,
 		InstanceID:    s.instanceID,
 		Root:          s.root,
 		Envelope:      s.command,
@@ -109,8 +106,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByAggregate{
-		HandlerName:  s.config.Identity().Name,
-		Handler:      s.config.Handler(),
+		Handler:      s.config,
 		InstanceID:   s.instanceID,
 		Root:         s.root,
 		Envelope:     s.command,

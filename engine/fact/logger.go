@@ -182,7 +182,7 @@ func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"loaded an existing instance",
 	)
 }
@@ -196,7 +196,7 @@ func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance does not yet exist",
 	)
 }
@@ -210,7 +210,7 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance created",
 	)
 }
@@ -224,7 +224,7 @@ func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance destroyed",
 	)
 }
@@ -238,7 +238,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		"recorded an event",
 		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
 		dogma.DescribeMessage(f.EventEnvelope.Message),
@@ -254,7 +254,7 @@ func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
 			logging.AggregateIcon,
 			"",
 		},
-		f.HandlerName+" "+f.InstanceID,
+		f.Handler.Identity().Name+" "+f.InstanceID,
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }

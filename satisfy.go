@@ -301,7 +301,7 @@ func (t *SatisfyT) logf(format string, args []interface{}) {
 	t.messages = append(t.messages, m)
 }
 
-// skip marks the test as skipped. 
+// skip marks the test as skipped.
 // fn is the name of the function that was called to skip the test.
 func (t *SatisfyT) skip(fn string) {
 	t.skipped = true
@@ -309,7 +309,7 @@ func (t *SatisfyT) skip(fn string) {
 	panic(abortSentinel{})
 }
 
-// fail marks the test as failed. 
+// fail marks the test as failed.
 // fn is the name of the function that was called to indicate failure.
 func (t *SatisfyT) fail(fn string) {
 	t.failed = true

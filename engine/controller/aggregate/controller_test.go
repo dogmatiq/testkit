@@ -197,10 +197,9 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceNotFound{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-C1>",
-						Envelope:    command,
+						Handler:    config,
+						InstanceID: "<instance-C1>",
+						Envelope:   command,
 					},
 				))
 			})
@@ -274,9 +273,8 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceLoaded{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance-C1>",
+						Handler:    config,
+						InstanceID: "<instance-C1>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,

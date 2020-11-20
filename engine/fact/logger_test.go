@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	. "github.com/dogmatiq/testkit/engine/fact"
@@ -31,6 +32,14 @@ var _ = Describe("type Logger", func() {
 			MessageE1,
 			time.Now(),
 		)
+
+		aggregate := configkit.FromAggregate(&AggregateMessageHandler{
+			ConfigureFunc: func(c dogma.AggregateConfigurer) {
+				c.Identity("<aggregate>", "<aggregate-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
+		})
 
 		DescribeTable(
 			"logs the expected message",
@@ -191,47 +200,47 @@ var _ = Describe("type Logger", func() {
 
 			Entry(
 				"AggregateInstanceLoaded",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● loaded an existing instance",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
 				AggregateInstanceLoaded{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					Envelope:    command,
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
 				},
 			),
 			Entry(
 				"AggregateInstanceNotFound",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance does not yet exist",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
 				AggregateInstanceNotFound{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					Envelope:    command,
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
 				},
 			),
 			Entry(
 				"AggregateInstanceCreated",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance created",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <aggregate> <instance> ● instance created",
 				AggregateInstanceCreated{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					Envelope:    command,
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
 				},
 			),
 			Entry(
 				"AggregateInstanceDestroyed",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● instance destroyed",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <aggregate> <instance> ● instance destroyed",
 				AggregateInstanceDestroyed{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					Envelope:    command,
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
 				},
 			),
 			Entry(
 				"EventRecordedByAggregate",
-				"= 0200  ∵ 0100  ⋲ 0100  ▲ ∴    <handler> <instance> ● recorded an event ● fixtures.MessageE! ● {E1}",
+				"= 0200  ∵ 0100  ⋲ 0100  ▲ ∴    <aggregate> <instance> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
-					HandlerName: "<handler>",
-					InstanceID:  "<instance>",
-					Envelope:    command,
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
 					EventEnvelope: command.NewEvent(
 						"200",
 						MessageE1,
@@ -242,9 +251,9 @@ var _ = Describe("type Logger", func() {
 			),
 			Entry(
 				"MessageLoggedByAggregate",
-				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <handler> <instance> ● <message>",
+				"= 0100  ∵ 0100  ⋲ 0100  ▼ ∴    <aggregate> <instance> ● <message>",
 				MessageLoggedByAggregate{
-					HandlerName:  "<handler>",
+					Handler:      aggregate,
 					InstanceID:   "<instance>",
 					Envelope:     command,
 					LogFormat:    "<%s>",

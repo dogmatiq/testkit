@@ -19,6 +19,7 @@ var _ = Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandler
+		config     configkit.RichAggregate
 		ctrl       *Controller
 		command    *envelope.Envelope
 	)
@@ -46,8 +47,10 @@ var _ = Describe("type scope", func() {
 			},
 		}
 
+		config = configkit.FromAggregate(handler)
+
 		ctrl = &Controller{
-			Config:     configkit.FromAggregate(handler),
+			Config:     config,
 			MessageIDs: &messageIDs,
 		}
 
@@ -102,9 +105,8 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceCreated{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
+						Handler:    config,
+						InstanceID: "<instance>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,
@@ -115,9 +117,8 @@ var _ = Describe("type scope", func() {
 				))
 				Expect(buf.Facts()).To(ContainElement(
 					fact.EventRecordedByAggregate{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
+						Handler:    config,
+						InstanceID: "<instance>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,
@@ -187,11 +188,10 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceDestroyed{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
-						Root:        &AggregateRoot{},
-						Envelope:    command,
+						Handler:    config,
+						InstanceID: "<instance>",
+						Root:       &AggregateRoot{},
+						Envelope:   command,
 					},
 				))
 			})
@@ -223,9 +223,8 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.EventRecordedByAggregate{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
+						Handler:    config,
+						InstanceID: "<instance>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,
@@ -284,9 +283,8 @@ var _ = Describe("type scope", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceCreated{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
+						Handler:    config,
+						InstanceID: "<instance>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,
@@ -297,9 +295,8 @@ var _ = Describe("type scope", func() {
 				))
 				Expect(buf.Facts()).To(ContainElement(
 					fact.EventRecordedByAggregate{
-						HandlerName: "<name>",
-						Handler:     handler,
-						InstanceID:  "<instance>",
+						Handler:    config,
+						InstanceID: "<instance>",
 						Root: &AggregateRoot{
 							AppliedEvents: []dogma.Message{
 								MessageE1,
@@ -409,12 +406,11 @@ var _ = Describe("type scope", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buf.Facts()).To(ContainElement(
 				fact.MessageLoggedByAggregate{
-					HandlerName: "<name>",
-					Handler:     handler,
-					InstanceID:  "<instance>",
-					Root:        &AggregateRoot{},
-					Envelope:    command,
-					LogFormat:   "<format>",
+					Handler:    config,
+					InstanceID: "<instance>",
+					Root:       &AggregateRoot{},
+					Envelope:   command,
+					LogFormat:  "<format>",
 					LogArguments: []interface{}{
 						"<arg-1>",
 						"<arg-2>",
