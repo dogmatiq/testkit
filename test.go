@@ -82,18 +82,8 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.t.Helper()
 
 	for _, act := range actions {
-		s := ActionScope{
-			App:              t.app,
-			TestingT:         t.t,
-			VirtualClock:     &t.virtualClock,
-			Engine:           t.engine,
-			Executor:         &t.executor,
-			Recorder:         &t.recorder,
-			OperationOptions: t.buildOperationOptions(),
-		}
-
 		logf(t.t, "--- %s ---", act.Banner())
-		if err := act.Apply(t.ctx, s); err != nil {
+		if err := t.applyAction(act); err != nil {
 			t.t.Fatal(err)
 		}
 	}
@@ -119,24 +109,11 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 
 	e.Begin(o)
 
-	s := ActionScope{
-		App:          t.app,
-		TestingT:     t.t,
-		VirtualClock: &t.virtualClock,
-		Engine:       t.engine,
-		Executor:     &t.executor,
-		Recorder:     &t.recorder,
-		OperationOptions: append(
-			t.buildOperationOptions(),
-			engine.WithObserver(e),
-		),
-	}
-
 	func() {
 		defer e.End()
 
 		logf(t.t, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
-		if err := act.Apply(t.ctx, s); err != nil {
+		if err := t.applyAction(act, engine.WithObserver(e)); err != nil {
 			t.t.Fatal(err)
 		}
 	}()
@@ -205,10 +182,24 @@ func (t *Test) buildReport(e Expectation) {
 	}
 }
 
-// buildOperationOptions builds the operation options to provide to each action.
-func (t *Test) buildOperationOptions() []engine.OperationOption {
-	options := []engine.OperationOption{
+// applyAction calls act.Apply() with a scope appropriate for this test.
+func (t *Test) applyAction(act Action, options ...engine.OperationOption) error {
+	opts := []engine.OperationOption{
 		engine.WithCurrentTime(t.virtualClock),
 	}
-	return append(options, t.operationOptions...)
+	opts = append(opts, t.operationOptions...)
+	opts = append(opts, options...)
+
+	return act.Apply(
+		t.ctx,
+		ActionScope{
+			App:              t.app,
+			TestingT:         t.t,
+			VirtualClock:     &t.virtualClock,
+			Engine:           t.engine,
+			Executor:         &t.executor,
+			Recorder:         &t.recorder,
+			OperationOptions: opts,
+		},
+	)
 }
