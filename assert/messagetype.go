@@ -95,7 +95,7 @@ func (a *messageTypeAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *messageTypeAssertion) BuildReport(ok bool, r report.Renderer) *Report {
+func (a *messageTypeAssertion) BuildReport(ok bool) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
@@ -113,9 +113,9 @@ func (a *messageTypeAssertion) BuildReport(ok bool, r report.Renderer) *Report {
 	if a.best == nil {
 		buildResultNoMatch(rep, &a.tracker)
 	} else if a.best.Role == a.role {
-		a.buildResultExpectedRole(r, rep)
+		a.buildResultExpectedRole(rep)
 	} else {
-		a.buildResultUnexpectedRole(r, rep)
+		a.buildResultUnexpectedRole(rep)
 	}
 
 	return rep
@@ -172,7 +172,7 @@ func (a *messageTypeAssertion) buildDiff(rep *Report) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an unexpected role.
-func (a *messageTypeAssertion) buildResultExpectedRole(r report.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
@@ -198,7 +198,7 @@ func (a *messageTypeAssertion) buildResultExpectedRole(r report.Renderer, rep *R
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *messageTypeAssertion) buildResultUnexpectedRole(r report.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultUnexpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
