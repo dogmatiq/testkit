@@ -1,11 +1,11 @@
-package render_test
+package report_test
 
 import (
 	"strings"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
-	. "github.com/dogmatiq/testkit/render"
+	. "github.com/dogmatiq/testkit/report"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

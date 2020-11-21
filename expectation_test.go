@@ -4,7 +4,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 const (
@@ -31,7 +31,7 @@ func (a staticExpectation) Begin(ExpectOptionSet) {}
 func (a staticExpectation) End()                  {}
 func (a staticExpectation) Ok() bool              { return bool(a) }
 func (a staticExpectation) Notify(fact.Fact)      {}
-func (a staticExpectation) BuildReport(ok bool, r render.Renderer) *assert.Report {
+func (a staticExpectation) BuildReport(ok bool, r report.Renderer) *assert.Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"

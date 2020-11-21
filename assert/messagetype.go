@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 // CommandTypeExecuted returns an assertion that passes if a message with the
@@ -95,7 +95,7 @@ func (a *messageTypeAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *messageTypeAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *messageTypeAssertion) BuildReport(ok bool, r report.Renderer) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
@@ -163,7 +163,7 @@ func (a *messageTypeAssertion) messageProduced(env *envelope.Envelope) {
 
 // buildDiff adds a "message type diff" section to the result.
 func (a *messageTypeAssertion) buildDiff(rep *Report) {
-	render.WriteDiff(
+	report.WriteDiff(
 		&rep.Section("Message Type Diff").Content,
 		a.expected.String(),
 		a.best.Type.ReflectType().String(),
@@ -172,7 +172,7 @@ func (a *messageTypeAssertion) buildDiff(rep *Report) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an unexpected role.
-func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultExpectedRole(r report.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
@@ -198,7 +198,7 @@ func (a *messageTypeAssertion) buildResultExpectedRole(r render.Renderer, rep *R
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an expected role.
-func (a *messageTypeAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+func (a *messageTypeAssertion) buildResultUnexpectedRole(r report.Renderer, rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {

@@ -3,7 +3,7 @@ package assert
 import (
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 // ExpectOptionSet is a set of options that dictate the behavior of the
@@ -46,5 +46,5 @@ type Assertion interface {
 	// ok is true if the assertion is considered to have passed. This may not be
 	// the same value as returned from Ok() when this assertion is used as a
 	// sub-assertion inside a composite.
-	BuildReport(ok bool, r render.Renderer) *Report
+	BuildReport(ok bool, r report.Renderer) *Report
 }

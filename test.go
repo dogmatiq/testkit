@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 // Test contains the state of a single test.
@@ -24,7 +24,7 @@ type Test struct {
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
 	comparator       compare.Comparator
-	renderer         render.Renderer
+	renderer         report.Renderer
 	virtualClock     time.Time
 	operationOptions []engine.OperationOption
 }
@@ -194,7 +194,7 @@ func (t *Test) buildReport(e Expectation) {
 
 	r := t.renderer
 	if r == nil {
-		r = render.DefaultRenderer{}
+		r = report.DefaultRenderer{}
 	}
 
 	buf := &strings.Builder{}

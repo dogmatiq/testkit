@@ -1,11 +1,11 @@
-package render_test
+package report_test
 
 import (
 	"io"
 
 	"github.com/dogmatiq/iago/iotest"
 	"github.com/dogmatiq/iago/must"
-	. "github.com/dogmatiq/testkit/render"
+	. "github.com/dogmatiq/testkit/report"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

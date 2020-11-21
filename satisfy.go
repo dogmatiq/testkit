@@ -9,7 +9,7 @@ import (
 
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 // ToSatisfy returns an expectation that calls a function to check for specific
@@ -90,7 +90,7 @@ func (e *toSatisfy) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *toSatisfy) BuildReport(ok bool, r render.Renderer) *assert.Report {
+func (e *toSatisfy) BuildReport(ok bool, r report.Renderer) *assert.Report {
 	rep := &assert.Report{
 		TreeOk:   ok,
 		Ok:       e.Ok(),
