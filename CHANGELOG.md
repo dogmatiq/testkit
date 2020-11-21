@@ -27,6 +27,7 @@ migrate tests from prior versions.
 - Add `testkit.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()`
 - Add `TimeAdjuster` interface, for use with `AdvanceTime()`
 - Add `engine.EnableHandler()`
+- Add `Test.EnableHandlers()` and `DisableHandlers()`
 - **[BC]** Add `TestingT.Failed()`, `Fatal()` and `Helper()` methods
 
 ### Changed

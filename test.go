@@ -162,6 +162,34 @@ func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
 }
 
+// EnableHandlers enables a set of handlers by name.
+//
+// By default all integration and projection handlers are disabled.
+func (t *Test) EnableHandlers(names ...string) *Test {
+	for _, n := range names {
+		t.operationOptions = append(
+			t.operationOptions,
+			engine.EnableHandler(n, true),
+		)
+	}
+
+	return t
+}
+
+// DisableHandlers disables a set of handlers by name.
+//
+// By default all integration and projection handlers are disabled.
+func (t *Test) DisableHandlers(names ...string) *Test {
+	for _, n := range names {
+		t.operationOptions = append(
+			t.operationOptions,
+			engine.EnableHandler(n, false),
+		)
+	}
+
+	return t
+}
+
 func (t *Test) buildReport(e Expectation) {
 	t.t.Helper()
 
