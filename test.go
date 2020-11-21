@@ -23,9 +23,9 @@ type Test struct {
 	engine           *engine.Engine
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
-	now              time.Time
 	comparator       compare.Comparator
 	renderer         render.Renderer
+	virtualClock     time.Time
 	operationOptions []engine.OperationOption
 }
 
@@ -56,11 +56,11 @@ func BeginContext(
 	e := engine.MustNew(cfg, to.engineOptions...)
 
 	return &Test{
-		ctx:    ctx,
-		t:      t,
-		app:    cfg,
-		engine: e,
-		now:    to.time,
+		ctx:          ctx,
+		t:            t,
+		app:          cfg,
+		engine:       e,
+		virtualClock: to.time,
 		operationOptions: append(
 			to.operationOptions,
 			engine.WithObserver(
@@ -81,10 +81,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 		s := ActionScope{
 			App:              t.app,
 			TestingT:         t.t,
-			VirtualClock:     &t.now,
+			Engine:           t.engine,
 			Executor:         &t.executor,
 			Recorder:         &t.recorder,
-			Engine:           t.engine,
+			VirtualClock:     &t.virtualClock,
 			OperationOptions: t.buildOperationOptions(),
 		}
 
@@ -120,10 +120,10 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	s := ActionScope{
 		App:          t.app,
 		TestingT:     t.t,
-		VirtualClock: &t.now,
+		Engine:       t.engine,
 		Executor:     &t.executor,
 		Recorder:     &t.recorder,
-		Engine:       t.engine,
+		VirtualClock: &t.virtualClock,
 		OperationOptions: append(
 			t.buildOperationOptions(),
 			engine.WithObserver(e),
@@ -187,6 +187,6 @@ func (t *Test) buildOperationOptions() []engine.OperationOption {
 	}
 
 	options = append(options, t.operationOptions...)
-	options = append(options, engine.WithCurrentTime(t.now))
+	options = append(options, engine.WithCurrentTime(t.virtualClock))
 	return options
 }
