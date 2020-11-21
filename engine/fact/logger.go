@@ -508,7 +508,7 @@ func formatMessageID(id string) string {
 }
 
 func formatEngineTime(t time.Time) string {
-	return "engine time is " + t.Format(time.RFC3339)
+	return t.Format(time.RFC3339)
 }
 
 var handlerTypePlurals = map[configkit.HandlerType]string{
