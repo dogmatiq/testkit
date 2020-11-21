@@ -68,7 +68,7 @@ var _ = Describe("func Call()", func() {
 			t,
 			app,
 			StartVirtualClockAt(startTime),
-			WithOperationOptions(
+			WithUnsafeOperationOptions(
 				engine.WithObserver(buf),
 			),
 		)

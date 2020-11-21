@@ -19,9 +19,15 @@ func StartVirtualClockAt(st time.Time) TestOption {
 	}
 }
 
-// WithOperationOptions returns a TestOption that applies optional per-operation
-// settings when performing assertions.
-func WithOperationOptions(options ...engine.OperationOption) TestOption {
+// WithUnsafeOperationOptions returns a TestOption that applies a set of engine
+// operation options when performing any action.
+//
+// This function is provided for forward-compatibility with engine operations
+// and for low level control of the engine's behavior.
+//
+// The provided options may override options that the Test sets during its
+// normal operation and should be used with caution.
+func WithUnsafeOperationOptions(options ...engine.OperationOption) TestOption {
 	return func(t *Test) {
 		t.operationOptions = append(t.operationOptions, options...)
 	}

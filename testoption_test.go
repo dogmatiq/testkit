@@ -46,7 +46,7 @@ var _ = Describe("func StartVirtualClockAt()", func() {
 			&testingmock.T{},
 			app,
 			StartVirtualClockAt(now),
-			WithOperationOptions(
+			WithUnsafeOperationOptions(
 				engine.EnableProjections(true),
 			),
 		).Prepare(

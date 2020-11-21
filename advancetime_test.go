@@ -39,7 +39,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			t,
 			app,
 			StartVirtualClockAt(startTime),
-			WithOperationOptions(
+			WithUnsafeOperationOptions(
 				engine.WithObserver(buf),
 			),
 		)
