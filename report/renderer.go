@@ -123,12 +123,14 @@ func (r DefaultRenderer) write(w io.Writer, v interface{}) (int, error) {
 }
 
 // printer is the Dapper printer used to render values.
-var printer = dapper.Printer{
-	Config: dapper.Config{
-		Filters: []dapper.Filter{
-			dapper.TimeFilter,
-			dapper.DurationFilter,
-		},
-		OmitPackagePaths: true,
-	},
+var printer dapper.Printer
+
+func init() {
+	printer = dapper.Printer{
+		// Copy the default config.
+		Config: dapper.DefaultPrinter.Config,
+	}
+
+	// Then modify the settings we want to change.
+	printer.Config.OmitPackagePaths = true
 }
