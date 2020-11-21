@@ -46,14 +46,6 @@ func newTestOptions(options []TestOption) *testOptions {
 	return ro
 }
 
-// WithEngineOptions returns a TestOption that applies optional settings to
-// the engine used by the test-runner.
-func WithEngineOptions(options ...engine.Option) TestOption {
-	return func(to *testOptions) {
-		to.engineOptions = append(to.engineOptions, options...)
-	}
-}
-
 // WithOperationOptions returns a TestOption that applies optional per-operation
 // settings when performing assertions.
 func WithOperationOptions(options ...engine.OperationOption) TestOption {
