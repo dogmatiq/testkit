@@ -33,6 +33,7 @@ migrate tests from prior versions.
 - **[BC]** Change `Test.Prepare()` to accept `...Action` (previously `...dogma.Message`)
 - **[BC]** The function passed to `Call()` no longer returns an `error`
 - **[BC]** `engine.New()` and `MustNew()` now accept `configkit.RichApplication` (previously `dogma.Application`)
+- **[BC]** Rename `WithStartTime()` to `StartVirtualClockAt()`
 
 ### Removed
 
@@ -40,6 +41,7 @@ migrate tests from prior versions.
 - **[BC]** Remove `Runner`
 - **[BC]** Remove `Test.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` methods
 - **[BC]** Remove `TimeAdvancer` function (replaced with `TimeAdjustment` interface)
+- **[BC]** Remove `WithEngineOptions()`
 
 ## [0.10.0] - 2020-11-16
 

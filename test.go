@@ -50,26 +50,33 @@ func BeginContext(
 	app dogma.Application,
 	options ...TestOption,
 ) *Test {
-	to := newTestOptions(options)
-
 	cfg := configkit.FromApplication(app)
-	e := engine.MustNew(cfg, to.engineOptions...)
 
-	return &Test{
-		ctx:          ctx,
-		t:            t,
-		app:          cfg,
-		engine:       e,
-		virtualClock: to.time,
-		operationOptions: append(
-			to.operationOptions,
+	test := &Test{
+		ctx: ctx,
+		t:   t,
+		app: cfg,
+		engine: engine.MustNew(
+			cfg,
+			engine.EnableProjectionCompactionDuringHandling(true),
+		),
+		virtualClock: time.Now(),
+		operationOptions: []engine.OperationOption{
+			engine.EnableProjections(false),
+			engine.EnableIntegrations(false),
 			engine.WithObserver(
 				fact.NewLogger(func(s string) {
 					log(t, s)
 				}),
 			),
-		),
+		},
 	}
+
+	for _, opt := range options {
+		opt(test)
+	}
+
+	return test
 }
 
 // Prepare performs a group of actions without making any assertions in order
@@ -181,11 +188,7 @@ func (t *Test) buildReport(e Expectation) {
 
 // buildOperationOptions builds the operation options to provide to each action.
 func (t *Test) buildOperationOptions() []engine.OperationOption {
-	options := []engine.OperationOption{
-		engine.EnableProjections(false),
-		engine.EnableIntegrations(false),
-	}
-
+	var options []engine.OperationOption
 	options = append(options, t.operationOptions...)
 	options = append(options, engine.WithCurrentTime(t.virtualClock))
 	return options
