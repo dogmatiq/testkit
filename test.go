@@ -26,7 +26,6 @@ type Test struct {
 	now              time.Time
 	comparator       compare.Comparator
 	renderer         render.Renderer
-	enabledHandlers  map[configkit.HandlerType]bool
 	operationOptions []engine.OperationOption
 }
 
@@ -57,12 +56,11 @@ func BeginContext(
 	e := engine.MustNew(cfg, to.engineOptions...)
 
 	return &Test{
-		ctx:             ctx,
-		t:               t,
-		app:             cfg,
-		engine:          e,
-		now:             to.time,
-		enabledHandlers: map[configkit.HandlerType]bool{},
+		ctx:    ctx,
+		t:      t,
+		app:    cfg,
+		engine: e,
+		now:    to.time,
 		operationOptions: append(
 			to.operationOptions,
 			engine.WithObserver(
