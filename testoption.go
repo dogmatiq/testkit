@@ -9,7 +9,7 @@ import (
 // TestOption applies optional settings to a test.
 type TestOption func(*testOptions)
 
-// StartVirtualClockAt returns a test option that sets initial the time of the
+// StartVirtualClockAt returns a test option that sets the initial time of the
 // test's virtual clock.
 //
 // By default, the current system time is used.
