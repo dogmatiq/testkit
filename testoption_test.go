@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func StartVirtualClockAt()", func() {
+var _ = Describe("func StartTimeAt()", func() {
 	It("sets the engine time as seen during a Prepare() call", func() {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
@@ -44,7 +44,7 @@ var _ = Describe("func StartVirtualClockAt()", func() {
 		Begin(
 			&testingmock.T{},
 			app,
-			StartVirtualClockAt(now),
+			StartTimeAt(now),
 		).
 			EnableHandlers("<handler-name>").
 			Prepare(RecordEvent(MessageA1))

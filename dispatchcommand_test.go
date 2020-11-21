@@ -53,7 +53,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		test = Begin(
 			t,
 			app,
-			StartVirtualClockAt(startTime),
+			StartTimeAt(startTime),
 			WithUnsafeOperationOptions(
 				engine.WithObserver(buf),
 			),

@@ -35,7 +35,7 @@ migrate tests from prior versions.
 - **[BC]** Change `Test.Prepare()` to accept `...Action` (previously `...dogma.Message`)
 - **[BC]** The function passed to `Call()` no longer returns an `error`
 - **[BC]** `engine.New()` and `MustNew()` now accept `configkit.RichApplication` (previously `dogma.Application`)
-- **[BC]** Rename `WithStartTime()` to `StartVirtualClockAt()`
+- **[BC]** Rename `WithStartTime()` to `StartTimeAt()`
 - **[BC]** Rename `WithOperationOptions()` to `WithUnsafeOperationOptions()`
 
 ### Removed
