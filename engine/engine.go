@@ -93,8 +93,9 @@ func (e *Engine) Tick(
 
 	oo.observers.Notify(
 		fact.TickCycleBegun{
-			EngineTime:      oo.now,
-			EnabledHandlers: oo.enabledHandlers,
+			EngineTime:          oo.now,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -106,8 +107,9 @@ func (e *Engine) Tick(
 
 	oo.observers.Notify(
 		fact.TickCycleCompleted{
-			Error:           err,
-			EnabledHandlers: oo.enabledHandlers,
+			Error:               err,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -124,6 +126,17 @@ func (e *Engine) tick(
 	)
 
 	for _, c := range e.controllers {
+		if skip, reason := e.skipHandler(c.HandlerConfig(), oo); skip {
+			oo.observers.Notify(
+				fact.TickSkipped{
+					Handler: c.HandlerConfig(),
+					Reason:  reason,
+				},
+			)
+
+			continue
+		}
+
 		oo.observers.Notify(
 			fact.TickBegun{
 				Handler: c.HandlerConfig(),
@@ -194,9 +207,10 @@ func (e *Engine) Dispatch(
 
 	oo.observers.Notify(
 		fact.DispatchCycleBegun{
-			Envelope:        env,
-			EngineTime:      oo.now,
-			EnabledHandlers: oo.enabledHandlers,
+			Envelope:            env,
+			EngineTime:          oo.now,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -208,9 +222,10 @@ func (e *Engine) Dispatch(
 
 	oo.observers.Notify(
 		fact.DispatchCycleCompleted{
-			Envelope:        env,
-			Error:           err,
-			EnabledHandlers: oo.enabledHandlers,
+			Envelope:            env,
+			Error:               err,
+			EnabledHandlerTypes: oo.enabledHandlerTypes,
+			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
 
@@ -280,11 +295,12 @@ func (e *Engine) handle(
 	env *envelope.Envelope,
 	c controller.Controller,
 ) ([]*envelope.Envelope, error) {
-	if !oo.enabledHandlers[c.HandlerConfig().HandlerType()] {
+	if skip, reason := e.skipHandler(c.HandlerConfig(), oo); skip {
 		oo.observers.Notify(
 			fact.HandlingSkipped{
 				Handler:  c.HandlerConfig(),
 				Envelope: env,
+				Reason:   reason,
 			},
 		)
 
@@ -309,4 +325,18 @@ func (e *Engine) handle(
 	)
 
 	return envs, err
+}
+
+// skipHandler returns true if a specific handler should be skipped during a
+// call to Dispatch() or Tick().
+func (e *Engine) skipHandler(
+	h configkit.Handler,
+	oo *operationOptions,
+) (bool, fact.HandlerSkipReason) {
+	if en, ok := oo.enabledHandlers[h.Identity().Name]; ok {
+		return !en, fact.IndividualHandlerDisabled
+	}
+
+	en := oo.enabledHandlerTypes[h.HandlerType()]
+	return !en, fact.HandlerTypeDisabled
 }

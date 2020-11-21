@@ -3,11 +3,16 @@ package engine_test
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/dogmatiq/configkit"
+	. "github.com/dogmatiq/configkit/fixtures"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,6 +24,7 @@ var _ = Describe("type Engine", func() {
 		integration *IntegrationMessageHandler
 		projection  *ProjectionMessageHandler
 		app         *Application
+		config      configkit.RichApplication
 		engine      *Engine
 	)
 
@@ -72,17 +78,115 @@ var _ = Describe("type Engine", func() {
 			},
 		}
 
-		engine = MustNew(
-			configkit.FromApplication(app),
-		)
+		config = configkit.FromApplication(app)
+		engine = MustNew(config)
 	})
 
 	Describe("func Dispatch()", func() {
+		It("skips handlers that are disabled by type", func() {
+			aggregate.HandleCommandFunc = func(
+				dogma.AggregateRoot,
+				dogma.AggregateCommandScope,
+				dogma.Message,
+			) {
+				Fail("unexpected call")
+			}
+
+			now := time.Now()
+			buf := &fact.Buffer{}
+			err := engine.Dispatch(
+				context.Background(),
+				MessageA1,
+				WithCurrentTime(now),
+				WithObserver(buf),
+				EnableAggregates(false),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.HandlingSkipped{
+					Handler: h,
+					Envelope: &envelope.Envelope{
+						MessageID:     "1",
+						CausationID:   "1",
+						CorrelationID: "1",
+						Message:       MessageA1,
+						Type:          MessageAType,
+						Role:          message.CommandRole,
+						CreatedAt:     now,
+					},
+					Reason: fact.HandlerTypeDisabled,
+				},
+			))
+		})
+
+		It("skips handlers that are disabled by name", func() {
+			aggregate.HandleCommandFunc = func(
+				dogma.AggregateRoot,
+				dogma.AggregateCommandScope,
+				dogma.Message,
+			) {
+				Fail("unexpected call")
+			}
+
+			now := time.Now()
+			buf := &fact.Buffer{}
+			err := engine.Dispatch(
+				context.Background(),
+				MessageA1,
+				WithCurrentTime(now),
+				WithObserver(buf),
+				EnableHandler("<aggregate>", false),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.HandlingSkipped{
+					Handler: h,
+					Envelope: &envelope.Envelope{
+						MessageID:     "1",
+						CausationID:   "1",
+						CorrelationID: "1",
+						Message:       MessageA1,
+						Type:          MessageAType,
+						Role:          message.CommandRole,
+						CreatedAt:     now,
+					},
+					Reason: fact.IndividualHandlerDisabled,
+				},
+			))
+		})
+
+		It("does not skip handlers that are enabled by name", func() {
+			called := false
+			aggregate.HandleCommandFunc = func(
+				dogma.AggregateRoot,
+				dogma.AggregateCommandScope,
+				dogma.Message,
+			) {
+				called = true
+			}
+
+			err := engine.Dispatch(
+				context.Background(),
+				MessageA1,
+				EnableHandler("<aggregate>", false),
+				EnableHandler("<aggregate>", true),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+
 		It("panics if the message is invalid", func() {
 			Expect(func() {
-				engine.Dispatch(context.Background(), MessageA{
-					Value: errors.New("<invalid>"),
-				})
+				engine.Dispatch(
+					context.Background(),
+					MessageA{
+						Value: errors.New("<invalid>"),
+					},
+				)
 			}).To(PanicWith("can not dispatch invalid fixtures.MessageA message: <invalid>"))
 		})
 
@@ -90,6 +194,62 @@ var _ = Describe("type Engine", func() {
 			Expect(func() {
 				engine.Dispatch(context.Background(), MessageX1)
 			}).To(PanicWith("the fixtures.MessageX message type is not consumed by any handlers"))
+		})
+	})
+
+	Describe("func Tick()", func() {
+		It("skips handlers that are disabled by type", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+				EnableAggregates(false),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickSkipped{
+					Handler: h,
+					Reason:  fact.HandlerTypeDisabled,
+				},
+			))
+		})
+
+		It("skips handlers that are disabled by name", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+				EnableHandler("<aggregate>", false),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickSkipped{
+					Handler: h,
+					Reason:  fact.IndividualHandlerDisabled,
+				},
+			))
+		})
+
+		It("does not skip handlers that are enabled by name", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+				EnableHandler("<aggregate>", false),
+				EnableHandler("<aggregate>", true),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickBegun{
+					Handler: h,
+				},
+			))
 		})
 	})
 })

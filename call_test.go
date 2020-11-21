@@ -98,12 +98,13 @@ var _ = Describe("func Call()", func() {
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,
-				EnabledHandlers: map[configkit.HandlerType]bool{
+				EnabledHandlerTypes: map[configkit.HandlerType]bool{
 					configkit.AggregateHandlerType:   true,
 					configkit.IntegrationHandlerType: false,
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})
@@ -132,12 +133,13 @@ var _ = Describe("func Call()", func() {
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,
-				EnabledHandlers: map[configkit.HandlerType]bool{
+				EnabledHandlerTypes: map[configkit.HandlerType]bool{
 					configkit.AggregateHandlerType:   true,
 					configkit.IntegrationHandlerType: false,
 					configkit.ProcessHandlerType:     true,
 					configkit.ProjectionHandlerType:  false,
 				},
+				EnabledHandlers: map[string]bool{},
 			},
 		))
 	})

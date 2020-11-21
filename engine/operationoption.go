@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -64,7 +63,22 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	t.MustValidate()
 
 	return func(oo *operationOptions) {
-		oo.enabledHandlers[t] = enabled
+		oo.enabledHandlerTypes[t] = enabled
+	}
+}
+
+// EnableHandler returns an operation option that enables or disables a specific
+// handler.
+//
+// This option takes precedence over any EnableAggregates(), EnableProcesses(),
+// EnableIntegrations() or EnableProjections() options.
+func EnableHandler(name string, enabled bool) OperationOption {
+	if err := configkit.ValidateIdentityName(name); err != nil {
+		panic(err)
+	}
+
+	return func(oo *operationOptions) {
+		oo.enabledHandlers[name] = enabled
 	}
 }
 
@@ -79,21 +93,23 @@ func WithCurrentTime(t time.Time) OperationOption {
 // operationOptions is a container for the options set via OperationOption
 // values.
 type operationOptions struct {
-	now             time.Time
-	observers       fact.ObserverGroup
-	enabledHandlers map[configkit.HandlerType]bool
+	now                 time.Time
+	observers           fact.ObserverGroup
+	enabledHandlerTypes map[configkit.HandlerType]bool
+	enabledHandlers     map[string]bool
 }
 
 // newOperationOptions returns a new operationOptions with the given options.
 func newOperationOptions(options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),
-		enabledHandlers: map[configkit.HandlerType]bool{
+		enabledHandlerTypes: map[configkit.HandlerType]bool{
 			configkit.AggregateHandlerType:   true,
 			configkit.ProcessHandlerType:     true,
 			configkit.IntegrationHandlerType: true,
 			configkit.ProjectionHandlerType:  true,
 		},
+		enabledHandlers: map[string]bool{},
 	}
 
 	for _, opt := range options {

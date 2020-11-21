@@ -2,6 +2,7 @@ package fact
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -91,7 +92,7 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 		},
 		"dispatching",
 		formatEngineTime(f.EngineTime),
-		formatEnabledHandlers(f.EnabledHandlers),
+		formatEnabledHandlers(f.EnabledHandlerTypes, f.EnabledHandlers),
 	)
 }
 
@@ -153,7 +154,7 @@ func (l *Logger) tickCycleBegun(f TickCycleBegun) {
 		},
 		"ticking",
 		formatEngineTime(f.EngineTime),
-		formatEnabledHandlers(f.EnabledHandlers),
+		formatEnabledHandlers(f.EnabledHandlerTypes, f.EnabledHandlers),
 	)
 }
 
@@ -510,20 +511,39 @@ func formatEngineTime(t time.Time) string {
 	return "engine time is " + t.Format(time.RFC3339)
 }
 
-func formatEnabledHandlers(e map[configkit.HandlerType]bool) string {
-	s := "enabled: "
+var handlerTypePlurals = map[configkit.HandlerType]string{
+	configkit.AggregateHandlerType:   "aggregates",
+	configkit.ProcessHandlerType:     "processes",
+	configkit.IntegrationHandlerType: "integrations",
+	configkit.ProjectionHandlerType:  "projections",
+}
 
-	first := true
+func formatEnabledHandlers(
+	byType map[configkit.HandlerType]bool,
+	byName map[string]bool,
+) string {
+	var s string
+
 	for _, t := range configkit.HandlerTypes {
-		if e[t] {
-			if !first {
-				s += ", "
-			}
-			first = false
-
-			s += t.String()
+		if byType[t] {
+			s += " +" + handlerTypePlurals[t]
 		}
 	}
 
-	return s
+	// sort the handler names to display them deterministically
+	var sorted []string
+	for n := range byName {
+		sorted = append(sorted, n)
+	}
+	sort.Strings(sorted)
+
+	for _, n := range sorted {
+		if byName[n] {
+			s += " +" + n
+		} else {
+			s += " -" + n
+		}
+	}
+
+	return "enabled:" + s
 }
