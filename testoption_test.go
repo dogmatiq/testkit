@@ -7,7 +7,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,12 +45,9 @@ var _ = Describe("func StartVirtualClockAt()", func() {
 			&testingmock.T{},
 			app,
 			StartVirtualClockAt(now),
-			WithUnsafeOperationOptions(
-				engine.EnableProjections(true),
-			),
-		).Prepare(
-			RecordEvent(MessageA1),
-		)
+		).
+			EnableHandlers("<handler-name>").
+			Prepare(RecordEvent(MessageA1))
 
 		Expect(called).To(BeTrue())
 	})
