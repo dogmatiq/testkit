@@ -12,7 +12,6 @@ import (
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
 )
 
 // Test contains the state of a single test.
@@ -24,7 +23,6 @@ type Test struct {
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
 	comparator       compare.Comparator
-	renderer         render.Renderer
 	virtualClock     time.Time
 	operationOptions []engine.OperationOption
 }
@@ -192,18 +190,13 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 func (t *Test) buildReport(e Expectation) {
 	t.t.Helper()
 
-	r := t.renderer
-	if r == nil {
-		r = render.DefaultRenderer{}
-	}
-
 	buf := &strings.Builder{}
 	fmt.Fprint(
 		buf,
 		"--- TEST REPORT ---\n\n",
 	)
 
-	rep := e.BuildReport(e.Ok(), r)
+	rep := e.BuildReport(e.Ok())
 	must.WriteTo(buf, rep)
 
 	t.t.Log(buf.String())

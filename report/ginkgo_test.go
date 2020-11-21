@@ -1,4 +1,4 @@
-package render_test
+package report_test
 
 import (
 	"reflect"

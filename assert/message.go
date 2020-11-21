@@ -10,7 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
-	"github.com/dogmatiq/testkit/render"
+	"github.com/dogmatiq/testkit/report"
 )
 
 // CommandExecuted returns an assertion that passes if m is executed as a
@@ -120,7 +120,7 @@ func (a *messageAssertion) Ok() bool {
 // ok is true if the assertion is considered to have passed. This may not be the
 // same value as returned from Ok() when this assertion is used as a
 // sub-assertion inside a composite.
-func (a *messageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
+func (a *messageAssertion) BuildReport(ok bool) *Report {
 	rep := &Report{
 		TreeOk: ok,
 		Ok:     a.ok,
@@ -138,9 +138,9 @@ func (a *messageAssertion) BuildReport(ok bool, r render.Renderer) *Report {
 	if a.best == nil {
 		buildResultNoMatch(rep, &a.tracker)
 	} else if a.best.Role == a.role {
-		a.buildResultExpectedRole(r, rep)
+		a.buildResultExpectedRole(rep)
 	} else {
-		a.buildResultUnexpectedRole(r, rep)
+		a.buildResultUnexpectedRole(rep)
 	}
 
 	return rep
@@ -200,7 +200,7 @@ func (a *messageAssertion) updateBestMatch(env *envelope.Envelope) {
 
 // buildResultExpectedRole builds the assertion result when there is a
 // "best-match" message available and it is of the expected role.
-func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Report) {
+func (a *messageAssertion) buildResultExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.sim == compare.SameTypes {
@@ -240,21 +240,21 @@ func (a *messageAssertion) buildResultExpectedRole(r render.Renderer, rep *Repor
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
-	a.buildDiff(r, rep)
+	a.buildDiff(rep)
 }
 
 // buildDiff adds a "message diff" section to the result.
-func (a *messageAssertion) buildDiff(r render.Renderer, rep *Report) {
-	render.WriteDiff(
+func (a *messageAssertion) buildDiff(rep *Report) {
+	report.WriteDiff(
 		&rep.Section("Message Diff").Content,
-		render.Message(r, a.expected),
-		render.Message(r, a.best.Message),
+		report.RenderMessage(a.expected),
+		report.RenderMessage(a.best.Message),
 	)
 }
 
 // buildResultUnexpectedRole builds the assertion result when there is a
 // "best-match" message available but it is of an unexpected role.
-func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Report) {
+func (a *messageAssertion) buildResultUnexpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if a.best.Origin == nil {
@@ -332,5 +332,5 @@ func (a *messageAssertion) buildResultUnexpectedRole(r render.Renderer, rep *Rep
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
-	a.buildDiff(r, rep)
+	a.buildDiff(rep)
 }

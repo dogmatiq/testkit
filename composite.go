@@ -5,7 +5,6 @@ import (
 
 	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
-	"github.com/dogmatiq/testkit/render"
 )
 
 // AllOf is an expectation that passes only if all of its children pass.
@@ -191,7 +190,7 @@ func (e *compositeExpectation) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *compositeExpectation) BuildReport(ok bool, r render.Renderer) *assert.Report {
+func (e *compositeExpectation) BuildReport(ok bool) *assert.Report {
 	e.Ok() // populate e.ok and e.outcome
 
 	rep := &assert.Report{
@@ -203,7 +202,7 @@ func (e *compositeExpectation) BuildReport(ok bool, r render.Renderer) *assert.R
 
 	for _, c := range e.Children {
 		rep.Append(
-			c.BuildReport(ok, r),
+			c.BuildReport(ok),
 		)
 	}
 
