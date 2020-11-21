@@ -26,6 +26,7 @@ migrate tests from prior versions.
 - Add `Test.Expect()` method and associated `ExpectOption` and `ExpectOptionSet` types
 - Add `testkit.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()`
 - Add `TimeAdjuster` interface, for use with `AdvanceTime()`
+- Add `engine.EnableHandler()`
 - **[BC]** Add `TestingT.Failed()`, `Fatal()` and `Helper()` methods
 
 ### Changed
