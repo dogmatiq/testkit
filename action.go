@@ -32,9 +32,9 @@ type Action interface {
 type ActionScope struct {
 	App              configkit.RichApplication
 	TestingT         TestingT
+	VirtualClock     *time.Time
 	Engine           *engine.Engine
 	Executor         *engine.CommandExecutor
 	Recorder         *engine.EventRecorder
-	VirtualClock     *time.Time
 	OperationOptions []engine.OperationOption
 }

@@ -19,11 +19,10 @@ type Test struct {
 	ctx              context.Context
 	t                TestingT
 	app              configkit.RichApplication
+	virtualClock     time.Time
 	engine           *engine.Engine
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
-	comparator       compare.Comparator
-	virtualClock     time.Time
 	operationOptions []engine.OperationOption
 }
 
@@ -51,14 +50,14 @@ func BeginContext(
 	cfg := configkit.FromApplication(app)
 
 	test := &Test{
-		ctx: ctx,
-		t:   t,
-		app: cfg,
+		ctx:          ctx,
+		t:            t,
+		app:          cfg,
+		virtualClock: time.Now(),
 		engine: engine.MustNew(
 			cfg,
 			engine.EnableProjectionCompactionDuringHandling(true),
 		),
-		virtualClock: time.Now(),
 		operationOptions: []engine.OperationOption{
 			engine.EnableProjections(false),
 			engine.EnableIntegrations(false),
@@ -86,10 +85,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 		s := ActionScope{
 			App:              t.app,
 			TestingT:         t.t,
+			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,
 			Executor:         &t.executor,
 			Recorder:         &t.recorder,
-			VirtualClock:     &t.virtualClock,
 			OperationOptions: t.buildOperationOptions(),
 		}
 
@@ -123,10 +122,10 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	s := ActionScope{
 		App:          t.app,
 		TestingT:     t.t,
+		VirtualClock: &t.virtualClock,
 		Engine:       t.engine,
 		Executor:     &t.executor,
 		Recorder:     &t.recorder,
-		VirtualClock: &t.virtualClock,
 		OperationOptions: append(
 			t.buildOperationOptions(),
 			engine.WithObserver(e),
