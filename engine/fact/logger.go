@@ -501,10 +501,10 @@ func (l *Logger) log(
 
 func formatMessageID(id string) string {
 	if id == "" {
-		return "----"
+		return "--"
 	}
 
-	return fmt.Sprintf("%04s", id)
+	return fmt.Sprintf("%02s", id)
 }
 
 func formatEngineTime(t time.Time) string {
