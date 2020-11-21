@@ -10,6 +10,41 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 )
 
+var _ = Describe("type UnexpectedMessage", func() {
+	config := configkit.FromProjection(
+		&ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<name>", "<key>")
+				c.ConsumesEventType(MessageE{})
+			},
+		},
+	)
+
+	Describe("func String()", func() {
+		It("returns a description of the panic", func() {
+			defer func() {
+				r := recover()
+				Expect(r).To(BeAssignableToTypeOf(UnexpectedMessage{}))
+
+				x := r.(UnexpectedMessage)
+				Expect(x.String()).To(Equal(
+					"the '<name>' projection message handler did not expect <method>() to be called with a message of type fixtures.MessageA",
+				))
+			}()
+
+			ConvertUnexpectedMessagePanic(
+				config,
+				"<interface>",
+				"<method>",
+				MessageA1,
+				func() {
+					panic(dogma.UnexpectedMessage)
+				},
+			)
+		})
+	})
+})
+
 var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{

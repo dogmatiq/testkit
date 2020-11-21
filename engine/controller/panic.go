@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -34,6 +35,16 @@ type UnexpectedMessage struct {
 	// PanicLine is the line number within the file where the panic originated,
 	// if known.
 	PanicLine int
+}
+
+func (x UnexpectedMessage) String() string {
+	return fmt.Sprintf(
+		"the '%s' %s message handler did not expect %s() to be called with a message of type %T",
+		x.Handler.Identity().Name,
+		x.Handler.HandlerType(),
+		x.Method,
+		x.Message,
+	)
 }
 
 // ConvertUnexpectedMessagePanic calls fn() and converts dogma.UnexpectedMessage
