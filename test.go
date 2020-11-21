@@ -95,10 +95,8 @@ func (t *Test) Prepare(actions ...Action) *Test {
 			OperationOptions: t.buildOperationOptions(),
 		}
 
-		if err := act.Apply(
-			t.ctx,
-			s,
-		); err != nil {
+		logf(t.t, "--- %s ---", act.Banner())
+		if err := act.Apply(t.ctx, s); err != nil {
 			t.t.Fatal(err)
 		}
 	}
@@ -140,6 +138,7 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	func() {
 		defer e.End()
 
+		logf(t.t, "--- %s ---", act.Banner())
 		if err := act.Apply(t.ctx, s); err != nil {
 			t.t.Fatal(err)
 		}

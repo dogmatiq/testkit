@@ -33,12 +33,12 @@ type dispatch struct {
 	m dogma.Message
 }
 
-// Heading returns a human-readable description of the action, used as a
-// heading within the test report.
+// Banner returns a human-readable banner to display in the logs when this
+// action is applied.
 //
-// Any engine activity as a result of this action is logged beneath this
-// heading.
-func (a dispatch) Heading() string {
+// The banner text should be in uppercase, and worded in the present tense,
+// for example "DOING ACTION".
+func (a dispatch) Banner() string {
 	return inflect.Sprintf(
 		a.r,
 		"<PRODUCING> TEST <MESSAGE> (%T)",
@@ -74,15 +74,6 @@ func (a dispatch) Apply(ctx context.Context, s ActionScope) error {
 			),
 		)
 	}
-
-	log(
-		s.TestingT,
-		inflect.Sprintf(
-			a.r,
-			"--- <PRODUCING> TEST <MESSAGE> (%T) ---",
-			a.m,
-		),
-	)
 
 	return s.Engine.Dispatch(ctx, a.m, s.OperationOptions...)
 }

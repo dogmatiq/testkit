@@ -28,6 +28,15 @@ type call struct {
 	fn func()
 }
 
+// Banner returns a human-readable banner to display in the logs when this
+// action is applied.
+//
+// The banner text should be in uppercase, and worded in the present tense,
+// for example "DOING ACTION".
+func (a call) Banner() string {
+	return "CALLING USER-DEFINED FUNCTION"
+}
+
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
 func (a call) ExpectOptions() []ExpectOption {
