@@ -178,7 +178,7 @@ migrate tests from prior versions.
 - Initial release
 
 <!-- references -->
-[MIGRATING.md]: https://github.com/dogmatiq/testkit/blob/master/MIGRATING.md
+[MIGRATING.md]: https://github.com/dogmatiq/testkit/blob/main/MIGRATING.md
 [Unreleased]: https://github.com/dogmatiq/testkit
 [0.1.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.0
 [0.1.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.1
