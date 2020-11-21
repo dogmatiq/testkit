@@ -138,7 +138,7 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	func() {
 		defer e.End()
 
-		logf(t.t, "--- %s ---", act.Banner())
+		logf(t.t, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
 		if err := act.Apply(t.ctx, s); err != nil {
 			t.t.Fatal(err)
 		}

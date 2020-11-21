@@ -19,6 +19,14 @@ const (
 // It is intended to be used for testing the test system itself.
 type staticExpectation bool
 
+func (a staticExpectation) Banner() string {
+	if a {
+		return "TO [ALWAYS PASS]"
+	}
+
+	return "TO [ALWAYS FAIL]"
+}
+
 func (a staticExpectation) Begin(ExpectOptionSet) {}
 func (a staticExpectation) End()                  {}
 func (a staticExpectation) Ok() bool              { return bool(a) }

@@ -41,7 +41,7 @@ type dispatch struct {
 func (a dispatch) Banner() string {
 	return inflect.Sprintf(
 		a.r,
-		"<PRODUCING> TEST <MESSAGE> (%T)",
+		"<PRODUCING> %T <MESSAGE>",
 		a.m,
 	)
 }

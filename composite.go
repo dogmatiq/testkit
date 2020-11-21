@@ -21,8 +21,9 @@ func AllOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		Criteria: "all of",
-		Children: children,
+		BannerText: fmt.Sprintf("TO MEET %d EXPECTATIONS", n),
+		Criteria:   "all of",
+		Children:   children,
 		Predicate: func(passed int) (string, bool) {
 			if passed == n {
 				return "", true
@@ -49,8 +50,9 @@ func AnyOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		Criteria: "any of",
-		Children: children,
+		BannerText: fmt.Sprintf("TO MEET AT LEAST ONE OF %d EXPECTATIONS", n),
+		Criteria:   "any of",
+		Children:   children,
 		Predicate: func(passed int) (string, bool) {
 			if passed > 0 {
 				return "", true
@@ -72,9 +74,15 @@ func NoneOf(children ...Expectation) Expectation {
 		panic("NoneOf(): at least one child expectation must be provided")
 	}
 
+	banner := fmt.Sprintf("NOT TO MEET ANY OF %d EXPECTATIONS", n)
+	if n == 1 {
+		banner = fmt.Sprintf("NOT %s", children[0].Banner())
+	}
+
 	return &compositeExpectation{
-		Criteria: "none of",
-		Children: children,
+		BannerText: banner,
+		Criteria:   "none of",
+		Children:   children,
 		Predicate: func(passed int) (string, bool) {
 			if passed == 0 {
 				return "", true
@@ -95,6 +103,10 @@ func NoneOf(children ...Expectation) Expectation {
 // compositeExpectation is an expectation that runs several child expectations.
 // Its final result is determined by a predicate function.
 type compositeExpectation struct {
+	// BannerText is a human-readable banner to display in the logs when this
+	// expectation is used.
+	BannerText string
+
 	// Criteria is a brief description of the expectation that must be met.
 	Criteria string
 
@@ -117,6 +129,15 @@ type compositeExpectation struct {
 	//
 	// It is populated the first time Ok() is called.
 	outcome string
+}
+
+// Banner returns a human-readable banner to display in the logs when this
+// expectation is used.
+//
+// The banner text should be in uppercase, and complete the sentence "The
+// application is expected ...". For example, "TO DO A THING".
+func (e *compositeExpectation) Banner() string {
+	return e.BannerText
 }
 
 // Notify notifies the expectation of the occurrence of a fact.

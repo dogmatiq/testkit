@@ -25,6 +25,13 @@ type ExpectOptionSet struct {
 type Assertion interface {
 	fact.Observer
 
+	// Banner returns a human-readable banner to display in the logs when this
+	// expectation is used.
+	//
+	// The banner text should be in uppercase, and complete the sentence "The
+	// application is expected ...". For example, "TO DO A THING".
+	Banner() string
+
 	// Begin is called to prepare the assertion for a new test.
 	Begin(o ExpectOptionSet)
 

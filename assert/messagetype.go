@@ -55,6 +55,19 @@ type messageTypeAssertion struct {
 	tracker tracker
 }
 
+// Banner returns a human-readable banner to display in the logs when this
+// expectation is used.
+//
+// The banner text should be in uppercase, and complete the sentence "The
+// application is expected ...". For example, "TO DO A THING".
+func (a *messageTypeAssertion) Banner() string {
+	return inflect.Sprintf(
+		a.role,
+		"TO <PRODUCE> ANY '%s' <MESSAGE>",
+		a.expected,
+	)
+}
+
 // Begin is called to prepare the assertion for a new test.
 func (a *messageTypeAssertion) Begin(o ExpectOptionSet) {
 	// reset everything
