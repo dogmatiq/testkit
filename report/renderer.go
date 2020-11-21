@@ -3,7 +3,6 @@ package report
 import (
 	"io"
 
-	"github.com/dogmatiq/dapper"
 	"github.com/dogmatiq/dogma"
 )
 
@@ -120,17 +119,4 @@ func (r DefaultRenderer) WriteProjectionMessageHandler(
 
 func (r DefaultRenderer) write(w io.Writer, v interface{}) (int, error) {
 	return printer.Write(w, v)
-}
-
-// printer is the Dapper printer used to render values.
-var printer dapper.Printer
-
-func init() {
-	printer = dapper.Printer{
-		// Copy the default config.
-		Config: dapper.DefaultPrinter.Config,
-	}
-
-	// Then modify the settings we want to change.
-	printer.Config.OmitPackagePaths = true
 }

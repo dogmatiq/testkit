@@ -247,8 +247,8 @@ func (a *messageAssertion) buildResultExpectedRole(r report.Renderer, rep *Repor
 func (a *messageAssertion) buildDiff(r report.Renderer, rep *Report) {
 	report.WriteDiff(
 		&rep.Section("Message Diff").Content,
-		report.Message(r, a.expected),
-		report.Message(r, a.best.Message),
+		report.RenderMessage(a.expected),
+		report.RenderMessage(a.best.Message),
 	)
 }
 
