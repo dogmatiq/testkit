@@ -110,6 +110,8 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	e.Begin(o)
 
 	func() {
+		// Wrapping this defer in the closure guarantees not only that it is
+		// always called, but that it is called before t.buildReport().
 		defer e.End()
 
 		logf(t.t, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
