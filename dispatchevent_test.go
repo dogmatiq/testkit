@@ -127,13 +127,13 @@ var _ = Describe("func RecordEvent()", func() {
 		Expect(t.Failed()).To(BeTrue())
 	})
 
-	It("logs a suitable heading", func() {
+	It("produces the expected banner", func() {
 		test.Prepare(
 			RecordEvent(MessageE1),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- RECORDING TEST EVENT (fixtures.MessageE) ---",
+			"--- RECORDING fixtures.MessageE EVENT ---",
 		))
 	})
 

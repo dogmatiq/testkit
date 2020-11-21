@@ -172,7 +172,7 @@ var _ = Describe("func Call()", func() {
 		)
 	})
 
-	It("logs a suitable heading", func() {
+	It("produces the expected banner", func() {
 		test.Prepare(
 			Call(func() {}),
 		)

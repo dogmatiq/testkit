@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/dogmatiq/testkit/assert"
@@ -25,6 +26,7 @@ func ToSatisfy(
 	x func(*SatisfyT),
 ) Expectation {
 	return &toSatisfy{
+		c: d,
 		t: SatisfyT{name: d},
 		x: x,
 	}
@@ -33,8 +35,18 @@ func ToSatisfy(
 // toSatisfy is an expectation that calls a function to check for specific
 // criteria.
 type toSatisfy struct {
+	c string
 	t SatisfyT
 	x func(*SatisfyT)
+}
+
+// Banner returns a human-readable banner to display in the logs when this
+// expectation is used.
+//
+// The banner text should be in uppercase, and complete the sentence "The
+// application is expected ...". For example, "TO DO A THING".
+func (e *toSatisfy) Banner() string {
+	return "TO " + strings.ToUpper(e.c)
 }
 
 // Notify the observer of a fact.
@@ -82,7 +94,7 @@ func (e *toSatisfy) BuildReport(ok bool, r render.Renderer) *assert.Report {
 	rep := &assert.Report{
 		TreeOk:   ok,
 		Ok:       e.Ok(),
-		Criteria: e.t.name,
+		Criteria: e.c,
 	}
 
 	if e.t.skipped {

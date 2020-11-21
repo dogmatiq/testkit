@@ -86,6 +86,17 @@ var _ = Context("composite expectations", func() {
 			),
 		)
 
+		It("produces the expected banner", func() {
+			test.Expect(
+				noop,
+				AllOf(pass, fail),
+			)
+
+			Expect(testingT.Logs).To(ContainElement(
+				"--- EXPECT [NO-OP] TO MEET 2 EXPECTATIONS ---",
+			))
+		})
+
 		It("panics if no children are provided", func() {
 			Expect(func() {
 				AllOf()
@@ -136,6 +147,17 @@ var _ = Context("composite expectations", func() {
 				),
 			),
 		)
+
+		It("produces the expected banner", func() {
+			test.Expect(
+				noop,
+				AnyOf(pass, fail),
+			)
+
+			Expect(testingT.Logs).To(ContainElement(
+				"--- EXPECT [NO-OP] TO MEET AT LEAST ONE OF 2 EXPECTATIONS ---",
+			))
+		})
 
 		It("panics if no children are provided", func() {
 			Expect(func() {
@@ -188,6 +210,28 @@ var _ = Context("composite expectations", func() {
 				),
 			),
 		)
+
+		It("produces the expected banner", func() {
+			test.Expect(
+				noop,
+				NoneOf(pass, fail),
+			)
+
+			Expect(testingT.Logs).To(ContainElement(
+				"--- EXPECT [NO-OP] NOT TO MEET ANY OF 2 EXPECTATIONS ---",
+			))
+		})
+
+		It("produces the expected banner when there is only one child", func() {
+			test.Expect(
+				noop,
+				NoneOf(pass),
+			)
+
+			Expect(testingT.Logs).To(ContainElement(
+				"--- EXPECT [NO-OP] NOT TO [ALWAYS PASS] ---",
+			))
+		})
 
 		It("panics if no children are provided", func() {
 			Expect(func() {

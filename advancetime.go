@@ -66,6 +66,18 @@ type advanceTime struct {
 	adj TimeAdjustment
 }
 
+// Banner returns a human-readable banner to display in the logs when this
+// action is applied.
+//
+// The banner text should be in uppercase, and worded in the present tense,
+// for example "DOING ACTION".
+func (a advanceTime) Banner() string {
+	return fmt.Sprintf(
+		"ADVANCING TIME (%s)",
+		a.adj.Description(),
+	)
+}
+
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
 func (a advanceTime) ExpectOptions() []ExpectOption {
@@ -91,12 +103,6 @@ func (a advanceTime) Apply(ctx context.Context, s ActionScope) error {
 	s.OperationOptions = append(
 		s.OperationOptions,
 		engine.WithCurrentTime(now),
-	)
-
-	logf(
-		s.TestingT,
-		"--- ADVANCING TIME (%s) ---",
-		a.adj.Description(),
 	)
 
 	return s.Engine.Tick(ctx, s.OperationOptions...)

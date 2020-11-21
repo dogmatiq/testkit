@@ -113,7 +113,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("logs a suitable heading", func() {
+		It("produces the expected banner", func() {
 			test.Prepare(
 				AdvanceTime(ToTime(targetTime)),
 			)
@@ -144,7 +144,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("logs a suitable heading", func() {
+		It("produces the expected banner", func() {
 			test.Prepare(
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)

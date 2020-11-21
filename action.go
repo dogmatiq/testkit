@@ -13,6 +13,13 @@ import (
 // Actions always attempt to cause some state change within the engine or
 // application.
 type Action interface {
+	// Banner returns a human-readable banner to display in the logs when this
+	// action is applied.
+	//
+	// The banner text should be in uppercase, and worded in the present tense,
+	// for example "DOING ACTION".
+	Banner() string
+
 	// ExpectOptions returns the options to use by default when this action is
 	// used with Test.Expect().
 	ExpectOptions() []ExpectOption

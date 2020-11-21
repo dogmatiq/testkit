@@ -227,6 +227,20 @@ var _ = Describe("func ToSatisfy()", func() {
 		),
 	)
 
+	It("produces the expected banner", func() {
+		test.Expect(
+			noop,
+			ToSatisfy(
+				"<criteria>",
+				func(*SatisfyT) {},
+			),
+		)
+
+		Expect(testingT.Logs).To(ContainElement(
+			"--- EXPECT [NO-OP] TO <CRITERIA> ---",
+		))
+	})
+
 	Describe("type SatisfyT", func() {
 		run := func(x func(*SatisfyT)) {
 			test.Expect(
