@@ -188,8 +188,8 @@ func (t *Test) buildReport(e Expectation) {
 
 // buildOperationOptions builds the operation options to provide to each action.
 func (t *Test) buildOperationOptions() []engine.OperationOption {
-	var options []engine.OperationOption
-	options = append(options, t.operationOptions...)
-	options = append(options, engine.WithCurrentTime(t.virtualClock))
-	return options
+	options := []engine.OperationOption{
+		engine.WithCurrentTime(t.virtualClock),
+	}
+	return append(options, t.operationOptions...)
 }

@@ -116,7 +116,7 @@ func runTest(
 	test := testkit.Begin(
 		t,
 		app,
-		testkit.WithOperationOptions(opts...),
+		testkit.WithUnsafeOperationOptions(opts...),
 	)
 
 	op(test)
