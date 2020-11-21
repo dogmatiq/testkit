@@ -9,11 +9,11 @@ import (
 // TestOption applies optional settings to a test.
 type TestOption func(*testOptions)
 
-// WithStartTime returns a test option that sets the time of the test runner's
-// clock at the start of the test.
+// StartVirtualClockAt returns a test option that sets initial the time of the
+// test's virtual clock.
 //
 // By default, the current system time is used.
-func WithStartTime(t time.Time) TestOption {
+func StartVirtualClockAt(t time.Time) TestOption {
 	return func(to *testOptions) {
 		to.time = t
 	}

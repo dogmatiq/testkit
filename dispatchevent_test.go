@@ -55,7 +55,7 @@ var _ = Describe("func RecordEvent()", func() {
 		test = Begin(
 			t,
 			app,
-			WithStartTime(startTime),
+			StartVirtualClockAt(startTime),
 			WithOperationOptions(
 				engine.WithObserver(buf),
 			),

@@ -45,7 +45,7 @@ var _ = Describe("func WithStartTime()", func() {
 		Begin(
 			&testingmock.T{},
 			app,
-			WithStartTime(now),
+			StartVirtualClockAt(now),
 			WithOperationOptions(
 				engine.EnableProjections(true),
 			),
