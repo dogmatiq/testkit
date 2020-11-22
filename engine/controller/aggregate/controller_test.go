@@ -181,7 +181,7 @@ var _ = Describe("type Controller", func() {
 						"Method":         Equal("RouteCommandToInstance"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(command.Message),
-						"Description":    Equal("routed command of type fixtures.MessageC to an empty instance ID"),
+						"Description":    Equal("routed a command of type fixtures.MessageC to an empty instance ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),

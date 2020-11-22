@@ -13,6 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("type scope", func() {
@@ -102,7 +103,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not access process root of non-existent instance"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("accessed the root of a process instance that has not begun"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 
@@ -175,7 +194,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not end non-existent instance"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("ended a process instance that has not begun"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 
@@ -197,7 +234,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not execute command against non-existent instance"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("executed a command of type fixtures.MessageC on a process instance that has not begun"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 
@@ -219,7 +274,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not schedule timeout against non-existent instance"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("scheduled a timeout of type fixtures.MessageT on a process instance that has not begun"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 	})
@@ -437,7 +510,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("the '<name>' handler is not configured to execute commands of type fixtures.MessageX"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("executed a command of type fixtures.MessageX, which is not produced by this handler"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 
 			It("panics if the command is invalid", func() {
@@ -459,7 +550,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not execute command of type fixtures.MessageC, it is invalid: <invalid>"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("executed an invalid fixtures.MessageC command: <invalid>"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 
@@ -531,7 +640,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("the '<name>' handler is not configured to schedule timeouts of type fixtures.MessageX"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("scheduled a timeout of type fixtures.MessageX, which is not produced by this handler"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 
 			It("panics if the timeout is invalid", func() {
@@ -556,7 +683,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("can not schedule timeout of type fixtures.MessageT, it is invalid: <invalid>"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("HandleEvent"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("scheduled an invalid fixtures.MessageT timeout: <invalid>"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/process/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 	})

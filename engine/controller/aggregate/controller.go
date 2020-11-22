@@ -64,7 +64,7 @@ func (c *Controller) Handle(
 			Method:         "RouteCommandToInstance",
 			Implementation: c.Config.Handler(),
 			Message:        env.Message,
-			Description:    fmt.Sprintf("routed command of type %T to an empty instance ID", env.Message),
+			Description:    fmt.Sprintf("routed a command of type %T to an empty instance ID", env.Message),
 			Location:       panicx.LocationOfMethod(c.Config.Handler(), "RouteCommandToInstance"),
 		})
 	}
