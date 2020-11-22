@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // scope is an implementation of dogma.IntegrationCommandScope.
@@ -22,19 +23,27 @@ type scope struct {
 
 func (s *scope) RecordEvent(m dogma.Message) {
 	if !s.config.MessageTypes().Produced.HasM(m) {
-		panic(fmt.Sprintf(
-			"the '%s' handler is not configured to record events of type %T",
-			s.config.Identity().Name,
-			m,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "IntegrationMessageHandler",
+			Method:         "HandleCommand",
+			Implementation: s.config.Handler(),
+			Message:        s.command.Message,
+			Description:    fmt.Sprintf("recorded an event of type %T, which is not produced by this handler", m),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	if err := dogma.ValidateMessage(m); err != nil {
-		panic(fmt.Sprintf(
-			"can not record event of type %T, it is invalid: %s",
-			m,
-			err,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "IntegrationMessageHandler",
+			Method:         "HandleCommand",
+			Implementation: s.config.Handler(),
+			Message:        s.command.Message,
+			Description:    fmt.Sprintf("recorded an invalid %T event: %s", m, err),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	env := s.command.NewEvent(
