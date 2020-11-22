@@ -6,9 +6,9 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -43,7 +43,7 @@ func (c *Controller) Handle(
 	env.Role.MustBe(message.CommandRole)
 
 	var t time.Duration
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"IntegrationMessageHandler",
 		"TimeoutHint",
@@ -68,7 +68,7 @@ func (c *Controller) Handle(
 	}
 
 	var err error
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"IntegrationMessageHandler",
 		"HandleCommand",

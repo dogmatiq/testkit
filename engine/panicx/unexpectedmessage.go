@@ -1,9 +1,7 @@
-package controller
+package panicx
 
 import (
 	"fmt"
-	"runtime"
-	"strings"
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
@@ -26,15 +24,8 @@ type UnexpectedMessage struct {
 	// Message is the message that caused the handler to panic.
 	Message dogma.Message
 
-	// PanicFunc is the name of the function that panicked, if known.
-	PanicFunc string
-
-	// PanicFile is the name of the file where the panic originated, if known.
-	PanicFile string
-
-	// PanicLine is the line number within the file where the panic originated,
-	// if known.
-	PanicLine int
+	// PanicLocation is the location of the function that panicked, if known.
+	PanicLocation Location
 }
 
 func (x UnexpectedMessage) String() string {
@@ -47,10 +38,10 @@ func (x UnexpectedMessage) String() string {
 	)
 }
 
-// ConvertUnexpectedMessagePanic calls fn() and converts dogma.UnexpectedMessage
+// EnrichUnexpectedMessage calls fn() and converts dogma.UnexpectedMessage
 // values to an controller.UnexpectedMessage value to provide more context about
 // the failure.
-func ConvertUnexpectedMessagePanic(
+func EnrichUnexpectedMessage(
 	h configkit.RichHandler,
 	iface, method string,
 	m dogma.Message,
@@ -64,16 +55,12 @@ func ConvertUnexpectedMessagePanic(
 		}
 
 		if v == dogma.UnexpectedMessage {
-			name, file, line := findPanicSite()
-
 			v = UnexpectedMessage{
-				Handler:   h,
-				Interface: iface,
-				Method:    method,
-				Message:   m,
-				PanicFunc: name,
-				PanicFile: file,
-				PanicLine: line,
+				Handler:       h,
+				Interface:     iface,
+				Method:        method,
+				Message:       m,
+				PanicLocation: LocationOfPanic(),
 			}
 		}
 
@@ -81,27 +68,4 @@ func ConvertUnexpectedMessagePanic(
 	}()
 
 	fn()
-}
-
-func findPanicSite() (string, string, int) {
-	var (
-		name, file string
-		line       int
-		pc         [16]uintptr
-	)
-
-	n := runtime.Callers(3, pc[:])
-	for _, pc := range pc[:n] {
-		fn := runtime.FuncForPC(pc)
-
-		if fn != nil {
-			name = fn.Name()
-			if !strings.HasPrefix(name, "runtime.") {
-				file, line = fn.FileLine(pc)
-				break
-			}
-		}
-	}
-
-	return name, file, line
 }

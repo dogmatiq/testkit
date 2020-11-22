@@ -6,9 +6,9 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // CompactInterval is how frequently projections should be compacted.
@@ -76,7 +76,7 @@ func (c *Controller) Handle(
 	handler := c.Config.Handler()
 
 	var t time.Duration
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProjectionMessageHandler",
 		"TimeoutHint",
@@ -145,7 +145,7 @@ func (c *Controller) Handle(
 	}
 
 	var ok bool
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProjectionMessageHandler",
 		"HandleEvent",

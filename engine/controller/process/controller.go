@@ -9,9 +9,9 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -66,7 +66,7 @@ func (c *Controller) Handle(
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
 	var t time.Duration
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProcessMessageHandler",
 		"TimeoutHint",
@@ -169,7 +169,7 @@ func (c *Controller) routeEvent(
 		ok  bool
 		err error
 	)
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
@@ -230,7 +230,7 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 	}
 
 	var err error
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProcessMessageHandler",
 		method,

@@ -6,9 +6,9 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // scope is an implementation of dogma.AggregateCommandScope.
@@ -72,7 +72,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		s.exists = true
 	}
 
-	controller.ConvertUnexpectedMessagePanic(
+	panicx.EnrichUnexpectedMessage(
 		s.config,
 		"AggregateRoot",
 		"ApplyEvent",

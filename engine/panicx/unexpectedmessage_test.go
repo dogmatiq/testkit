@@ -1,10 +1,10 @@
-package controller_test
+package panicx_test
 
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	. "github.com/dogmatiq/testkit/engine/controller"
+	. "github.com/dogmatiq/testkit/engine/panicx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
@@ -32,7 +32,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 				))
 			}()
 
-			ConvertUnexpectedMessagePanic(
+			EnrichUnexpectedMessage(
 				config,
 				"<interface>",
 				"<method>",
@@ -45,7 +45,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 	})
 })
 
-var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
+var _ = Describe("func EnrichUnexpectedMessage()", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -58,7 +58,7 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 	It("calls the function", func() {
 		called := false
 
-		ConvertUnexpectedMessagePanic(
+		EnrichUnexpectedMessage(
 			config,
 			"<interface>",
 			"<method>",
@@ -73,7 +73,7 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 
 	It("propagates panic values", func() {
 		Expect(func() {
-			ConvertUnexpectedMessagePanic(
+			EnrichUnexpectedMessage(
 				config,
 				"<interface>",
 				"<method>",
@@ -87,7 +87,7 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 
 	It("converts UnexpectedMessage values", func() {
 		Expect(func() {
-			ConvertUnexpectedMessagePanic(
+			EnrichUnexpectedMessage(
 				config,
 				"<interface>",
 				"<method>",
@@ -103,9 +103,13 @@ var _ = Describe("func ConvertUnexpectedMessagePanic()", func() {
 					"Interface": Equal("<interface>"),
 					"Method":    Equal("<method>"),
 					"Message":   Equal(MessageA1),
-					"PanicFunc": Not(BeEmpty()),
-					"PanicFile": Not(BeEmpty()),
-					"PanicLine": Not(BeZero()),
+					"PanicLocation": MatchAllFields(
+						Fields{
+							"Func": Not(BeEmpty()),
+							"File": HaveSuffix("/unexpectedmessage_test.go"),
+							"Line": Equal(96),
+						},
+					),
 				},
 			),
 		))
