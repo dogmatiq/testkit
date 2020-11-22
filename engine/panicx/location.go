@@ -3,6 +3,7 @@ package panicx
 import (
 	"fmt"
 	"path"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -39,6 +40,45 @@ func (l Location) String() string {
 	return "<unknown>"
 }
 
+// LocationOfFunc returns the location of the definition of fn.
+func LocationOfFunc(fn interface{}) Location {
+	rv := reflect.ValueOf(fn)
+	if rv.Kind() != reflect.Func {
+		panic("fn must be a function")
+	}
+
+	var (
+		loc Location
+		pc  = rv.Pointer()
+	)
+
+	if fn := runtime.FuncForPC(pc); fn != nil {
+		loc.Func = fn.Name()
+		loc.File, loc.Line = fn.FileLine(pc)
+	}
+
+	return loc
+}
+
+// LocationOfCall returns the location where its caller was called itself.
+func LocationOfCall() Location {
+	var loc Location
+
+	eachFrame(
+		2, // skip LocationOfCall() and its caller.
+		func(fr runtime.Frame) bool {
+			loc = Location{
+				Func: fr.Function,
+				File: fr.File,
+				Line: fr.Line,
+			}
+			return false
+		},
+	)
+
+	return loc
+}
+
 // LocationOfPanic returns the location of the call to panic() that caused the
 // stack to start unwinding.
 //
@@ -56,20 +96,22 @@ func LocationOfPanic() Location {
 	foundPanicCall := false
 
 	eachFrame(
+		0,
 		func(fr runtime.Frame) bool {
-			if fr.Function == "runtime.gopanic" {
-				// We found the call to runtime.gopanic(), which is the internal
-				// implementation of panic().
-				//
-				// That means that the next function we find that's NOT in the
-				// "runtime" package is the function that called panic().
-				foundPanicCall = true
-				return true
-			}
-
 			if strings.HasPrefix(fr.Function, "runtime.") {
-				// We found some other function within the runtime package, we
-				// keep looking for some user-land code.
+				// We found some function within the runtime package, we keep
+				// looking for some user-land code.
+
+				if fr.Function == "runtime.gopanic" {
+					// We found the call to runtime.gopanic(), which is the
+					// internal implementation of panic().
+					//
+					// That means that the next function we find that's NOT in
+					// the "runtime" package is the function that called
+					// panic().
+					foundPanicCall = true
+				}
+
 				return true
 			}
 
@@ -95,9 +137,9 @@ func LocationOfPanic() Location {
 }
 
 // eachFrame calls fn for each frame on the call stack until fn returns false.
-func eachFrame(fn func(fr runtime.Frame) bool) {
+func eachFrame(skip int, fn func(fr runtime.Frame) bool) {
 	var pointers [8]uintptr
-	var skip int
+	skip += 2 // Always skip runtime.Callers() and eachFrame().
 
 	for {
 		count := runtime.Callers(skip, pointers[:])
