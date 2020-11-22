@@ -65,7 +65,7 @@ var _ = Describe("type Location", func() {
 
 	Describe("func String()", func() {
 		DescribeTable(
-			"it returns the expectation string",
+			"it returns the expected string",
 			func(s string, l Location) {
 				Expect(l.String()).To(Equal(s))
 			},

@@ -8,7 +8,7 @@ import (
 )
 
 // UnexpectedMessage is a panic value that provides more context when a handler
-// panics with a dogma.UnexpoectedMessage value.
+// panics with a dogma.UnexpectedMessage value.
 type UnexpectedMessage struct {
 	// Handler is the handler that panicked.
 	Handler configkit.RichHandler
@@ -43,8 +43,8 @@ func (x UnexpectedMessage) String() string {
 }
 
 // EnrichUnexpectedMessage calls fn() and converts dogma.UnexpectedMessage
-// values to an controller.UnexpectedMessage value to provide more context about
-// the failure.
+// values to an panicx.UnexpectedMessage value to provide more context about the
+// failure.
 func EnrichUnexpectedMessage(
 	h configkit.RichHandler,
 	iface string, method string,
