@@ -22,7 +22,7 @@ var _ = Describe("type Location", func() {
 			))
 		})
 
-		It("panics value is not a function", func() {
+		It("panics if the value is not a function", func() {
 			Expect(func() {
 				LocationOfFunc("<not a function>")
 			}).To(PanicWith("fn must be a function"))
