@@ -757,7 +757,25 @@ var _ = Describe("type Controller", func() {
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith("the '<name>' process message handler attempted to route a fixtures.MessageE event to an empty instance ID"))
+			}).To(PanicWith(
+				MatchAllFields(
+					Fields{
+						"Handler":        Equal(config),
+						"Interface":      Equal("ProcessMessageHandler"),
+						"Method":         Equal("RouteEventToInstance"),
+						"Implementation": Equal(config.Handler()),
+						"Message":        Equal(event.Message),
+						"Description":    Equal("routed an event of type fixtures.MessageE to an empty instance ID"),
+						"Location": MatchAllFields(
+							Fields{
+								"Func": Not(BeEmpty()),
+								"File": HaveSuffix("/fixtures/process.go"), // from dogmatiq/dogma module
+								"Line": Not(BeZero()),
+							},
+						),
+					},
+				),
+			))
 		})
 
 		When("the instance does not exist", func() {
@@ -792,7 +810,25 @@ var _ = Describe("type Controller", func() {
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith("the '<name>' process message handler returned a nil root from New()"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("ProcessMessageHandler"),
+							"Method":         Equal("New"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(event.Message),
+							"Description":    Equal("returned a nil ProcessRoot"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/fixtures/process.go"), // from dogmatiq/dogma module
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 

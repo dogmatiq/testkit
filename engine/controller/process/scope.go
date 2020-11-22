@@ -9,22 +9,24 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/engine/panicx"
 )
 
 // scope is an implementation of dogma.ProcessEventScope and
 // dogma.ProcessTimeoutScope.
 type scope struct {
-	instanceID string
-	config     configkit.RichProcess
-	messageIDs *envelope.MessageIDGenerator
-	observer   fact.Observer
-	now        time.Time
-	root       dogma.ProcessRoot
-	exists     bool
-	env        *envelope.Envelope // event or timeout
-	commands   []*envelope.Envelope
-	ready      []*envelope.Envelope // timeouts <= now
-	pending    []*envelope.Envelope // timeouts > now
+	instanceID   string
+	config       configkit.RichProcess
+	handleMethod string
+	messageIDs   *envelope.MessageIDGenerator
+	observer     fact.Observer
+	now          time.Time
+	root         dogma.ProcessRoot
+	exists       bool
+	env          *envelope.Envelope // event or timeout
+	commands     []*envelope.Envelope
+	ready        []*envelope.Envelope // timeouts <= now
+	pending      []*envelope.Envelope // timeouts > now
 }
 
 func (s *scope) InstanceID() string {
@@ -54,7 +56,15 @@ func (s *scope) Begin() bool {
 
 func (s *scope) End() {
 	if !s.exists {
-		panic("can not end non-existent instance")
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    "ended a process instance that has not begun",
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	s.exists = false
@@ -71,7 +81,15 @@ func (s *scope) End() {
 
 func (s *scope) Root() dogma.ProcessRoot {
 	if !s.exists {
-		panic("can not access process root of non-existent instance")
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    "accessed the root of a process instance that has not begun",
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	return s.root
@@ -79,23 +97,39 @@ func (s *scope) Root() dogma.ProcessRoot {
 
 func (s *scope) ExecuteCommand(m dogma.Message) {
 	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.CommandRole {
-		panic(fmt.Sprintf(
-			"the '%s' handler is not configured to execute commands of type %T",
-			s.config.Identity().Name,
-			m,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Handler(),
+			Message:        s.env.Message,
+			Description:    fmt.Sprintf("executed a command of type %T, which is not produced by this handler", m),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	if err := dogma.ValidateMessage(m); err != nil {
-		panic(fmt.Sprintf(
-			"can not execute command of type %T, it is invalid: %s",
-			m,
-			err,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    fmt.Sprintf("executed an invalid %T command: %s", m, err),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	if !s.exists {
-		panic("can not execute command against non-existent instance")
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    fmt.Sprintf("executed a command of type %T on a process instance that has not begun", m),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	env := s.env.NewCommand(
@@ -126,23 +160,39 @@ func (s *scope) RecordedAt() time.Time {
 
 func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.TimeoutRole {
-		panic(fmt.Sprintf(
-			"the '%s' handler is not configured to schedule timeouts of type %T",
-			s.config.Identity().Name,
-			m,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Handler(),
+			Message:        s.env.Message,
+			Description:    fmt.Sprintf("scheduled a timeout of type %T, which is not produced by this handler", m),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	if err := dogma.ValidateMessage(m); err != nil {
-		panic(fmt.Sprintf(
-			"can not schedule timeout of type %T, it is invalid: %s",
-			m,
-			err,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    fmt.Sprintf("scheduled an invalid %T timeout: %s", m, err),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	if !s.exists {
-		panic("can not schedule timeout against non-existent instance")
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Message:        s.env.Message,
+			Implementation: s.config.Handler(),
+			Description:    fmt.Sprintf("scheduled a timeout of type %T on a process instance that has not begun", m),
+			Location:       panicx.LocationOfCall(),
+		})
 	}
 
 	env := s.env.NewTimeout(

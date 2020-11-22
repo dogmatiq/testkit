@@ -28,7 +28,7 @@ migrate tests from prior versions.
 - Add `TimeAdjuster` interface, for use with `AdvanceTime()`
 - Add `engine.EnableHandler()`
 - Add `Test.EnableHandlers()` and `DisableHandlers()`
-- Add `panicx.Location`
+- Add `engine/panicx` package
 - **[BC]** Add `TestingT.Failed()`, `Fatal()` and `Helper()` methods
 
 ### Changed

@@ -107,22 +107,32 @@ func (c *Controller) Handle(
 		r = c.Config.Handler().New()
 
 		if r == nil {
-			panic(fmt.Sprintf(
-				"the '%s' process message handler returned a nil root from New()",
-				c.Config.Identity().Name,
-			))
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "ProcessMessageHandler",
+				Method:         "New",
+				Implementation: c.Config.Handler(),
+				Message:        env.Message,
+				Description:    "returned a nil ProcessRoot",
+				Location:       panicx.LocationOfMethod(c.Config.Handler(), "New"),
+			})
 		}
 	}
 
 	s := &scope{
-		instanceID: id,
-		config:     c.Config,
-		messageIDs: c.MessageIDs,
-		observer:   obs,
-		now:        now,
-		root:       r,
-		exists:     exists,
-		env:        env,
+		instanceID:   id,
+		config:       c.Config,
+		handleMethod: "HandleEvent",
+		messageIDs:   c.MessageIDs,
+		observer:     obs,
+		now:          now,
+		root:         r,
+		exists:       exists,
+		env:          env,
+	}
+
+	if s.env.Role == message.TimeoutRole {
+		s.handleMethod = "HandleTimeout"
 	}
 
 	if err := c.handle(ctx, s); err != nil {
@@ -162,7 +172,6 @@ func (c *Controller) routeEvent(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {
-	ident := c.Config.Identity()
 	handler := c.Config.Handler()
 
 	var (
@@ -187,11 +196,15 @@ func (c *Controller) routeEvent(
 
 	if ok {
 		if id == "" {
-			panic(fmt.Sprintf(
-				"the '%s' process message handler attempted to route a %s event to an empty instance ID",
-				ident.Name,
-				message.TypeOf(env.Message),
-			))
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "ProcessMessageHandler",
+				Method:         "RouteEventToInstance",
+				Implementation: handler,
+				Message:        env.Message,
+				Description:    fmt.Sprintf("routed an event of type %T to an empty instance ID", env.Message),
+				Location:       panicx.LocationOfMethod(c.Config.Handler(), "RouteEventToInstance"),
+			})
 		}
 
 		return id, true, nil
@@ -226,16 +239,11 @@ func (c *Controller) routeTimeout(
 
 // handle calls the appropriate method on the handler based on the message role.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
-	method := "HandleEvent"
-	if s.env.Role == message.TimeoutRole {
-		method = "HandleTimeout"
-	}
-
 	var err error
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProcessMessageHandler",
-		method,
+		s.handleMethod,
 		c.Config.Handler(),
 		s.env.Message,
 		func() {
