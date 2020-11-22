@@ -58,20 +58,29 @@ func (c *Controller) Handle(
 	)
 
 	if id == "" {
-		panic(fmt.Sprintf(
-			"the '%s' aggregate message handler attempted to route a %s command to an empty instance ID",
-			c.Config.Identity().Name,
-			message.TypeOf(env.Message),
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "AggregateMessageHandler",
+			Method:         "RouteCommandToInstance",
+			Implementation: c.Config.Handler(),
+			Message:        env.Message,
+			Description:    fmt.Sprintf("routed command of type %T to an empty instance ID", env.Message),
+			Location:       panicx.LocationOfMethod(c.Config.Handler(), "RouteCommandToInstance"),
+		})
 	}
 
 	history, exists := c.history[id]
 	r := c.Config.Handler().New()
 	if r == nil {
-		panic(fmt.Sprintf(
-			"the '%s' aggregate message handler returned a nil root from New()",
-			c.Config.Identity().Name,
-		))
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "AggregateMessageHandler",
+			Method:         "New",
+			Implementation: c.Config.Handler(),
+			Message:        env.Message,
+			Description:    "returned a nil AggregateRoot",
+			Location:       panicx.LocationOfMethod(c.Config.Handler(), "New"),
+		})
 	}
 
 	if exists {

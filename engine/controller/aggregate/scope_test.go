@@ -13,6 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("type scope", func() {
@@ -333,7 +334,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith("the '<name>' handler is not configured to record events of type fixtures.MessageX"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("AggregateMessageHandler"),
+							"Method":         Equal("HandleCommand"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(command.Message),
+							"Description":    Equal("recorded an event of type fixtures.MessageX, which is not produced by this handler"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/aggregate/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 
 			It("panics if the event is invalid", func() {
@@ -354,7 +373,25 @@ var _ = Describe("type scope", func() {
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith("can not record event of type fixtures.MessageE, it is invalid: <invalid>"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("AggregateMessageHandler"),
+							"Method":         Equal("HandleCommand"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(command.Message),
+							"Description":    Equal("recorded an invalid fixtures.MessageE event: <invalid>"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/engine/controller/aggregate/scope_test.go"),
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 	})

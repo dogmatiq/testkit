@@ -173,7 +173,25 @@ var _ = Describe("type Controller", func() {
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith("the '<name>' aggregate message handler attempted to route a fixtures.MessageC command to an empty instance ID"))
+			}).To(PanicWith(
+				MatchAllFields(
+					Fields{
+						"Handler":        Equal(config),
+						"Interface":      Equal("AggregateMessageHandler"),
+						"Method":         Equal("RouteCommandToInstance"),
+						"Implementation": Equal(config.Handler()),
+						"Message":        Equal(command.Message),
+						"Description":    Equal("routed command of type fixtures.MessageC to an empty instance ID"),
+						"Location": MatchAllFields(
+							Fields{
+								"Func": Not(BeEmpty()),
+								"File": HaveSuffix("/fixtures/aggregate.go"), // from dogmatiq/dogma module
+								"Line": Not(BeZero()),
+							},
+						),
+					},
+				),
+			))
 		})
 
 		When("the instance does not exist", func() {
@@ -227,7 +245,25 @@ var _ = Describe("type Controller", func() {
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith("the '<name>' aggregate message handler returned a nil root from New()"))
+				}).To(PanicWith(
+					MatchAllFields(
+						Fields{
+							"Handler":        Equal(config),
+							"Interface":      Equal("AggregateMessageHandler"),
+							"Method":         Equal("New"),
+							"Implementation": Equal(config.Handler()),
+							"Message":        Equal(command.Message),
+							"Description":    Equal("returned a nil AggregateRoot"),
+							"Location": MatchAllFields(
+								Fields{
+									"Func": Not(BeEmpty()),
+									"File": HaveSuffix("/fixtures/aggregate.go"), // from dogmatiq/dogma module
+									"Line": Not(BeZero()),
+								},
+							),
+						},
+					),
+				))
 			})
 		})
 
