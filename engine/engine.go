@@ -148,8 +148,19 @@ func (e *Engine) tick(
 		)
 
 		envs, cerr := c.Tick(ctx, oo.observers, oo.now)
-		err = multierr.Append(err, cerr)
 		queue = append(queue, envs...)
+
+		if cerr != nil {
+			err = multierr.Append(
+				err,
+				fmt.Errorf(
+					"%s %s: %w",
+					c.HandlerConfig().Identity().Name,
+					c.HandlerConfig().HandlerType(),
+					cerr,
+				),
+			)
+		}
 
 		oo.observers.Notify(
 			fact.TickCompleted{
@@ -281,7 +292,18 @@ func (e *Engine) dispatch(
 		for _, c := range controllers {
 			envs, cerr := e.handle(ctx, oo, env, c)
 			queue = append(queue, envs...)
-			derr = multierr.Append(derr, cerr)
+
+			if cerr != nil {
+				derr = multierr.Append(
+					derr,
+					fmt.Errorf(
+						"%s %s: %w",
+						c.HandlerConfig().Identity().Name,
+						c.HandlerConfig().HandlerType(),
+						cerr,
+					),
+				)
+			}
 		}
 
 		oo.observers.Notify(

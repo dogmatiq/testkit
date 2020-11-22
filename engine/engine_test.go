@@ -195,6 +195,19 @@ var _ = Describe("type Engine", func() {
 			Expect(err).To(Equal(context.Canceled))
 		})
 
+		It("adds handler details to controller errors", func() {
+			integration.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				return errors.New("<error>")
+			}
+
+			err := engine.Dispatch(context.Background(), MessageC1)
+			Expect(err).To(MatchError("<integration> integration: <error>"))
+		})
+
 		It("panics if the message is invalid", func() {
 			Expect(func() {
 				engine.Dispatch(
@@ -281,6 +294,18 @@ var _ = Describe("type Engine", func() {
 
 			err := engine.Tick(ctx)
 			Expect(err).To(Equal(context.Canceled))
+		})
+
+		It("adds handler details to controller errors", func() {
+			projection.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				return errors.New("<error>")
+			}
+
+			err := engine.Tick(context.Background())
+			Expect(err).To(MatchError("<projection> projection: <error>"))
 		})
 	})
 })
