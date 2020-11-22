@@ -42,7 +42,10 @@ func (l Location) String() string {
 
 // LocationOfFunc returns the location of the definition of fn.
 func LocationOfFunc(fn interface{}) Location {
-	rv := reflect.ValueOf(fn)
+	return locationOfFunc(reflect.ValueOf(fn))
+}
+
+func locationOfFunc(rv reflect.Value) Location {
 	if rv.Kind() != reflect.Func {
 		panic("fn must be a function")
 	}
@@ -58,6 +61,18 @@ func LocationOfFunc(fn interface{}) Location {
 	}
 
 	return loc
+}
+
+// LocationOfMethod returns the location of the definition of fn.
+func LocationOfMethod(recv interface{}, m string) Location {
+	rt := reflect.TypeOf(recv)
+
+	rm, ok := rt.MethodByName(m)
+	if !ok {
+		panic("method does not exist")
+	}
+
+	return locationOfFunc(rm.Func)
 }
 
 // LocationOfCall returns the location where its caller was called itself.

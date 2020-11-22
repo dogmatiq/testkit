@@ -29,6 +29,20 @@ var _ = Describe("type Location", func() {
 		})
 	})
 
+	Describe("func LocationOfMethod()", func() {
+		It("returns the expected location", func() {
+			loc := LocationOfMethod(locationOfMethodT{}, "Method")
+
+			Expect(loc).To(MatchAllFields(
+				Fields{
+					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.locationOfMethodT.Method"),
+					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Line": Equal(57),
+				},
+			))
+		})
+	})
+
 	Describe("func LocationOfCall()", func() {
 		It("returns the expected location", func() {
 			loc := locationOfCallLayer2()

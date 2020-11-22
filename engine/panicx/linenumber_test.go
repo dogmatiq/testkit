@@ -51,3 +51,7 @@ func doNothing()                     {}
 func panicWithUnexpectedMessage()    { panic(dogma.UnexpectedMessage) }
 func locationOfCallLayer1() Location { return LocationOfCall() }
 func locationOfCallLayer2() Location { return locationOfCallLayer1() }
+
+type locationOfMethodT struct{}
+
+func (locationOfMethodT) Method() {}
