@@ -5,9 +5,64 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("type Location", func() {
+	Describe("func LocationOfFunc()", func() {
+		It("returns the expected location", func() {
+			loc := LocationOfFunc(doNothing)
+
+			Expect(loc).To(MatchAllFields(
+				Fields{
+					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.doNothing"),
+					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Line": Equal(50),
+				},
+			))
+		})
+
+		It("panics value is not a function", func() {
+			Expect(func() {
+				LocationOfFunc("<not a function>")
+			}).To(PanicWith("fn must be a function"))
+		})
+	})
+
+	Describe("func LocationOfMethod()", func() {
+		It("returns the expected location", func() {
+			loc := LocationOfMethod(locationOfMethodT{}, "Method")
+
+			Expect(loc).To(MatchAllFields(
+				Fields{
+					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.locationOfMethodT.Method"),
+					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Line": Equal(57),
+				},
+			))
+		})
+
+		It("panics if the methods does not exist", func() {
+			Expect(func() {
+				LocationOfMethod(locationOfMethodT{}, "DoesNotExist")
+			}).To(PanicWith("method does not exist"))
+		})
+	})
+
+	Describe("func LocationOfCall()", func() {
+		It("returns the expected location", func() {
+			loc := locationOfCallLayer2()
+
+			Expect(loc).To(MatchAllFields(
+				Fields{
+					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.locationOfCallLayer2"),
+					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Line": Equal(53),
+				},
+			))
+		})
+	})
+
 	Describe("func String()", func() {
 		DescribeTable(
 			"it returns the expectation string",

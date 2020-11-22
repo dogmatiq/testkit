@@ -109,8 +109,8 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 					"PanicLocation": MatchAllFields(
 						Fields{
 							"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.panicWithUnexpectedMessage"),
-							"File": HaveSuffix("/engine/panicx/unexpectedmessage_test.go"),
-							"Line": Equal(123),
+							"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+							"Line": Equal(51),
 						},
 					),
 				},
@@ -118,7 +118,3 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 		))
 	})
 })
-
-func panicWithUnexpectedMessage() {
-	panic(dogma.UnexpectedMessage)
-}
