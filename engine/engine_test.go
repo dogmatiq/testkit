@@ -179,6 +179,22 @@ var _ = Describe("type Engine", func() {
 			Expect(called).To(BeTrue())
 		})
 
+		It("always returns context errors even if other errors occur", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			integration.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				cancel()
+				return errors.New("<error>")
+			}
+
+			err := engine.Dispatch(ctx, MessageC1)
+			Expect(err).To(Equal(context.Canceled))
+		})
+
 		It("panics if the message is invalid", func() {
 			Expect(func() {
 				engine.Dispatch(
@@ -250,6 +266,21 @@ var _ = Describe("type Engine", func() {
 					Handler: h,
 				},
 			))
+		})
+
+		It("always returns context errors even if other errors occur", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			projection.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				cancel()
+				return errors.New("<error>")
+			}
+
+			err := engine.Tick(ctx)
+			Expect(err).To(Equal(context.Canceled))
 		})
 	})
 })

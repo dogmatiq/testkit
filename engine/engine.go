@@ -113,6 +113,10 @@ func (e *Engine) Tick(
 		},
 	)
 
+	if e := ctx.Err(); e != nil {
+		return e
+	}
+
 	return err
 }
 
@@ -228,6 +232,10 @@ func (e *Engine) Dispatch(
 			EnabledHandlers:     oo.enabledHandlers,
 		},
 	)
+
+	if e := ctx.Err(); e != nil {
+		return e
+	}
 
 	return err
 }
