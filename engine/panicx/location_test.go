@@ -22,7 +22,7 @@ var _ = Describe("type Location", func() {
 			))
 		})
 
-		It("returns an empty location if the value is not a function", func() {
+		It("panics value is not a function", func() {
 			Expect(func() {
 				LocationOfFunc("<not a function>")
 			}).To(PanicWith("fn must be a function"))
@@ -40,6 +40,12 @@ var _ = Describe("type Location", func() {
 					"Line": Equal(57),
 				},
 			))
+		})
+
+		It("panics if the methods does not exist", func() {
+			Expect(func() {
+				LocationOfMethod(locationOfMethodT{}, "DoesNotExist")
+			}).To(PanicWith("method does not exist"))
 		})
 	})
 
