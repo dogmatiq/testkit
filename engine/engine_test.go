@@ -179,6 +179,35 @@ var _ = Describe("type Engine", func() {
 			Expect(called).To(BeTrue())
 		})
 
+		It("always returns context errors even if other errors occur", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			integration.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				cancel()
+				return errors.New("<error>")
+			}
+
+			err := engine.Dispatch(ctx, MessageC1)
+			Expect(err).To(Equal(context.Canceled))
+		})
+
+		It("adds handler details to controller errors", func() {
+			integration.HandleCommandFunc = func(
+				context.Context,
+				dogma.IntegrationCommandScope,
+				dogma.Message,
+			) error {
+				return errors.New("<error>")
+			}
+
+			err := engine.Dispatch(context.Background(), MessageC1)
+			Expect(err).To(MatchError("<integration> integration: <error>"))
+		})
+
 		It("panics if the message is invalid", func() {
 			Expect(func() {
 				engine.Dispatch(
@@ -250,6 +279,33 @@ var _ = Describe("type Engine", func() {
 					Handler: h,
 				},
 			))
+		})
+
+		It("always returns context errors even if other errors occur", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			projection.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				cancel()
+				return errors.New("<error>")
+			}
+
+			err := engine.Tick(ctx)
+			Expect(err).To(Equal(context.Canceled))
+		})
+
+		It("adds handler details to controller errors", func() {
+			projection.CompactFunc = func(
+				context.Context,
+				dogma.ProjectionCompactScope,
+			) error {
+				return errors.New("<error>")
+			}
+
+			err := engine.Tick(context.Background())
+			Expect(err).To(MatchError("<projection> projection: <error>"))
 		})
 	})
 })
