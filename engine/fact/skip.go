@@ -5,8 +5,8 @@ package fact
 type HandlerSkipReason byte
 
 const (
-	// HandlerTypeDisabled indicates that a handler skipped because all handlers
-	// of that type have been disabled.
+	// HandlerTypeDisabled indicates that a handler was skipped because all
+	// handlers of that type have been disabled.
 	HandlerTypeDisabled HandlerSkipReason = 'T'
 
 	// IndividualHandlerDisabled indicates that a handler was skipped because
