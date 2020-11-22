@@ -80,6 +80,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"ProjectionMessageHandler",
 		"TimeoutHint",
+		handler,
 		env.Message,
 		func() {
 			t = handler.TimeoutHint(env.Message)
@@ -149,6 +150,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"ProjectionMessageHandler",
 		"HandleEvent",
+		handler,
 		env.Message,
 		func() {
 			ok, err = handler.HandleEvent(

@@ -17,6 +17,9 @@ type UnexpectedMessage struct {
 	// controller called resulting in the panic.
 	Interface string
 
+	// Implementation is the value that implements the nominated interface.
+	Implementation interface{}
+
 	// Method is the name of the method that the controller called resulting in
 	// the panic.
 	Method string
@@ -30,9 +33,10 @@ type UnexpectedMessage struct {
 
 func (x UnexpectedMessage) String() string {
 	return fmt.Sprintf(
-		"the '%s' %s message handler did not expect %s() to be called with a message of type %T",
+		"the '%s' %s message handler did not expect %T.%s() to be called with a message of type %T",
 		x.Handler.Identity().Name,
 		x.Handler.HandlerType(),
+		x.Implementation,
 		x.Method,
 		x.Message,
 	)
@@ -43,7 +47,8 @@ func (x UnexpectedMessage) String() string {
 // the failure.
 func EnrichUnexpectedMessage(
 	h configkit.RichHandler,
-	iface, method string,
+	iface string, method string,
+	impl interface{},
 	m dogma.Message,
 	fn func(),
 ) {
@@ -56,11 +61,12 @@ func EnrichUnexpectedMessage(
 
 		if v == dogma.UnexpectedMessage {
 			v = UnexpectedMessage{
-				Handler:       h,
-				Interface:     iface,
-				Method:        method,
-				Message:       m,
-				PanicLocation: LocationOfPanic(),
+				Handler:        h,
+				Interface:      iface,
+				Method:         method,
+				Implementation: impl,
+				Message:        m,
+				PanicLocation:  LocationOfPanic(),
 			}
 		}
 

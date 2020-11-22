@@ -47,6 +47,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"IntegrationMessageHandler",
 		"TimeoutHint",
+		c.Config.Handler(),
 		env.Message,
 		func() {
 			t = c.Config.Handler().TimeoutHint(env.Message)
@@ -72,6 +73,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"IntegrationMessageHandler",
 		"HandleCommand",
+		c.Config.Handler(),
 		env.Message,
 		func() {
 			err = c.Config.Handler().HandleCommand(ctx, s, env.Message)

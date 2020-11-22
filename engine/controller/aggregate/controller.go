@@ -50,6 +50,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"AggregateMessageHandler",
 		"RouteCommandToInstance",
+		c.Config.Handler(),
 		env.Message,
 		func() {
 			id = c.Config.Handler().RouteCommandToInstance(env.Message)
@@ -79,6 +80,7 @@ func (c *Controller) Handle(
 				c.Config,
 				"AggregateRoot",
 				"ApplyEvent",
+				r,
 				env.Message,
 				func() {
 					r.ApplyEvent(env.Message)
@@ -115,6 +117,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"AggregateMessageHandler",
 		"HandleCommand",
+		c.Config.Handler(),
 		env.Message,
 		func() {
 			c.Config.Handler().HandleCommand(r, s, env.Message)

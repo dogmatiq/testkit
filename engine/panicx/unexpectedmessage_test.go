@@ -28,7 +28,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 
 				x := r.(UnexpectedMessage)
 				Expect(x.String()).To(Equal(
-					"the '<name>' projection message handler did not expect <method>() to be called with a message of type fixtures.MessageA",
+					"the '<name>' projection message handler did not expect *fixtures.ProjectionMessageHandler.<method>() to be called with a message of type fixtures.MessageA",
 				))
 			}()
 
@@ -36,6 +36,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 				config,
 				"<interface>",
 				"<method>",
+				config.Handler(),
 				MessageA1,
 				func() {
 					panic(dogma.UnexpectedMessage)
@@ -62,6 +63,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 			config,
 			"<interface>",
 			"<method>",
+			config.Handler(),
 			MessageA1,
 			func() {
 				called = true
@@ -77,6 +79,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 				config,
 				"<interface>",
 				"<method>",
+				config.Handler(),
 				MessageA1,
 				func() {
 					panic("<panic>")
@@ -91,23 +94,23 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 				config,
 				"<interface>",
 				"<method>",
+				config.Handler(),
 				MessageA1,
-				func() {
-					panic(dogma.UnexpectedMessage)
-				},
+				panicWithUnexpectedMessage,
 			)
 		}).To(PanicWith(
 			MatchAllFields(
 				Fields{
-					"Handler":   Equal(config),
-					"Interface": Equal("<interface>"),
-					"Method":    Equal("<method>"),
-					"Message":   Equal(MessageA1),
+					"Handler":        Equal(config),
+					"Interface":      Equal("<interface>"),
+					"Method":         Equal("<method>"),
+					"Implementation": Equal(config.Handler()),
+					"Message":        Equal(MessageA1),
 					"PanicLocation": MatchAllFields(
 						Fields{
-							"Func": Not(BeEmpty()),
-							"File": HaveSuffix("/unexpectedmessage_test.go"),
-							"Line": Equal(96),
+							"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.panicWithUnexpectedMessage"),
+							"File": HaveSuffix("/engine/panicx/unexpectedmessage_test.go"),
+							"Line": Equal(123),
 						},
 					),
 				},
@@ -115,3 +118,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 		))
 	})
 })
+
+func panicWithUnexpectedMessage() {
+	panic(dogma.UnexpectedMessage)
+}

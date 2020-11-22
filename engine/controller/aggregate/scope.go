@@ -76,6 +76,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		s.config,
 		"AggregateRoot",
 		"ApplyEvent",
+		s.root,
 		m,
 		func() {
 			s.root.ApplyEvent(m)

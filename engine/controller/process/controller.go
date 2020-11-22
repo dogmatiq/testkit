@@ -70,6 +70,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"ProcessMessageHandler",
 		"TimeoutHint",
+		c.Config.Handler(),
 		env.Message,
 		func() {
 			t = c.Config.Handler().TimeoutHint(env.Message)
@@ -173,6 +174,7 @@ func (c *Controller) routeEvent(
 		c.Config,
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
+		handler,
 		env.Message,
 		func() {
 			id, ok, err = handler.RouteEventToInstance(ctx, env.Message)
@@ -234,6 +236,7 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		c.Config,
 		"ProcessMessageHandler",
 		method,
+		c.Config.Handler(),
 		s.env.Message,
 		func() {
 			if s.env.Role == message.EventRole {
