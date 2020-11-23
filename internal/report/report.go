@@ -17,20 +17,17 @@ type Report struct {
 	// report.
 	FailureMode string
 
-	// Transcripts describes the activity that occurred during the test.
-	Transcripts []Transcript
-
-	// Findings is the set of discoveries made by analysing the test activity.
-	Findings []Finding
+	// Steps contains details of each step performed within the test.
+	Steps []Step
 }
 
 // TestResult is an enumeration of possible test results.
 type TestResult int
 
 const (
-	// Fail indicates that the test failed.
-	Fail TestResult = iota
+	// Failed indicates that the test failed.
+	Failed TestResult = iota
 
-	// Pass indicates that a test passed.
-	Pass
+	// Passed indicates that a test passed.
+	Passed
 )
