@@ -13,7 +13,7 @@ type Suggestion struct {
 	// The AbsoluteConfidence constant is used within negative findings to
 	// indicate that a suggestion is a definitive and appropriate solution to
 	// the problem.
-	Confidence Confidence
+	Confidence SuggestionConfidence
 
 	// Caption is a brief description of the suggestion.
 	//
@@ -23,9 +23,10 @@ type Suggestion struct {
 	Caption string
 }
 
-// Confidence is a subjective rating of a suggestion's likely effectiveness.
-type Confidence uint8
+// SuggestionConfidence is a subjective rating of a suggestion's likely
+// effectiveness.
+type SuggestionConfidence uint8
 
 // AbsoluteConfidence indicates that a suggestion is a definitive and
 // appropriate solution to the problem described by a negative finding.
-const AbsoluteConfidence Confidence = math.MaxUint8
+const AbsoluteConfidence SuggestionConfidence = math.MaxUint8

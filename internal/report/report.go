@@ -2,10 +2,12 @@ package report
 
 // Report is a report on the behavior and result of a test.
 type Report struct {
-	// Passed is true if the test passed.
-	Passed bool
+	// TestResult is the final result of the test.
+	TestResult bool
 
 	// FailureMode is a brief description of the way that the test failed.
+	//
+	// It may be empty if the test passed.
 	//
 	// It should be given in lower case without a trailing period, exclamation
 	// or question mark, similar to how Go error messages are formatted.
@@ -21,3 +23,14 @@ type Report struct {
 	// Findings is the set of discoveries made by analysing the test activity.
 	Findings []Finding
 }
+
+// TestResult is an enumeration of possible test results.
+type TestResult int
+
+const (
+	// Fail indicates that the test failed.
+	Fail TestResult = iota
+
+	// Pass indicates that a test passed.
+	Pass
+)
