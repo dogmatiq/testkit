@@ -27,5 +27,5 @@ type Suggestion struct {
 type Confidence uint8
 
 // AbsoluteConfidence indicates that a suggestion is a definitive and
-// appropriate solution the problem described by a negative finding.
+// appropriate solution to the problem described by a negative finding.
 const AbsoluteConfidence Confidence = math.MaxUint8
