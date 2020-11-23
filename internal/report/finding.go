@@ -19,7 +19,7 @@ type Finding struct {
 
 	// Summary is a brief paragraph describing the finding.
 	//
-	// It may be empty. If provided, it should be in sentence case, punctionated
+	// It may be empty. If provided, it should be in sentence case, punctuated
 	// normally.
 	//
 	// If the Finding is a result of a failed Expectation the summary should
