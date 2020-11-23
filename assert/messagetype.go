@@ -10,15 +10,6 @@ import (
 	"github.com/dogmatiq/testkit/report"
 )
 
-// CommandTypeExecuted returns an assertion that passes if a message with the
-// same type as m is executed as a command.
-func CommandTypeExecuted(m dogma.Message) Assertion {
-	return &messageTypeAssertion{
-		expected: message.TypeOf(m),
-		role:     message.CommandRole,
-	}
-}
-
 // EventTypeRecorded returns an assertion that passes if a message with the same
 // type as m is recorded as an event.
 func EventTypeRecorded(m dogma.Message) Assertion {
