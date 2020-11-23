@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommandOfType()", func() {
+var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
@@ -76,6 +76,20 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		}
 	})
 
+	executeCommandViaExecutor := func(m dogma.Message) Action {
+		return Call(func() {
+			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	}
+
+	recordEventViaRecorder := func(m dogma.Message) Action {
+		return Call(func() {
+			err := test.EventRecorder().RecordEvent(context.Background(), m)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	}
+
 	DescribeTable(
 		"expectation behavior",
 		func(
@@ -92,7 +106,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		},
 		Entry(
 			"command type executed as expected",
-			RecordEvent(MessageE1),
+			recordEventViaRecorder(MessageE1),
 			ToExecuteCommandOfType(MessageC{}),
 			expectPass,
 			expectReport(
@@ -101,22 +115,23 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		),
 		Entry(
 			"no matching command types executed",
-			RecordEvent(MessageE1),
+			recordEventViaRecorder(MessageE1),
 			ToExecuteCommandOfType(MessageX{}),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     none of the engaged handlers executed the expected command`,
+				`  |     nothing executed the expected command`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,
+				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
 		Entry(
 			"no messages produced at all",
-			RecordEvent(MessageN1),
+			Call(func() {}),
 			ToExecuteCommandOfType(MessageC{}),
 			expectFail,
 			expectReport(
@@ -126,12 +141,12 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  |     no messages were produced at all`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • verify the logic within the '<process>' process message handler`,
+				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
 		Entry(
 			"no commands produced at all",
-			ExecuteCommand(MessageR1),
+			recordEventViaRecorder(MessageN1),
 			ToExecuteCommandOfType(MessageC{}),
 			expectFail,
 			expectReport(
@@ -142,21 +157,23 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,
+				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
 		Entry(
 			"no matching command type executed and all relevant handler types disabled",
-			RecordEvent(MessageN1),
+			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommandOfType(MessageC{}),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     no relevant handler types were enabled`,
+				`  |     nothing executed the expected command`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • enable process handlers using the EnableHandlerType() option`,
+				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 			WithUnsafeOperationOptions(
 				engine.EnableProcesses(false),
@@ -164,51 +181,51 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		),
 		Entry(
 			"command of a similar type executed",
-			RecordEvent(MessageE1),
-			ToExecuteCommandOfType(&MessageC{}), // note: message type is pointer
+			executeCommandViaExecutor(MessageR1),
+			ToExecuteCommandOfType(&MessageR{}), // note: message type is pointer
 			expectFail,
 			expectReport(
-				`✗ execute any '*fixtures.MessageC' command`,
+				`✗ execute any '*fixtures.MessageR' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a command of a similar type was executed by the '<process>' process message handler`,
+				`  |     a command of a similar type was executed via a dogma.CommandExecutor`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]fixtures.MessageC`,
+				`  |     [-*-]fixtures.MessageR`,
 			),
 		),
 		Entry(
 			"expected message type recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
+			recordEventViaRecorder(MessageN1),
 			ToExecuteCommandOfType(MessageN{}),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageN' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a message of this type was recorded as an event by the '<aggregate>' aggregate message handler`,
+				`  |     a message of this type was recorded as an event via a dogma.EventRecorder`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
+				`  |     • verify that an event of this type was intended to be recorded via a dogma.EventRecorder`,
 				`  |     • verify that ToExecuteCommandOfType() is the correct assertion, did you mean ToRecordEventOfType()?`,
 			),
 		),
 		Entry(
 			"a message with a similar type recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
+			recordEventViaRecorder(MessageN1),
 			ToExecuteCommandOfType(&MessageN{}), // note: message type is pointer
 			expectFail,
 			expectReport(
 				`✗ execute any '*fixtures.MessageN' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a message of a similar type was recorded as an event by the '<aggregate>' aggregate message handler`,
+				`  |     a message of a similar type was recorded as an event via a dogma.EventRecorder`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
+				`  |     • verify that an event of this type was intended to be recorded via a dogma.EventRecorder`,
 				`  |     • verify that ToExecuteCommandOfType() is the correct assertion, did you mean ToRecordEventOfType()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
