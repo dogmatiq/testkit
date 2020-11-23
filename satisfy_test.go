@@ -32,23 +32,21 @@ var _ = Describe("func ToSatisfy()", func() {
 		test = testkit.Begin(testingT, app)
 	})
 
-	testExpectationBehavior := func(
-		x func(*SatisfyT),
-		ok bool,
-		rm reportMatcher,
-	) {
-		test.Expect(
-			noop,
-			ToSatisfy("<criteria>", x),
-		)
-
-		rm(testingT)
-		Expect(testingT.Failed()).To(Equal(!ok))
-	}
-
 	DescribeTable(
 		"expectation behavior",
-		testExpectationBehavior,
+		func(
+			x func(*SatisfyT),
+			ok bool,
+			rm reportMatcher,
+		) {
+			test.Expect(
+				noop,
+				ToSatisfy("<criteria>", x),
+			)
+
+			rm(testingT)
+			Expect(testingT.Failed()).To(Equal(!ok))
+		},
 		Entry(
 			"it passes when the expectation does nothing",
 			func(*SatisfyT) {},
