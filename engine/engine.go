@@ -113,10 +113,6 @@ func (e *Engine) Tick(
 		},
 	)
 
-	if e := ctx.Err(); e != nil {
-		return e
-	}
-
 	return err
 }
 
@@ -168,6 +164,10 @@ func (e *Engine) tick(
 				Error:   cerr,
 			},
 		)
+
+		if e := ctx.Err(); e != nil {
+			return e
+		}
 	}
 
 	return multierr.Append(
@@ -244,10 +244,6 @@ func (e *Engine) Dispatch(
 		},
 	)
 
-	if e := ctx.Err(); e != nil {
-		return e
-	}
-
 	return err
 }
 
@@ -314,6 +310,10 @@ func (e *Engine) dispatch(
 		)
 
 		err = multierr.Append(err, derr)
+
+		if e := ctx.Err(); e != nil {
+			return e
+		}
 	}
 
 	return err
