@@ -34,6 +34,13 @@ type Finding struct {
 
 	// Evidence contains other findings that led to this finding.
 	Evidence []Finding
+
+	// Suggestions is a collection of recommended actions.
+	//
+	// For negative findings the suggestions would typically describe how to
+	// change the application (or the test, in some cases) to prevent the same
+	// negative finding in the future.
+	Suggestions []Suggestion
 }
 
 // FindingPolarity is an numerations of the "polarity" of a finding, which
