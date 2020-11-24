@@ -72,7 +72,7 @@ func buildReportNoMatch(rep *assert.Report, t *tracker) {
 	}
 }
 
-// tracker is a fact.Observer used by expectations that need to keeps track of
+// tracker is a fact.Observer used by expectations that need to keep track of
 // information about handlers and the messages they produce.
 type tracker struct {
 	// role is the role that the message is expecting to find.
