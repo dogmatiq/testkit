@@ -220,7 +220,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<process>' process message handler intended to execute a command of this type`,
-				`  |     • verify that ToRecordEventOfType() is the correct assertion, did you mean ToExecuteCommandOfType()?`,
+				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
 			),
 		),
 		Entry(
@@ -236,7 +236,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<process>' process message handler intended to execute a command of this type`,
-				`  |     • verify that ToRecordEventOfType() is the correct assertion, did you mean ToExecuteCommandOfType()?`,
+				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,

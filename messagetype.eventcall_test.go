@@ -216,7 +216,7 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEventOfType() is the correct assertion, did you mean ToExecuteCommandOfType()?`,
+				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
 			),
 		),
 		Entry(
@@ -232,7 +232,7 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEventOfType() is the correct assertion, did you mean ToExecuteCommandOfType()?`,
+				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,

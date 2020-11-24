@@ -193,7 +193,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct assertion, did you mean ToRecordEventOfType()?`,
+				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
 			),
 		),
 		Entry(
@@ -209,7 +209,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct assertion, did you mean ToRecordEventOfType()?`,
+				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,

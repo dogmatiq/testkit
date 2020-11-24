@@ -97,11 +97,11 @@ func (e *produceMessageOfType) Ok() bool {
 	return e.ok
 }
 
-// BuildReport generates a report about the assertion.
+// BuildReport generates a report about the expectation.
 //
-// ok is true if the assertion is considered to have passed. This may not be
-// the same value as returned from Ok() when this assertion is used as a
-// sub-assertion inside a composite.
+// ok is true if the expectation is considered to have passed. This may not be
+// the same value as returned from Ok() when this expectation is used as a child
+// of a composite expectation.
 func (e *produceMessageOfType) BuildReport(ok bool) *assert.Report {
 	rep := &assert.Report{
 		TreeOk: ok,
@@ -223,9 +223,9 @@ func (e *produceMessageOfType) buildReportUnexpectedRole(rep *assert.Report) {
 	}
 
 	if e.role == message.CommandRole {
-		s.AppendListItem("verify that ToExecuteCommandOfType() is the correct assertion, did you mean ToRecordEventOfType()?")
+		s.AppendListItem("verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?")
 	} else {
-		s.AppendListItem("verify that ToRecordEventOfType() is the correct assertion, did you mean ToExecuteCommandOfType()?")
+		s.AppendListItem("verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?")
 	}
 
 	if e.sim == compare.SameTypes {
