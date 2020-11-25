@@ -6,14 +6,13 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
 )
 
 // buildReportNoMatch is used by message-related expectations to build a test
 // report when no "best-match" message is found.
-func buildReportNoMatch(rep *assert.Report, t *tracker) {
+func buildReportNoMatch(rep *Report, t *tracker) {
 	s := rep.Section(suggestionsSection)
 
 	allDisabled := true

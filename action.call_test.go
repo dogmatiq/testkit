@@ -10,7 +10,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -154,7 +153,7 @@ var _ = Describe("func Call()", func() {
 					MessageC1,
 				)
 			}),
-			assert.CommandExecuted(MessageC1),
+			ToExecuteCommand(MessageC1),
 		)
 	})
 
@@ -168,7 +167,7 @@ var _ = Describe("func Call()", func() {
 					MessageE1,
 				)
 			}),
-			assert.EventRecorded(MessageE1),
+			ToRecordEvent(MessageE1),
 		)
 	})
 

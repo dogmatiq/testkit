@@ -2,7 +2,6 @@ package testkit_test
 
 import (
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -30,13 +29,13 @@ func (a staticExpectation) Begin(ExpectOptionSet) {}
 func (a staticExpectation) End()                  {}
 func (a staticExpectation) Ok() bool              { return bool(a) }
 func (a staticExpectation) Notify(fact.Fact)      {}
-func (a staticExpectation) BuildReport(ok bool) *assert.Report {
+func (a staticExpectation) BuildReport(ok bool) *Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"
 	}
 
-	return &assert.Report{
+	return &Report{
 		TreeOk:   ok,
 		Ok:       bool(a),
 		Criteria: c,

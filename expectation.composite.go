@@ -3,7 +3,6 @@ package testkit
 import (
 	"fmt"
 
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -190,10 +189,10 @@ func (e *compositeExpectation) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *compositeExpectation) BuildReport(ok bool) *assert.Report {
+func (e *compositeExpectation) BuildReport(ok bool) *Report {
 	e.Ok() // populate e.ok and e.outcome
 
-	rep := &assert.Report{
+	rep := &Report{
 		TreeOk:   ok,
 		Ok:       *e.ok,
 		Criteria: e.Criteria,

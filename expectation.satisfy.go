@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -89,8 +88,8 @@ func (e *satisfyExpectation) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *satisfyExpectation) BuildReport(ok bool) *assert.Report {
-	rep := &assert.Report{
+func (e *satisfyExpectation) BuildReport(ok bool) *Report {
+	rep := &Report{
 		TreeOk:   ok,
 		Ok:       e.Ok(),
 		Criteria: e.c,
@@ -239,7 +238,7 @@ func (t *SatisfyT) Helper() {
 }
 
 // Log formats its arguments using default formatting, analogous to Println(),
-// and records the text in the assertion report.
+// and records the text in the test report.
 func (t *SatisfyT) Log(args ...interface{}) {
 	t.m.Lock()
 	defer t.m.Unlock()
@@ -248,7 +247,7 @@ func (t *SatisfyT) Log(args ...interface{}) {
 }
 
 // Logf formats its arguments according to the format, analogous to Printf(),
-// and records the text in the assertion report.
+// and records the text in the test report.
 func (t *SatisfyT) Logf(format string, args ...interface{}) {
 	t.m.Lock()
 	defer t.m.Unlock()
