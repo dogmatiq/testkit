@@ -1,4 +1,4 @@
-package compare_test
+package typecmp_test
 
 import (
 	"reflect"
