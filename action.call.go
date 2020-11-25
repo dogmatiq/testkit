@@ -17,7 +17,7 @@ import "context"
 // produced by handlers within the Dogma application.
 func Call(fn func()) Action {
 	if fn == nil {
-		panic("Call(): function must not be nil")
+		panic("Call(<nil>): function must not be nil")
 	}
 
 	return callAction{fn}

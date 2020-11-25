@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
@@ -10,8 +11,8 @@ import (
 
 // ExecuteCommand returns an Action that executes a command message.
 func ExecuteCommand(m dogma.Message) Action {
-	if m == nil {
-		panic("ExecuteCommand(): message must not be nil")
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
 	}
 
 	return dispatchAction{message.CommandRole, m}
@@ -19,8 +20,8 @@ func ExecuteCommand(m dogma.Message) Action {
 
 // RecordEvent returns an Action that records an event message.
 func RecordEvent(m dogma.Message) Action {
-	if m == nil {
-		panic("RecordEvent(): message must not be nil")
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
 	}
 
 	return dispatchAction{message.EventRole, m}

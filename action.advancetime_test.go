@@ -88,7 +88,7 @@ var _ = Describe("func AdvanceTime()", func() {
 	It("panics if the adjustment is nil", func() {
 		Expect(func() {
 			AdvanceTime(nil)
-		}).To(PanicWith("AdvanceTime(): adjustment must not be nil"))
+		}).To(PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
 	})
 
 	When("passed a ToTime() adjustment", func() {
@@ -156,8 +156,8 @@ var _ = Describe("func AdvanceTime()", func() {
 
 		It("panics if the duration is negative", func() {
 			Expect(func() {
-				ByDuration(-1)
-			}).To(PanicWith("ByDuration(): duration must not be negative"))
+				ByDuration(-1 * time.Second)
+			}).To(PanicWith("ByDuration(-1s): duration must not be negative"))
 		})
 	})
 })

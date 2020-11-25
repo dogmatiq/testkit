@@ -139,6 +139,6 @@ var _ = Describe("func RecordEvent()", func() {
 	It("panics if the message is nil", func() {
 		Expect(func() {
 			RecordEvent(nil)
-		}).To(PanicWith("RecordEvent(): message must not be nil"))
+		}).To(PanicWith("RecordEvent(<nil>): message must not be nil"))
 	})
 })
