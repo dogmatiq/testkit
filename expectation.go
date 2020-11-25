@@ -45,14 +45,13 @@ type predicateBasedExpectation interface {
 type Predicate interface {
 	fact.Observer
 
-	// Ok returns true if the expectation is currently met.
-	//
-	// This may change as the predicate is notified of additional facts.
+	// Ok returns true if the expectation tested by this predicate has been
+	// met. The return value may change as the predicate is notified of
+	// additional facts.
 	Ok() bool
 
-	// Done indicates that the predicate will not be notified of any more facts.
-	//
-	// It returns a report describing whether or not the expectation was met.
+	// Done finalizes the predicate and returns a report describing whether or
+	// not the expectation was met.
 	//
 	// treeOk is true if the entire "tree" of expectations is considered to have
 	// passed. This may not be the same value as returned from Ok() when this
@@ -60,6 +59,7 @@ type Predicate interface {
 	Done(treeOk bool) *Report
 }
 
+// ExpectOptionSet TODO REMOVE
 type ExpectOptionSet = PredicateOptions
 
 // PredicateOptions contains values that dictate how a predicate should behave.

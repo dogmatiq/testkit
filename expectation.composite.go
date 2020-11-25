@@ -19,10 +19,10 @@ func AllOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		BannerText: fmt.Sprintf("TO MEET %d EXPECTATIONS", n),
-		Criteria:   "all of",
-		Children:   children,
-		Predicate: func(passed int) (string, bool) {
+		banner:   fmt.Sprintf("TO MEET %d EXPECTATIONS", n),
+		criteria: "all of",
+		children: children,
+		pred: func(passed int) (string, bool) {
 			if passed == n {
 				return "", true
 			}
@@ -48,10 +48,10 @@ func AnyOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		BannerText: fmt.Sprintf("TO MEET AT LEAST ONE OF %d EXPECTATIONS", n),
-		Criteria:   "any of",
-		Children:   children,
-		Predicate: func(passed int) (string, bool) {
+		banner:   fmt.Sprintf("TO MEET AT LEAST ONE OF %d EXPECTATIONS", n),
+		criteria: "any of",
+		children: children,
+		pred: func(passed int) (string, bool) {
 			if passed > 0 {
 				return "", true
 			}
@@ -78,10 +78,10 @@ func NoneOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		BannerText: banner,
-		Criteria:   "none of",
-		Children:   children,
-		Predicate: func(passed int) (string, bool) {
+		banner:   banner,
+		criteria: "none of",
+		children: children,
+		pred: func(passed int) (string, bool) {
 			if passed == 0 {
 				return "", true
 			}
@@ -101,32 +101,10 @@ func NoneOf(children ...Expectation) Expectation {
 // compositeExpectation is an expectation that runs several child expectations.
 // Its final result is determined by a predicate function.
 type compositeExpectation struct {
-	// BannerText is a human-readable banner to display in the logs when this
-	// expectation is used.
-	BannerText string
-
-	// Criteria is a brief description of the expectation that must be met.
-	Criteria string
-
-	// Children is the expectation's child expectations.
-	Children []Expectation
-
-	// Predicate is a function that determines whether or not the expectation
-	// passes, based on the number of children that passed.
-	//
-	// It returns true if the expectation passed, and may optionally return a
-	// message to be displayed in either case.
-	Predicate func(int) (string, bool)
-
-	// ok is a cache of the expectation's result.
-	//
-	// It is populated the first time Ok() is called.
-	ok *bool
-
-	// outcome is the message string returned by the predicate function.
-	//
-	// It is populated the first time Ok() is called.
-	outcome string
+	banner   string
+	criteria string
+	children []Expectation
+	pred     func(passed int) (outcome string, ok bool)
 }
 
 // Banner returns a human-readable banner to display in the logs when this
@@ -135,75 +113,75 @@ type compositeExpectation struct {
 // The banner text should be in uppercase, and complete the sentence "The
 // application is expected ...". For example, "TO DO A THING".
 func (e *compositeExpectation) Banner() string {
-	return e.BannerText
+	return e.banner
 }
 
-// Notify notifies the expectation of the occurrence of a fact.
-func (e *compositeExpectation) Notify(f fact.Fact) {
-	for _, c := range e.Children {
+func (e *compositeExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
+func (e *compositeExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
+func (e *compositeExpectation) End()                        { panic("TODO: remove") }
+func (e *compositeExpectation) Ok() bool                    { panic("TODO: remove") }
+func (e *compositeExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
+
+func (e *compositeExpectation) Predicate(o PredicateOptions) Predicate {
+	var children []Predicate
+
+	for _, c := range e.children {
+		if pe, ok := c.(predicateBasedExpectation); ok {
+			children = append(children, pe.Predicate(o))
+		}
+	}
+
+	return &compositePredicate{
+		criteria: e.criteria,
+		children: children,
+		pred:     e.pred,
+	}
+}
+
+type compositePredicate struct {
+	criteria string
+	children []Predicate
+	pred     func(int) (string, bool)
+}
+
+func (p *compositePredicate) Notify(f fact.Fact) {
+	for _, c := range p.children {
 		c.Notify(f)
 	}
 }
 
-// Begin is called to prepare the expectation for a new test.
-func (e *compositeExpectation) Begin(o ExpectOptionSet) {
-	e.ok = nil
-	e.outcome = ""
-
-	for _, c := range e.Children {
-		c.Begin(o)
-	}
+func (p *compositePredicate) Ok() bool {
+	_, ok := p.ok()
+	return ok
 }
 
-// End is called once the test is complete.
-func (e *compositeExpectation) End() {
-	for _, c := range e.Children {
-		c.End()
+func (p *compositePredicate) Done(treeOk bool) *Report {
+	m, ok := p.ok()
+
+	rep := &Report{
+		TreeOk:   treeOk,
+		Ok:       ok,
+		Criteria: p.criteria,
+		Outcome:  m,
 	}
+
+	for _, c := range p.children {
+		rep.Append(
+			c.Done(treeOk),
+		)
+	}
+
+	return rep
 }
 
-// Ok returns true if the expectation passed.
-func (e *compositeExpectation) Ok() bool {
-	if e.ok != nil {
-		return *e.ok
-	}
-
+func (p *compositePredicate) ok() (string, bool) {
 	n := 0
 
-	for _, c := range e.Children {
+	for _, c := range p.children {
 		if c.Ok() {
 			n++
 		}
 	}
 
-	m, ok := e.Predicate(n)
-
-	e.ok = &ok
-	e.outcome = m
-
-	return *e.ok
-}
-
-// BuildReport generates a report about the expectation.
-//
-// ok is true if the expectation is considered to have passed. This may not be
-// the same value as returned from Ok() when this expectation is used as a child
-// of a composite expectation.
-func (e *compositeExpectation) BuildReport(ok bool) *Report {
-	e.Ok() // populate e.ok and e.outcome
-
-	rep := &Report{
-		TreeOk:   ok,
-		Ok:       *e.ok,
-		Criteria: e.Criteria,
-		Outcome:  e.outcome,
-	}
-
-	for _, c := range e.Children {
-		rep.Append(
-			c.BuildReport(ok),
-		)
-	}
-
-	return rep
+	return p.pred(n)
 }

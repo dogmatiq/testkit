@@ -96,6 +96,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 
 	if pe, ok := e.(predicateBasedExpectation); ok {
 		t.expectPred(act, pe)
+		return
 	}
 
 	o := PredicateOptions{}
@@ -132,13 +133,6 @@ func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
 	if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
 		t.testingT.Fatal(err)
 	}
-
-	func() {
-		// Wrapping this defer in the closure guarantees not only that it is
-		// always called, but that it is called before t.buildReport().
-		defer e.End()
-
-	}()
 
 	rep := p.Done(p.Ok())
 
