@@ -3,7 +3,7 @@ package testkit
 import (
 	"fmt"
 
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // AllOf is an expectation that passes only if all of its children pass.

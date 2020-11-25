@@ -10,7 +10,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // Test contains the state of a single test.

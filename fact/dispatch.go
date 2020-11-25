@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/envelope"
 )
 
 // DispatchCycleBegun indicates that Engine.Dispatch() has been called with a

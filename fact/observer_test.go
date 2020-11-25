@@ -3,7 +3,7 @@ package fact_test
 import (
 	"time"
 
-	. "github.com/dogmatiq/testkit/engine/fact"
+	. "github.com/dogmatiq/testkit/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

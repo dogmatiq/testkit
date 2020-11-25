@@ -2,7 +2,7 @@ package fact
 
 import (
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/envelope"
 )
 
 // EventRecordedByIntegration indicates that an integration recorded an event

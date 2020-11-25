@@ -2,7 +2,7 @@ package logging_test
 
 import (
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/testkit/engine/fact/internal/logging"
+	. "github.com/dogmatiq/testkit/fact/internal/logging"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

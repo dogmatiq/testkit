@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/testkit/engine/envelope"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/envelope"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // scope is an implementation of dogma.ProjectionEventScope and

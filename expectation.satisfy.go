@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // ToSatisfy returns an expectation that calls a function to check for specific

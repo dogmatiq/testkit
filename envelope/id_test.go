@@ -1,7 +1,7 @@
 package envelope_test
 
 import (
-	. "github.com/dogmatiq/testkit/engine/envelope"
+	. "github.com/dogmatiq/testkit/envelope"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

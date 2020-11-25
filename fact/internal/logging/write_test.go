@@ -3,7 +3,7 @@ package logging_test
 import (
 	"strings"
 
-	. "github.com/dogmatiq/testkit/engine/fact/internal/logging"
+	. "github.com/dogmatiq/testkit/fact/internal/logging"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 )
