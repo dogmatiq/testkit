@@ -111,9 +111,6 @@ func (t *tracker) Notify(f fact.Fact) {
 		if t.matchDispatchCycle {
 			t.messageProduced(x.Envelope.Role)
 		}
-	case fact.TickCycleBegun:
-		t.cycleBegun = true
-		t.enabled = x.EnabledHandlerTypes
 	case fact.HandlingBegun:
 		t.updateEngaged(
 			x.Handler.Identity().Name,

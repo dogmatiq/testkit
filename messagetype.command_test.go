@@ -217,4 +217,10 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 			),
 		),
 	)
+
+	It("panics if the message is nil", func() {
+		Expect(func() {
+			ToExecuteCommandOfType(nil)
+		}).To(PanicWith("ToExecuteCommandOfType(): message must not be nil"))
+	})
 })
