@@ -5,11 +5,10 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
-	"github.com/dogmatiq/testkit/engine/controller"
-	"github.com/dogmatiq/testkit/engine/controller/aggregate"
-	"github.com/dogmatiq/testkit/engine/controller/integration"
-	"github.com/dogmatiq/testkit/engine/controller/process"
-	"github.com/dogmatiq/testkit/engine/controller/projection"
+	"github.com/dogmatiq/testkit/engine/internal/aggregate"
+	"github.com/dogmatiq/testkit/engine/internal/integration"
+	"github.com/dogmatiq/testkit/engine/internal/process"
+	"github.com/dogmatiq/testkit/engine/internal/projection"
 )
 
 type configurer struct {
@@ -76,7 +75,7 @@ func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichPr
 }
 
 func (c *configurer) registerController(
-	ctrl controller.Controller,
+	ctrl controller,
 	types map[message.Type]message.Role,
 ) {
 	c.engine.controllers[ctrl.HandlerConfig().Identity().Name] = ctrl

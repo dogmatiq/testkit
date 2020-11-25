@@ -8,7 +8,6 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/engine/controller"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"go.uber.org/multierr"
@@ -24,8 +23,8 @@ type Engine struct {
 	// the mutex, but m must be held in order to call any method on a
 	// controller, or to call a resetter.
 	m           cosyne.Mutex
-	controllers map[string]controller.Controller
-	routes      map[message.Type][]controller.Controller
+	controllers map[string]controller
+	routes      map[message.Type][]controller
 	resetters   []func()
 }
 
@@ -35,8 +34,8 @@ func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error
 
 	e := &Engine{
 		roles:       map[message.Type]message.Role{},
-		controllers: map[string]controller.Controller{},
-		routes:      map[message.Type][]controller.Controller{},
+		controllers: map[string]controller{},
+		routes:      map[message.Type][]controller{},
 		resetters:   eo.resetters,
 	}
 
@@ -258,11 +257,11 @@ func (e *Engine) dispatch(
 		env := queue[0]
 		queue = queue[1:]
 
-		var controllers []controller.Controller
+		var controllers []controller
 
 		if env.Role == message.TimeoutRole {
 			// always dispatch timeouts back to their origin handler
-			controllers = []controller.Controller{
+			controllers = []controller{
 				e.controllers[env.Origin.Handler.Identity().Name],
 			}
 		} else {
@@ -323,7 +322,7 @@ func (e *Engine) handle(
 	ctx context.Context,
 	oo *operationOptions,
 	env *envelope.Envelope,
-	c controller.Controller,
+	c controller,
 ) ([]*envelope.Envelope, error) {
 	if skip, reason := e.skipHandler(c.HandlerConfig(), oo); skip {
 		oo.observers.Notify(
