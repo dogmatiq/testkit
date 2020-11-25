@@ -83,7 +83,7 @@ func (e *messageTypeExpectation) Begin(o ExpectOptionSet) {
 		dist:     typecmp.Unrelated,
 		tracker: tracker{
 			role:               e.role,
-			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
+			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
 	}
 }

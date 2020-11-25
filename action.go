@@ -20,9 +20,10 @@ type Action interface {
 	// for example "DOING ACTION".
 	Banner() string
 
-	// ExpectOptions returns the options to use by default when this action is
-	// used with Test.Expect().
-	ExpectOptions() []ExpectOption
+	// ConfigurePredicate updates o with any options required by the action.
+	//
+	// It is called before Apply() when the action is used with Test.Expect().
+	ConfigurePredicate(o *PredicateOptions)
 
 	// Apply performs the action within the context of a specific test.
 	Apply(ctx context.Context, s ActionScope) error

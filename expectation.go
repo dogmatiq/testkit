@@ -33,16 +33,15 @@ type Expectation interface {
 	BuildReport(ok bool) *Report
 }
 
-// ExpectOption is an option that changes the behavior the Test.Expect() method.
-type ExpectOption func(*ExpectOptionSet)
+type ExpectOptionSet = PredicateOptions
 
-// ExpectOptionSet is a set of options that dictate the behavior of the
-// Test.Expect() method.
-type ExpectOptionSet struct {
-	// MatchMessagesInDispatchCycle controls whether expectations should match
-	// messages from the start of a dispatch cycle.
+// PredicateOptions contains values that dictate how a predicate should behave.
+type PredicateOptions struct {
+	// MatchDispatchCycleStartedFacts controls whether predicates that look for
+	// specific messages should consider messages from DispatchCycleStarted
+	// facts.
 	//
-	// If it is false, only messages produced by handlers within the application
-	// are matched.
-	MatchMessagesInDispatchCycle bool
+	// If it is false, the predicate must only match against messages produced
+	// by handlers.
+	MatchDispatchCycleStartedFacts bool
 }

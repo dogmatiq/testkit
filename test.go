@@ -91,18 +91,11 @@ func (t *Test) Prepare(actions ...Action) *Test {
 }
 
 // Expect ensures that a single action results in some expected behavior.
-func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
+func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
-	o := ExpectOptionSet{}
-
-	for _, opt := range act.ExpectOptions() {
-		opt(&o)
-	}
-
-	for _, opt := range options {
-		opt(&o)
-	}
+	o := PredicateOptions{}
+	act.ConfigurePredicate(&o)
 
 	e.Begin(o)
 
