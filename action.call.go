@@ -20,11 +20,12 @@ func Call(fn func()) Action {
 		panic("Call(): function must not be nil")
 	}
 
-	return call{fn}
+	return callAction{fn}
 }
 
-// call is an implementation of Action that invokes a user-defined function.
-type call struct {
+// callAction is an implementation of Action that invokes a user-defined
+// function.
+type callAction struct {
 	fn func()
 }
 
@@ -33,13 +34,13 @@ type call struct {
 //
 // The banner text should be in uppercase, and worded in the present tense,
 // for example "DOING ACTION".
-func (a call) Banner() string {
+func (a callAction) Banner() string {
 	return "CALLING USER-DEFINED FUNCTION"
 }
 
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
-func (a call) ExpectOptions() []ExpectOption {
+func (a callAction) ExpectOptions() []ExpectOption {
 	return []ExpectOption{
 		func(o *ExpectOptionSet) {
 			o.MatchMessagesInDispatchCycle = true
@@ -48,7 +49,7 @@ func (a call) ExpectOptions() []ExpectOption {
 }
 
 // Apply performs the action within the context of a specific test.
-func (a call) Apply(ctx context.Context, s ActionScope) error {
+func (a callAction) Apply(ctx context.Context, s ActionScope) error {
 	s.Executor.Engine = s.Engine
 	s.Recorder.Engine = s.Engine
 	s.Executor.Options = s.OperationOptions

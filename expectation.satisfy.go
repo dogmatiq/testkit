@@ -24,16 +24,16 @@ func ToSatisfy(
 	d string,
 	x func(*SatisfyT),
 ) Expectation {
-	return &toSatisfy{
+	return &satisfyExpectation{
 		c: d,
 		t: SatisfyT{name: d},
 		x: x,
 	}
 }
 
-// toSatisfy is an expectation that calls a function to check for specific
-// criteria.
-type toSatisfy struct {
+// satisfyExpectation is an expectation that calls a function to check for
+// specific criteria.
+type satisfyExpectation struct {
 	c string
 	t SatisfyT
 	x func(*SatisfyT)
@@ -44,22 +44,22 @@ type toSatisfy struct {
 //
 // The banner text should be in uppercase, and complete the sentence "The
 // application is expected ...". For example, "TO DO A THING".
-func (e *toSatisfy) Banner() string {
+func (e *satisfyExpectation) Banner() string {
 	return "TO " + strings.ToUpper(e.c)
 }
 
 // Notify the observer of a fact.
-func (e *toSatisfy) Notify(f fact.Fact) {
+func (e *satisfyExpectation) Notify(f fact.Fact) {
 	e.t.Facts = append(e.t.Facts, f)
 }
 
 // Begin is called to prepare the expectation for a new test.
-func (e *toSatisfy) Begin(o ExpectOptionSet) {
+func (e *satisfyExpectation) Begin(o ExpectOptionSet) {
 	e.t.Options = o
 }
 
 // End is called once the test is complete.
-func (e *toSatisfy) End() {
+func (e *satisfyExpectation) End() {
 	defer func() {
 		for i := len(e.t.cleanup) - 1; i >= 0; i-- {
 			e.t.cleanup[i]()
@@ -80,7 +80,7 @@ func (e *toSatisfy) End() {
 }
 
 // Ok returns true if the expectation passed.
-func (e *toSatisfy) Ok() bool {
+func (e *satisfyExpectation) Ok() bool {
 	return e.t.skipped || !e.t.failed
 }
 
@@ -89,7 +89,7 @@ func (e *toSatisfy) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *toSatisfy) BuildReport(ok bool) *assert.Report {
+func (e *satisfyExpectation) BuildReport(ok bool) *assert.Report {
 	rep := &assert.Report{
 		TreeOk:   ok,
 		Ok:       e.Ok(),

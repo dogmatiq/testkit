@@ -26,7 +26,7 @@ func AdvanceTime(adj TimeAdjustment) Action {
 		panic("AdvanceTime(): adjustment must not be nil")
 	}
 
-	return advanceTime{adj}
+	return advanceTimeAction{adj}
 }
 
 // A TimeAdjustment describes a change to the test's virtual clock.
@@ -61,8 +61,9 @@ func ByDuration(d time.Duration) TimeAdjustment {
 	return byDuration(d)
 }
 
-// advanceTime is an implementation of Action that advances the virtual clock.
-type advanceTime struct {
+// advanceTimeAction is an implementation of Action that advances the virtual
+// clock.
+type advanceTimeAction struct {
 	adj TimeAdjustment
 }
 
@@ -71,7 +72,7 @@ type advanceTime struct {
 //
 // The banner text should be in uppercase, and worded in the present tense,
 // for example "DOING ACTION".
-func (a advanceTime) Banner() string {
+func (a advanceTimeAction) Banner() string {
 	return fmt.Sprintf(
 		"ADVANCING TIME (%s)",
 		a.adj.Description(),
@@ -80,12 +81,12 @@ func (a advanceTime) Banner() string {
 
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
-func (a advanceTime) ExpectOptions() []ExpectOption {
+func (a advanceTimeAction) ExpectOptions() []ExpectOption {
 	return nil
 }
 
 // Apply performs the action within the context of a specific test.
-func (a advanceTime) Apply(ctx context.Context, s ActionScope) error {
+func (a advanceTimeAction) Apply(ctx context.Context, s ActionScope) error {
 	now := a.adj.Step(*s.VirtualClock)
 
 	if now.Before(*s.VirtualClock) {

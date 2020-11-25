@@ -14,7 +14,7 @@ func ExecuteCommand(m dogma.Message) Action {
 		panic("ExecuteCommand(): message must not be nil")
 	}
 
-	return dispatch{message.CommandRole, m}
+	return dispatchAction{message.CommandRole, m}
 }
 
 // RecordEvent returns an Action that records an event message.
@@ -23,12 +23,12 @@ func RecordEvent(m dogma.Message) Action {
 		panic("RecordEvent(): message must not be nil")
 	}
 
-	return dispatch{message.EventRole, m}
+	return dispatchAction{message.EventRole, m}
 }
 
-// dispatchMessage is an implementation of Action that dispatches a message to
+// dispatchAction is an implementation of Action that dispatches a message to
 // the engine.
-type dispatch struct {
+type dispatchAction struct {
 	r message.Role
 	m dogma.Message
 }
@@ -38,7 +38,7 @@ type dispatch struct {
 //
 // The banner text should be in uppercase, and worded in the present tense,
 // for example "DOING ACTION".
-func (a dispatch) Banner() string {
+func (a dispatchAction) Banner() string {
 	return inflect.Sprintf(
 		a.r,
 		"<PRODUCING> %T <MESSAGE>",
@@ -48,12 +48,12 @@ func (a dispatch) Banner() string {
 
 // ExpectOptions returns the options to use by default when this action is
 // used with Test.Expect().
-func (a dispatch) ExpectOptions() []ExpectOption {
+func (a dispatchAction) ExpectOptions() []ExpectOption {
 	return nil
 }
 
 // Apply performs the action within the context of a specific test.
-func (a dispatch) Apply(ctx context.Context, s ActionScope) error {
+func (a dispatchAction) Apply(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
 	r, ok := s.App.MessageTypes().RoleOf(mt)
 

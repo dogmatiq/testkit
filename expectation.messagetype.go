@@ -18,7 +18,7 @@ func ToExecuteCommandOfType(m dogma.Message) Expectation {
 		panic("ToExecuteCommandOfType(): message must not be nil")
 	}
 
-	return &produceMessageOfType{
+	return &messageTypeExpectation{
 		expected: message.TypeOf(m),
 		role:     message.CommandRole,
 	}
@@ -31,15 +31,15 @@ func ToRecordEventOfType(m dogma.Message) Expectation {
 		panic("ToRecordEventOfType(): message must not be nil")
 	}
 
-	return &produceMessageOfType{
+	return &messageTypeExpectation{
 		expected: message.TypeOf(m),
 		role:     message.EventRole,
 	}
 }
 
-// produceMessageOfType verifies that a message of a specific type is produced,
-// either as a command or an event.
-type produceMessageOfType struct {
+// messageTypeExpectation verifies that a message of a specific type is
+// produced, either as a command or an event.
+type messageTypeExpectation struct {
 	// Expected is the type of the message that is expected to be produced.
 	expected message.Type
 
@@ -68,7 +68,7 @@ type produceMessageOfType struct {
 //
 // The banner text should be in uppercase, and complete the sentence "The
 // application is expected ...". For example, "TO DO A THING".
-func (e *produceMessageOfType) Banner() string {
+func (e *messageTypeExpectation) Banner() string {
 	return inflect.Sprintf(
 		e.role,
 		"TO <PRODUCE> A <MESSAGE> OF TYPE %s",
@@ -77,8 +77,8 @@ func (e *produceMessageOfType) Banner() string {
 }
 
 // Begin is called to prepare the expectation for a new test.
-func (e *produceMessageOfType) Begin(o ExpectOptionSet) {
-	*e = produceMessageOfType{
+func (e *messageTypeExpectation) Begin(o ExpectOptionSet) {
+	*e = messageTypeExpectation{
 		expected: e.expected,
 		role:     e.role,
 		tracker: tracker{
@@ -89,11 +89,11 @@ func (e *produceMessageOfType) Begin(o ExpectOptionSet) {
 }
 
 // End is called once the test is complete.
-func (e *produceMessageOfType) End() {
+func (e *messageTypeExpectation) End() {
 }
 
 // Ok returns true if the expectation passed.
-func (e *produceMessageOfType) Ok() bool {
+func (e *messageTypeExpectation) Ok() bool {
 	return e.ok
 }
 
@@ -102,7 +102,7 @@ func (e *produceMessageOfType) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *produceMessageOfType) BuildReport(ok bool) *assert.Report {
+func (e *messageTypeExpectation) BuildReport(ok bool) *assert.Report {
 	rep := &assert.Report{
 		TreeOk: ok,
 		Ok:     e.ok,
@@ -129,7 +129,7 @@ func (e *produceMessageOfType) BuildReport(ok bool) *assert.Report {
 }
 
 // Notify updates the expectation's state in response to a new fact.
-func (e *produceMessageOfType) Notify(f fact.Fact) {
+func (e *messageTypeExpectation) Notify(f fact.Fact) {
 	if e.ok {
 		return
 	}
@@ -152,7 +152,7 @@ func (e *produceMessageOfType) Notify(f fact.Fact) {
 
 // messageProduced updates the expectation's state to reflect the fact that a
 // message has been produced.
-func (e *produceMessageOfType) messageProduced(env *envelope.Envelope) {
+func (e *messageTypeExpectation) messageProduced(env *envelope.Envelope) {
 	sim := compare.FuzzyTypeComparison(
 		e.expected.ReflectType(),
 		env.Type.ReflectType(),
@@ -169,7 +169,7 @@ func (e *produceMessageOfType) messageProduced(env *envelope.Envelope) {
 }
 
 // buildDiff adds a "message type diff" section to the result.
-func (e *produceMessageOfType) buildDiff(rep *assert.Report) {
+func (e *messageTypeExpectation) buildDiff(rep *assert.Report) {
 	report.WriteDiff(
 		&rep.Section("Message Type Diff").Content,
 		e.expected.String(),
@@ -179,7 +179,7 @@ func (e *produceMessageOfType) buildDiff(rep *assert.Report) {
 
 // buildReportExpectedRole builds a test report when there is a "best-match"
 // message available but it is of an unexpected role.
-func (e *produceMessageOfType) buildReportExpectedRole(rep *assert.Report) {
+func (e *messageTypeExpectation) buildReportExpectedRole(rep *assert.Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.best.Origin == nil {
@@ -205,7 +205,7 @@ func (e *produceMessageOfType) buildReportExpectedRole(rep *assert.Report) {
 
 // buildReportUnexpectedRole builds a test report when there is a "best-match"
 // message available but it does not have the expected role.
-func (e *produceMessageOfType) buildReportUnexpectedRole(rep *assert.Report) {
+func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *assert.Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.best.Origin == nil {
