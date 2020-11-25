@@ -9,16 +9,13 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	"github.com/dogmatiq/testkit/engine/controller"
-	. "github.com/dogmatiq/testkit/engine/controller/process"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	. "github.com/dogmatiq/testkit/engine/internal/process"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
-
-var _ controller.Controller = &Controller{}
 
 var _ = Describe("type Controller", func() {
 	var (

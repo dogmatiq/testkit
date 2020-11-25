@@ -8,9 +8,9 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	. "github.com/dogmatiq/testkit/engine/controller/integration"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
+	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
@@ -119,7 +119,7 @@ var _ = Describe("type scope", func() {
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/controller/integration/scope_test.go"),
+								"File": HaveSuffix("/engine/internal/integration/scope_test.go"),
 								"Line": Not(BeZero()),
 							},
 						),
@@ -159,7 +159,7 @@ var _ = Describe("type scope", func() {
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/controller/integration/scope_test.go"),
+								"File": HaveSuffix("/engine/internal/integration/scope_test.go"),
 								"Line": Not(BeZero()),
 							},
 						),

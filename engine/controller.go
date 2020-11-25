@@ -1,4 +1,4 @@
-package controller
+package engine
 
 import (
 	"context"
@@ -9,8 +9,9 @@ import (
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
-// Controller orchestrates the handling of a message by Dogma message handler.
-type Controller interface {
+// A controller provides Dispatch(), Tick() and Reset() functionality to the
+// engine for a single Dogma message handler.
+type controller interface {
 	// HandlerConfig returns the config of the handler that is managed by this
 	// controller.
 	HandlerConfig() configkit.RichHandler
