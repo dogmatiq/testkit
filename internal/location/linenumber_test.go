@@ -1,4 +1,4 @@
-package panicx_test
+package location_test
 
 // This file contains definitions used within tests that check for specific line
 // numbers. To minimize test disruption edit this file as infrequently as
@@ -9,7 +9,7 @@ package panicx_test
 // imports statements added.
 
 import (
-	"github.com/dogmatiq/dogma"
+	. "github.com/dogmatiq/testkit/internal/location"
 	// import padding
 	// import padding
 	// import padding
@@ -47,4 +47,11 @@ import (
 	// import padding
 )
 
-func doPanic() { panic(dogma.UnexpectedMessage) }
+func doNothing()             {}
+func doPanic()               { panic("<panic>") }
+func ofCallLayer1() Location { return OfCall() }
+func ofCallLayer2() Location { return ofCallLayer1() }
+
+type ofMethodT struct{}
+
+func (ofMethodT) Method() {}

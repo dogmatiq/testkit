@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/engine/panicx"
+	"github.com/dogmatiq/testkit/internal/location"
 )
 
 // scope is an implementation of dogma.ProcessEventScope and
@@ -63,7 +64,7 @@ func (s *scope) End() {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    "ended a process instance that has not begun",
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -88,7 +89,7 @@ func (s *scope) Root() dogma.ProcessRoot {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    "accessed the root of a process instance that has not begun",
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -104,7 +105,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 			Implementation: s.config.Handler(),
 			Message:        s.env.Message,
 			Description:    fmt.Sprintf("executed a command of type %T, which is not produced by this handler", m),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -116,7 +117,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    fmt.Sprintf("executed an invalid %T command: %s", m, err),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -128,7 +129,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    fmt.Sprintf("executed a command of type %T on a process instance that has not begun", m),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -167,7 +168,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 			Implementation: s.config.Handler(),
 			Message:        s.env.Message,
 			Description:    fmt.Sprintf("scheduled a timeout of type %T, which is not produced by this handler", m),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -179,7 +180,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    fmt.Sprintf("scheduled an invalid %T timeout: %s", m, err),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -191,7 +192,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
 			Description:    fmt.Sprintf("scheduled a timeout of type %T on a process instance that has not begun", m),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 

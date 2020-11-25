@@ -5,6 +5,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/internal/location"
 )
 
 // UnexpectedBehavior is a panic value that occurs when a handler exhibits some
@@ -33,7 +34,7 @@ type UnexpectedBehavior struct {
 
 	// Location is the engine's best attempt at pinpointing the location of the
 	// unexpected behavior.
-	Location Location
+	Location location.Location
 }
 
 func (x UnexpectedBehavior) String() string {

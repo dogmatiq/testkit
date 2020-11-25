@@ -1,7 +1,7 @@
-package panicx_test
+package location_test
 
 import (
-	. "github.com/dogmatiq/testkit/engine/panicx"
+	. "github.com/dogmatiq/testkit/internal/location"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -9,14 +9,14 @@ import (
 )
 
 var _ = Describe("type Location", func() {
-	Describe("func LocationOfFunc()", func() {
+	Describe("func OfFunc()", func() {
 		It("returns the expected location", func() {
-			loc := LocationOfFunc(doNothing)
+			loc := OfFunc(doNothing)
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.doNothing"),
-					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.doNothing"),
+					"File": HaveSuffix("/internal/location/linenumber_test.go"),
 					"Line": Equal(50),
 				},
 			))
@@ -24,19 +24,19 @@ var _ = Describe("type Location", func() {
 
 		It("panics if the value is not a function", func() {
 			Expect(func() {
-				LocationOfFunc("<not a function>")
+				OfFunc("<not a function>")
 			}).To(PanicWith("fn must be a function"))
 		})
 	})
 
-	Describe("func LocationOfMethod()", func() {
+	Describe("func OfMethod()", func() {
 		It("returns the expected location", func() {
-			loc := LocationOfMethod(locationOfMethodT{}, "Method")
+			loc := OfMethod(ofMethodT{}, "Method")
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.locationOfMethodT.Method"),
-					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.ofMethodT.Method"),
+					"File": HaveSuffix("/internal/location/linenumber_test.go"),
 					"Line": Equal(57),
 				},
 			))
@@ -44,22 +44,41 @@ var _ = Describe("type Location", func() {
 
 		It("panics if the methods does not exist", func() {
 			Expect(func() {
-				LocationOfMethod(locationOfMethodT{}, "DoesNotExist")
+				OfMethod(ofMethodT{}, "DoesNotExist")
 			}).To(PanicWith("method does not exist"))
 		})
 	})
 
-	Describe("func LocationOfCall()", func() {
+	Describe("func OfCall()", func() {
 		It("returns the expected location", func() {
-			loc := locationOfCallLayer2()
+			loc := ofCallLayer2()
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.locationOfCallLayer2"),
-					"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.ofCallLayer2"),
+					"File": HaveSuffix("/internal/location/linenumber_test.go"),
 					"Line": Equal(53),
 				},
 			))
+		})
+	})
+
+	Describe("func OfPanic()", func() {
+		It("returns the expected location", func() {
+			defer func() {
+				recover()
+				loc := OfPanic()
+
+				Expect(loc).To(MatchAllFields(
+					Fields{
+						"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.doPanic"),
+						"File": HaveSuffix("/internal/location/linenumber_test.go"),
+						"Line": Equal(51),
+					},
+				))
+			}()
+
+			doPanic()
 		})
 	})
 

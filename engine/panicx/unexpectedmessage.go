@@ -5,6 +5,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/internal/location"
 )
 
 // UnexpectedMessage is a panic value that provides more context when a handler
@@ -28,7 +29,7 @@ type UnexpectedMessage struct {
 	Message dogma.Message
 
 	// PanicLocation is the location of the function that panicked, if known.
-	PanicLocation Location
+	PanicLocation location.Location
 }
 
 func (x UnexpectedMessage) String() string {
@@ -66,7 +67,7 @@ func EnrichUnexpectedMessage(
 				Method:         method,
 				Implementation: impl,
 				Message:        m,
-				PanicLocation:  LocationOfPanic(),
+				PanicLocation:  location.OfPanic(),
 			}
 		}
 

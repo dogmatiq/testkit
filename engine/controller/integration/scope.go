@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/engine/panicx"
+	"github.com/dogmatiq/testkit/internal/location"
 )
 
 // scope is an implementation of dogma.IntegrationCommandScope.
@@ -30,7 +31,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 			Implementation: s.config.Handler(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an event of type %T, which is not produced by this handler", m),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
@@ -42,7 +43,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 			Implementation: s.config.Handler(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an invalid %T event: %s", m, err),
-			Location:       panicx.LocationOfCall(),
+			Location:       location.OfCall(),
 		})
 	}
 
