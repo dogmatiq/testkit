@@ -39,6 +39,10 @@ migrate tests from prior versions.
 - **[BC]** Rename `WithStartTime()` to `StartTimeAt()`
 - **[BC]** Rename `WithOperationOptions()` to `WithUnsafeOperationOptions()`
 - **[BC]** Move `controller.ConvertUnexpectedMessagePanic()` to `panicx.EnrichUnexpectedMessage()`
+- **[BC]** Move `assert.AllOf()`, `AnyOf()` and `NoneOf()` to the `testkit` package
+- **[BC]** Move `assert.Should()`, to `testkit.ToSatisfy()`
+- **[BC]** Move `assert.CommandTypeExecuted()`, to `testkit.ToExecuteCommandOfType()`
+- **[BC]** Move `assert.EventTypeExecuted()`, to `testkit.ToRecordEventOfType()`
 
 ### Removed
 
