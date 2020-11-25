@@ -58,6 +58,10 @@ func (a dispatchAction) Apply(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
 	r, ok := s.App.MessageTypes().RoleOf(mt)
 
+	// TODO: These checks should result in information being added to the
+	// report, not just returning an error.
+	//
+	// See https://github.com/dogmatiq/testkit/issues/162
 	if !ok {
 		return inflect.Errorf(
 			a.r,
