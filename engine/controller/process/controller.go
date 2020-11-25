@@ -12,6 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/engine/panicx"
+	"github.com/dogmatiq/testkit/internal/location"
 )
 
 // Controller is an implementation of engine.Controller for
@@ -114,7 +115,7 @@ func (c *Controller) Handle(
 				Implementation: c.Config.Handler(),
 				Message:        env.Message,
 				Description:    "returned a nil ProcessRoot",
-				Location:       panicx.LocationOfMethod(c.Config.Handler(), "New"),
+				Location:       location.OfMethod(c.Config.Handler(), "New"),
 			})
 		}
 	}
@@ -203,7 +204,7 @@ func (c *Controller) routeEvent(
 				Implementation: handler,
 				Message:        env.Message,
 				Description:    fmt.Sprintf("routed an event of type %T to an empty instance ID", env.Message),
-				Location:       panicx.LocationOfMethod(c.Config.Handler(), "RouteEventToInstance"),
+				Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
 			})
 		}
 

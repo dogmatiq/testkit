@@ -96,7 +96,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 				"<method>",
 				config.Handler(),
 				MessageA1,
-				panicWithUnexpectedMessage,
+				doPanic,
 			)
 		}).To(PanicWith(
 			MatchAllFields(
@@ -108,9 +108,9 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 					"Message":        Equal(MessageA1),
 					"PanicLocation": MatchAllFields(
 						Fields{
-							"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.panicWithUnexpectedMessage"),
+							"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.doPanic"),
 							"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
-							"Line": Equal(51),
+							"Line": Equal(50),
 						},
 					),
 				},

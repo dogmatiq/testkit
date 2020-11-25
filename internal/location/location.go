@@ -1,4 +1,4 @@
-package panicx
+package location
 
 import (
 	"fmt"
@@ -8,10 +8,21 @@ import (
 	"strings"
 )
 
-// Location describes a location within the codebase.
+// Location describes a location within a code base.
+//
+// Any of the fields may be zero-valued, indicating that piece of information is
+// unknown.
 type Location struct {
+	// Func is the fully-qualified name of the function.
+	//
+	// The format of this string is not defined by this package and is subject
+	// to change.
 	Func string
+
+	// File is the name of the Go source file.
 	File string
+
+	// Line is the line number within the file, starting at 1.
 	Line int
 }
 
@@ -20,7 +31,7 @@ func (l Location) String() string {
 		return fmt.Sprintf(
 			"%s() %s:%d",
 			l.Func,
-			l.File, //path.Base(l.File),
+			path.Base(l.File),
 			l.Line,
 		)
 	}
@@ -40,12 +51,12 @@ func (l Location) String() string {
 	return "<unknown>"
 }
 
-// LocationOfFunc returns the location of the definition of fn.
-func LocationOfFunc(fn interface{}) Location {
-	return locationOfFunc(reflect.ValueOf(fn))
+// OfFunc returns the location of the definition of fn.
+func OfFunc(fn interface{}) Location {
+	return ofFunc(reflect.ValueOf(fn))
 }
 
-func locationOfFunc(rv reflect.Value) Location {
+func ofFunc(rv reflect.Value) Location {
 	if rv.Kind() != reflect.Func {
 		panic("fn must be a function")
 	}
@@ -63,8 +74,8 @@ func locationOfFunc(rv reflect.Value) Location {
 	return loc
 }
 
-// LocationOfMethod returns the location of the definition of fn.
-func LocationOfMethod(recv interface{}, m string) Location {
+// OfMethod returns the location of the definition of fn.
+func OfMethod(recv interface{}, m string) Location {
 	rt := reflect.TypeOf(recv)
 
 	rm, ok := rt.MethodByName(m)
@@ -72,11 +83,11 @@ func LocationOfMethod(recv interface{}, m string) Location {
 		panic("method does not exist")
 	}
 
-	return locationOfFunc(rm.Func)
+	return ofFunc(rm.Func)
 }
 
-// LocationOfCall returns the location where its caller was called itself.
-func LocationOfCall() Location {
+// OfCall returns the location where its caller was called itself.
+func OfCall() Location {
 	var loc Location
 
 	eachFrame(
@@ -94,12 +105,12 @@ func LocationOfCall() Location {
 	return loc
 }
 
-// LocationOfPanic returns the location of the call to panic() that caused the
+// OfPanic returns the location of the call to panic() that caused the
 // stack to start unwinding.
 //
 // It must be called within a deferred function and only if recover() returned a
 // non-nil value. Otherwise the behavior of the function is undefined.
-func LocationOfPanic() Location {
+func OfPanic() Location {
 	// During a panic() the runtime *adds* frames for each deferred function, so
 	// the function that caused the panic is still on the stack, even though it
 	// is unwinding.
