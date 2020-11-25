@@ -129,14 +129,23 @@ func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
 
 	p := e.Predicate(o)
 
-	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
-	if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
-		t.testingT.Fatal(err)
-	}
+	func() {
+		// Using a defer inside a closure satisfies the requirements of the
+		// Expectation and Predicate interfaces which state that p.Done() must
+		// be called exactly once, and that it must be called before calling
+		// p.Report().
+		defer p.Done()
 
-	rep := p.Done(p.Ok())
+		logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
+		if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
+			t.testingT.Fatal(err)
+		}
+	}()
 
 	if !t.testingT.Failed() {
+		treeOk := p.Ok()
+		rep := p.Report(treeOk)
+
 		buf := &strings.Builder{}
 		fmt.Fprint(
 			buf,
@@ -146,7 +155,7 @@ func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
 
 		t.testingT.Log(buf.String())
 
-		if !rep.TreeOk {
+		if !treeOk {
 			t.testingT.FailNow()
 		}
 	}

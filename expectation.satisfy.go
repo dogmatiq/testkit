@@ -10,68 +10,78 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 )
 
-// ToSatisfy returns an expectation that calls a function to check for specific
+// ToSatisfy returns an expectation that calls a function to check for arbitrary
 // criteria.
 //
-// d is a human-readable description of the expectation. It should be phrased as
-// an imperative statement, such as "debit the customer".
+// desc is a human-readable description of the expectation. It should be phrased
+// as an imperative statement, such as "debit the customer".
 //
-// x is a function that performs the expectation logic. It is passed a
+// pred is a function that performs the expectation logic. It is passed a
 // *SatisfyT, which is analogous to Go's *testing.T, and provides an almost
 // identical interface.
 func ToSatisfy(
-	d string,
-	x func(*SatisfyT),
+	desc string,
+	pred func(*SatisfyT),
 ) Expectation {
-	if x == nil {
-		panic(fmt.Sprintf("ToSatisfy(%#v, <nil>): function must not be nil", d))
+	if pred == nil {
+		panic(fmt.Sprintf("ToSatisfy(%#v, <nil>): function must not be nil", desc))
 	}
 
-	if d == "" {
-		panic(fmt.Sprintf("ToSatisfy(%#v, <func>): description must not be empty", d))
+	if desc == "" {
+		panic(fmt.Sprintf("ToSatisfy(%#v, <func>): description must not be empty", desc))
 	}
 
 	return &satisfyExpectation{
-		c: d,
-		t: SatisfyT{name: d},
-		x: x,
+		criteria: desc,
+		pred:     pred,
 	}
 }
 
-// satisfyExpectation is an expectation that calls a function to check for
-// specific criteria.
+// satisfyExpectation is an Expectation that calls a user-supplied function to
+// check for arbitrary criteria.
 type satisfyExpectation struct {
-	c string
-	t SatisfyT
-	x func(*SatisfyT)
+	criteria string
+	pred     func(*SatisfyT)
 }
 
-// Banner returns a human-readable banner to display in the logs when this
-// expectation is used.
-//
-// The banner text should be in uppercase, and complete the sentence "The
-// application is expected ...". For example, "TO DO A THING".
+func (e *satisfyExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
+func (e *satisfyExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
+func (e *satisfyExpectation) End()                        { panic("TODO: remove") }
+func (e *satisfyExpectation) Ok() bool                    { panic("TODO: remove") }
+func (e *satisfyExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
+
 func (e *satisfyExpectation) Banner() string {
-	return "TO " + strings.ToUpper(e.c)
+	return "TO " + strings.ToUpper(e.criteria)
 }
 
-// Notify the observer of a fact.
-func (e *satisfyExpectation) Notify(f fact.Fact) {
-	e.t.Facts = append(e.t.Facts, f)
+func (e satisfyExpectation) Predicate(o PredicateOptions) Predicate {
+	return &satisfyPredicate{
+		criteria: e.criteria,
+		pred:     e.pred,
+		satisfyT: SatisfyT{
+			Options: o,
+			name:    e.criteria,
+		},
+	}
 }
 
-// Begin is called to prepare the expectation for a new test.
-func (e *satisfyExpectation) Begin(o ExpectOptionSet) {
-	e.t.Options = o
+// compositePredicate is the Predicate implementation for satisfyExpectation.
+type satisfyPredicate struct {
+	criteria string
+	pred     func(*SatisfyT)
+	satisfyT SatisfyT
 }
 
-// End is called once the test is complete.
-func (e *satisfyExpectation) End() {
+func (p *satisfyPredicate) Notify(f fact.Fact) {
+	p.satisfyT.Facts = append(p.satisfyT.Facts, f)
+}
+
+func (p *satisfyPredicate) Ok() bool {
+	return p.satisfyT.skipped || !p.satisfyT.failed
+}
+
+func (p *satisfyPredicate) Done() {
 	defer func() {
-		for i := len(e.t.cleanup) - 1; i >= 0; i-- {
-			e.t.cleanup[i]()
-		}
-
 		switch r := recover().(type) {
 		case abortSentinel:
 			return // keep to see coverage
@@ -82,39 +92,31 @@ func (e *satisfyExpectation) End() {
 		}
 	}()
 
-	e.t.caller = callerName(0)
-	e.x(&e.t)
+	defer p.satisfyT.close()
+
+	p.satisfyT.caller = callerName(0)
+	p.pred(&p.satisfyT)
 }
 
-// Ok returns true if the expectation passed.
-func (e *satisfyExpectation) Ok() bool {
-	return e.t.skipped || !e.t.failed
-}
-
-// BuildReport generates a report about the expectation.
-//
-// ok is true if the expectation is considered to have passed. This may not be
-// the same value as returned from Ok() when this expectation is used as a child
-// of a composite expectation.
-func (e *satisfyExpectation) BuildReport(ok bool) *Report {
+func (p *satisfyPredicate) Report(treeOk bool) *Report {
 	rep := &Report{
-		TreeOk:   ok,
-		Ok:       e.Ok(),
-		Criteria: e.c,
+		TreeOk:   treeOk,
+		Ok:       p.Ok(),
+		Criteria: p.criteria,
 	}
 
-	if e.t.skipped {
+	if p.satisfyT.skipped {
 		rep.Outcome = "the expectation was skipped"
-	} else if e.t.failed {
+	} else if p.satisfyT.failed {
 		rep.Outcome = "the expectation failed"
 	}
 
-	rep.Explanation = e.t.explanation
+	rep.Explanation = p.satisfyT.explanation
 
-	if len(e.t.messages) != 0 {
+	if len(p.satisfyT.messages) != 0 {
 		s := rep.Section(logSection)
 
-		for _, m := range e.t.messages {
+		for _, m := range p.satisfyT.messages {
 			s.Content.WriteString(m)
 			s.Content.WriteByte('\n')
 		}
@@ -356,6 +358,13 @@ func (t *SatisfyT) explain(fn string) {
 		t.explanation = fmt.Sprintf("%s() called at %s:%d", fn, file, line)
 	} else {
 		t.explanation = fmt.Sprintf("%s() called indirectly by call at %s:%d", fn, file, line)
+	}
+}
+
+// close calls any functions registered via Cleanup().
+func (t *SatisfyT) close() {
+	for i := len(t.cleanup) - 1; i >= 0; i-- {
+		t.cleanup[i]()
 	}
 }
 

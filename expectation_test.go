@@ -26,12 +26,13 @@ func (a staticExpectation) Banner() string {
 }
 
 func (a staticExpectation) Predicate(PredicateOptions) Predicate { return a }
-func (a staticExpectation) Begin(ExpectOptionSet)                {}
-func (a staticExpectation) End()                                 {}
+func (a staticExpectation) Begin(ExpectOptionSet)                { panic("TODO: remove") }
+func (a staticExpectation) End()                                 { panic("TODO: remove") }
 func (a staticExpectation) Ok() bool                             { return bool(a) }
+func (a staticExpectation) Done()                                {}
 func (a staticExpectation) Notify(fact.Fact)                     {}
-func (a staticExpectation) BuildReport(treeOk bool) *Report      { return a.Done(treeOk) }
-func (a staticExpectation) Done(treeOk bool) *Report {
+func (a staticExpectation) BuildReport(treeOk bool) *Report      { panic("TODO: remove") }
+func (a staticExpectation) Report(treeOk bool) *Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"

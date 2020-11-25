@@ -38,6 +38,9 @@ type predicateBasedExpectation interface {
 
 	// Predicate returns a new predicate that checks that this expectation is
 	// satisfied.
+	//
+	// The predicate must be closed by calling Done() once the action it tests
+	// is completed.
 	Predicate(o PredicateOptions) Predicate
 }
 
@@ -45,18 +48,28 @@ type predicateBasedExpectation interface {
 type Predicate interface {
 	fact.Observer
 
-	// Ok returns true if the expectation tested by this predicate has been
-	// met. The return value may change as the predicate is notified of
-	// additional facts.
+	// Ok returns true if the expectation tested by this predicate has been met.
+	//
+	// The return value may change as the predicate is notified of additional
+	// facts. It must return a consistent value once Done() has been called.
 	Ok() bool
 
-	// Done finalizes the predicate and returns a report describing whether or
-	// not the expectation was met.
+	// Done finalizes the predicate.
+	//
+	// The behavior of the predicate is undefined if it is notified of any
+	// additional facts after Done() has been called, or if Done() is called
+	// more than once.
+	Done()
+
+	// Report returns a report describing whether or not the expectation
+	// was met.
 	//
 	// treeOk is true if the entire "tree" of expectations is considered to have
 	// passed. This may not be the same value as returned from Ok() when this
 	// expectation is used as a child of a composite expectation.
-	Done(treeOk bool) *Report
+	//
+	// The behavior of Report() is undefined if Done() has not been called.
+	Report(treeOk bool) *Report
 }
 
 // ExpectOptionSet TODO REMOVE

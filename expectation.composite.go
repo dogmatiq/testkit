@@ -98,8 +98,10 @@ func NoneOf(children ...Expectation) Expectation {
 	}
 }
 
-// compositeExpectation is an expectation that runs several child expectations.
-// Its final result is determined by a predicate function.
+// compositeExpectation is an Expectation that contains other expectations.
+//
+// It uses a predicate function to determine whether the composite expectation
+// is met based on how many of the "child" expectations are met.
 type compositeExpectation struct {
 	banner   string
 	criteria string
@@ -107,20 +109,15 @@ type compositeExpectation struct {
 	pred     func(passed int) (outcome string, ok bool)
 }
 
-// Banner returns a human-readable banner to display in the logs when this
-// expectation is used.
-//
-// The banner text should be in uppercase, and complete the sentence "The
-// application is expected ...". For example, "TO DO A THING".
-func (e *compositeExpectation) Banner() string {
-	return e.banner
-}
-
 func (e *compositeExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
 func (e *compositeExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
 func (e *compositeExpectation) End()                        { panic("TODO: remove") }
 func (e *compositeExpectation) Ok() bool                    { panic("TODO: remove") }
 func (e *compositeExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
+
+func (e *compositeExpectation) Banner() string {
+	return e.banner
+}
 
 func (e *compositeExpectation) Predicate(o PredicateOptions) Predicate {
 	var children []Predicate
@@ -138,6 +135,7 @@ func (e *compositeExpectation) Predicate(o PredicateOptions) Predicate {
 	}
 }
 
+// compositePredicate is the Predicate implementation for compositeExpectation.
 type compositePredicate struct {
 	criteria string
 	children []Predicate
@@ -155,7 +153,13 @@ func (p *compositePredicate) Ok() bool {
 	return ok
 }
 
-func (p *compositePredicate) Done(treeOk bool) *Report {
+func (p *compositePredicate) Done() {
+	for _, c := range p.children {
+		c.Done()
+	}
+}
+
+func (p *compositePredicate) Report(treeOk bool) *Report {
 	m, ok := p.ok()
 
 	rep := &Report{
@@ -167,7 +171,7 @@ func (p *compositePredicate) Done(treeOk bool) *Report {
 
 	for _, c := range p.children {
 		rep.Append(
-			c.Done(treeOk),
+			c.Report(treeOk),
 		)
 	}
 
