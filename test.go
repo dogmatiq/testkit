@@ -76,8 +76,8 @@ func BeginContext(
 	return test
 }
 
-// Prepare performs a group of actions without making any assertions in order
-// to place the application into a particular state.
+// Prepare performs a group of actions without making any expectations. It is
+// used to place the application into a particular state.
 func (t *Test) Prepare(actions ...Action) *Test {
 	t.t.Helper()
 

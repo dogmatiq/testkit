@@ -238,7 +238,7 @@ func (t *SatisfyT) Helper() {
 }
 
 // Log formats its arguments using default formatting, analogous to Println(),
-// and records the text in the assertion report.
+// and records the text in the test report.
 func (t *SatisfyT) Log(args ...interface{}) {
 	t.m.Lock()
 	defer t.m.Unlock()
@@ -247,7 +247,7 @@ func (t *SatisfyT) Log(args ...interface{}) {
 }
 
 // Logf formats its arguments according to the format, analogous to Printf(),
-// and records the text in the assertion report.
+// and records the text in the test report.
 func (t *SatisfyT) Logf(format string, args ...interface{}) {
 	t.m.Lock()
 	defer t.m.Unlock()
