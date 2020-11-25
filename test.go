@@ -16,7 +16,7 @@ import (
 // Test contains the state of a single test.
 type Test struct {
 	ctx              context.Context
-	t                TestingT
+	testingT         TestingT
 	app              configkit.RichApplication
 	virtualClock     time.Time
 	engine           *engine.Engine
@@ -50,7 +50,7 @@ func BeginContext(
 
 	test := &Test{
 		ctx:          ctx,
-		t:            t,
+		testingT:     t,
 		app:          cfg,
 		virtualClock: time.Now(),
 		engine: engine.MustNew(
@@ -78,12 +78,12 @@ func BeginContext(
 // Prepare performs a group of actions without making any expectations. It is
 // used to place the application into a particular state.
 func (t *Test) Prepare(actions ...Action) *Test {
-	t.t.Helper()
+	t.testingT.Helper()
 
 	for _, act := range actions {
-		logf(t.t, "--- %s ---", act.Banner())
+		logf(t.testingT, "--- %s ---", act.Banner())
 		if err := t.applyAction(act); err != nil {
-			t.t.Fatal(err)
+			t.testingT.Fatal(err)
 		}
 	}
 
@@ -92,7 +92,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 
 // Expect ensures that a single action results in some expected behavior.
 func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
-	t.t.Helper()
+	t.testingT.Helper()
 
 	o := ExpectOptionSet{}
 
@@ -111,13 +111,13 @@ func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 		// always called, but that it is called before t.buildReport().
 		defer e.End()
 
-		logf(t.t, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
+		logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
 		if err := t.applyAction(act, engine.WithObserver(e)); err != nil {
-			t.t.Fatal(err)
+			t.testingT.Fatal(err)
 		}
 	}()
 
-	if !t.t.Failed() {
+	if !t.testingT.Failed() {
 		t.buildReport(e)
 	}
 }
@@ -163,7 +163,7 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 }
 
 func (t *Test) buildReport(e Expectation) {
-	t.t.Helper()
+	t.testingT.Helper()
 
 	buf := &strings.Builder{}
 	fmt.Fprint(
@@ -174,10 +174,10 @@ func (t *Test) buildReport(e Expectation) {
 	rep := e.BuildReport(e.Ok())
 	must.WriteTo(buf, rep)
 
-	t.t.Log(buf.String())
+	t.testingT.Log(buf.String())
 
 	if !rep.TreeOk {
-		t.t.FailNow()
+		t.testingT.FailNow()
 	}
 }
 
@@ -192,8 +192,8 @@ func (t *Test) applyAction(act Action, options ...engine.OperationOption) error 
 	return act.Apply(
 		t.ctx,
 		ActionScope{
+			TestingT:         t.testingT,
 			App:              t.app,
-			TestingT:         t.t,
 			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,
 			Executor:         &t.executor,
