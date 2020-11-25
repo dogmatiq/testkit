@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // OperationOption applies optional settings while dispatching a message or

@@ -12,7 +12,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/envelope"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

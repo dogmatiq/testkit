@@ -2,7 +2,7 @@ package testkit_test
 
 import (
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 const (

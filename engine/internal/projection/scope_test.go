@@ -8,8 +8,8 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/engine/envelope"
-	"github.com/dogmatiq/testkit/engine/fact"
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
+	"github.com/dogmatiq/testkit/fact"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

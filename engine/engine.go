@@ -9,7 +9,7 @@ import (
 	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/envelope"
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 	"go.uber.org/multierr"
 )
 

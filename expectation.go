@@ -1,7 +1,7 @@
 package testkit
 
 import (
-	"github.com/dogmatiq/testkit/engine/fact"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // An Expectation is a predicate for determining whether some specific criteria
