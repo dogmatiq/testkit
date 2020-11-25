@@ -5,7 +5,6 @@ import (
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -114,8 +113,8 @@ func (e *messageExpectation) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *messageExpectation) BuildReport(ok bool) *assert.Report {
-	rep := &assert.Report{
+func (e *messageExpectation) BuildReport(ok bool) *Report {
+	rep := &Report{
 		TreeOk: ok,
 		Ok:     e.ok,
 		Criteria: inflect.Sprintf(
@@ -194,7 +193,7 @@ func (e *messageExpectation) updateBestMatch(env *envelope.Envelope) {
 
 // buildReportExpectedRole builds a test report when there is a "best-match"
 // message available and it is of the expected role.
-func (e *messageExpectation) buildReportExpectedRole(rep *assert.Report) {
+func (e *messageExpectation) buildReportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.sim == compare.SameTypes {
@@ -238,7 +237,7 @@ func (e *messageExpectation) buildReportExpectedRole(rep *assert.Report) {
 }
 
 // buildDiff adds a "message diff" section to the result.
-func (e *messageExpectation) buildDiff(rep *assert.Report) {
+func (e *messageExpectation) buildDiff(rep *Report) {
 	report.WriteDiff(
 		&rep.Section("Message Diff").Content,
 		report.RenderMessage(e.expected),
@@ -248,7 +247,7 @@ func (e *messageExpectation) buildDiff(rep *assert.Report) {
 
 // buildReportExpectedRole builds a test report when there is a "best-match"
 // message available but it is of an unexpected role.
-func (e *messageExpectation) buildReportUnexpectedRole(rep *assert.Report) {
+func (e *messageExpectation) buildReportUnexpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.best.Origin == nil {

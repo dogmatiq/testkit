@@ -3,7 +3,6 @@ package testkit
 import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/assert"
 	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
@@ -102,8 +101,8 @@ func (e *messageTypeExpectation) Ok() bool {
 // ok is true if the expectation is considered to have passed. This may not be
 // the same value as returned from Ok() when this expectation is used as a child
 // of a composite expectation.
-func (e *messageTypeExpectation) BuildReport(ok bool) *assert.Report {
-	rep := &assert.Report{
+func (e *messageTypeExpectation) BuildReport(ok bool) *Report {
+	rep := &Report{
 		TreeOk: ok,
 		Ok:     e.ok,
 		Criteria: inflect.Sprintf(
@@ -169,7 +168,7 @@ func (e *messageTypeExpectation) messageProduced(env *envelope.Envelope) {
 }
 
 // buildDiff adds a "message type diff" section to the result.
-func (e *messageTypeExpectation) buildDiff(rep *assert.Report) {
+func (e *messageTypeExpectation) buildDiff(rep *Report) {
 	report.WriteDiff(
 		&rep.Section("Message Type Diff").Content,
 		e.expected.String(),
@@ -179,7 +178,7 @@ func (e *messageTypeExpectation) buildDiff(rep *assert.Report) {
 
 // buildReportExpectedRole builds a test report when there is a "best-match"
 // message available and it is of the expected role.
-func (e *messageTypeExpectation) buildReportExpectedRole(rep *assert.Report) {
+func (e *messageTypeExpectation) buildReportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.best.Origin == nil {
@@ -205,7 +204,7 @@ func (e *messageTypeExpectation) buildReportExpectedRole(rep *assert.Report) {
 
 // buildReportUnexpectedRole builds a test report when there is a "best-match"
 // message available but it does not have the expected role.
-func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *assert.Report) {
+func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if e.best.Origin == nil {
