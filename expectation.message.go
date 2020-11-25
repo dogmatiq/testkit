@@ -5,10 +5,10 @@ import (
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/internal/typecmp"
 	"github.com/dogmatiq/testkit/report"
 )
 
@@ -47,9 +47,6 @@ type messageExpectation struct {
 	// It must be either CommandRole or EventRole.
 	role message.Role
 
-	// cmp is the comparator used to compare messages for equality.
-	cmp compare.Comparator
-
 	// ok is true once the expectation is deemed to have passed, after which no
 	// further updates are performed.
 	ok bool
@@ -59,9 +56,9 @@ type messageExpectation struct {
 	// the expected role.
 	best *envelope.Envelope
 
-	// sim is a ranking of the similarity between the type of the expected
-	// message, and the current best-match.
-	sim compare.TypeSimilarity
+	// dist is a distance between the type of the expected message, and the
+	// current best-match.
+	dist typecmp.Distance
 
 	// equal is true if the best-match message compared as equal to the expected
 	// message. This can occur, and the expectation still fail, if the
@@ -91,7 +88,7 @@ func (e *messageExpectation) Begin(o ExpectOptionSet) {
 	*e = messageExpectation{
 		expected: e.expected,
 		role:     e.role,
-		cmp:      o.MessageComparator,
+		dist:     typecmp.Unrelated,
 		tracker: tracker{
 			role:               e.role,
 			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
@@ -164,13 +161,13 @@ func (e *messageExpectation) Notify(f fact.Fact) {
 // messageProduced updates the expectation's state to reflect the fact that a
 // message has been produced.
 func (e *messageExpectation) messageProduced(env *envelope.Envelope) {
-	if !e.cmp.MessageIsEqual(env.Message, e.expected) {
+	if !reflect.DeepEqual(env.Message, e.expected) {
 		e.updateBestMatch(env)
 		return
 	}
 
 	e.best = env
-	e.sim = compare.SameTypes
+	e.dist = typecmp.Identical
 	e.equal = true
 
 	if e.role == env.Role {
@@ -180,14 +177,14 @@ func (e *messageExpectation) messageProduced(env *envelope.Envelope) {
 
 // updateBestMatch replaces e.best with env if it is a better match.
 func (e *messageExpectation) updateBestMatch(env *envelope.Envelope) {
-	sim := compare.FuzzyTypeComparison(
+	dist := typecmp.MeasureDistance(
 		reflect.TypeOf(e.expected),
 		reflect.TypeOf(env.Message),
 	)
 
-	if sim > e.sim {
+	if dist < e.dist {
 		e.best = env
-		e.sim = sim
+		e.dist = dist
 	}
 }
 
@@ -196,7 +193,7 @@ func (e *messageExpectation) updateBestMatch(env *envelope.Envelope) {
 func (e *messageExpectation) buildReportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	if e.sim == compare.SameTypes {
+	if e.dist == typecmp.Identical {
 		if e.best.Origin == nil {
 			rep.Explanation = inflect.Sprint(
 				e.role,
@@ -290,7 +287,7 @@ func (e *messageExpectation) buildReportUnexpectedRole(rep *Report) {
 		return // skip diff rendering
 	}
 
-	if e.sim == compare.SameTypes {
+	if e.dist == typecmp.Identical {
 		if e.best.Origin == nil {
 			rep.Explanation = inflect.Sprint(
 				e.best.Role,

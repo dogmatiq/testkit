@@ -3,10 +3,10 @@ package testkit
 import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/envelope"
 	"github.com/dogmatiq/testkit/engine/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/internal/typecmp"
 	"github.com/dogmatiq/testkit/report"
 )
 
@@ -54,9 +54,9 @@ type messageTypeExpectation struct {
 	// Note that this message may not have the expected role.
 	best *envelope.Envelope
 
-	// sim is a ranking of the similarity between the type of the expected
-	// message, and the current best-match.
-	sim compare.TypeSimilarity
+	// dist is a distance between the expected message type, and the current
+	// best-match.
+	dist typecmp.Distance
 
 	// tracker observes the handlers and messages that are involved in the test.
 	tracker tracker
@@ -80,6 +80,7 @@ func (e *messageTypeExpectation) Begin(o ExpectOptionSet) {
 	*e = messageTypeExpectation{
 		expected: e.expected,
 		role:     e.role,
+		dist:     typecmp.Unrelated,
 		tracker: tracker{
 			role:               e.role,
 			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
@@ -152,17 +153,17 @@ func (e *messageTypeExpectation) Notify(f fact.Fact) {
 // messageProduced updates the expectation's state to reflect the fact that a
 // message has been produced.
 func (e *messageTypeExpectation) messageProduced(env *envelope.Envelope) {
-	sim := compare.FuzzyTypeComparison(
+	dist := typecmp.MeasureDistance(
 		e.expected.ReflectType(),
 		env.Type.ReflectType(),
 	)
 
-	if sim > e.sim {
+	if dist < e.dist {
 		e.best = env
-		e.sim = sim
+		e.dist = dist
 	}
 
-	if sim == compare.SameTypes && e.role == env.Role {
+	if dist == typecmp.Identical && e.role == env.Role {
 		e.ok = true
 	}
 }
@@ -227,7 +228,7 @@ func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *Report) {
 		s.AppendListItem("verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?")
 	}
 
-	if e.sim == compare.SameTypes {
+	if e.dist == typecmp.Identical {
 		if e.best.Origin == nil {
 			rep.Explanation = inflect.Sprint(
 				e.best.Role,
