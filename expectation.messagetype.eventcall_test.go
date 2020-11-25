@@ -109,7 +109,7 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 		},
 		Entry(
 			"event type recorded as expected",
-			executeCommandViaExecutor(MessageR1),
+			recordEventViaRecorder(MessageE1),
 			ToRecordEventOfType(MessageE{}),
 			expectPass,
 			expectReport(

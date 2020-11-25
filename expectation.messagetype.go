@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/report"
 )
 
-// ToExecuteCommandOfType returns an expectation that passes a command of the
+// ToExecuteCommandOfType returns an expectation that passes if a command of the
 // same type as m is executed.
 func ToExecuteCommandOfType(m dogma.Message) Expectation {
 	if m == nil {
@@ -178,7 +178,7 @@ func (e *messageTypeExpectation) buildDiff(rep *assert.Report) {
 }
 
 // buildReportExpectedRole builds a test report when there is a "best-match"
-// message available but it is of an unexpected role.
+// message available and it is of the expected role.
 func (e *messageTypeExpectation) buildReportExpectedRole(rep *assert.Report) {
 	s := rep.Section(suggestionsSection)
 
