@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/must"
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
@@ -95,9 +94,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
 	t.t.Helper()
 
-	o := ExpectOptionSet{
-		MessageComparator: compare.DefaultComparator{},
-	}
+	o := ExpectOptionSet{}
 
 	for _, opt := range act.ExpectOptions() {
 		opt(&o)

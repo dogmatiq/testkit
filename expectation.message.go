@@ -47,9 +47,6 @@ type messageExpectation struct {
 	// It must be either CommandRole or EventRole.
 	role message.Role
 
-	// cmp is the comparator used to compare messages for equality.
-	cmp compare.Comparator
-
 	// ok is true once the expectation is deemed to have passed, after which no
 	// further updates are performed.
 	ok bool
@@ -91,7 +88,6 @@ func (e *messageExpectation) Begin(o ExpectOptionSet) {
 	*e = messageExpectation{
 		expected: e.expected,
 		role:     e.role,
-		cmp:      o.MessageComparator,
 		tracker: tracker{
 			role:               e.role,
 			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
@@ -164,7 +160,7 @@ func (e *messageExpectation) Notify(f fact.Fact) {
 // messageProduced updates the expectation's state to reflect the fact that a
 // message has been produced.
 func (e *messageExpectation) messageProduced(env *envelope.Envelope) {
-	if !e.cmp.MessageIsEqual(env.Message, e.expected) {
+	if !reflect.DeepEqual(env.Message, e.expected) {
 		e.updateBestMatch(env)
 		return
 	}

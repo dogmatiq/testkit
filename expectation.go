@@ -1,7 +1,6 @@
 package testkit
 
 import (
-	"github.com/dogmatiq/testkit/compare"
 	"github.com/dogmatiq/testkit/engine/fact"
 )
 
@@ -40,9 +39,6 @@ type ExpectOption func(*ExpectOptionSet)
 // ExpectOptionSet is a set of options that dictate the behavior of the
 // Test.Expect() method.
 type ExpectOptionSet struct {
-	// MessageComparator compares two messages for equality.
-	MessageComparator compare.Comparator
-
 	// MatchMessagesInDispatchCycle controls whether expectations should match
 	// messages from the start of a dispatch cycle.
 	//
