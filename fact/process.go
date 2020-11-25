@@ -3,7 +3,7 @@ package fact
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/envelope"
 )
 
 // ProcessInstanceLoaded indicates that a process message handler has loaded an

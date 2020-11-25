@@ -3,7 +3,7 @@ package fact
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/engine/envelope"
+	"github.com/dogmatiq/testkit/envelope"
 )
 
 // AggregateInstanceLoaded indicates that an aggregate message handler has
