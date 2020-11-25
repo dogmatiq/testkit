@@ -43,6 +43,8 @@ migrate tests from prior versions.
 - **[BC]** Move `assert.Should()`, to `testkit.ToSatisfy()`
 - **[BC]** Move `assert.CommandTypeExecuted()`, to `testkit.ToExecuteCommandOfType()`
 - **[BC]** Move `assert.EventTypeExecuted()`, to `testkit.ToRecordEventOfType()`
+- **[BC]** Move `assert.CommandExecuted()`, to `testkit.ToExecuteCommand()`
+- **[BC]** Move `assert.EventExecuted()`, to `testkit.ToRecordEvent()`
 
 ### Removed
 
