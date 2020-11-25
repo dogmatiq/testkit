@@ -94,6 +94,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
+	if pe, ok := e.(predicateBasedExpectation); ok {
+		t.expectPred(act, pe)
+	}
+
 	o := PredicateOptions{}
 	act.ConfigurePredicate(&o)
 
@@ -112,6 +116,45 @@ func (t *Test) Expect(act Action, e Expectation) {
 
 	if !t.testingT.Failed() {
 		t.buildReport(e)
+	}
+}
+
+// expectPred ensures that a single action results in some expected behavior.
+func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
+	t.testingT.Helper()
+
+	o := PredicateOptions{}
+	act.ConfigurePredicate(&o)
+
+	p := e.Predicate(o)
+
+	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
+	if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
+		t.testingT.Fatal(err)
+	}
+
+	func() {
+		// Wrapping this defer in the closure guarantees not only that it is
+		// always called, but that it is called before t.buildReport().
+		defer e.End()
+
+	}()
+
+	rep := p.Done(p.Ok())
+
+	if !t.testingT.Failed() {
+		buf := &strings.Builder{}
+		fmt.Fprint(
+			buf,
+			"--- TEST REPORT ---\n\n",
+		)
+		must.WriteTo(buf, rep)
+
+		t.testingT.Log(buf.String())
+
+		if !rep.TreeOk {
+			t.testingT.FailNow()
+		}
 	}
 }
 

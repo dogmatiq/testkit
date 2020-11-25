@@ -33,6 +33,33 @@ type Expectation interface {
 	BuildReport(ok bool) *Report
 }
 
+type predicateBasedExpectation interface {
+	Expectation
+
+	// Predicate returns a new predicate that checks that this expectation is
+	// satisfied.
+	Predicate(o PredicateOptions) Predicate
+}
+
+// Predicate tests whether a specific Action satisfies an Expectation.
+type Predicate interface {
+	fact.Observer
+
+	// Ok returns true if the expectation is currently met.
+	//
+	// This may change as the predicate is notified of additional facts.
+	Ok() bool
+
+	// Done indicates that the predicate will not be notified of any more facts.
+	//
+	// It returns a report describing whether or not the expectation was met.
+	//
+	// treeOk is true if the entire "tree" of expectations is considered to have
+	// passed. This may not be the same value as returned from Ok() when this
+	// expectation is used as a child of a composite expectation.
+	Done(treeOk bool) *Report
+}
+
 type ExpectOptionSet = PredicateOptions
 
 // PredicateOptions contains values that dictate how a predicate should behave.
