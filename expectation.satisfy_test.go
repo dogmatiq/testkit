@@ -239,6 +239,18 @@ var _ = Describe("func ToSatisfy()", func() {
 		))
 	})
 
+	It("panics if the description is empty", func() {
+		Expect(func() {
+			ToSatisfy("", func(*SatisfyT) {})
+		}).To(PanicWith(`ToSatisfy("", <func>): description must not be empty`))
+	})
+
+	It("panics if the function is nil", func() {
+		Expect(func() {
+			ToSatisfy("<criteria>", nil)
+		}).To(PanicWith(`ToSatisfy("<criteria>", <nil>): function must not be nil`))
+	})
+
 	Describe("type SatisfyT", func() {
 		run := func(x func(*SatisfyT)) {
 			test.Expect(

@@ -23,6 +23,14 @@ func ToSatisfy(
 	d string,
 	x func(*SatisfyT),
 ) Expectation {
+	if x == nil {
+		panic(fmt.Sprintf("ToSatisfy(%#v, <nil>): function must not be nil", d))
+	}
+
+	if d == "" {
+		panic(fmt.Sprintf("ToSatisfy(%#v, <func>): description must not be empty", d))
+	}
+
 	return &satisfyExpectation{
 		c: d,
 		t: SatisfyT{name: d},

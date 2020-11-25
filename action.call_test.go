@@ -184,6 +184,6 @@ var _ = Describe("func Call()", func() {
 	It("panics if the function is nil", func() {
 		Expect(func() {
 			Call(nil)
-		}).To(PanicWith("Call(): function must not be nil"))
+		}).To(PanicWith("Call(<nil>): function must not be nil"))
 	})
 })

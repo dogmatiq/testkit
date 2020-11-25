@@ -263,9 +263,9 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		),
 	)
 
-	It("panics if the message is nil", func() {
+	It("panics if the message is invalid", func() {
 		Expect(func() {
 			ToExecuteCommand(nil)
-		}).To(PanicWith("ToExecuteCommand(): message must not be nil"))
+		}).To(PanicWith("ToExecuteCommand(<nil>): message must not be nil"))
 	})
 })

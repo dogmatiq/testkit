@@ -1,6 +1,7 @@
 package testkit
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/dogmatiq/configkit/message"
@@ -15,8 +16,8 @@ import (
 // ToExecuteCommand returns an expectation that passes if a command is executed
 // that is equal to m.
 func ToExecuteCommand(m dogma.Message) Expectation {
-	if m == nil {
-		panic("ToExecuteCommand(): message must not be nil")
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf("ToExecuteCommand(%T): %s", m, err))
 	}
 
 	return &messageExpectation{
@@ -28,8 +29,8 @@ func ToExecuteCommand(m dogma.Message) Expectation {
 // ToRecordEvent returns an expectation that passes if an event is recorded that
 // is equal to m.
 func ToRecordEvent(m dogma.Message) Expectation {
-	if m == nil {
-		panic("ToRecordEvent(): message must not be nil")
+	if err := dogma.ValidateMessage(m); err != nil {
+		panic(fmt.Sprintf("ToRecordEvent(%T): %s", m, err))
 	}
 
 	return &messageExpectation{

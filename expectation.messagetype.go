@@ -14,7 +14,7 @@ import (
 // same type as m is executed.
 func ToExecuteCommandOfType(m dogma.Message) Expectation {
 	if m == nil {
-		panic("ToExecuteCommandOfType(): message must not be nil")
+		panic("ToExecuteCommandOfType(<nil>): message must not be nil")
 	}
 
 	return &messageTypeExpectation{
@@ -27,7 +27,7 @@ func ToExecuteCommandOfType(m dogma.Message) Expectation {
 // same type as m is recorded.
 func ToRecordEventOfType(m dogma.Message) Expectation {
 	if m == nil {
-		panic("ToRecordEventOfType(): message must not be nil")
+		panic("ToRecordEventOfType(<nil>): message must not be nil")
 	}
 
 	return &messageTypeExpectation{
