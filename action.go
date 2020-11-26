@@ -29,12 +29,28 @@ type Action interface {
 	Apply(ctx context.Context, s ActionScope) error
 }
 
-// ActionScope encapsulates the state that an action can inspect and manipulate.
+// ActionScope encapsulates the element's of a Test's state that may be
+// inspected and manipulated by Action implementations.
 type ActionScope struct {
-	App              configkit.RichApplication
-	VirtualClock     *time.Time
-	Engine           *engine.Engine
-	Executor         *engine.CommandExecutor
-	Recorder         *engine.EventRecorder
+	// App is the application being tested.
+	App configkit.RichApplication
+
+	// VirtualClock is the time that the Test uses as the engine time for the
+	// NEXT Action.
+	VirtualClock *time.Time
+
+	// Engine is the engine used to handled messages.
+	Engine *engine.Engine
+
+	// Executor is the command executor returned by the Test's CommandExecutor()
+	// method.
+	Executor *engine.CommandExecutor
+
+	// Recorder is the event recorder returned by the Test's EventRecorder()
+	// method.
+	Recorder *engine.EventRecorder
+
+	// OperationOptions is the set of options that should be used with calling
+	// Engine.Dispatch() or Engine.Tick().
 	OperationOptions []engine.OperationOption
 }
