@@ -7,16 +7,24 @@ import (
 )
 
 // TestOption applies optional settings to a test.
-type TestOption func(*Test)
+type TestOption interface {
+	applyTestOption(*Test)
+}
+
+type testOptionFunc func(*Test)
+
+func (f testOptionFunc) applyTestOption(t *Test) {
+	f(t)
+}
 
 // StartTimeAt returns a test option that sets the initial time of the test's
 // virtual clock.
 //
 // By default, the current system time is used.
 func StartTimeAt(st time.Time) TestOption {
-	return func(t *Test) {
+	return testOptionFunc(func(t *Test) {
 		t.virtualClock = st
-	}
+	})
 }
 
 // WithUnsafeOperationOptions returns a TestOption that applies a set of engine
@@ -28,7 +36,7 @@ func StartTimeAt(st time.Time) TestOption {
 // The provided options may override options that the Test sets during its
 // normal operation and should be used with caution.
 func WithUnsafeOperationOptions(options ...engine.OperationOption) TestOption {
-	return func(t *Test) {
+	return testOptionFunc(func(t *Test) {
 		t.operationOptions = append(t.operationOptions, options...)
-	}
+	})
 }

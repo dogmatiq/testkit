@@ -9,7 +9,15 @@ import (
 
 // OperationOption applies optional settings while dispatching a message or
 // performing a tick.
-type OperationOption func(*operationOptions)
+type OperationOption interface {
+	applyOperationOption(*operationOptions)
+}
+
+type operationOptionFunc func(*operationOptions)
+
+func (f operationOptionFunc) applyOperationOption(opts *operationOptions) {
+	f(opts)
+}
 
 // WithObserver returns an option that registers the given observer for the
 // duration of the operation.
@@ -20,9 +28,9 @@ func WithObserver(o fact.Observer) OperationOption {
 		panic("observer must not be nil")
 	}
 
-	return func(oo *operationOptions) {
+	return operationOptionFunc(func(oo *operationOptions) {
 		oo.observers = append(oo.observers, o)
-	}
+	})
 }
 
 // EnableAggregates returns an operation option that enables or disables
@@ -62,9 +70,9 @@ func EnableProjections(enabled bool) OperationOption {
 func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	t.MustValidate()
 
-	return func(oo *operationOptions) {
+	return operationOptionFunc(func(oo *operationOptions) {
 		oo.enabledHandlerTypes[t] = enabled
-	}
+	})
 }
 
 // EnableHandler returns an operation option that enables or disables a specific
@@ -77,17 +85,17 @@ func EnableHandler(name string, enabled bool) OperationOption {
 		panic(err)
 	}
 
-	return func(oo *operationOptions) {
+	return operationOptionFunc(func(oo *operationOptions) {
 		oo.enabledHandlers[name] = enabled
-	}
+	})
 }
 
 // WithCurrentTime returns an operation option that sets the engine's current
 // time.
 func WithCurrentTime(t time.Time) OperationOption {
-	return func(oo *operationOptions) {
+	return operationOptionFunc(func(oo *operationOptions) {
 		oo.now = t
-	}
+	})
 }
 
 // operationOptions is a container for the options set via OperationOption
@@ -113,7 +121,7 @@ func newOperationOptions(options []OperationOption) *operationOptions {
 	}
 
 	for _, opt := range options {
-		opt(oo)
+		opt.applyOperationOption(oo)
 	}
 
 	return oo
