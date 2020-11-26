@@ -178,7 +178,6 @@ func (t *Test) applyAction(act Action, options ...engine.OperationOption) error 
 	return act.Apply(
 		t.ctx,
 		ActionScope{
-			TestingT:         t.testingT,
 			App:              t.app,
 			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,

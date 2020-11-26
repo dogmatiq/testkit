@@ -31,7 +31,6 @@ type Action interface {
 
 // ActionScope encapsulates the state that an action can inspect and manipulate.
 type ActionScope struct {
-	TestingT         TestingT
 	App              configkit.RichApplication
 	VirtualClock     *time.Time
 	Engine           *engine.Engine
