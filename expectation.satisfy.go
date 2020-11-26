@@ -50,7 +50,7 @@ func (e *satisfyExpectation) Banner() string {
 	return "TO " + strings.ToUpper(e.criteria)
 }
 
-func (e satisfyExpectation) Predicate(o PredicateOptions) Predicate {
+func (e satisfyExpectation) Predicate(o PredicateOptions) (Predicate, error) {
 	return &satisfyPredicate{
 		criteria: e.criteria,
 		pred:     e.pred,
@@ -58,7 +58,7 @@ func (e satisfyExpectation) Predicate(o PredicateOptions) Predicate {
 			Options: o,
 			name:    e.criteria,
 		},
-	}
+	}, nil
 }
 
 // compositePredicate is the Predicate implementation for satisfyExpectation.
