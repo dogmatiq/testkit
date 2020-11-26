@@ -39,7 +39,8 @@ func ToRecordEventOfType(m dogma.Message) Expectation {
 // messageTypeExpectation is an Expectation that checks that a message of a
 // specific type is produced.
 //
-// It is the implementation used by ToExecuteCommand() and ToRecordEvent().
+// It is the implementation used by ToExecuteCommandOfType() and
+// ToRecordEventOfType().
 type messageTypeExpectation struct {
 	expectedType message.Type
 	expectedRole message.Role
@@ -103,6 +104,24 @@ func (p *messageTypePredicate) Notify(f fact.Fact) {
 	}
 }
 
+// messageProduced updates the predicates's state to reflect the fact that a
+// message has been produced.
+func (p *messageTypePredicate) messageProduced(env *envelope.Envelope) {
+	dist := typecmp.MeasureDistance(
+		p.expectedType.ReflectType(),
+		env.Type.ReflectType(),
+	)
+
+	if dist < p.bestMatchDistance {
+		p.bestMatch = env
+		p.bestMatchDistance = dist
+	}
+
+	if dist == typecmp.Identical && p.expectedRole == env.Role {
+		p.ok = true
+	}
+}
+
 func (p *messageTypePredicate) Ok() bool {
 	return p.ok
 }
@@ -126,7 +145,7 @@ func (p *messageTypePredicate) Report(treeOk bool) *Report {
 	}
 
 	if p.bestMatch == nil {
-		buildReportNoMatch(rep, &p.tracker)
+		reportNoMatch(rep, &p.tracker)
 	} else if p.bestMatch.Role == p.expectedRole {
 		p.reportExpectedRole(rep)
 	} else {
@@ -232,22 +251,4 @@ func (p *messageTypePredicate) buildDiff(rep *Report) {
 		p.expectedType.String(),
 		p.bestMatch.Type.String(),
 	)
-}
-
-// messageProduced updates the predicates's state to reflect the fact that a
-// message has been produced.
-func (p *messageTypePredicate) messageProduced(env *envelope.Envelope) {
-	dist := typecmp.MeasureDistance(
-		p.expectedType.ReflectType(),
-		env.Type.ReflectType(),
-	)
-
-	if dist < p.bestMatchDistance {
-		p.bestMatch = env
-		p.bestMatchDistance = dist
-	}
-
-	if dist == typecmp.Identical && p.expectedRole == env.Role {
-		p.ok = true
-	}
 }
