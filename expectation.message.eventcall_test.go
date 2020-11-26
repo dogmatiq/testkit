@@ -35,6 +35,8 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 						c.ConsumesCommandType(MessageR{}) // R = record an event
 						c.ConsumesCommandType(MessageN{}) // N = do nothing
 						c.ProducesEventType(MessageE{})
+						c.ProducesEventType(&MessageE{}) // pointer, used to test type similarity
+						c.ProducesEventType(MessageX{})
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -222,65 +224,6 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`  | MESSAGE DIFF`,
 				`  |     fixtures.MessageE{`,
 				`  |         Value: "E[-2-]{+1+}"`,
-				`  |     }`,
-			),
-		),
-		Entry(
-			"expected message executed as a command rather than recorded as an event",
-			executeCommandViaExecutor(MessageR1),
-			ToRecordEvent(MessageR1),
-			expectFail,
-			expectReport(
-				`✗ record a specific 'fixtures.MessageR' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     the expected message was executed as a command via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEvent() is the correct expectation, did you mean ToExecuteCommand()?`,
-			),
-		),
-		Entry(
-			"similar message with a different value executed as a command rather than recorded as an event",
-			executeCommandViaExecutor(MessageR1),
-			ToRecordEvent(MessageR2),
-			expectFail,
-			expectReport(
-				`✗ record a specific 'fixtures.MessageR' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a similar message was executed as a command via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEvent() is the correct expectation, did you mean ToExecuteCommand()?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageR{`,
-				`  |         Value: "R[-2-]{+1+}"`,
-				`  |     }`,
-			),
-		),
-		Entry(
-			"similar message with a different type executed as a command rather than recorded as an event",
-			executeCommandViaExecutor(MessageR1),
-			ToRecordEvent(&MessageR1), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ record a specific '*fixtures.MessageR' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of a similar type was executed as a command via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEvent() is the correct expectation, did you mean ToExecuteCommand()?`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageR{`,
-				`  |         Value: "R1"`,
 				`  |     }`,
 			),
 		),

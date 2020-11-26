@@ -22,6 +22,7 @@ func ToExecuteCommand(m dogma.Message) Expectation {
 
 	return &messageExpectation{
 		expectedMessage: m,
+		expectedType:    message.TypeOf(m),
 		expectedRole:    message.CommandRole,
 	}
 }
@@ -35,6 +36,7 @@ func ToRecordEvent(m dogma.Message) Expectation {
 
 	return &messageExpectation{
 		expectedMessage: m,
+		expectedType:    message.TypeOf(m),
 		expectedRole:    message.EventRole,
 	}
 }
@@ -45,6 +47,7 @@ func ToRecordEvent(m dogma.Message) Expectation {
 // It is the implementation used by ToExecuteCommand() and ToRecordEvent().
 type messageExpectation struct {
 	expectedMessage dogma.Message
+	expectedType    message.Type
 	expectedRole    message.Role
 }
 
@@ -52,7 +55,7 @@ func (e *messageExpectation) Banner() string {
 	return inflect.Sprintf(
 		e.expectedRole,
 		"TO <PRODUCE> A SPECIFIC '%s' <MESSAGE>",
-		message.TypeOf(e.expectedMessage),
+		e.expectedType,
 	)
 }
 
@@ -62,19 +65,21 @@ func (e *messageExpectation) Predicate(
 ) (Predicate, error) {
 	return &messagePredicate{
 		expectedMessage:   e.expectedMessage,
+		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
 		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
 			role:               e.expectedRole,
 			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
-	}, nil
+	}, validateRole(s, o, e.expectedType, e.expectedRole)
 }
 
 // messagePredicate is the Predicate implementation for messageExpectation.
 type messagePredicate struct {
 	expectedMessage   dogma.Message
 	expectedRole      message.Role
+	expectedType      message.Type
 	ok                bool
 	bestMatch         *envelope.Envelope
 	bestMatchDistance typecmp.Distance
@@ -158,18 +163,9 @@ func (p *messagePredicate) Report(treeOk bool) *Report {
 
 	if p.bestMatch == nil {
 		reportNoMatch(rep, &p.tracker)
-	} else if p.bestMatch.Role == p.expectedRole {
-		p.reportExpectedRole(rep)
-	} else {
-		p.reportUnexpectedRole(rep)
+		return rep
 	}
 
-	return rep
-}
-
-// reportExpectedRole builds a test report when there is a "best-match"
-// message available and it is of the expected role.
-func (p *messagePredicate) reportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if p.bestMatchDistance == typecmp.Identical {
@@ -210,89 +206,8 @@ func (p *messagePredicate) reportExpectedRole(rep *Report) {
 	}
 
 	p.buildDiff(rep)
-}
 
-// reportExpectedRole builds a test report when there is a "best-match"
-// message available but it is of an unexpected role.
-func (p *messagePredicate) reportUnexpectedRole(rep *Report) {
-	s := rep.Section(suggestionsSection)
-
-	if p.bestMatch.Origin == nil {
-		s.AppendListItem(inflect.Sprint(
-			p.bestMatch.Role,
-			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
-		))
-	} else {
-		s.AppendListItem(inflect.Sprintf(
-			p.bestMatch.Role,
-			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
-			p.bestMatch.Origin.Handler.Identity().Name,
-			p.bestMatch.Origin.HandlerType,
-		))
-	}
-
-	if p.expectedRole == message.CommandRole {
-		s.AppendListItem("verify that ToExecuteCommand() is the correct expectation, did you mean ToRecordEvent()?")
-	} else {
-		s.AppendListItem("verify that ToRecordEvent() is the correct expectation, did you mean ToExecuteCommand()?")
-	}
-
-	// the "best-match" is equal to the expected message. this means that only
-	// the roles were mismatched.
-	if p.bestMatchIsEqual {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				p.bestMatch.Role,
-				"the expected message was <produced> as a <message> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				p.bestMatch.Role,
-				"the expected message was <produced> as a <message> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.HandlerType,
-			)
-		}
-
-		return // skip diff rendering
-	}
-
-	if p.bestMatchDistance == typecmp.Identical {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				p.bestMatch.Role,
-				"a similar message was <produced> as a <message> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				p.bestMatch.Role,
-				"a similar message was <produced> as a <message> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.HandlerType,
-			)
-		}
-	} else {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				p.bestMatch.Role,
-				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				p.bestMatch.Role,
-				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.HandlerType,
-			)
-		}
-
-		// note this language here is deliberately vague, it doesn't imply
-		// whether it currently is or isn't a pointer, just questions if it
-		// should be.
-		s.AppendListItem("check the message type, should it be a pointer?")
-	}
-
-	p.buildDiff(rep)
+	return rep
 }
 
 // buildDiff adds a "message diff" section to the result.

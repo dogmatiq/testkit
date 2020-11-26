@@ -71,6 +71,49 @@ func reportNoMatch(rep *Report, t *tracker) {
 	}
 }
 
+// validateRole returns an error if the message type t does not have a role of r
+// within the application.
+func validateRole(
+	s PredicateScope,
+	o PredicateOptions,
+	t message.Type,
+	r message.Role,
+) error {
+	actual, ok := s.App.MessageTypes().RoleOf(t)
+
+	// TODO: These checks should result in information being added to the
+	// report, not just returning an error.
+	//
+	// See https://github.com/dogmatiq/testkit/issues/162
+	if !ok {
+		return inflect.Errorf(
+			r,
+			"a <message> of type %s can never be <produced>, the application does not use this message type",
+			t,
+		)
+	} else if actual != r {
+		return inflect.Errorf(
+			r,
+			"%s is a %s, it can never be <produced> as a <message>",
+			t,
+			actual,
+		)
+	} else if !o.MatchDispatchCycleStartedFacts {
+		// If we're NOT matching messages from DispatchCycleStarted facts that
+		// means this expectation can only ever pass if the message is produced
+		// by a handler.
+		if _, ok := s.App.MessageTypes().Produced[t]; !ok {
+			return inflect.Errorf(
+				r,
+				"no handlers <produce> <messages> of type %s, it is only ever consumed",
+				t,
+			)
+		}
+	}
+
+	return nil
+}
+
 // tracker is a fact.Observer used by expectations that need to keep track of
 // information about handlers and the messages they produce.
 type tracker struct {

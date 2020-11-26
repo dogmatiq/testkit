@@ -58,38 +58,6 @@ func (e *messageTypeExpectation) Predicate(
 	s PredicateScope,
 	o PredicateOptions,
 ) (Predicate, error) {
-	r, ok := s.App.MessageTypes().RoleOf(e.expectedType)
-
-	// TODO: These checks should result in information being added to the
-	// report, not just returning an error.
-	//
-	// See https://github.com/dogmatiq/testkit/issues/162
-	if !ok {
-		return nil, inflect.Errorf(
-			e.expectedRole,
-			"a <message> of type %s can never be <produced>, the application does not use this message type",
-			e.expectedType,
-		)
-	} else if r != e.expectedRole {
-		return nil, inflect.Errorf(
-			e.expectedRole,
-			"%s is a %s, it can never be <produced> as a <message>",
-			e.expectedType,
-			r,
-		)
-	} else if !o.MatchDispatchCycleStartedFacts {
-		// If we're NOT matching messages from DispatchCycleStarted facts that
-		// means this expectation can only ever pass if the message is produced
-		// by a handler.
-		if _, ok := s.App.MessageTypes().Produced[e.expectedType]; !ok {
-			return nil, inflect.Errorf(
-				e.expectedRole,
-				"no handlers <produce> <messages> of type %s, it is only ever consumed",
-				e.expectedType,
-			)
-		}
-	}
-
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
@@ -98,7 +66,7 @@ func (e *messageTypeExpectation) Predicate(
 			role:               e.expectedRole,
 			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
-	}, nil
+	}, validateRole(s, o, e.expectedType, e.expectedRole)
 }
 
 // messageTypePredicate is the Predicate implementation for
