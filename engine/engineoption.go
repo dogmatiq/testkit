@@ -1,7 +1,15 @@
 package engine
 
 // Option applies optional engine-wide settings.
-type Option func(*engineOptions)
+type Option interface {
+	applyEngineOption(*engineOptions)
+}
+
+type optionFunc func(*engineOptions)
+
+func (f optionFunc) applyEngineOption(opts *engineOptions) {
+	f(opts)
+}
 
 // WithResetter returns an engine option that registers a reset hook with the
 // engine.
@@ -12,9 +20,9 @@ func WithResetter(fn func()) Option {
 		panic("fn must not be nil")
 	}
 
-	return func(eo *engineOptions) {
+	return optionFunc(func(eo *engineOptions) {
 		eo.resetters = append(eo.resetters, fn)
-	}
+	})
 }
 
 // EnableProjectionCompactionDuringHandling returns an engine option that causes
@@ -24,9 +32,9 @@ func WithResetter(fn func()) Option {
 // projection building. It is likely not much use when using the engine outside
 // of the test runner.
 func EnableProjectionCompactionDuringHandling(enabled bool) Option {
-	return func(eo *engineOptions) {
+	return optionFunc(func(eo *engineOptions) {
 		eo.compactDuringHandling = enabled
-	}
+	})
 }
 
 // engineOptions is a container for the options set via Option values.
@@ -40,7 +48,7 @@ func newEngineOptions(options []Option) *engineOptions {
 	eo := &engineOptions{}
 
 	for _, opt := range options {
-		opt(eo)
+		opt.applyEngineOption(eo)
 	}
 
 	return eo

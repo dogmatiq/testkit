@@ -69,7 +69,7 @@ func BeginContext(
 	}
 
 	for _, opt := range options {
-		opt(test)
+		opt.applyTestOption(test)
 	}
 
 	return test
