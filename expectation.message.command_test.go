@@ -17,7 +17,6 @@ var _ = Describe("func ToExecuteCommand()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
-		test     *Test
 	)
 
 	BeforeEach(func() {
@@ -50,9 +49,11 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "<process-key>")
-						c.ConsumesEventType(MessageE{})   // E = event
-						c.ConsumesEventType(MessageN{})   // N = (do) nothing
-						c.ProducesCommandType(MessageC{}) // C = command
+						c.ConsumesEventType(MessageE{})    // E = event
+						c.ConsumesEventType(MessageN{})    // N = (do) nothing
+						c.ProducesCommandType(MessageC{})  // C = command
+						c.ProducesCommandType(&MessageC{}) // pointer, used to test type similarity
+						c.ProducesCommandType(MessageX{})
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -85,7 +86,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 			rm reportMatcher,
 			options ...TestOption,
 		) {
-			test = Begin(testingT, app, options...)
+			test := Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
@@ -202,66 +203,46 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`  |     }`,
 			),
 		),
-		Entry(
-			"expected message recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageN1),
-			expectFail,
-			expectReport(
-				`✗ execute a specific 'fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     the expected message was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommand() is the correct expectation, did you mean ToRecordEvent()?`,
-			),
-		),
-		Entry(
-			"similar message with a different value recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageN2),
-			expectFail,
-			expectReport(
-				`✗ execute a specific 'fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a similar message was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommand() is the correct expectation, did you mean ToRecordEvent()?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageN{`,
-				`  |         Value: "N[-2-]{+1+}"`,
-				`  |     }`,
-			),
-		),
-		Entry(
-			"similar message with a different type recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommand(&MessageN2), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute a specific '*fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of a similar type was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommand() is the correct expectation, did you mean ToRecordEvent()?`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageN{`,
-				`  |         Value: "N[-2-]{+1+}"`,
-				`  |     }`,
-			),
-		),
 	)
+
+	It("fails the test if the message type is unrecognized", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommand(MessageU1),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"a command of type fixtures.MessageU can never be executed, the application does not use this message type",
+		))
+	})
+
+	It("fails the test if the message type is not a command", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommand(MessageE1),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"fixtures.MessageE is an event, it can never be executed as a command",
+		))
+	})
+
+	It("fails the test if the message type is not produced by any handlers", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommand(MessageR1),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"no handlers execute commands of type fixtures.MessageR, it is only ever consumed",
+		))
+	})
 
 	It("panics if the message is invalid", func() {
 		Expect(func() {

@@ -54,7 +54,10 @@ func (e *messageTypeExpectation) Banner() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(o PredicateOptions) (Predicate, error) {
+func (e *messageTypeExpectation) Predicate(
+	s PredicateScope,
+	o PredicateOptions,
+) (Predicate, error) {
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
@@ -63,7 +66,7 @@ func (e *messageTypeExpectation) Predicate(o PredicateOptions) (Predicate, error
 			role:               e.expectedRole,
 			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
-	}, nil
+	}, validateRole(s, o, e.expectedType, e.expectedRole)
 }
 
 // messageTypePredicate is the Predicate implementation for
@@ -140,18 +143,9 @@ func (p *messageTypePredicate) Report(treeOk bool) *Report {
 
 	if p.bestMatch == nil {
 		reportNoMatch(rep, &p.tracker)
-	} else if p.bestMatch.Role == p.expectedRole {
-		p.reportExpectedRole(rep)
-	} else {
-		p.reportUnexpectedRole(rep)
+		return rep
 	}
 
-	return rep
-}
-
-// reportExpectedRole builds a test report when a "best-match" message was found
-// and it has the expected role.
-func (p *messageTypePredicate) reportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
 	if p.bestMatch.Origin == nil {
@@ -173,69 +167,8 @@ func (p *messageTypePredicate) reportExpectedRole(rep *Report) {
 	s.AppendListItem("check the message type, should it be a pointer?")
 
 	p.buildDiff(rep)
-}
 
-// reportUnexpectedRole builds a test report when a "best-match" message was
-// found but it does not have the expected role.
-func (p *messageTypePredicate) reportUnexpectedRole(rep *Report) {
-	s := rep.Section(suggestionsSection)
-
-	if p.bestMatch.Origin == nil {
-		s.AppendListItem(inflect.Sprint(
-			p.bestMatch.Role,
-			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
-		))
-	} else {
-		s.AppendListItem(inflect.Sprintf(
-			p.bestMatch.Role,
-			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
-			p.bestMatch.Origin.Handler.Identity().Name,
-			p.bestMatch.Origin.Handler.HandlerType(),
-		))
-	}
-
-	if p.expectedRole == message.CommandRole {
-		s.AppendListItem("verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?")
-	} else {
-		s.AppendListItem("verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?")
-	}
-
-	if p.bestMatchDistance == typecmp.Identical {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				p.bestMatch.Role,
-				"a message of this type was <produced> as a <message> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				p.bestMatch.Role,
-				"a message of this type was <produced> as a <message> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.Handler.HandlerType(),
-			)
-		}
-	} else {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				p.bestMatch.Role,
-				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				p.bestMatch.Role,
-				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.Handler.HandlerType(),
-			)
-		}
-
-		// note this language here is deliberately vague, it doesn't imply
-		// whether it currently is or isn't a pointer, just questions if it
-		// should be.
-		s.AppendListItem("check the message type, should it be a pointer?")
-
-		p.buildDiff(rep)
-	}
+	return rep
 }
 
 // buildDiff adds a "message type diff" section to the result.

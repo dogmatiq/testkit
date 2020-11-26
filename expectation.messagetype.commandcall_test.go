@@ -32,7 +32,9 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "<aggregate-key>")
-						c.ConsumesCommandType(MessageR{}) // R = record an event
+						c.ConsumesCommandType(MessageR{})  // R = record an event
+						c.ConsumesCommandType(&MessageR{}) // pointer, used to test type similarity
+						c.ConsumesCommandType(MessageX{})
 						c.ProducesEventType(MessageN{})
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
@@ -195,42 +197,6 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,
 				`  |     [-*-]fixtures.MessageR`,
-			),
-		),
-		Entry(
-			"expected message type recorded as an event rather than executed as a command",
-			recordEventViaRecorder(MessageN1),
-			ToExecuteCommandOfType(MessageN{}),
-			expectFail,
-			expectReport(
-				`✗ execute any 'fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of this type was recorded as an event via a dogma.EventRecorder`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that an event of this type was intended to be recorded via a dogma.EventRecorder`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
-			),
-		),
-		Entry(
-			"a message with a similar type recorded as an event rather than executed as a command",
-			recordEventViaRecorder(MessageN1),
-			ToExecuteCommandOfType(&MessageN{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute any '*fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of a similar type was recorded as an event via a dogma.EventRecorder`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that an event of this type was intended to be recorded via a dogma.EventRecorder`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]fixtures.MessageN`,
 			),
 		),
 	)

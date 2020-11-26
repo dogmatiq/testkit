@@ -35,7 +35,10 @@ func (e staticExpectation) Banner() string {
 	return "TO [ALWAYS FAIL]"
 }
 
-func (e staticExpectation) Predicate(PredicateOptions) (Predicate, error) {
+func (e staticExpectation) Predicate(
+	PredicateScope,
+	PredicateOptions,
+) (Predicate, error) {
 	return e, e.err
 }
 

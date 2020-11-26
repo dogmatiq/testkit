@@ -35,6 +35,8 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 						c.ConsumesCommandType(MessageR{}) // R = record an event
 						c.ConsumesCommandType(MessageN{}) // N = do nothing
 						c.ProducesEventType(MessageE{})
+						c.ProducesEventType(&MessageE{}) // pointer, used to test type similarity
+						c.ProducesEventType(MessageX{})
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -201,42 +203,6 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 				`  | `,
 				`  | MESSAGE TYPE DIFF`,
 				`  |     [-*-]fixtures.MessageE`,
-			),
-		),
-		Entry(
-			"expected message type executed as a command rather than recorded as an event",
-			executeCommandViaExecutor(MessageR1),
-			ToRecordEventOfType(MessageR{}),
-			expectFail,
-			expectReport(
-				`✗ record any 'fixtures.MessageR' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of this type was executed as a command via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
-			),
-		),
-		Entry(
-			"a message with a similar type executed as a command rather than recorded as an event",
-			executeCommandViaExecutor(MessageR1),
-			ToRecordEventOfType(&MessageR{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ record any '*fixtures.MessageR' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of a similar type was executed as a command via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that a command of this type was intended to be executed via a dogma.CommandExecutor`,
-				`  |     • verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]fixtures.MessageR`,
 			),
 		),
 	)
