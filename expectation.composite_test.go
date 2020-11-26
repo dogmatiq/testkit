@@ -97,6 +97,16 @@ var _ = Context("composite expectations", func() {
 			))
 		})
 
+		It("fails the test if one of its children can not construct a predicate", func() {
+			test.Expect(
+				noop,
+				AllOf(pass, failBeforeAction),
+			)
+
+			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
+			Expect(testingT.Failed()).To(BeTrue())
+		})
+
 		It("panics if no children are provided", func() {
 			Expect(func() {
 				AllOf()
@@ -157,6 +167,16 @@ var _ = Context("composite expectations", func() {
 			Expect(testingT.Logs).To(ContainElement(
 				"--- EXPECT [NO-OP] TO MEET AT LEAST ONE OF 2 EXPECTATIONS ---",
 			))
+		})
+
+		It("fails the test if one of its children can not construct a predicate", func() {
+			test.Expect(
+				noop,
+				AnyOf(pass, failBeforeAction),
+			)
+
+			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
+			Expect(testingT.Failed()).To(BeTrue())
 		})
 
 		It("panics if no children are provided", func() {
@@ -231,6 +251,16 @@ var _ = Context("composite expectations", func() {
 			Expect(testingT.Logs).To(ContainElement(
 				"--- EXPECT [NO-OP] NOT TO [ALWAYS PASS] ---",
 			))
+		})
+
+		It("fails the test if one of its children can not construct a predicate", func() {
+			test.Expect(
+				noop,
+				NoneOf(pass, failBeforeAction),
+			)
+
+			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
+			Expect(testingT.Failed()).To(BeTrue())
 		})
 
 		It("panics if no children are provided", func() {

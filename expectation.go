@@ -18,7 +18,7 @@ type Expectation interface {
 	//
 	// The predicate must be closed by calling Done() once the action it tests
 	// is completed.
-	Predicate(o PredicateOptions) Predicate
+	Predicate(o PredicateOptions) (Predicate, error)
 }
 
 // Predicate tests whether a specific Action satisfies an Expectation.

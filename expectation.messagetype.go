@@ -54,7 +54,7 @@ func (e *messageTypeExpectation) Banner() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(o PredicateOptions) Predicate {
+func (e *messageTypeExpectation) Predicate(o PredicateOptions) (Predicate, error) {
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
@@ -63,7 +63,7 @@ func (e *messageTypeExpectation) Predicate(o PredicateOptions) Predicate {
 			role:               e.expectedRole,
 			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
-	}
+	}, nil
 }
 
 // messageTypePredicate is the Predicate implementation for

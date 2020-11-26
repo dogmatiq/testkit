@@ -115,18 +115,23 @@ func (e *compositeExpectation) Banner() string {
 	return e.banner
 }
 
-func (e *compositeExpectation) Predicate(o PredicateOptions) Predicate {
+func (e *compositeExpectation) Predicate(o PredicateOptions) (Predicate, error) {
 	var children []Predicate
 
 	for _, c := range e.children {
-		children = append(children, c.Predicate(o))
+		p, err := c.Predicate(o)
+		if err != nil {
+			return nil, err
+		}
+
+		children = append(children, p)
 	}
 
 	return &compositePredicate{
 		criteria: e.criteria,
 		children: children,
 		pred:     e.pred,
-	}
+	}, nil
 }
 
 // compositePredicate is the Predicate implementation for compositeExpectation.

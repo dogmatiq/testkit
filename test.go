@@ -97,33 +97,36 @@ func (t *Test) Expect(act Action, e Expectation) {
 	o := PredicateOptions{}
 	act.ConfigurePredicate(&o)
 
-	p := e.Predicate(o)
+	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
 
-	func() {
-		// Using a defer inside a closure satisfies the requirements of the
-		// Expectation and Predicate interfaces which state that p.Done() must
-		// be called exactly once, and that it must be called before calling
-		// p.Report().
+	p, err := e.Predicate(o)
+	if err != nil {
+		t.testingT.Fatal(err)
+		return // required when using a mock testingT that does not panic
+	}
+
+	// Using a defer inside a closure satisfies the requirements of the
+	// Expectation and Predicate interfaces which state that p.Done() must
+	// be called exactly once, and that it must be called before calling
+	// p.Report().
+	if err := func() error {
 		defer p.Done()
+		return t.applyAction(act, engine.WithObserver(p))
+	}(); err != nil {
+		t.testingT.Fatal(err)
+		return // required when using a mock testingT that does not panic
+	}
 
-		logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
-		if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
-			t.testingT.Fatal(err)
-		}
-	}()
+	treeOk := p.Ok()
+	rep := p.Report(treeOk)
 
-	if !t.testingT.Failed() {
-		treeOk := p.Ok()
-		rep := p.Report(treeOk)
+	buf := &strings.Builder{}
+	fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
+	must.WriteTo(buf, rep)
+	t.testingT.Log(buf.String())
 
-		buf := &strings.Builder{}
-		fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
-		must.WriteTo(buf, rep)
-		t.testingT.Log(buf.String())
-
-		if !treeOk {
-			t.testingT.FailNow()
-		}
+	if !treeOk {
+		t.testingT.FailNow()
 	}
 }
 
