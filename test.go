@@ -94,36 +94,6 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
-	if pe, ok := e.(predicateBasedExpectation); ok {
-		t.expectPred(act, pe)
-		return
-	}
-
-	o := PredicateOptions{}
-	act.ConfigurePredicate(&o)
-
-	e.Begin(o)
-
-	func() {
-		// Wrapping this defer in the closure guarantees not only that it is
-		// always called, but that it is called before t.buildReport().
-		defer e.End()
-
-		logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
-		if err := t.applyAction(act, engine.WithObserver(e)); err != nil {
-			t.testingT.Fatal(err)
-		}
-	}()
-
-	if !t.testingT.Failed() {
-		t.buildReport(e)
-	}
-}
-
-// expectPred ensures that a single action results in some expected behavior.
-func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
-	t.testingT.Helper()
-
 	o := PredicateOptions{}
 	act.ConfigurePredicate(&o)
 
@@ -147,12 +117,8 @@ func (t *Test) expectPred(act Action, e predicateBasedExpectation) {
 		rep := p.Report(treeOk)
 
 		buf := &strings.Builder{}
-		fmt.Fprint(
-			buf,
-			"--- TEST REPORT ---\n\n",
-		)
+		fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
 		must.WriteTo(buf, rep)
-
 		t.testingT.Log(buf.String())
 
 		if !treeOk {
@@ -199,25 +165,6 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 	}
 
 	return t
-}
-
-func (t *Test) buildReport(e Expectation) {
-	t.testingT.Helper()
-
-	buf := &strings.Builder{}
-	fmt.Fprint(
-		buf,
-		"--- TEST REPORT ---\n\n",
-	)
-
-	rep := e.BuildReport(e.Ok())
-	must.WriteTo(buf, rep)
-
-	t.testingT.Log(buf.String())
-
-	if !rep.TreeOk {
-		t.testingT.FailNow()
-	}
 }
 
 // applyAction calls act.Apply() with a scope appropriate for this test.

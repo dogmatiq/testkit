@@ -111,12 +111,6 @@ type compositeExpectation struct {
 	pred     func(passed int) (outcome string, ok bool)
 }
 
-func (e *compositeExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
-func (e *compositeExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
-func (e *compositeExpectation) End()                        { panic("TODO: remove") }
-func (e *compositeExpectation) Ok() bool                    { panic("TODO: remove") }
-func (e *compositeExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
-
 func (e *compositeExpectation) Banner() string {
 	return e.banner
 }
@@ -125,9 +119,7 @@ func (e *compositeExpectation) Predicate(o PredicateOptions) Predicate {
 	var children []Predicate
 
 	for _, c := range e.children {
-		if pe, ok := c.(predicateBasedExpectation); ok {
-			children = append(children, pe.Predicate(o))
-		}
+		children = append(children, c.Predicate(o))
 	}
 
 	return &compositePredicate{

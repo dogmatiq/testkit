@@ -46,12 +46,6 @@ type satisfyExpectation struct {
 	pred     func(*SatisfyT)
 }
 
-func (e *satisfyExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
-func (e *satisfyExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
-func (e *satisfyExpectation) End()                        { panic("TODO: remove") }
-func (e *satisfyExpectation) Ok() bool                    { panic("TODO: remove") }
-func (e *satisfyExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
-
 func (e *satisfyExpectation) Banner() string {
 	return "TO " + strings.ToUpper(e.criteria)
 }
@@ -130,12 +124,14 @@ func (p *satisfyPredicate) Report(treeOk bool) *Report {
 // SatisfyT is used within expectations made via ToSatisfy() to enforce the
 // expectation.
 //
-// It is analogous to the *testing.T type that is passed to tests in the native Go
-// test runner.
+// It is analogous to the *testing.T type that is passed to tests in the native
+// Go test runner.
 type SatisfyT struct {
-	// Options contains the set of options that dictate the behavior of the
-	// expectation.
-	Options ExpectOptionSet
+	// Options contains the set of options that change the behavior of the
+	// predicate function.
+	//
+	// They are not necessarily applicable to every predicate.
+	Options PredicateOptions
 
 	// Facts is an ordered slice of the facts that occurred.
 	Facts []fact.Fact

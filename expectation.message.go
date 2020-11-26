@@ -48,12 +48,6 @@ type messageExpectation struct {
 	expectedRole    message.Role
 }
 
-func (e *messageExpectation) Notify(f fact.Fact)          { panic("TODO: remove") }
-func (e *messageExpectation) Begin(o ExpectOptionSet)     { panic("TODO: remove") }
-func (e *messageExpectation) End()                        { panic("TODO: remove") }
-func (e *messageExpectation) Ok() bool                    { panic("TODO: remove") }
-func (e *messageExpectation) BuildReport(ok bool) *Report { panic("TODO: remove") }
-
 func (e *messageExpectation) Banner() string {
 	return inflect.Sprintf(
 		e.expectedRole,
