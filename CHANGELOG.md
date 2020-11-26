@@ -9,48 +9,71 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.11.0] - 2020-11-27
 
-This release is a major reworking of the entire testing API with the intent of
-formalizing the idea of a test "action" as a distinct concept from an
-"expectation" (previously known as an assertion).
+This release is a major reworking of the testing API formalizes the concepts
+"actions" and "expectations" within a test with the goal of a more consistent
+API and a greater level of extensibility.
 
-Please see the [MIGRATING.md] file for more detailed instructions on how to
-migrate tests from prior versions.
+Despite the large number of backwards incompatible changes it is relatively
+simple to migrate existing tests to the new API. Please see the [MIGRATING.md]
+guide for detailed instructions.
 
-### Added
+### Testing API
 
-- Add `Begin()` and `BeginContext()`
-- Add `Action` interface and associated `ActionScope` type
-- Add `Expectation`
-- Add `Test.Expect()` method and associated `ExpectOption` and `ExpectOptionSet` types
-- Add `testkit.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()`
+#### Added
+
+- Add `Begin()` and `BeginContext()` functions, used to start a new `Test`
+- Add `ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` functions
+- Add `Expect()` method to `Test`
+- Add `EnableHandlers()` and `DisableHandlers()` methods to `Test`
 - Add `TimeAdjuster` interface, for use with `AdvanceTime()`
-- Add `engine.EnableHandler()`
-- Add `Test.EnableHandlers()` and `DisableHandlers()`
-- **[BC]** Add `TestingT.Failed()`, `Fatal()` and `Helper()` methods
+- Add `Action` and `ActionScope` types
+- Add `Expectation`, `Predicate`, `PredicateScope` and `PredicateOptions` types
+- **[BC]** Add `Failed()`, `Fatal()` and `Helper()` to the `TestingT` interface
 
-### Changed
+#### Changed
 
-- **[BC]** Change `Test.Prepare()` to accept `...Action` (previously `...dogma.Message`)
+- **[BC]** `Test.Prepare()` now accepts `...Action` (previously `...dogma.Message`)
 - **[BC]** The function passed to `Call()` no longer returns an `error`
-- **[BC]** `engine.New()` and `MustNew()` now accept `configkit.RichApplication` (previously `dogma.Application`)
 - **[BC]** Rename `WithStartTime()` to `StartTimeAt()`
 - **[BC]** Rename `WithOperationOptions()` to `WithUnsafeOperationOptions()`
 - **[BC]** Move `assert.AllOf()`, `AnyOf()` and `NoneOf()` to the `testkit` package
 - **[BC]** Move `assert.Should()`, to `testkit.ToSatisfy()`
-- **[BC]** Move `assert.CommandTypeExecuted()`, to `testkit.ToExecuteCommandOfType()`
-- **[BC]** Move `assert.EventTypeExecuted()`, to `testkit.ToRecordEventOfType()`
 - **[BC]** Move `assert.CommandExecuted()`, to `testkit.ToExecuteCommand()`
+- **[BC]** Move `assert.CommandTypeExecuted()`, to `testkit.ToExecuteCommandOfType()`
 - **[BC]** Move `assert.EventExecuted()`, to `testkit.ToRecordEvent()`
+- **[BC]** Move `assert.EventTypeExecuted()`, to `testkit.ToRecordEventOfType()`
 
-### Removed
+#### Removed
 
-- **[BC]** Remove `New()` (use `Begin[Context]()` instead)
-- **[BC]** Remove `Runner`
-- **[BC]** Remove `Test.ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` methods
+- **[BC]** Remove the `Runner` type and `New()` which constructed it
+- **[BC]** Remove `ExecuteCommand()`, `RecordEvent()`, `AdvanceTime()` and `Call()` methods from `Test`
 - **[BC]** Remove `TimeAdvancer` function (replaced with `TimeAdjustment` interface)
 - **[BC]** Remove `WithEngineOptions()`
+- **[BC]** Remove the `assert` package
+- **[BC]** Remove the `compare` package
+- **[BC]** Remove the `render` package
+
+### Engine
+
+#### Added
+
+- Add `EnableHandler()` operation option
+
+#### Changed
+
+- **[BC]** `engine.New()` and `MustNew()` now require a `configkit.RichApplication`
+- **[BC]** Moved the `engine/fact` package to `fact`
+- **[BC]** Moved the `engine/envelope` package to `envelope`
+
+#### Removed
+
+- **[BC]** Remove the `engine/controller` package
+
+#### Fixed
+
+- `Engine.Tick()` now properly ignores disabled handlers
 
 ## [0.10.0] - 2020-11-16
 
@@ -200,6 +223,7 @@ migrate tests from prior versions.
 [0.8.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.8.1
 [0.9.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.9.0
 [0.10.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.10.0
+[0.11.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.11.0
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
