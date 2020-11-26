@@ -57,9 +57,9 @@ func Sprint(r message.Role, s string) string {
 
 // Sprintf formats a string, inflecting words in f match the message role r.
 func Sprintf(r message.Role, f string, v ...interface{}) string {
-	return fmt.Sprintf(
-		Sprint(r, f),
-		v...,
+	return Sprint(
+		r,
+		fmt.Sprintf(f, v...),
 	)
 }
 
@@ -70,8 +70,5 @@ func Error(r message.Role, s string) error {
 
 // Errorf returns a new error, inflecting words in f to match the message role r.
 func Errorf(r message.Role, f string, v ...interface{}) error {
-	return fmt.Errorf(
-		Sprint(r, f),
-		v...,
-	)
+	return errors.New(Sprintf(r, f, v...))
 }

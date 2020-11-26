@@ -17,7 +17,6 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
-		test     *Test
 	)
 
 	BeforeEach(func() {
@@ -50,9 +49,11 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "<process-key>")
-						c.ConsumesEventType(MessageE{})   // E = event
-						c.ConsumesEventType(MessageN{})   // N = (do) nothing
-						c.ProducesCommandType(MessageC{}) // C = command
+						c.ConsumesEventType(MessageE{})    // E = event
+						c.ConsumesEventType(MessageN{})    // N = (do) nothing
+						c.ProducesCommandType(MessageC{})  // C = command
+						c.ProducesCommandType(&MessageC{}) // pointer, used to test type similarity
+						c.ProducesCommandType(MessageX{})
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -85,7 +86,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 			rm reportMatcher,
 			options ...TestOption,
 		) {
-			test = Begin(testingT, app, options...)
+			test := Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
@@ -180,43 +181,46 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  |     [-*-]fixtures.MessageC`,
 			),
 		),
-		Entry(
-			"expected message type recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommandOfType(MessageN{}),
-			expectFail,
-			expectReport(
-				`✗ execute any 'fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of this type was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
-			),
-		),
-		Entry(
-			"a message with a similar type recorded as an event rather than executed as a command",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommandOfType(&MessageN{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute any '*fixtures.MessageN' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a message of a similar type was recorded as an event by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify that the '<aggregate>' aggregate message handler intended to record an event of this type`,
-				`  |     • verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]fixtures.MessageN`,
-			),
-		),
 	)
+
+	It("fails the test if the message type is unrecognized", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandOfType(MessageU{}),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"a command of type fixtures.MessageU can never be executed, the application does not use this message type",
+		))
+	})
+
+	It("fails the test if the message type is not a command", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandOfType(MessageE{}),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"fixtures.MessageE is an event, it can never be executed as a command",
+		))
+	})
+
+	It("fails the test if the message type is not produced by any handlers", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandOfType(MessageR{}),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"no handlers execute commands of type fixtures.MessageR, it is only ever consumed",
+		))
+	})
 
 	It("panics if the message is nil", func() {
 		Expect(func() {
