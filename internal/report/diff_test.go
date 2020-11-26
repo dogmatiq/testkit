@@ -5,7 +5,7 @@ import (
 
 	"github.com/dogmatiq/iago/iotest"
 	"github.com/dogmatiq/iago/must"
-	. "github.com/dogmatiq/testkit/report"
+	. "github.com/dogmatiq/testkit/internal/report"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

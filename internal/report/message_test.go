@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
-	. "github.com/dogmatiq/testkit/report"
+	. "github.com/dogmatiq/testkit/internal/report"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

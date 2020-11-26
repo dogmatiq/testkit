@@ -9,8 +9,8 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/internal/report"
 	"github.com/dogmatiq/testkit/internal/typecmp"
-	"github.com/dogmatiq/testkit/report"
 )
 
 // ToExecuteCommand returns an expectation that passes if a command is executed
