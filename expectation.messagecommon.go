@@ -10,9 +10,9 @@ import (
 	"github.com/dogmatiq/testkit/internal/inflect"
 )
 
-// buildReportNoMatch is used by message-related expectations to build a test
-// report when no "best-match" message is found.
-func buildReportNoMatch(rep *Report, t *tracker) {
+// reportNoMatch is used by message-related predicates to build a test report
+// when no "best-match" message is found.
+func reportNoMatch(rep *Report, t *tracker) {
 	s := rep.Section(suggestionsSection)
 
 	allDisabled := true

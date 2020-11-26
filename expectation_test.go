@@ -15,6 +15,8 @@ const (
 
 // staticExpectation is is an Expectation that always produces the same result.
 // It is intended to be used for testing the test system itself.
+//
+// It implements both the Expectation and Predicate interfaces.
 type staticExpectation bool
 
 func (a staticExpectation) Banner() string {
@@ -25,18 +27,18 @@ func (a staticExpectation) Banner() string {
 	return "TO [ALWAYS FAIL]"
 }
 
-func (a staticExpectation) Begin(ExpectOptionSet) {}
-func (a staticExpectation) End()                  {}
-func (a staticExpectation) Ok() bool              { return bool(a) }
-func (a staticExpectation) Notify(fact.Fact)      {}
-func (a staticExpectation) BuildReport(ok bool) *Report {
+func (a staticExpectation) Predicate(PredicateOptions) Predicate { return a }
+func (a staticExpectation) Notify(fact.Fact)                     {}
+func (a staticExpectation) Ok() bool                             { return bool(a) }
+func (a staticExpectation) Done()                                {}
+func (a staticExpectation) Report(treeOk bool) *Report {
 	c := "<always fail>"
 	if a {
 		c = "<always pass>"
 	}
 
 	return &Report{
-		TreeOk:   ok,
+		TreeOk:   treeOk,
 		Ok:       bool(a),
 		Criteria: c,
 	}

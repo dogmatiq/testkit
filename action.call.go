@@ -38,14 +38,11 @@ func (a callAction) Banner() string {
 	return "CALLING USER-DEFINED FUNCTION"
 }
 
-// ExpectOptions returns the options to use by default when this action is
-// used with Test.Expect().
-func (a callAction) ExpectOptions() []ExpectOption {
-	return []ExpectOption{
-		func(o *ExpectOptionSet) {
-			o.MatchMessagesInDispatchCycle = true
-		},
-	}
+// ConfigurePredicate updates o with any options required by the action.
+//
+// It is called before Apply() when the action is used with Test.Expect().
+func (a callAction) ConfigurePredicate(o *PredicateOptions) {
+	o.MatchDispatchCycleStartedFacts = true
 }
 
 // Apply performs the action within the context of a specific test.

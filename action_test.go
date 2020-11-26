@@ -14,5 +14,5 @@ var noop noopAction
 type noopAction struct{}
 
 func (noopAction) Banner() string                                 { return "[NO-OP]" }
-func (noopAction) ExpectOptions() []ExpectOption                  { return nil }
+func (noopAction) ConfigurePredicate(*PredicateOptions)           {}
 func (noopAction) Apply(ctx context.Context, s ActionScope) error { return nil }

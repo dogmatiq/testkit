@@ -91,34 +91,39 @@ func (t *Test) Prepare(actions ...Action) *Test {
 }
 
 // Expect ensures that a single action results in some expected behavior.
-func (t *Test) Expect(act Action, e Expectation, options ...ExpectOption) {
+func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
-	o := ExpectOptionSet{}
+	o := PredicateOptions{}
+	act.ConfigurePredicate(&o)
 
-	for _, opt := range act.ExpectOptions() {
-		opt(&o)
-	}
-
-	for _, opt := range options {
-		opt(&o)
-	}
-
-	e.Begin(o)
+	p := e.Predicate(o)
 
 	func() {
-		// Wrapping this defer in the closure guarantees not only that it is
-		// always called, but that it is called before t.buildReport().
-		defer e.End()
+		// Using a defer inside a closure satisfies the requirements of the
+		// Expectation and Predicate interfaces which state that p.Done() must
+		// be called exactly once, and that it must be called before calling
+		// p.Report().
+		defer p.Done()
 
 		logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
-		if err := t.applyAction(act, engine.WithObserver(e)); err != nil {
+		if err := t.applyAction(act, engine.WithObserver(p)); err != nil {
 			t.testingT.Fatal(err)
 		}
 	}()
 
 	if !t.testingT.Failed() {
-		t.buildReport(e)
+		treeOk := p.Ok()
+		rep := p.Report(treeOk)
+
+		buf := &strings.Builder{}
+		fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
+		must.WriteTo(buf, rep)
+		t.testingT.Log(buf.String())
+
+		if !treeOk {
+			t.testingT.FailNow()
+		}
 	}
 }
 
@@ -160,25 +165,6 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 	}
 
 	return t
-}
-
-func (t *Test) buildReport(e Expectation) {
-	t.testingT.Helper()
-
-	buf := &strings.Builder{}
-	fmt.Fprint(
-		buf,
-		"--- TEST REPORT ---\n\n",
-	)
-
-	rep := e.BuildReport(e.Ok())
-	must.WriteTo(buf, rep)
-
-	t.testingT.Log(buf.String())
-
-	if !rep.TreeOk {
-		t.testingT.FailNow()
-	}
 }
 
 // applyAction calls act.Apply() with a scope appropriate for this test.

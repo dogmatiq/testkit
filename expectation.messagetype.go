@@ -18,8 +18,8 @@ func ToExecuteCommandOfType(m dogma.Message) Expectation {
 	}
 
 	return &messageTypeExpectation{
-		expected: message.TypeOf(m),
-		role:     message.CommandRole,
+		expectedType: message.TypeOf(m),
+		expectedRole: message.CommandRole,
 	}
 }
 
@@ -31,168 +31,140 @@ func ToRecordEventOfType(m dogma.Message) Expectation {
 	}
 
 	return &messageTypeExpectation{
-		expected: message.TypeOf(m),
-		role:     message.EventRole,
+		expectedType: message.TypeOf(m),
+		expectedRole: message.EventRole,
 	}
 }
 
-// messageTypeExpectation verifies that a message of a specific type is
-// produced, either as a command or an event.
+// messageTypeExpectation is an Expectation that checks that a message of a
+// specific type is produced.
+//
+// It is the implementation used by ToExecuteCommandOfType() and
+// ToRecordEventOfType().
 type messageTypeExpectation struct {
-	// Expected is the type of the message that is expected to be produced.
-	expected message.Type
-
-	// Role is the expected role that the message must have.
-	// It must be either CommandRole or EventRole.
-	role message.Role
-
-	// ok is true once the expectation has passed, after which no further
-	// updates are performed.
-	ok bool
-
-	// best is an envelope containing the "best-match" message found so far.
-	// Note that this message may not have the expected role.
-	best *envelope.Envelope
-
-	// dist is a distance between the expected message type, and the current
-	// best-match.
-	dist typecmp.Distance
-
-	// tracker observes the handlers and messages that are involved in the test.
-	tracker tracker
+	expectedType message.Type
+	expectedRole message.Role
 }
 
-// Banner returns a human-readable banner to display in the logs when this
-// expectation is used.
-//
-// The banner text should be in uppercase, and complete the sentence "The
-// application is expected ...". For example, "TO DO A THING".
 func (e *messageTypeExpectation) Banner() string {
 	return inflect.Sprintf(
-		e.role,
+		e.expectedRole,
 		"TO <PRODUCE> A <MESSAGE> OF TYPE %s",
-		e.expected,
+		e.expectedType,
 	)
 }
 
-// Begin is called to prepare the expectation for a new test.
-func (e *messageTypeExpectation) Begin(o ExpectOptionSet) {
-	*e = messageTypeExpectation{
-		expected: e.expected,
-		role:     e.role,
-		dist:     typecmp.Unrelated,
+func (e *messageTypeExpectation) Predicate(o PredicateOptions) Predicate {
+	return &messageTypePredicate{
+		expectedType:      e.expectedType,
+		expectedRole:      e.expectedRole,
+		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
-			role:               e.role,
-			matchDispatchCycle: o.MatchMessagesInDispatchCycle,
+			role:               e.expectedRole,
+			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
 		},
 	}
 }
 
-// End is called once the test is complete.
-func (e *messageTypeExpectation) End() {
+// messageTypePredicate is the Predicate implementation for
+// messageTypeExpectation.
+type messageTypePredicate struct {
+	expectedType      message.Type
+	expectedRole      message.Role
+	ok                bool
+	bestMatch         *envelope.Envelope
+	bestMatchDistance typecmp.Distance
+	tracker           tracker
 }
 
-// Ok returns true if the expectation passed.
-func (e *messageTypeExpectation) Ok() bool {
-	return e.ok
+func (p *messageTypePredicate) Notify(f fact.Fact) {
+	if p.ok {
+		return
+	}
+
+	p.tracker.Notify(f)
+
+	switch x := f.(type) {
+	case fact.DispatchCycleBegun:
+		if p.tracker.matchDispatchCycle {
+			p.messageProduced(x.Envelope)
+		}
+	case fact.EventRecordedByAggregate:
+		p.messageProduced(x.EventEnvelope)
+	case fact.EventRecordedByIntegration:
+		p.messageProduced(x.EventEnvelope)
+	case fact.CommandExecutedByProcess:
+		p.messageProduced(x.CommandEnvelope)
+	}
 }
 
-// BuildReport generates a report about the expectation.
-//
-// ok is true if the expectation is considered to have passed. This may not be
-// the same value as returned from Ok() when this expectation is used as a child
-// of a composite expectation.
-func (e *messageTypeExpectation) BuildReport(ok bool) *Report {
+// messageProduced updates the predicates's state to reflect the fact that a
+// message has been produced.
+func (p *messageTypePredicate) messageProduced(env *envelope.Envelope) {
+	dist := typecmp.MeasureDistance(
+		p.expectedType.ReflectType(),
+		env.Type.ReflectType(),
+	)
+
+	if dist < p.bestMatchDistance {
+		p.bestMatch = env
+		p.bestMatchDistance = dist
+	}
+
+	if dist == typecmp.Identical && p.expectedRole == env.Role {
+		p.ok = true
+	}
+}
+
+func (p *messageTypePredicate) Ok() bool {
+	return p.ok
+}
+
+func (p *messageTypePredicate) Done() {
+}
+
+func (p *messageTypePredicate) Report(treeOk bool) *Report {
 	rep := &Report{
-		TreeOk: ok,
-		Ok:     e.ok,
+		TreeOk: treeOk,
+		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
-			e.role,
+			p.expectedRole,
 			"<produce> any '%s' <message>",
-			e.expected,
+			p.expectedType,
 		),
 	}
 
-	if ok || e.ok {
+	if treeOk || p.ok {
 		return rep
 	}
 
-	if e.best == nil {
-		buildReportNoMatch(rep, &e.tracker)
-	} else if e.best.Role == e.role {
-		e.buildReportExpectedRole(rep)
+	if p.bestMatch == nil {
+		reportNoMatch(rep, &p.tracker)
+	} else if p.bestMatch.Role == p.expectedRole {
+		p.reportExpectedRole(rep)
 	} else {
-		e.buildReportUnexpectedRole(rep)
+		p.reportUnexpectedRole(rep)
 	}
 
 	return rep
 }
 
-// Notify updates the expectation's state in response to a new fact.
-func (e *messageTypeExpectation) Notify(f fact.Fact) {
-	if e.ok {
-		return
-	}
-
-	e.tracker.Notify(f)
-
-	switch x := f.(type) {
-	case fact.DispatchCycleBegun:
-		if e.tracker.matchDispatchCycle {
-			e.messageProduced(x.Envelope)
-		}
-	case fact.EventRecordedByAggregate:
-		e.messageProduced(x.EventEnvelope)
-	case fact.EventRecordedByIntegration:
-		e.messageProduced(x.EventEnvelope)
-	case fact.CommandExecutedByProcess:
-		e.messageProduced(x.CommandEnvelope)
-	}
-}
-
-// messageProduced updates the expectation's state to reflect the fact that a
-// message has been produced.
-func (e *messageTypeExpectation) messageProduced(env *envelope.Envelope) {
-	dist := typecmp.MeasureDistance(
-		e.expected.ReflectType(),
-		env.Type.ReflectType(),
-	)
-
-	if dist < e.dist {
-		e.best = env
-		e.dist = dist
-	}
-
-	if dist == typecmp.Identical && e.role == env.Role {
-		e.ok = true
-	}
-}
-
-// buildDiff adds a "message type diff" section to the result.
-func (e *messageTypeExpectation) buildDiff(rep *Report) {
-	report.WriteDiff(
-		&rep.Section("Message Type Diff").Content,
-		e.expected.String(),
-		e.best.Type.ReflectType().String(),
-	)
-}
-
-// buildReportExpectedRole builds a test report when there is a "best-match"
-// message available and it is of the expected role.
-func (e *messageTypeExpectation) buildReportExpectedRole(rep *Report) {
+// reportExpectedRole builds a test report when a "best-match" message was found
+// and it has the expected role.
+func (p *messageTypePredicate) reportExpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	if e.best.Origin == nil {
+	if p.bestMatch.Origin == nil {
 		rep.Explanation = inflect.Sprint(
-			e.role,
+			p.expectedRole,
 			"a <message> of a similar type was <produced> via a <dispatcher>",
 		)
 	} else {
 		rep.Explanation = inflect.Sprintf(
-			e.role,
+			p.expectedRole,
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
-			e.best.Origin.Handler.Identity().Name,
-			e.best.Origin.Handler.HandlerType(),
+			p.bestMatch.Origin.Handler.Identity().Name,
+			p.bestMatch.Origin.Handler.HandlerType(),
 		)
 	}
 
@@ -200,60 +172,60 @@ func (e *messageTypeExpectation) buildReportExpectedRole(rep *Report) {
 	// it currently is or isn't a pointer, just questions if it should be.
 	s.AppendListItem("check the message type, should it be a pointer?")
 
-	e.buildDiff(rep)
+	p.buildDiff(rep)
 }
 
-// buildReportUnexpectedRole builds a test report when there is a "best-match"
-// message available but it does not have the expected role.
-func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *Report) {
+// reportUnexpectedRole builds a test report when a "best-match" message was
+// found but it does not have the expected role.
+func (p *messageTypePredicate) reportUnexpectedRole(rep *Report) {
 	s := rep.Section(suggestionsSection)
 
-	if e.best.Origin == nil {
+	if p.bestMatch.Origin == nil {
 		s.AppendListItem(inflect.Sprint(
-			e.best.Role,
+			p.bestMatch.Role,
 			"verify that a <message> of this type was intended to be <produced> via a <dispatcher>",
 		))
 	} else {
 		s.AppendListItem(inflect.Sprintf(
-			e.best.Role,
+			p.bestMatch.Role,
 			"verify that the '%s' %s message handler intended to <produce> a <message> of this type",
-			e.best.Origin.Handler.Identity().Name,
-			e.best.Origin.Handler.HandlerType(),
+			p.bestMatch.Origin.Handler.Identity().Name,
+			p.bestMatch.Origin.Handler.HandlerType(),
 		))
 	}
 
-	if e.role == message.CommandRole {
+	if p.expectedRole == message.CommandRole {
 		s.AppendListItem("verify that ToExecuteCommandOfType() is the correct expectation, did you mean ToRecordEventOfType()?")
 	} else {
 		s.AppendListItem("verify that ToRecordEventOfType() is the correct expectation, did you mean ToExecuteCommandOfType()?")
 	}
 
-	if e.dist == typecmp.Identical {
-		if e.best.Origin == nil {
+	if p.bestMatchDistance == typecmp.Identical {
+		if p.bestMatch.Origin == nil {
 			rep.Explanation = inflect.Sprint(
-				e.best.Role,
+				p.bestMatch.Role,
 				"a message of this type was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
 			rep.Explanation = inflect.Sprintf(
-				e.best.Role,
+				p.bestMatch.Role,
 				"a message of this type was <produced> as a <message> by the '%s' %s message handler",
-				e.best.Origin.Handler.Identity().Name,
-				e.best.Origin.Handler.HandlerType(),
+				p.bestMatch.Origin.Handler.Identity().Name,
+				p.bestMatch.Origin.Handler.HandlerType(),
 			)
 		}
 	} else {
-		if e.best.Origin == nil {
+		if p.bestMatch.Origin == nil {
 			rep.Explanation = inflect.Sprint(
-				e.best.Role,
+				p.bestMatch.Role,
 				"a message of a similar type was <produced> as a <message> via a <dispatcher>",
 			)
 		} else {
 			rep.Explanation = inflect.Sprintf(
-				e.best.Role,
+				p.bestMatch.Role,
 				"a message of a similar type was <produced> as a <message> by the '%s' %s message handler",
-				e.best.Origin.Handler.Identity().Name,
-				e.best.Origin.Handler.HandlerType(),
+				p.bestMatch.Origin.Handler.Identity().Name,
+				p.bestMatch.Origin.Handler.HandlerType(),
 			)
 		}
 
@@ -262,6 +234,15 @@ func (e *messageTypeExpectation) buildReportUnexpectedRole(rep *Report) {
 		// should be.
 		s.AppendListItem("check the message type, should it be a pointer?")
 
-		e.buildDiff(rep)
+		p.buildDiff(rep)
 	}
+}
+
+// buildDiff adds a "message type diff" section to the result.
+func (p *messageTypePredicate) buildDiff(rep *Report) {
+	report.WriteDiff(
+		&rep.Section("Message Type Diff").Content,
+		p.expectedType.String(),
+		p.bestMatch.Type.String(),
+	)
 }
