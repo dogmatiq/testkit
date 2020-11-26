@@ -39,6 +39,8 @@ func ToSatisfy(
 
 // satisfyExpectation is an Expectation that calls a user-supplied function to
 // check for arbitrary criteria.
+//
+// It is the implementation used by ToSatisfy().
 type satisfyExpectation struct {
 	criteria string
 	pred     func(*SatisfyT)

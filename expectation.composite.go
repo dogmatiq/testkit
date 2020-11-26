@@ -100,6 +100,8 @@ func NoneOf(children ...Expectation) Expectation {
 
 // compositeExpectation is an Expectation that contains other expectations.
 //
+// It is the implementation used by AllOf(), AnyOf() and NoneOf().
+//
 // It uses a predicate function to determine whether the composite expectation
 // is met based on how many of the "child" expectations are met.
 type compositeExpectation struct {
