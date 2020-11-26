@@ -28,7 +28,6 @@ migrate tests from prior versions.
 - Add `TimeAdjuster` interface, for use with `AdvanceTime()`
 - Add `engine.EnableHandler()`
 - Add `Test.EnableHandlers()` and `DisableHandlers()`
-- Add `engine/panicx` package
 - **[BC]** Add `TestingT.Failed()`, `Fatal()` and `Helper()` methods
 
 ### Changed
@@ -38,7 +37,6 @@ migrate tests from prior versions.
 - **[BC]** `engine.New()` and `MustNew()` now accept `configkit.RichApplication` (previously `dogma.Application`)
 - **[BC]** Rename `WithStartTime()` to `StartTimeAt()`
 - **[BC]** Rename `WithOperationOptions()` to `WithUnsafeOperationOptions()`
-- **[BC]** Move `controller.ConvertUnexpectedMessagePanic()` to `panicx.EnrichUnexpectedMessage()`
 - **[BC]** Move `assert.AllOf()`, `AnyOf()` and `NoneOf()` to the `testkit` package
 - **[BC]** Move `assert.Should()`, to `testkit.ToSatisfy()`
 - **[BC]** Move `assert.CommandTypeExecuted()`, to `testkit.ToExecuteCommandOfType()`

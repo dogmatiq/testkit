@@ -4,7 +4,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	. "github.com/dogmatiq/testkit/engine/panicx"
+	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

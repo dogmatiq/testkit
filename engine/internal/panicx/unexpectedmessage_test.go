@@ -4,7 +4,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
-	. "github.com/dogmatiq/testkit/engine/panicx"
+	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
@@ -108,8 +108,8 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 					"Message":        Equal(MessageA1),
 					"PanicLocation": MatchAllFields(
 						Fields{
-							"Func": Equal("github.com/dogmatiq/testkit/engine/panicx_test.doPanic"),
-							"File": HaveSuffix("/engine/panicx/linenumber_test.go"),
+							"Func": Equal("github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic"),
+							"File": HaveSuffix("/engine/internal/panicx/linenumber_test.go"),
 							"Line": Equal(50),
 						},
 					),
