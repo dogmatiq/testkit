@@ -54,7 +54,10 @@ func (e *messageTypeExpectation) Banner() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(o PredicateOptions) (Predicate, error) {
+func (e *messageTypeExpectation) Predicate(
+	s PredicateScope,
+	o PredicateOptions,
+) (Predicate, error) {
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,

@@ -94,12 +94,13 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
+	s := PredicateScope{App: t.app}
 	o := PredicateOptions{}
 	act.ConfigurePredicate(&o)
 
 	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
 
-	p, err := e.Predicate(o)
+	p, err := e.Predicate(s, o)
 	if err != nil {
 		t.testingT.Fatal(err)
 		return // required when using a mock testingT that does not panic

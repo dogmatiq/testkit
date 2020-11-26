@@ -115,11 +115,14 @@ func (e *compositeExpectation) Banner() string {
 	return e.banner
 }
 
-func (e *compositeExpectation) Predicate(o PredicateOptions) (Predicate, error) {
+func (e *compositeExpectation) Predicate(
+	s PredicateScope,
+	o PredicateOptions,
+) (Predicate, error) {
 	var children []Predicate
 
 	for _, c := range e.children {
-		p, err := c.Predicate(o)
+		p, err := c.Predicate(s, o)
 		if err != nil {
 			return nil, err
 		}

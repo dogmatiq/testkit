@@ -1,6 +1,7 @@
 package testkit
 
 import (
+	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/fact"
 )
 
@@ -18,7 +19,7 @@ type Expectation interface {
 	//
 	// The predicate must be closed by calling Done() once the action it tests
 	// is completed.
-	Predicate(o PredicateOptions) (Predicate, error)
+	Predicate(s PredicateScope, o PredicateOptions) (Predicate, error)
 }
 
 // Predicate tests whether a specific Action satisfies an Expectation.
@@ -47,6 +48,13 @@ type Predicate interface {
 	//
 	// The behavior of Report() is undefined if Done() has not been called.
 	Report(treeOk bool) *Report
+}
+
+// PredicateScope encapsulates the element's of a Test's state that may be
+// inspected by Predicate implementations.
+type PredicateScope struct {
+	// App is the application being tested.
+	App configkit.RichApplication
 }
 
 // PredicateOptions contains values that dictate how a predicate should behave.

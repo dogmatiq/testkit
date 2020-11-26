@@ -50,7 +50,10 @@ func (e *satisfyExpectation) Banner() string {
 	return "TO " + strings.ToUpper(e.criteria)
 }
 
-func (e satisfyExpectation) Predicate(o PredicateOptions) (Predicate, error) {
+func (e satisfyExpectation) Predicate(
+	s PredicateScope,
+	o PredicateOptions,
+) (Predicate, error) {
 	return &satisfyPredicate{
 		criteria: e.criteria,
 		pred:     e.pred,
