@@ -11,13 +11,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## [0.11.0] - 2020-11-27
 
-This release is a major reworking of the testing API formalizes the concepts
-"actions" and "expectations" within a test with the goal of a more consistent
-API and a greater level of extensibility.
+This release includes extensive changes to the testing API. It formalizes the
+concepts of "actions" and "expectations" with the goal of a more consistent API
+and a greater level of extensibility.
 
 Despite the large number of backwards incompatible changes it is relatively
-simple to migrate existing tests to the new API. Please see the [MIGRATING.md]
-guide for detailed instructions.
+simple to migrate existing tests to the new API. Please see the
+[v0.11.0 migration guide] for detailed instructions.
 
 ### Testing API
 
@@ -207,7 +207,7 @@ guide for detailed instructions.
 - Initial release
 
 <!-- references -->
-[MIGRATING.md]: https://github.com/dogmatiq/testkit/blob/main/MIGRATING.md
+
 [Unreleased]: https://github.com/dogmatiq/testkit
 [0.1.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.0
 [0.1.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.1.1
@@ -224,6 +224,8 @@ guide for detailed instructions.
 [0.9.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.9.0
 [0.10.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.10.0
 [0.11.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.11.0
+
+[v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/v0.11.0/docs/MIGRATING-v0.11.0.md
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
