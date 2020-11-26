@@ -61,11 +61,6 @@ func (a callAction) Apply(ctx context.Context, s ActionScope) error {
 		s.Recorder.Options = nil
 	}()
 
-	log(
-		s.TestingT,
-		"--- CALLING USER-DEFINED FUNCTION ---",
-	)
-
 	a.fn()
 
 	return nil
