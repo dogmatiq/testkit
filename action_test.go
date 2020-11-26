@@ -11,8 +11,10 @@ var noop noopAction
 
 // noopAction is an Action that does nothing. It is intended to be used for
 // testing the test system itself.
-type noopAction struct{}
+type noopAction struct {
+	err error
+}
 
-func (noopAction) Banner() string                                 { return "[NO-OP]" }
-func (noopAction) ConfigurePredicate(*PredicateOptions)           {}
-func (noopAction) Apply(ctx context.Context, s ActionScope) error { return nil }
+func (a noopAction) Banner() string                                 { return "[NO-OP]" }
+func (a noopAction) ConfigurePredicate(*PredicateOptions)           {}
+func (a noopAction) Apply(ctx context.Context, s ActionScope) error { return a.err }

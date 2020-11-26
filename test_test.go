@@ -2,6 +2,7 @@ package testkit_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
@@ -12,6 +13,45 @@ import (
 )
 
 var _ = Describe("type Test", func() {
+	Describe("func Prepare()", func() {
+		It("fails the test if the action returns an error", func() {
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "<app-key>")
+				},
+			}
+
+			t := &testingmock.T{FailSilently: true}
+
+			Begin(t, app).
+				Prepare(
+					noopAction{errors.New("<error>")},
+				)
+
+			Expect(t.Failed()).To(BeTrue())
+		})
+	})
+
+	Describe("func Expect()", func() {
+		It("fails the test if the action returns an error", func() {
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "<app-key>")
+				},
+			}
+
+			t := &testingmock.T{FailSilently: true}
+
+			Begin(t, app).
+				Expect(
+					noopAction{errors.New("<error>")},
+					pass,
+				)
+
+			Expect(t.Failed()).To(BeTrue())
+		})
+	})
+
 	Describe("func EnableHandlers()", func() {
 		It("enables the handler", func() {
 			called := false
