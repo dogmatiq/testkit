@@ -225,7 +225,7 @@ simple to migrate existing tests to the new API. Please see the
 [0.10.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.10.0
 [0.11.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.11.0
 
-[v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/v0.11.0/docs/MIGRATING-v0.11.0.md
+[v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/main/docs/MIGRATING-v0.11.0.md
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

@@ -70,14 +70,14 @@ package.
 
 <!-- BEFORE -->
 ```go
-test := New().Begin(t)
+test := New(app).Begin(t)
 ```
 
 </td><td>
 
 <!-- AFTER -->
 ```go
-test := Begin(t)
+test := Begin(t, app)
 ```
 
 </td></tr>
@@ -86,14 +86,14 @@ test := Begin(t)
 
 <!-- BEFORE -->
 ```go
-test := New().BeginContext(ctx, t)
+test := New(app).BeginContext(ctx, t)
 ```
 
 </td><td>
 
 <!-- AFTER -->
 ```go
-test := BeginContext(ctx, t)
+test := BeginContext(ctx, t, app)
 ```
 
 </td></tr>
