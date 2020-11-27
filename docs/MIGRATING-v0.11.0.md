@@ -28,7 +28,7 @@ Actions can be performed without any expectations using `Test.Prepare()`.
 
 ### Expectations
 
-An expectation is some criteria that an action is expected to meet. The are
+An expectation is some criteria that an action is expected to meet. They are
 represented by the `Expectation` interface.
 
 The following functions in the `testkit` package each return an `Expectation`:
@@ -383,7 +383,7 @@ NoneOf(/* ... */)
 ```go
 assert.Should(
     "do something",
-    func(s *assert.S) { /* ... */},
+    func(s *assert.S) { /* ... */ },
 )
 ```
 
