@@ -406,9 +406,9 @@ Within a `Test` both projection and integration message handler types are
 disabled by default. Prior to this release such handlers could be enabled using
 `WithOperationOptions(...)`.
 
-As of this release enabling or disabling handlers by type is discouraged
-<sup>2</sup>. Instead, individual handlers are enabled and disabled by name
-using the `Test.EnableHandlers()` and `DisableHandlers()` methods.
+As of this release enabling or disabling handlers by type is discouraged ².
+Instead, individual handlers are enabled and disabled by name using the
+`Test.EnableHandlers()` and `DisableHandlers()` methods.
 
 This change is made to accomodate future changes to the expectation and
 reporting systems that will analyse each handler's routing configuration to
@@ -441,11 +441,11 @@ test := Begin(t).
 
 ---
 
-<strong><sup>1</sup></strong> The function passed to `Call()` no longer
-returns an `error`. Use the standard features of your testing framework to
-ensure no errors occur within the function.
+¹ The function passed to `Call()` no longer returns an `error`. Use the standard
+features of your testing framework to ensure no errors occur within the
+function.
 
-<strong><sup>2</sup></strong> For the time being it is still possible to set
-engine operation options within a `Test` using `WithUnsafeOperationOptions()`.
-This approach provides no guarantees as to how these options will interact with
-the operation options that are set automatically by the `Test`.
+² For the time being it is still possible to set engine operation options within
+a `Test` using `WithUnsafeOperationOptions()`. This approach provides no
+guarantees as to how these options will interact with the operation options that
+are set automatically by the `Test`.
