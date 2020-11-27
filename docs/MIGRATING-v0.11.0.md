@@ -1,4 +1,4 @@
-# Migrating to Testkit v0.11.0
+# Migrating to version 0.11.0
 
 ## Overview
 
