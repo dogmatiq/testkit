@@ -246,17 +246,13 @@ test.Call(
 <!-- AFTER -->
 ```go
 test.Expect(
-    Call(func() { /* see note 1 */ }),
+    Call(func() { /* no error is returned ¹ */ }),
     ToRecordEvent(SomeEvent{ /* ... */ }),
 )
 ```
 
 </td></tr>
 </table>
-
-<sup>1</sup> The function passed to `Call()` no longer returns an `error`. Use
-the standard features of your testing framework to ensure no errors occur within
-the function.
 
 ### The `assert` package has been removed
 
@@ -403,3 +399,54 @@ ToSatisfy(
 
 </td></tr>
 </table>
+
+### Enabling and disabling message handlers
+
+Within a `Test` both projection and integration message handler types are
+disabled by default. Prior to this release such handlers could be enabled using
+`WithOperationOptions(...)`.
+
+As of this release enabling or disabling handlers by type is discouraged
+<sup>2</sup>. Instead, individual handlers are enabled and disabled by name
+using the `Test.EnableHandlers()` and `DisableHandlers()` methods.
+
+This change is made to accomodate future changes to the expectation and
+reporting systems that will analyse each handler's routing configuration to
+eliminate impossible expectations and provide more meaningful failure reports.
+
+<table width="100%">
+<thead><tr><td>Before</td><td>After</td></tr></head>
+<tr valign="top"><td>
+
+<!-- BEFORE -->
+```go
+test := New().Begin(
+    t,
+    WithOperationOptions(
+        engine.EnableProjections(true),
+    ),
+)
+```
+
+</td><td>
+
+<!-- AFTER -->
+```go
+test := Begin(t).
+    EnableHandlers("some-projection")
+```
+
+</td></tr>
+</table>
+
+---
+
+<small><strong><sup>1</sup></strong> The function passed to `Call()` no longer
+returns an `error`. Use the standard features of your testing framework to
+ensure no errors occur within the function.</small>
+
+<small><strong><sup>2</sup></strong> For the time being it is still possible to
+set engine operation options within a `Test` using the
+`WithUnsafeOperationOptions()` option. This approach provides no guarantees as
+to how these options will interact with the operation options that are set
+automatically by the `Test`.</small>
