@@ -441,12 +441,11 @@ test := Begin(t).
 
 ---
 
-<small><strong><sup>1</sup></strong> The function passed to `Call()` no longer
+<strong><sup>1</sup></strong> The function passed to `Call()` no longer
 returns an `error`. Use the standard features of your testing framework to
-ensure no errors occur within the function.</small>
+ensure no errors occur within the function.
 
-<small><strong><sup>2</sup></strong> For the time being it is still possible to
-set engine operation options within a `Test` using the
-`WithUnsafeOperationOptions()` option. This approach provides no guarantees as
-to how these options will interact with the operation options that are set
-automatically by the `Test`.</small>
+<strong><sup>2</sup></strong> For the time being it is still possible to set
+engine operation options within a `Test` using `WithUnsafeOperationOptions()`.
+This approach provides no guarantees as to how these options will interact with
+the operation options that are set automatically by the `Test`.
