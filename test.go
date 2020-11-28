@@ -82,7 +82,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 
 	for _, act := range actions {
 		logf(t.testingT, "--- %s ---", act.Banner())
-		if err := t.applyAction(act); err != nil {
+		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
 		}
 	}
@@ -111,7 +111,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 	// p.Report().
 	if err := func() error {
 		defer p.Done()
-		return t.applyAction(act, engine.WithObserver(p))
+		return t.doAction(act, engine.WithObserver(p))
 	}(); err != nil {
 		t.testingT.Fatal(err)
 		return // required when using a mock testingT that does not panic
@@ -170,15 +170,15 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 	return t
 }
 
-// applyAction calls act.Apply() with a scope appropriate for this test.
-func (t *Test) applyAction(act Action, options ...engine.OperationOption) error {
+// doAction calls act.Do() with a scope appropriate for this test.
+func (t *Test) doAction(act Action, options ...engine.OperationOption) error {
 	opts := []engine.OperationOption{
 		engine.WithCurrentTime(t.virtualClock),
 	}
 	opts = append(opts, t.operationOptions...)
 	opts = append(opts, options...)
 
-	return act.Apply(
+	return act.Do(
 		t.ctx,
 		ActionScope{
 			App:              t.app,

@@ -30,7 +30,7 @@ type callAction struct {
 }
 
 // Banner returns a human-readable banner to display in the logs when this
-// action is applied.
+// action is performed.
 //
 // The banner text should be in uppercase, and worded in the present tense,
 // for example "DOING ACTION".
@@ -40,13 +40,13 @@ func (a callAction) Banner() string {
 
 // ConfigurePredicate updates o with any options required by the action.
 //
-// It is called before Apply() when the action is used with Test.Expect().
+// It is called before Do() when the action is used with Test.Expect().
 func (a callAction) ConfigurePredicate(o *PredicateOptions) {
 	o.MatchDispatchCycleStartedFacts = true
 }
 
-// Apply performs the action within the context of a specific test.
-func (a callAction) Apply(ctx context.Context, s ActionScope) error {
+// Do performs the action within the context of a specific test.
+func (a callAction) Do(ctx context.Context, s ActionScope) error {
 	s.Executor.Engine = s.Engine
 	s.Recorder.Engine = s.Engine
 	s.Executor.Options = s.OperationOptions

@@ -68,7 +68,7 @@ type advanceTimeAction struct {
 }
 
 // Banner returns a human-readable banner to display in the logs when this
-// action is applied.
+// action is performed.
 //
 // The banner text should be in uppercase, and worded in the present tense,
 // for example "DOING ACTION".
@@ -81,12 +81,12 @@ func (a advanceTimeAction) Banner() string {
 
 // ConfigurePredicate updates o with any options required by the action.
 //
-// It is called before Apply() when the action is used with Test.Expect().
+// It is called before Do() when the action is used with Test.Expect().
 func (a advanceTimeAction) ConfigurePredicate(o *PredicateOptions) {
 }
 
-// Apply performs the action within the context of a specific test.
-func (a advanceTimeAction) Apply(ctx context.Context, s ActionScope) error {
+// Do performs the action within the context of a specific test.
+func (a advanceTimeAction) Do(ctx context.Context, s ActionScope) error {
 	now := a.adj.Step(*s.VirtualClock)
 
 	if now.Before(*s.VirtualClock) {

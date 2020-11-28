@@ -14,7 +14,7 @@ import (
 // application.
 type Action interface {
 	// Banner returns a human-readable banner to display in the logs when this
-	// action is applied.
+	// action is performed.
 	//
 	// The banner text should be in uppercase, and worded in the present tense,
 	// for example "DOING ACTION".
@@ -22,11 +22,11 @@ type Action interface {
 
 	// ConfigurePredicate updates o with any options required by the action.
 	//
-	// It is called before Apply() when the action is used with Test.Expect().
+	// It is called before Do() when the action is used with Test.Expect().
 	ConfigurePredicate(o *PredicateOptions)
 
-	// Apply performs the action within the context of a specific test.
-	Apply(ctx context.Context, s ActionScope) error
+	// Do performs the action within the context of a specific test.
+	Do(ctx context.Context, s ActionScope) error
 }
 
 // ActionScope encapsulates the element's of a Test's state that may be
