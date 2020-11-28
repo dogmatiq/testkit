@@ -50,15 +50,12 @@ func (e *satisfyExpectation) Banner() string {
 	return "TO " + strings.ToUpper(e.criteria)
 }
 
-func (e satisfyExpectation) Predicate(
-	s PredicateScope,
-	o PredicateOptions,
-) (Predicate, error) {
+func (e satisfyExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	return &satisfyPredicate{
 		criteria: e.criteria,
 		pred:     e.pred,
 		satisfyT: SatisfyT{
-			Options: o,
+			Options: s.Options,
 			name:    e.criteria,
 		},
 	}, nil
