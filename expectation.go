@@ -3,6 +3,7 @@ package testkit
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/report"
 )
 
 // An Expectation describes some criteria that may be met by an action.
@@ -55,6 +56,9 @@ type Predicate interface {
 type PredicateScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
+
+	// Report is the report that describes the results of the test.
+	Report *report.Report
 
 	// Options contains values that dictate how the predicate should behave.
 	// The options are provided by the Test and the Action being performed.

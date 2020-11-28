@@ -11,6 +11,7 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/report"
 )
 
 // Test contains the state of a single test.
@@ -18,6 +19,7 @@ type Test struct {
 	ctx              context.Context
 	testingT         TestingT
 	app              configkit.RichApplication
+	report           report.Report
 	virtualClock     time.Time
 	engine           *engine.Engine
 	executor         engine.CommandExecutor
@@ -94,7 +96,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
-	s := PredicateScope{App: t.app}
+	s := PredicateScope{
+		App:    t.app,
+		Report: &t.report,
+	}
 	act.ConfigurePredicate(&s.Options)
 
 	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
@@ -182,6 +187,7 @@ func (t *Test) doAction(act Action, options ...engine.OperationOption) error {
 		t.ctx,
 		ActionScope{
 			App:              t.app,
+			Report:           &t.report,
 			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,
 			Executor:         &t.executor,

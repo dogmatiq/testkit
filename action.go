@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/internal/report"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -39,6 +40,9 @@ type Action interface {
 type ActionScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
+
+	// Report is the report that describes the results of the test.
+	Report *report.Report
 
 	// VirtualClock is the time that the Test uses as the engine time for the
 	// NEXT Action.
