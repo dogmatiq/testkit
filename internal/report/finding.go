@@ -3,6 +3,9 @@ package report
 // A Finding is a piece of information discovered by observing the engine
 // throughout the lifetime of a test.
 type Finding struct {
+	// Polarity indicates how the finding influenced test result, if at all.
+	Polarity FindingPolarity
+
 	// Caption is a brief description of the finding.
 	//
 	// It must not be empty. It should be given in lower case without a trailing
@@ -29,9 +32,6 @@ type Finding struct {
 	// in preference to "The expected event was not recorded.".
 	Summary string
 
-	// Polarity indicates how the finding influenced test result, if at all.
-	Polarity FindingPolarity
-
 	// Evidence contains other findings that led to this finding.
 	Evidence []Finding
 
@@ -46,7 +46,7 @@ type Finding struct {
 	Suggestions []Suggestion
 }
 
-// FindingPolarity is an numerations of the "polarity" of a finding, which
+// FindingPolarity is an enumeration of the "polarity" of a finding, which
 // describes the effect of the finding on the result of a test.
 type FindingPolarity int
 
@@ -63,32 +63,41 @@ const (
 	Positive FindingPolarity = +1
 )
 
-// FindingBuilder builds a finding, which is a discovery made by observing the
-// engine throughout the lifetime of a test.
-type FindingBuilder struct{}
-
-// Summary adds an optional human-readable summary of the finding.
-//
-// If the Finding is a result of a failed Expectation the summary should
-// give the best explanation as to why the failure occurred.
-//
-// For example, use "The handler that records this event has been disabled."
-// in preference to "The expected event was not recorded.".
-func (b *FindingBuilder) Summary(s string) {
-	panic("not implemented")
+// FindingBuilder builds a Finding.
+type FindingBuilder struct {
+	done    func(Finding)
+	finding Finding
 }
 
-// Evidence adds a "evidentiary" finding to this finding.
-//
-// An evidentiary finding is some finding that is used as supporting
-// evidence for another finding.
-func (b *FindingBuilder) Evidence() FindingBuilder {
-	panic("not implemented")
+// Summary adds an optional summary to the finding.
+func (b *FindingBuilder) Summary(s string) {
+	b.finding.Summary = s
+}
+
+// BuildEvidence returns a FindingBuilder that adds a finding to this finding as
+// "supporting evidence".
+func (b *FindingBuilder) BuildEvidence(
+	p FindingPolarity,
+	c string,
+) *FindingBuilder {
+	return &FindingBuilder{
+		b.addEvidence,
+		Finding{
+			Polarity: p,
+			Caption:  c,
+		},
+	}
 }
 
 // Content adds arbitrary content to the finding.
 func (b *FindingBuilder) Content(heading, body string) {
-	panic("not implemented")
+	b.finding.Content = append(
+		b.finding.Content,
+		Content{
+			heading,
+			body,
+		},
+	)
 }
 
 // Suggestion adds a suggestion to the finding.
@@ -101,10 +110,21 @@ func (b *FindingBuilder) Content(heading, body string) {
 // trailing period, exclamation or question mark, similar to how Go error
 // messages are formatted.
 func (b *FindingBuilder) Suggestion(con SuggestionConfidence, c string) {
-	panic("not implemented")
+	b.finding.Suggestions = append(
+		b.finding.Suggestions,
+		Suggestion{
+			con,
+			c,
+		},
+	)
 }
 
 // Done marks the finding as complete.
 func (b *FindingBuilder) Done() Finding {
-	panic("not implemented")
+	b.done(b.finding)
+	return b.finding
+}
+
+func (b FindingBuilder) addEvidence(f Finding) {
+	b.finding.Evidence = append(b.finding.Evidence, f)
 }

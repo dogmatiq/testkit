@@ -1,6 +1,8 @@
 package report
 
-import "github.com/dogmatiq/testkit/fact"
+import (
+	"github.com/dogmatiq/testkit/fact"
+)
 
 // Stage encapsulates the activity and findings that occurs within one part of
 // the test.
@@ -12,6 +14,9 @@ type Stage struct {
 	// are formatted.
 	Caption string
 
+	// Result is the result of the stage.
+	Result TestResult
+
 	// Transcript is a history of what occurred during this stage.
 	Transcript Transcript
 
@@ -22,44 +27,50 @@ type Stage struct {
 	Findings []Finding
 }
 
-// StageBuilder builds a report stage, which encapsulates
-// the activity and findings that occurs within one part of the test.
-type StageBuilder struct{}
-
-// TranscriptFact add a fact entry to the stage's transcript.
-func (b *StageBuilder) TranscriptFact(f fact.Fact) {
-	panic("not implemented")
+// StageBuilder builds a Stage.
+type StageBuilder struct {
+	report *Report
+	stage  Stage
 }
 
-// TranscriptLog adds an arbitrary log message to the stage's transcript.
-func (b *StageBuilder) TranscriptLog(format string, args ...interface{}) {
-	panic("not implemented")
+// BuildTranscriptFact returns a TranscriptFactBuilder that adds a fact to the
+// stage's transcript.
+func (b *StageBuilder) BuildTranscriptFact(f fact.Fact) *TranscriptFactBuilder {
+	return &TranscriptFactBuilder{
+		&b.stage,
+		TranscriptFact{
+			Fact:         f,
+			ResultBefore: b.report.TestResult,
+		},
+	}
 }
 
-// Content adds arbitrary content to the stage.
-func (b *StageBuilder) Content(heading, body string) {
-	panic("not implemented")
+// AddTranscriptLog adds an arbitrary log message to the stage's transcript.
+func (b *StageBuilder) AddTranscriptLog(
+	format string,
+	args ...interface{},
+) {
+	b.stage.Transcript = append(
+		b.stage.Transcript,
+		TranscriptLog{
+			format,
+			args,
+		},
+	)
 }
 
-// Finding adds a new finding to the stage. A finding is some discovery made
-// by observing the engine throughout the lifetime of a test.
-//
-// c is the finding's caption, a brief description of what was discovered.
-// It must not be empty. It should be lower case without a trailing period,
-// exclamation or question mark, similar to how Go error messages are
-// formatted.
-//
-// If the Finding is a result of an Expectation the caption should be
-// phrased in terms of the expectation and not the cause of the
-// expectation's passing or failing.
-//
-// For example, use "the expected DepositSubmitted event was not recorded"
-// in preference to "no events were recorded at all".
-func (b *StageBuilder) Finding(p FindingPolarity, c string) FindingBuilder {
-	panic("not implemented")
+// AddContent adds arbitrary content to the stage.
+func (b *StageBuilder) AddContent(heading, body string) {
+	b.stage.Content = append(
+		b.stage.Content,
+		Content{
+			heading,
+			body,
+		})
 }
 
-// Done marks the stage as complete.
+// Done adds the stage to the report.
 func (b *StageBuilder) Done() Stage {
-	panic("not implemented")
+	b.report.Stages = append(b.report.Stages, b.stage)
+	return b.stage
 }
