@@ -54,19 +54,16 @@ func (e *messageTypeExpectation) Banner() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(
-	s PredicateScope,
-	o PredicateOptions,
-) (Predicate, error) {
+func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
 		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
 			role:               e.expectedRole,
-			matchDispatchCycle: o.MatchDispatchCycleStartedFacts,
+			matchDispatchCycle: s.Options.MatchDispatchCycleStartedFacts,
 		},
-	}, validateRole(s, o, e.expectedType, e.expectedRole)
+	}, validateRole(s, e.expectedType, e.expectedRole)
 }
 
 // messageTypePredicate is the Predicate implementation for

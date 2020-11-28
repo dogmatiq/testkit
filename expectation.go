@@ -19,7 +19,7 @@ type Expectation interface {
 	//
 	// The predicate must be closed by calling Done() once the action it tests
 	// is completed.
-	Predicate(s PredicateScope, o PredicateOptions) (Predicate, error)
+	Predicate(s PredicateScope) (Predicate, error)
 }
 
 // Predicate tests whether a specific Action satisfies an Expectation.
@@ -55,6 +55,10 @@ type Predicate interface {
 type PredicateScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
+
+	// Options contains values that dictate how the predicate should behave.
+	// The options are provided by the Test and the Action being performed.
+	Options PredicateOptions
 }
 
 // PredicateOptions contains values that dictate how a predicate should behave.

@@ -75,7 +75,6 @@ func reportNoMatch(rep *Report, t *tracker) {
 // within the application.
 func validateRole(
 	s PredicateScope,
-	o PredicateOptions,
 	t message.Type,
 	r message.Role,
 ) error {
@@ -98,7 +97,7 @@ func validateRole(
 			t,
 			actual,
 		)
-	} else if !o.MatchDispatchCycleStartedFacts {
+	} else if !s.Options.MatchDispatchCycleStartedFacts {
 		// If we're NOT matching messages from DispatchCycleStarted facts that
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
