@@ -17,8 +17,8 @@ type Report struct {
 	// report.
 	FailureMode string
 
-	// Steps contains details of each step performed within the test.
-	Steps []Step
+	// Stages contains details of each step performed within the test.
+	Stages []Stage
 }
 
 // TestResult is an enumeration of possible test results.
