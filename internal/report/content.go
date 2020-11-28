@@ -24,3 +24,9 @@ type FormatString struct {
 func (s FormatString) String() string {
 	return fmt.Sprintf(s.Format, s.Arguments...)
 }
+
+// Lazyf is a variant of fmt.Sprintf that returns a FormatString to be
+// substituted later.
+func Lazyf(format string, args ...interface{}) FormatString {
+	return FormatString{format, args}
+}
