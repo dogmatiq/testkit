@@ -9,7 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/location"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // scope is an implementation of dogma.AggregateCommandScope.

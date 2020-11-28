@@ -5,7 +5,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/internal/location"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // UnexpectedMessage is a panic value that provides more context when a handler

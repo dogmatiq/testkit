@@ -9,7 +9,7 @@ package location_test
 // imports statements added.
 
 import (
-	. "github.com/dogmatiq/testkit/internal/location"
+	. "github.com/dogmatiq/testkit/location"
 	// import padding
 	// import padding
 	// import padding
