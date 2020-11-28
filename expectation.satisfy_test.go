@@ -41,7 +41,7 @@ var _ = Describe("func ToSatisfy()", func() {
 		) {
 			test.Expect(
 				noop,
-				ToSatisfy("<criteria>", x),
+				ToSatisfy("<description>", x),
 			)
 
 			rm(testingT)
@@ -52,7 +52,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			func(*SatisfyT) {},
 			expectPass,
 			expectReport(
-				`✓ <criteria>`,
+				`✓ <description>`,
 			),
 		),
 		Entry(
@@ -62,7 +62,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fail() called at expectation.satisfy_test.go:61`,
@@ -75,7 +75,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectPass,
 			expectReport(
-				`✓ <criteria> (the expectation was skipped)`,
+				`✓ <description> (the expectation was skipped)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     SkipNow() called at expectation.satisfy_test.go:74`,
@@ -88,7 +88,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectPass,
 			expectReport(
-				`✓ <criteria>`,
+				`✓ <description>`,
 				``,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
@@ -101,7 +101,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectPass,
 			expectReport(
-				`✓ <criteria>`,
+				`✓ <description>`,
 				``,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
@@ -114,7 +114,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Error() called at expectation.satisfy_test.go:113`,
@@ -130,7 +130,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Errorf() called at expectation.satisfy_test.go:129`,
@@ -146,7 +146,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fatal() called at expectation.satisfy_test.go:145`,
@@ -162,7 +162,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fatalf() called at expectation.satisfy_test.go:161`,
@@ -183,7 +183,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:182`,
@@ -197,7 +197,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fail() called at expectation.satisfy_test.go:196`,
@@ -217,7 +217,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			},
 			expectFail,
 			expectReport(
-				`✗ <criteria> (the expectation failed)`,
+				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
 				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:216`,
@@ -225,17 +225,17 @@ var _ = Describe("func ToSatisfy()", func() {
 		),
 	)
 
-	It("produces the expected banner", func() {
+	It("produces the expected caption", func() {
 		test.Expect(
 			noop,
 			ToSatisfy(
-				"<criteria>",
+				"<description>",
 				func(*SatisfyT) {},
 			),
 		)
 
 		Expect(testingT.Logs).To(ContainElement(
-			"--- EXPECT [NO-OP] TO <CRITERIA> ---",
+			"--- expect [no-op] to <description> ---",
 		))
 	})
 
@@ -247,8 +247,8 @@ var _ = Describe("func ToSatisfy()", func() {
 
 	It("panics if the function is nil", func() {
 		Expect(func() {
-			ToSatisfy("<criteria>", nil)
-		}).To(PanicWith(`ToSatisfy("<criteria>", <nil>): function must not be nil`))
+			ToSatisfy("<description>", nil)
+		}).To(PanicWith(`ToSatisfy("<description>", <nil>): function must not be nil`))
 	})
 
 	Describe("type SatisfyT", func() {
@@ -256,7 +256,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			test.Expect(
 				noop,
 				ToSatisfy(
-					"<criteria>",
+					"<description>",
 					x,
 				),
 			)
@@ -407,9 +407,9 @@ var _ = Describe("func ToSatisfy()", func() {
 		})
 
 		Describe("func Name()", func() {
-			It("returns the criteria string", func() {
+			It("returns the description", func() {
 				run(func(t *SatisfyT) {
-					Expect(t.Name()).To(Equal("<criteria>"))
+					Expect(t.Name()).To(Equal("<description>"))
 				})
 			})
 		})

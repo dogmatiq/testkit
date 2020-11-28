@@ -83,7 +83,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.testingT.Helper()
 
 	for _, act := range actions {
-		logf(t.testingT, "--- %s ---", act.Banner())
+		logf(t.testingT, "--- %s ---", act.Caption())
 		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
 		}
@@ -102,7 +102,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 	}
 	act.ConfigurePredicate(&s.Options)
 
-	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
+	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
 	p, err := e.Predicate(s)
 	if err != nil {
