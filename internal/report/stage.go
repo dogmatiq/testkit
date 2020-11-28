@@ -13,6 +13,9 @@ type Stage struct {
 	// Transcript is a history of what occurred during this stage.
 	Transcript Transcript
 
+	// Content is arbitrary additional content.
+	Content []Content
+
 	// Findings is the set of discoveries made by analysing the transcript.
 	Findings []Finding
 }

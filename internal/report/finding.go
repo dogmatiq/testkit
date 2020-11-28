@@ -35,6 +35,9 @@ type Finding struct {
 	// Evidence contains other findings that led to this finding.
 	Evidence []Finding
 
+	// Content is arbitrary additional content.
+	Content []Content
+
 	// Suggestions is a collection of recommended actions.
 	//
 	// For negative findings the suggestions would typically describe how to
