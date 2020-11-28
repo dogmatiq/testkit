@@ -44,8 +44,7 @@ func (e TranscriptFact) AcceptVisitor(
 
 // TranscriptLog is a TranscriptEntry for an arbitrary log message.
 type TranscriptLog struct {
-	Format    string
-	Arguments []interface{}
+	LogMessage FormatString
 }
 
 // AcceptVisitor calls the appropriate method on v, based on the entry type.
@@ -67,12 +66,13 @@ type TranscriptFactBuilder struct {
 func (b *TranscriptFactBuilder) BuildFinding(
 	p FindingPolarity,
 	caption string,
+	args ...interface{},
 ) *FindingBuilder {
 	return &FindingBuilder{
 		b.addFinding,
 		Finding{
 			Polarity: p,
-			Caption:  caption,
+			Caption:  FormatString{caption, args},
 		},
 	}
 }

@@ -17,14 +17,14 @@ type Report struct {
 	// It should describe the result of the test as succinctly and directly as
 	// possible. Assume that the reader will not see any further details of the
 	// report.
-	FailureMode string
+	FailureMode FormatString
 
 	// Caption is a brief description of what resulted in this activity.
 	//
 	// It must not be empty. It should be given in lower case without a trailing
 	// period, exclamation or question mark, similar to how Go error messages
 	// are formatted.
-	Caption string
+	Caption FormatString
 
 	// Transcript is a history of what occurred during this portion of the test.
 	Transcript Transcript
@@ -53,10 +53,10 @@ type Builder struct {
 }
 
 // New returns a Builder for a new report.
-func New(caption string) *Builder {
+func New(caption string, args ...interface{}) *Builder {
 	return &Builder{
 		Report{
-			Caption: caption,
+			Caption: FormatString{caption, args},
 		},
 	}
 }
@@ -81,20 +81,14 @@ func (b *Builder) AddTranscriptLog(
 	b.report.Transcript = append(
 		b.report.Transcript,
 		TranscriptLog{
-			format,
-			args,
+			FormatString{format, args},
 		},
 	)
 }
 
 // AddContent adds arbitrary content to the report.
-func (b *Builder) AddContent(heading, body string) {
-	b.report.Content = append(
-		b.report.Content,
-		Content{
-			heading,
-			body,
-		})
+func (b *Builder) AddContent(c Content) {
+	b.report.Content = append(b.report.Content, c)
 }
 
 // Done completes and returns the report.

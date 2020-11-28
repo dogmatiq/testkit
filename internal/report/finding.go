@@ -18,7 +18,7 @@ type Finding struct {
 	//
 	// For example, use "the expected DepositSubmitted event was not recorded"
 	// in preference to "no events were recorded at all".
-	Caption string
+	Caption FormatString
 
 	// Summary is a brief paragraph describing the finding.
 	//
@@ -79,25 +79,20 @@ func (b *FindingBuilder) Summary(s string) {
 func (b *FindingBuilder) BuildEvidence(
 	p FindingPolarity,
 	caption string,
+	args ...interface{},
 ) *FindingBuilder {
 	return &FindingBuilder{
 		b.addEvidence,
 		Finding{
 			Polarity: p,
-			Caption:  caption,
+			Caption:  FormatString{caption, args},
 		},
 	}
 }
 
-// Content adds arbitrary content to the finding.
-func (b *FindingBuilder) Content(heading, body string) {
-	b.finding.Content = append(
-		b.finding.Content,
-		Content{
-			heading,
-			body,
-		},
-	)
+// AddContent adds arbitrary content to the finding.
+func (b *FindingBuilder) AddContent(c Content) {
+	b.finding.Content = append(b.finding.Content, c)
 }
 
 // Suggestion adds a suggestion to the finding.
@@ -112,12 +107,13 @@ func (b *FindingBuilder) Content(heading, body string) {
 func (b *FindingBuilder) Suggestion(
 	con SuggestionConfidence,
 	caption string,
+	args ...interface{},
 ) {
 	b.finding.Suggestions = append(
 		b.finding.Suggestions,
 		Suggestion{
 			con,
-			caption,
+			FormatString{caption, args},
 		},
 	)
 }
