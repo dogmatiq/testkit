@@ -60,8 +60,8 @@ func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) 
 		expectedRole:      e.expectedRole,
 		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
-			role:               e.expectedRole,
-			matchDispatchCycle: s.Options.MatchDispatchCycleStartedFacts,
+			role:    e.expectedRole,
+			options: s.Options,
 		},
 	}, validateRole(s, e.expectedType, e.expectedRole)
 }
@@ -82,19 +82,8 @@ func (p *messageTypePredicate) Notify(f fact.Fact) {
 		return
 	}
 
-	p.tracker.Notify(f)
-
-	switch x := f.(type) {
-	case fact.DispatchCycleBegun:
-		if p.tracker.matchDispatchCycle {
-			p.messageProduced(x.Envelope)
-		}
-	case fact.EventRecordedByAggregate:
-		p.messageProduced(x.EventEnvelope)
-	case fact.EventRecordedByIntegration:
-		p.messageProduced(x.EventEnvelope)
-	case fact.CommandExecutedByProcess:
-		p.messageProduced(x.CommandEnvelope)
+	if env, ok := p.tracker.Notify(f); ok {
+		p.messageProduced(env)
 	}
 }
 
