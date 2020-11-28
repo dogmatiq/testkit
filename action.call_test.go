@@ -16,6 +16,7 @@ import (
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("func Call()", func() {
@@ -185,5 +186,16 @@ var _ = Describe("func Call()", func() {
 		Expect(func() {
 			Call(nil)
 		}).To(PanicWith("Call(<nil>): function must not be nil"))
+	})
+
+	It("captures the location that the action was created", func() {
+		act := call(func() {})
+		Expect(act.Location()).To(MatchAllFields(
+			Fields{
+				"Func": Equal("github.com/dogmatiq/testkit_test.call"),
+				"File": HaveSuffix("/action.linenumber_test.go"),
+				"Line": Equal(51),
+			},
+		))
 	})
 })

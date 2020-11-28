@@ -13,6 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("func AdvanceTime()", func() {
@@ -89,6 +90,17 @@ var _ = Describe("func AdvanceTime()", func() {
 		Expect(func() {
 			AdvanceTime(nil)
 		}).To(PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
+	})
+
+	It("captures the location that the action was created", func() {
+		act := advanceTime(ByDuration(10 * time.Second))
+		Expect(act.Location()).To(MatchAllFields(
+			Fields{
+				"Func": Equal("github.com/dogmatiq/testkit_test.advanceTime"),
+				"File": HaveSuffix("/action.linenumber_test.go"),
+				"Line": Equal(50),
+			},
+		))
 	})
 
 	When("passed a ToTime() adjustment", func() {

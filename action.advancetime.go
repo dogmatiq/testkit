@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // AdvanceTime returns an Action that simulates the passage of time by advancing
@@ -26,7 +27,10 @@ func AdvanceTime(adj TimeAdjustment) Action {
 		panic("AdvanceTime(<nil>): adjustment must not be nil")
 	}
 
-	return advanceTimeAction{adj}
+	return advanceTimeAction{
+		adj,
+		location.OfCall(),
+	}
 }
 
 // A TimeAdjustment describes a change to the test's virtual clock.
@@ -65,6 +69,7 @@ func ByDuration(d time.Duration) TimeAdjustment {
 // clock.
 type advanceTimeAction struct {
 	adj TimeAdjustment
+	loc location.Location
 }
 
 func (a advanceTimeAction) Banner() string {
@@ -72,6 +77,10 @@ func (a advanceTimeAction) Banner() string {
 		"ADVANCING TIME (%s)",
 		a.adj.Description(),
 	)
+}
+
+func (a advanceTimeAction) Location() location.Location {
+	return a.loc
 }
 
 func (a advanceTimeAction) ConfigurePredicate(o *PredicateOptions) {

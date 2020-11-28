@@ -4,6 +4,7 @@ import (
 	"context"
 
 	. "github.com/dogmatiq/testkit"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // noop is an Action that does nothing.
@@ -16,5 +17,6 @@ type noopAction struct {
 }
 
 func (a noopAction) Banner() string                              { return "[NO-OP]" }
+func (a noopAction) Location() location.Location                 { return location.Location{Func: "<noop>"} }
 func (a noopAction) ConfigurePredicate(*PredicateOptions)        {}
 func (a noopAction) Do(ctx context.Context, s ActionScope) error { return a.err }

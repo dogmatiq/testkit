@@ -1,6 +1,10 @@
 package testkit
 
-import "context"
+import (
+	"context"
+
+	"github.com/dogmatiq/testkit/location"
+)
 
 // Call is an Action that invokes a user-defined function within the context of
 // a test.
@@ -20,17 +24,25 @@ func Call(fn func()) Action {
 		panic("Call(<nil>): function must not be nil")
 	}
 
-	return callAction{fn}
+	return callAction{
+		fn,
+		location.OfCall(),
+	}
 }
 
 // callAction is an implementation of Action that invokes a user-defined
 // function.
 type callAction struct {
-	fn func()
+	fn  func()
+	loc location.Location
 }
 
 func (a callAction) Banner() string {
 	return "CALLING USER-DEFINED FUNCTION"
+}
+
+func (a callAction) Location() location.Location {
+	return a.loc
 }
 
 func (a callAction) ConfigurePredicate(o *PredicateOptions) {

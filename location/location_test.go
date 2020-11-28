@@ -1,7 +1,7 @@
 package location_test
 
 import (
-	. "github.com/dogmatiq/testkit/internal/location"
+	. "github.com/dogmatiq/testkit/location"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -15,8 +15,8 @@ var _ = Describe("type Location", func() {
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.doNothing"),
-					"File": HaveSuffix("/internal/location/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/location_test.doNothing"),
+					"File": HaveSuffix("/location/linenumber_test.go"),
 					"Line": Equal(50),
 				},
 			))
@@ -35,8 +35,8 @@ var _ = Describe("type Location", func() {
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.ofMethodT.Method"),
-					"File": HaveSuffix("/internal/location/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/location_test.ofMethodT.Method"),
+					"File": HaveSuffix("/location/linenumber_test.go"),
 					"Line": Equal(57),
 				},
 			))
@@ -55,8 +55,8 @@ var _ = Describe("type Location", func() {
 
 			Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.ofCallLayer2"),
-					"File": HaveSuffix("/internal/location/linenumber_test.go"),
+					"Func": Equal("github.com/dogmatiq/testkit/location_test.ofCallLayer2"),
+					"File": HaveSuffix("/location/linenumber_test.go"),
 					"Line": Equal(53),
 				},
 			))
@@ -71,8 +71,8 @@ var _ = Describe("type Location", func() {
 
 				Expect(loc).To(MatchAllFields(
 					Fields{
-						"Func": Equal("github.com/dogmatiq/testkit/internal/location_test.doPanic"),
-						"File": HaveSuffix("/internal/location/linenumber_test.go"),
+						"Func": Equal("github.com/dogmatiq/testkit/location_test.doPanic"),
+						"File": HaveSuffix("/location/linenumber_test.go"),
 						"Line": Equal(51),
 					},
 				))

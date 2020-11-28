@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/engine"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // Action is an interface for any action that can be performed within a test.
@@ -19,6 +20,10 @@ type Action interface {
 	// The banner text should be in uppercase, and worded in the present tense,
 	// for example "DOING ACTION".
 	Banner() string
+
+	// Location returns the location within the code that the action was
+	// constructed.
+	Location() location.Location
 
 	// ConfigurePredicate updates o with any options required by the action.
 	//

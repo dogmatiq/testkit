@@ -5,7 +5,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/testkit/internal/location"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // UnexpectedBehavior is a panic value that occurs when a handler exhibits some

@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // ExecuteCommand returns an Action that executes a command message.
@@ -15,7 +16,11 @@ func ExecuteCommand(m dogma.Message) Action {
 		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
 	}
 
-	return dispatchAction{message.CommandRole, m}
+	return dispatchAction{
+		message.CommandRole,
+		m,
+		location.OfCall(),
+	}
 }
 
 // RecordEvent returns an Action that records an event message.
@@ -24,14 +29,19 @@ func RecordEvent(m dogma.Message) Action {
 		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
 	}
 
-	return dispatchAction{message.EventRole, m}
+	return dispatchAction{
+		message.EventRole,
+		m,
+		location.OfCall(),
+	}
 }
 
 // dispatchAction is an implementation of Action that dispatches a message to
 // the engine.
 type dispatchAction struct {
-	r message.Role
-	m dogma.Message
+	r   message.Role
+	m   dogma.Message
+	loc location.Location
 }
 
 func (a dispatchAction) Banner() string {
@@ -40,6 +50,10 @@ func (a dispatchAction) Banner() string {
 		"<PRODUCING> %T <MESSAGE>",
 		a.m,
 	)
+}
+
+func (a dispatchAction) Location() location.Location {
+	return a.loc
 }
 
 func (a dispatchAction) ConfigurePredicate(o *PredicateOptions) {
