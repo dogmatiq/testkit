@@ -6,7 +6,7 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 )
 
-// Transcript is a history of what occurred during a Stage.
+// Transcript is a history of what occurred during a test.
 type Transcript []TranscriptEntry
 
 // TranscriptEntry is an entry within transcript.
@@ -58,35 +58,35 @@ func (e TranscriptLog) AcceptVisitor(
 
 // TranscriptFactBuilder builds a TranscriptFact.
 type TranscriptFactBuilder struct {
-	stage *Stage
-	entry TranscriptFact
+	report *Report
+	entry  TranscriptFact
 }
 
 // BuildFinding returns a FindingBuilder that adds a finding that was made as a
-// result of this fact to the stage.
+// result of this fact to the report.
 func (b *TranscriptFactBuilder) BuildFinding(
 	p FindingPolarity,
-	c string,
+	caption string,
 ) *FindingBuilder {
 	return &FindingBuilder{
 		b.addFinding,
 		Finding{
 			Polarity: p,
-			Caption:  c,
+			Caption:  caption,
 		},
 	}
 }
 
 // Done adds the fact to the transcript.
 func (b *TranscriptFactBuilder) Done() TranscriptFact {
-	b.stage.Transcript = append(b.stage.Transcript, b.entry)
+	b.report.Transcript = append(b.report.Transcript, b.entry)
 	return b.entry
 }
 
 func (b *TranscriptFactBuilder) addFinding(f Finding) {
 	if f.Polarity == Negative {
-		b.stage.Result = Failed
+		b.report.TestResult = Failed
 	}
 
-	b.stage.Findings = append(b.stage.Findings, f)
+	b.report.Findings = append(b.report.Findings, f)
 }

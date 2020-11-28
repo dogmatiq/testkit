@@ -1,6 +1,8 @@
 package report
 
-// Report is a report on the behavior and result of a test.
+import "github.com/dogmatiq/testkit/fact"
+
+// Report is a report on the behavior and result of a test or a portion thereof.
 type Report struct {
 	// TestResult is the final result of the test.
 	TestResult TestResult
@@ -17,23 +19,82 @@ type Report struct {
 	// report.
 	FailureMode string
 
-	// Stages contains details of each step performed within the test.
-	Stages []Stage
+	// Caption is a brief description of what resulted in this activity.
+	//
+	// It must not be empty. It should be given in lower case without a trailing
+	// period, exclamation or question mark, similar to how Go error messages
+	// are formatted.
+	Caption string
+
+	// Transcript is a history of what occurred during this portion of the test.
+	Transcript Transcript
+
+	// Content is arbitrary additional content.
+	Content []Content
+
+	// Findings is the set of discoveries made by analysing the transcript.
+	Findings []Finding
 }
+
+// TestResult is an enumeration of possible results for a test.
+type TestResult int
+
+const (
+	// Failed indicates that the test failed.
+	Failed TestResult = iota
+
+	// Passed indicates that a test passed.
+	Passed
+)
 
 // Builder builds a Report.
 type Builder struct {
 	report Report
 }
 
-// BuildStage returns a StageBuilder that adds a stage to the report.
-func (b *Builder) BuildStage(caption string) *StageBuilder {
-	return &StageBuilder{
-		&b.report,
-		Stage{
+// New returns a Builder for a new report.
+func New(caption string) *Builder {
+	return &Builder{
+		Report{
 			Caption: caption,
 		},
 	}
+}
+
+// BuildTranscriptFact returns a TranscriptFactBuilder that adds a fact to the
+// report's transcript.
+func (b *Builder) BuildTranscriptFact(f fact.Fact) *TranscriptFactBuilder {
+	return &TranscriptFactBuilder{
+		&b.report,
+		TranscriptFact{
+			Fact:         f,
+			ResultBefore: b.report.TestResult,
+		},
+	}
+}
+
+// AddTranscriptLog adds an arbitrary log message to the reports's transcript.
+func (b *Builder) AddTranscriptLog(
+	format string,
+	args ...interface{},
+) {
+	b.report.Transcript = append(
+		b.report.Transcript,
+		TranscriptLog{
+			format,
+			args,
+		},
+	)
+}
+
+// AddContent adds arbitrary content to the report.
+func (b *Builder) AddContent(heading, body string) {
+	b.report.Content = append(
+		b.report.Content,
+		Content{
+			heading,
+			body,
+		})
 }
 
 // Done completes and returns the report.

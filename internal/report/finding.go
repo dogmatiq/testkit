@@ -78,13 +78,13 @@ func (b *FindingBuilder) Summary(s string) {
 // "supporting evidence".
 func (b *FindingBuilder) BuildEvidence(
 	p FindingPolarity,
-	c string,
+	caption string,
 ) *FindingBuilder {
 	return &FindingBuilder{
 		b.addEvidence,
 		Finding{
 			Polarity: p,
-			Caption:  c,
+			Caption:  caption,
 		},
 	}
 }
@@ -109,12 +109,15 @@ func (b *FindingBuilder) Content(heading, body string) {
 // activity. It must not be empty. It should be lower case without a
 // trailing period, exclamation or question mark, similar to how Go error
 // messages are formatted.
-func (b *FindingBuilder) Suggestion(con SuggestionConfidence, c string) {
+func (b *FindingBuilder) Suggestion(
+	con SuggestionConfidence,
+	caption string,
+) {
 	b.finding.Suggestions = append(
 		b.finding.Suggestions,
 		Suggestion{
 			con,
-			c,
+			caption,
 		},
 	)
 }
