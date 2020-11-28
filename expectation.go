@@ -57,8 +57,8 @@ type PredicateScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
 
-	// Report is the report that describes the results of the test.
-	Report *report.Report
+	// Report is used to build the report that describes the test results.
+	Report *report.Builder
 
 	// Options contains values that dictate how the predicate should behave.
 	// The options are provided by the Test and the Action being performed.

@@ -41,8 +41,8 @@ type ActionScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
 
-	// Report is the report that describes the results of the test.
-	Report *report.Report
+	// Report is used to build the report that describes the test results.
+	Report *report.Builder
 
 	// VirtualClock is the time that the Test uses as the engine time for the
 	// NEXT Action.
