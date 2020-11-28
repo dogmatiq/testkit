@@ -34,11 +34,6 @@ type dispatchAction struct {
 	m dogma.Message
 }
 
-// Banner returns a human-readable banner to display in the logs when this
-// action is performed.
-//
-// The banner text should be in uppercase, and worded in the present tense,
-// for example "DOING ACTION".
 func (a dispatchAction) Banner() string {
 	return inflect.Sprintf(
 		a.r,
@@ -47,13 +42,9 @@ func (a dispatchAction) Banner() string {
 	)
 }
 
-// ConfigurePredicate updates o with any options required by the action.
-//
-// It is called before Do() when the action is used with Test.Expect().
 func (a dispatchAction) ConfigurePredicate(o *PredicateOptions) {
 }
 
-// Do performs the action within the context of a specific test.
 func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
 	r, ok := s.App.MessageTypes().RoleOf(mt)
