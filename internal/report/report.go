@@ -31,3 +31,22 @@ const (
 	// Passed indicates that a test passed.
 	Passed
 )
+
+// Builder builds a human-readable report on the behavior and result of a test.
+type Builder struct{}
+
+// Stage adds a new "stage" to the report. A stage encapsulates the activity
+// and findings that occurs within one part of the test.
+//
+// c is the stage's caption, a brief description of what resulted in this
+// activity. It must not be empty. It should be lower case without a
+// trailing period, exclamation or question mark, similar to how Go error
+// messages are formatted.
+func (b *Builder) Stage(c string) StageBuilder {
+	panic("not implemented")
+}
+
+// Done marks the report as complete.
+func (b *Builder) Done() Report {
+	panic("not implemented")
+}

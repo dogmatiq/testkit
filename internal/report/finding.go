@@ -62,3 +62,49 @@ const (
 	// Negative findings were discovered.
 	Positive FindingPolarity = +1
 )
+
+// FindingBuilder builds a finding, which is a discovery made by observing the
+// engine throughout the lifetime of a test.
+type FindingBuilder struct{}
+
+// Summary adds an optional human-readable summary of the finding.
+//
+// If the Finding is a result of a failed Expectation the summary should
+// give the best explanation as to why the failure occurred.
+//
+// For example, use "The handler that records this event has been disabled."
+// in preference to "The expected event was not recorded.".
+func (b *FindingBuilder) Summary(s string) {
+	panic("not implemented")
+}
+
+// Evidence adds a "evidentiary" finding to this finding.
+//
+// An evidentiary finding is some finding that is used as supporting
+// evidence for another finding.
+func (b *FindingBuilder) Evidence() FindingBuilder {
+	panic("not implemented")
+}
+
+// Content adds arbitrary content to the finding.
+func (b *FindingBuilder) Content(heading, body string) {
+	panic("not implemented")
+}
+
+// Suggestion adds a suggestion to the finding.
+//
+// A suggestion describes some recommended action that improves the Dogma
+// application or otherwise fixes a problem encountered during a test.
+//
+// c is the suggestion caption, a brief description of what resulted in this
+// activity. It must not be empty. It should be lower case without a
+// trailing period, exclamation or question mark, similar to how Go error
+// messages are formatted.
+func (b *FindingBuilder) Suggestion(con SuggestionConfidence, c string) {
+	panic("not implemented")
+}
+
+// Done marks the finding as complete.
+func (b *FindingBuilder) Done() Finding {
+	panic("not implemented")
+}
