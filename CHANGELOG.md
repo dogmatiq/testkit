@@ -9,6 +9,24 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+This release includes several changes to the underlying action and expectation
+systems, some of which are not backwards compatable. Tests written using v0.11.0
+should continue to work without modification.
+
+### Added
+
+- **[BC]** Added `PredicateOptions` to `PredicateScope`
+
+### Changed
+
+- **[BC]** Renamed `Action.Apply()` to `Do()`
+
+### Removed
+
+- **[BC]** Removed the `PredicateOptions` parameter from `Expectation.Predicate()`
+
 ## [0.11.0] - 2020-11-27
 
 This release includes extensive changes to the testing API. It formalizes the
