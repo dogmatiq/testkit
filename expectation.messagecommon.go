@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
 )
@@ -35,7 +36,7 @@ func reportNoMatch(rep *Report, t *tracker) {
 			}
 		}
 
-		if !t.matchDispatchCycle {
+		if !t.options.MatchDispatchCycleStartedFacts {
 			if allDisabled {
 				rep.Explanation = "no relevant handler types were enabled"
 				return
@@ -56,7 +57,7 @@ func reportNoMatch(rep *Report, t *tracker) {
 		rep.Explanation = "no messages were produced at all"
 	} else if t.produced == 0 {
 		rep.Explanation = inflect.Sprint(t.role, "no <messages> were <produced> at all")
-	} else if t.matchDispatchCycle {
+	} else if t.options.MatchDispatchCycleStartedFacts {
 		rep.Explanation = inflect.Sprint(t.role, "nothing <produced> the expected <message>")
 	} else {
 		rep.Explanation = inflect.Sprint(t.role, "none of the engaged handlers <produced> the expected <message>")
@@ -66,7 +67,7 @@ func reportNoMatch(rep *Report, t *tracker) {
 		s.AppendListItem("verify the logic within the '%s' %s message handler", n, t.engagedType[n])
 	}
 
-	if t.matchDispatchCycle {
+	if t.options.MatchDispatchCycleStartedFacts {
 		s.AppendListItem(inflect.Sprint(t.role, "verify the logic within the code that uses the <dispatcher>"))
 	}
 }
@@ -119,10 +120,8 @@ type tracker struct {
 	// role is the role that the message is expecting to find.
 	role message.Role
 
-	// matchDispatchCycle, if true, tracks messages that originate from a
-	// command executor or event recorder, not just those that originate from
-	// handlers within the application.
-	matchDispatchCycle bool
+	// options is the set of options passed to the predicate.
+	options PredicateOptions
 
 	// cycleBegun is true if at least one dispatch or tick cycle was started.
 	cycleBegun bool
@@ -144,13 +143,16 @@ type tracker struct {
 }
 
 // Notify updates the tracker's state in response to a new fact.
-func (t *tracker) Notify(f fact.Fact) {
+//
+// It returns the envelope containing the message that was tracked.
+func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
 		t.cycleBegun = true
 		t.enabled = x.EnabledHandlerTypes
-		if t.matchDispatchCycle {
+		if t.options.MatchDispatchCycleStartedFacts {
 			t.messageProduced(x.Envelope.Role)
+			return x.Envelope, true
 		}
 	case fact.HandlingBegun:
 		t.updateEngaged(
@@ -159,11 +161,16 @@ func (t *tracker) Notify(f fact.Fact) {
 		)
 	case fact.EventRecordedByAggregate:
 		t.messageProduced(x.EventEnvelope.Role)
+		return x.EventEnvelope, true
 	case fact.EventRecordedByIntegration:
 		t.messageProduced(x.EventEnvelope.Role)
+		return x.EventEnvelope, true
 	case fact.CommandExecutedByProcess:
 		t.messageProduced(x.CommandEnvelope.Role)
+		return x.CommandEnvelope, true
 	}
+
+	return nil, false
 }
 
 func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
