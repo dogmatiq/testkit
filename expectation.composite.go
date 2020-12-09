@@ -19,7 +19,7 @@ func AllOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		banner:   fmt.Sprintf("TO MEET %d EXPECTATIONS", n),
+		caption:  fmt.Sprintf("to meet %d expectations", n),
 		criteria: "all of",
 		children: children,
 		pred: func(passed int) (string, bool) {
@@ -48,7 +48,7 @@ func AnyOf(children ...Expectation) Expectation {
 	}
 
 	return &compositeExpectation{
-		banner:   fmt.Sprintf("TO MEET AT LEAST ONE OF %d EXPECTATIONS", n),
+		caption:  fmt.Sprintf("to meet at least one of %d expectations", n),
 		criteria: "any of",
 		children: children,
 		pred: func(passed int) (string, bool) {
@@ -72,13 +72,13 @@ func NoneOf(children ...Expectation) Expectation {
 		panic("NoneOf(): at least one child expectation must be provided")
 	}
 
-	banner := fmt.Sprintf("NOT TO MEET ANY OF %d EXPECTATIONS", n)
+	caption := fmt.Sprintf("not to meet any of %d expectations", n)
 	if n == 1 {
-		banner = fmt.Sprintf("NOT %s", children[0].Banner())
+		caption = fmt.Sprintf("not %s", children[0].Caption())
 	}
 
 	return &compositeExpectation{
-		banner:   banner,
+		caption:  caption,
 		criteria: "none of",
 		children: children,
 		pred: func(passed int) (string, bool) {
@@ -105,14 +105,14 @@ func NoneOf(children ...Expectation) Expectation {
 // It uses a predicate function to determine whether the composite expectation
 // is met based on how many of the "child" expectations are met.
 type compositeExpectation struct {
-	banner   string
+	caption  string
 	criteria string
 	children []Expectation
 	pred     func(passed int) (outcome string, ok bool)
 }
 
-func (e *compositeExpectation) Banner() string {
-	return e.banner
+func (e *compositeExpectation) Caption() string {
+	return e.caption
 }
 
 func (e *compositeExpectation) Predicate(s PredicateScope) (Predicate, error) {

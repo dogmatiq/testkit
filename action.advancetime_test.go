@@ -125,13 +125,13 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("produces the expected banner", func() {
+		It("produces the expected caption", func() {
 			test.Prepare(
 				AdvanceTime(ToTime(targetTime)),
 			)
 
 			Expect(t.Logs).To(ContainElement(
-				"--- ADVANCING TIME (to 2100-01-02T03:04:05Z) ---",
+				"--- advancing time to 2100-01-02T03:04:05Z ---",
 			))
 		})
 	})
@@ -156,13 +156,13 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("produces the expected banner", func() {
+		It("produces the expected caption", func() {
 			test.Prepare(
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)
 
 			Expect(t.Logs).To(ContainElement(
-				"--- ADVANCING TIME (by 3s) ---",
+				"--- advancing time by 3s ---",
 			))
 		})
 

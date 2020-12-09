@@ -11,6 +11,7 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/report"
 )
 
 // Test contains the state of a single test.
@@ -81,8 +82,11 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.testingT.Helper()
 
 	for _, act := range actions {
-		logf(t.testingT, "--- %s ---", act.Banner())
-		if err := t.doAction(act); err != nil {
+		logf(t.testingT, "--- %s ---", act.Caption())
+
+		report := report.New("%s", act.Caption())
+
+		if err := t.doAction(act, report); err != nil {
 			t.testingT.Fatal(err)
 		}
 	}
@@ -94,10 +98,20 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) {
 	t.testingT.Helper()
 
-	s := PredicateScope{App: t.app}
-	act.ConfigurePredicate(&s.Options)
+	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
-	logf(t.testingT, "--- EXPECT %s %s ---", act.Banner(), e.Banner())
+	report := report.New(
+		"expect %s %s",
+		act.Caption(),
+		e.Caption(),
+	)
+
+	s := PredicateScope{
+		App:    t.app,
+		Report: report,
+	}
+
+	act.ConfigurePredicate(&s.Options)
 
 	p, err := e.Predicate(s)
 	if err != nil {
@@ -111,7 +125,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 	// p.Report().
 	if err := func() error {
 		defer p.Done()
-		return t.doAction(act, engine.WithObserver(p))
+		return t.doAction(act, report, engine.WithObserver(p))
 	}(); err != nil {
 		t.testingT.Fatal(err)
 		return // required when using a mock testingT that does not panic
@@ -171,7 +185,11 @@ func (t *Test) DisableHandlers(names ...string) *Test {
 }
 
 // doAction calls act.Do() with a scope appropriate for this test.
-func (t *Test) doAction(act Action, options ...engine.OperationOption) error {
+func (t *Test) doAction(
+	act Action,
+	report *report.Builder,
+	options ...engine.OperationOption,
+) error {
 	opts := []engine.OperationOption{
 		engine.WithCurrentTime(t.virtualClock),
 	}
@@ -182,6 +200,7 @@ func (t *Test) doAction(act Action, options ...engine.OperationOption) error {
 		t.ctx,
 		ActionScope{
 			App:              t.app,
+			Report:           report,
 			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,
 			Executor:         &t.executor,

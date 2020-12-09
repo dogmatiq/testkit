@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"sync"
 
 	"github.com/dogmatiq/testkit/fact"
@@ -46,8 +45,8 @@ type satisfyExpectation struct {
 	pred     func(*SatisfyT)
 }
 
-func (e *satisfyExpectation) Banner() string {
-	return "TO " + strings.ToUpper(e.criteria)
+func (e *satisfyExpectation) Caption() string {
+	return "to " + e.criteria
 }
 
 func (e satisfyExpectation) Predicate(s PredicateScope) (Predicate, error) {

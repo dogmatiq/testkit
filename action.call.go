@@ -37,8 +37,8 @@ type callAction struct {
 	loc location.Location
 }
 
-func (a callAction) Banner() string {
-	return "CALLING USER-DEFINED FUNCTION"
+func (a callAction) Caption() string {
+	return "calling user-defined function"
 }
 
 func (a callAction) Location() location.Location {

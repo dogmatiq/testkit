@@ -3,16 +3,17 @@ package testkit
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/report"
 )
 
 // An Expectation describes some criteria that may be met by an action.
 type Expectation interface {
-	// Banner returns a human-readable banner to display in the logs when this
-	// expectation is used.
+	// Caption returns the caption that should be used for this action in the
+	// test report.
 	//
-	// The banner text should be in uppercase, and complete the sentence "The
-	// application is expected ...". For example, "TO DO A THING".
-	Banner() string
+	// It must be formatted according to the documentation on the
+	// report.Step.Caption field.
+	Caption() string
 
 	// Predicate returns a new predicate that checks that this expectation is
 	// satisfied.
@@ -55,6 +56,9 @@ type Predicate interface {
 type PredicateScope struct {
 	// App is the application being tested.
 	App configkit.RichApplication
+
+	// Report is used to build the report that describes the test results.
+	Report *report.Builder
 
 	// Options contains values that dictate how the predicate should behave.
 	// The options are provided by the Test and the Action being performed.

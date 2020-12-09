@@ -72,9 +72,9 @@ type advanceTimeAction struct {
 	loc location.Location
 }
 
-func (a advanceTimeAction) Banner() string {
+func (a advanceTimeAction) Caption() string {
 	return fmt.Sprintf(
-		"ADVANCING TIME (%s)",
+		"advancing time %s",
 		a.adj.Description(),
 	)
 }
