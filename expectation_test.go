@@ -27,12 +27,12 @@ type staticExpectation struct {
 	err error
 }
 
-func (e staticExpectation) Banner() string {
+func (e staticExpectation) Caption() string {
 	if e.ok {
-		return "TO [ALWAYS PASS]"
+		return "to [always pass]"
 	}
 
-	return "TO [ALWAYS FAIL]"
+	return "to [always fail]"
 }
 
 func (e staticExpectation) Predicate(PredicateScope) (Predicate, error) { return e, e.err }

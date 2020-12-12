@@ -14,12 +14,9 @@ import (
 // Actions always attempt to cause some state change within the engine or
 // application.
 type Action interface {
-	// Banner returns a human-readable banner to display in the logs when this
-	// action is performed.
-	//
-	// The banner text should be in uppercase, and worded in the present tense,
-	// for example "DOING ACTION".
-	Banner() string
+	// Caption returns the caption that should be used for this action in the
+	// test report.
+	Caption() string
 
 	// Location returns the location within the code that the action was
 	// constructed.

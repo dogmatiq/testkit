@@ -46,10 +46,10 @@ type messageTypeExpectation struct {
 	expectedRole message.Role
 }
 
-func (e *messageTypeExpectation) Banner() string {
+func (e *messageTypeExpectation) Caption() string {
 	return inflect.Sprintf(
 		e.expectedRole,
-		"TO <PRODUCE> A <MESSAGE> OF TYPE %s",
+		"to <produce> a <message> of type %s",
 		e.expectedType,
 	)
 }

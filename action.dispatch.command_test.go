@@ -125,13 +125,13 @@ var _ = Describe("func ExecuteCommand()", func() {
 		Expect(t.Failed()).To(BeTrue())
 	})
 
-	It("produces the expected banner", func() {
+	It("produces the expected caption", func() {
 		test.Prepare(
 			ExecuteCommand(MessageC1),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- EXECUTING fixtures.MessageC COMMAND ---",
+			"--- executing fixtures.MessageC command ---",
 		))
 	})
 

@@ -172,13 +172,13 @@ var _ = Describe("func Call()", func() {
 		)
 	})
 
-	It("produces the expected banner", func() {
+	It("produces the expected caption", func() {
 		test.Prepare(
 			Call(func() {}),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- CALLING USER-DEFINED FUNCTION ---",
+			"--- calling user-defined function ---",
 		))
 	})
 
