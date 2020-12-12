@@ -3,7 +3,7 @@ package report_test
 import (
 	"strings"
 
-	"github.com/dogmatiq/dogma/fixtures" // can't dot-import due to conflicts
+	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/internal/report"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,7 +12,7 @@ import (
 var _ = Describe("func RenderMessage()", func() {
 	It("returns a suitable representation", func() {
 		Expect(
-			RenderMessage(fixtures.MessageA1),
+			RenderMessage(MessageA1),
 		).To(Equal(join(
 			"fixtures.MessageA{",
 			`    Value: "A1"`,
