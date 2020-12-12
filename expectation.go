@@ -7,12 +7,9 @@ import (
 
 // An Expectation describes some criteria that may be met by an action.
 type Expectation interface {
-	// Banner returns a human-readable banner to display in the logs when this
-	// expectation is used.
-	//
-	// The banner text should be in uppercase, and complete the sentence "The
-	// application is expected ...". For example, "TO DO A THING".
-	Banner() string
+	// Caption returns the caption that should be used for this action in the
+	// test report.
+	Caption() string
 
 	// Predicate returns a new predicate that checks that this expectation is
 	// satisfied.

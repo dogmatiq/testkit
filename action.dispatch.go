@@ -44,10 +44,10 @@ type dispatchAction struct {
 	loc location.Location
 }
 
-func (a dispatchAction) Banner() string {
+func (a dispatchAction) Caption() string {
 	return inflect.Sprintf(
 		a.r,
-		"<PRODUCING> %T <MESSAGE>",
+		"<producing> %T <message>",
 		a.m,
 	)
 }
