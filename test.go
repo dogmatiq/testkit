@@ -91,7 +91,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 }
 
 // Expect ensures that a single action results in some expected behavior.
-func (t *Test) Expect(act Action, e Expectation) {
+func (t *Test) Expect(act Action, e Expectation) *Test {
 	t.testingT.Helper()
 
 	s := PredicateScope{App: t.app}
@@ -102,7 +102,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 	p, err := e.Predicate(s)
 	if err != nil {
 		t.testingT.Fatal(err)
-		return // required when using a mock testingT that does not panic
+		return t // required when using a mock testingT that does not panic
 	}
 
 	// Using a defer inside a closure satisfies the requirements of the
@@ -114,7 +114,7 @@ func (t *Test) Expect(act Action, e Expectation) {
 		return t.doAction(act, engine.WithObserver(p))
 	}(); err != nil {
 		t.testingT.Fatal(err)
-		return // required when using a mock testingT that does not panic
+		return t // required when using a mock testingT that does not panic
 	}
 
 	treeOk := p.Ok()
@@ -128,6 +128,8 @@ func (t *Test) Expect(act Action, e Expectation) {
 	if !treeOk {
 		t.testingT.FailNow()
 	}
+
+	return t
 }
 
 // CommandExecutor returns a dogma.CommandExecutor which can be used to execute

@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.12.0] - 2020-12-20
 
 This release includes several changes to the underlying action and expectation
 systems, some of which are not backwards compatable. Tests written using v0.11.0
@@ -23,6 +23,7 @@ should continue to work without modification.
 ### Changed
 
 - **[BC]** Renamed `Action.Apply()` to `Do()`
+- `Test.Expect()` now returns the `Test`, allowing chained calls
 
 ### Removed
 
@@ -243,6 +244,7 @@ simple to migrate existing tests to the new API. Please see the
 [0.9.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.9.0
 [0.10.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.10.0
 [0.11.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.11.0
+[0.12.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.12.0
 
 [v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/main/docs/MIGRATING-v0.11.0.md
 
