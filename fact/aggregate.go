@@ -41,6 +41,16 @@ type AggregateInstanceDestroyed struct {
 	Envelope   *envelope.Envelope
 }
 
+// AggregateInstanceDestructionReverted indicates that an aggregate message
+// handler "reverted" destruction of an aggregate instance by recording a new
+// event.
+type AggregateInstanceDestructionReverted struct {
+	Handler    configkit.RichAggregate
+	InstanceID string
+	Root       dogma.AggregateRoot
+	Envelope   *envelope.Envelope
+}
+
 // EventRecordedByAggregate indicates that an aggregate recorded an event while
 // handling a command.
 type EventRecordedByAggregate struct {

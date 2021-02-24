@@ -263,6 +263,15 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 			Entry(
+				"AggregateInstanceDestructionReverted",
+				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● destruction of instance reverted",
+				AggregateInstanceDestructionReverted{
+					Handler:    aggregate,
+					InstanceID: "<instance>",
+					Envelope:   command,
+				},
+			),
+			Entry(
 				"EventRecordedByAggregate",
 				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
