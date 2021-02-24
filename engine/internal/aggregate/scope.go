@@ -21,6 +21,7 @@ type scope struct {
 	root       dogma.AggregateRoot
 	now        time.Time
 	exists     bool
+	destroyed  bool
 	command    *envelope.Envelope
 	events     []*envelope.Envelope
 }
@@ -36,6 +37,7 @@ func (s *scope) Destroy() {
 
 	s.root = s.config.Handler().New()
 	s.exists = false
+	s.destroyed = true
 
 	s.observer.Notify(fact.AggregateInstanceDestroyed{
 		Handler:    s.config,
@@ -71,14 +73,24 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	}
 
 	if !s.exists {
-		s.observer.Notify(fact.AggregateInstanceCreated{
-			Handler:    s.config,
-			InstanceID: s.instanceID,
-			Root:       s.root,
-			Envelope:   s.command,
-		})
+		if s.destroyed {
+			s.observer.Notify(fact.AggregateInstanceDestructionReverted{
+				Handler:    s.config,
+				InstanceID: s.instanceID,
+				Root:       s.root,
+				Envelope:   s.command,
+			})
+		} else {
+			s.observer.Notify(fact.AggregateInstanceCreated{
+				Handler:    s.config,
+				InstanceID: s.instanceID,
+				Root:       s.root,
+				Envelope:   s.command,
+			})
+		}
 
 		s.exists = true
+		s.destroyed = false
 	}
 
 	panicx.EnrichUnexpectedMessage(

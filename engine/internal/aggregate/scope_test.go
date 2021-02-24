@@ -262,7 +262,7 @@ var _ = Describe("type scope", func() {
 				))
 			})
 
-			It("records facts about instance creation and the event if called after Destroy()", func() {
+			It("records facts about reverting destruction and the event if called after Destroy()", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -283,7 +283,7 @@ var _ = Describe("type scope", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buf.Facts()).To(ContainElement(
-					fact.AggregateInstanceCreated{
+					fact.AggregateInstanceDestructionReverted{
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
