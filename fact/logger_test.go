@@ -354,6 +354,15 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 			Entry(
+				"ProcessInstanceEndingReverted",
+				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● reverted ending process instance",
+				ProcessInstanceEndingReverted{
+					Handler:    process,
+					InstanceID: "<instance>",
+					Envelope:   event,
+				},
+			),
+			Entry(
 				"CommandExecutedByProcess",
 				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{

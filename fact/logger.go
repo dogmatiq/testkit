@@ -66,6 +66,8 @@ func (l *Logger) Notify(f Fact) {
 		l.processInstanceBegun(x)
 	case ProcessInstanceEnded:
 		l.processInstanceEnded(x)
+	case ProcessInstanceEndingReverted:
+		l.processInstanceEndingReverted(x)
 	case CommandExecutedByProcess:
 		l.commandExecutedByProcess(x)
 	case TimeoutScheduledByProcess:
@@ -357,6 +359,20 @@ func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 		},
 		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance ended",
+	)
+}
+
+// processInstanceEndingReverted returns the log message for f.
+func (l *Logger) processInstanceEndingReverted(f ProcessInstanceEndingReverted) {
+	l.log(
+		f.Envelope,
+		[]logging.Icon{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		f.Handler.Identity().Name+" "+f.InstanceID,
+		"reverted ending process instance",
 	)
 }
 
