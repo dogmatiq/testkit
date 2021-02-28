@@ -64,11 +64,11 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 					},
 					HandleEventFunc: func(
 						_ context.Context,
+						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
 						m dogma.Message,
 					) error {
 						if _, ok := m.(MessageE); ok {
-							s.Begin()
 							s.ExecuteCommand(MessageC1)
 						}
 						return nil

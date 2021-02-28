@@ -67,11 +67,11 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 					},
 					HandleEventFunc: func(
 						_ context.Context,
+						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
 						m dogma.Message,
 					) error {
 						if _, ok := m.(MessageE); ok {
-							s.Begin()
 							s.ExecuteCommand(MessageN1)
 						}
 						return nil
