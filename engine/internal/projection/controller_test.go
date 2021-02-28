@@ -290,7 +290,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		XIt("uses the handler's timeout hint", func() {
+		It("uses the handler's timeout hint", func() {
 			hint := 3 * time.Second
 			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				return hint
