@@ -50,6 +50,7 @@ func (c *Controller) Tick(
 			&scope{
 				config:   c.Config,
 				observer: obs,
+				now:      now,
 			},
 		)
 
@@ -68,7 +69,7 @@ func (c *Controller) Tick(
 func (c *Controller) Handle(
 	ctx context.Context,
 	obs fact.Observer,
-	_ time.Time,
+	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole)
@@ -138,6 +139,7 @@ func (c *Controller) Handle(
 				&scope{
 					config:   c.Config,
 					observer: obs,
+					now:      now,
 				},
 			)
 		}()

@@ -101,4 +101,26 @@ var _ = Describe("type scope", func() {
 			))
 		})
 	})
+
+	Describe("func Now()", func() {
+		It("returns the current engine time", func() {
+			now := time.Now()
+
+			handler.CompactFunc = func(
+				_ context.Context,
+				s dogma.ProjectionCompactScope,
+			) error {
+				Expect(s.Now()).To(Equal(now))
+				return nil
+			}
+
+			_, err := ctrl.Tick(
+				context.Background(),
+				fact.Ignore,
+				now,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
 })
