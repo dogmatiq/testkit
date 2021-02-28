@@ -23,7 +23,7 @@ type scope struct {
 	observer     fact.Observer
 	now          time.Time
 	root         dogma.ProcessRoot
-	exists       bool
+	ended        bool
 	env          *envelope.Envelope // event or timeout
 	commands     []*envelope.Envelope
 	ready        []*envelope.Envelope // timeouts <= now
@@ -34,43 +34,12 @@ func (s *scope) InstanceID() string {
 	return s.instanceID
 }
 
-func (s *scope) HasBegun() bool {
-	return s.exists
-}
-
-func (s *scope) Begin() bool {
-	if s.exists {
-		return false
-	}
-
-	s.exists = true
-
-	s.observer.Notify(fact.ProcessInstanceBegun{
-		Handler:    s.config,
-		InstanceID: s.instanceID,
-		Root:       s.root,
-		Envelope:   s.env,
-	})
-
-	return true
-}
-
 func (s *scope) End() {
-	if !s.exists {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        s.config,
-			Interface:      "ProcessMessageHandler",
-			Method:         s.handleMethod,
-			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
-			Description:    "ended a process instance that has not begun",
-			Location:       location.OfCall(),
-		})
+	if s.ended {
+		return
 	}
 
-	s.exists = false
-	s.ready = nil
-	s.pending = nil
+	s.ended = true
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		Handler:    s.config,
@@ -78,22 +47,6 @@ func (s *scope) End() {
 		Root:       s.root,
 		Envelope:   s.env,
 	})
-}
-
-func (s *scope) Root() dogma.ProcessRoot {
-	if !s.exists {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        s.config,
-			Interface:      "ProcessMessageHandler",
-			Method:         s.handleMethod,
-			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
-			Description:    "accessed the root of a process instance that has not begun",
-			Location:       location.OfCall(),
-		})
-	}
-
-	return s.root
 }
 
 func (s *scope) ExecuteCommand(m dogma.Message) {
@@ -121,16 +74,15 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		})
 	}
 
-	if !s.exists {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        s.config,
-			Interface:      "ProcessMessageHandler",
-			Method:         s.handleMethod,
-			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
-			Description:    fmt.Sprintf("executed a command of type %T on a process instance that has not begun", m),
-			Location:       location.OfCall(),
+	if s.ended {
+		s.observer.Notify(fact.ProcessInstanceEndingReverted{
+			Handler:    s.config,
+			InstanceID: s.instanceID,
+			Root:       s.root,
+			Envelope:   s.env,
 		})
+
+		s.ended = false
 	}
 
 	env := s.env.NewCommand(
@@ -184,16 +136,15 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		})
 	}
 
-	if !s.exists {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        s.config,
-			Interface:      "ProcessMessageHandler",
-			Method:         s.handleMethod,
-			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
-			Description:    fmt.Sprintf("scheduled a timeout of type %T on a process instance that has not begun", m),
-			Location:       location.OfCall(),
+	if s.ended {
+		s.observer.Notify(fact.ProcessInstanceEndingReverted{
+			Handler:    s.config,
+			InstanceID: s.instanceID,
+			Root:       s.root,
+			Envelope:   s.env,
 		})
+
+		s.ended = false
 	}
 
 	env := s.env.NewTimeout(

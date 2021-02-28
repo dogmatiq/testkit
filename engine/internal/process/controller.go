@@ -107,6 +107,13 @@ func (c *Controller) Handle(
 
 		r = c.Config.Handler().New()
 
+		obs.Notify(fact.ProcessInstanceBegun{
+			Handler:    c.Config,
+			InstanceID: id,
+			Root:       r,
+			Envelope:   env,
+		})
+
 		if r == nil {
 			panic(panicx.UnexpectedBehavior{
 				Handler:        c.Config,
@@ -128,7 +135,6 @@ func (c *Controller) Handle(
 		observer:     obs,
 		now:          now,
 		root:         r,
-		exists:       exists,
 		env:          env,
 	}
 
@@ -140,11 +146,15 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	if s.exists {
-		c.update(s)
-	} else if exists {
-		c.delete(id)
+	if s.ended {
+		if exists {
+			c.delete(id)
+		}
+
+		return s.commands, nil
 	}
+
+	c.update(s)
 
 	return append(s.commands, s.ready...), nil
 }
@@ -224,7 +234,6 @@ func (c *Controller) routeTimeout(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {
-	// ignore any timeout for instances that no longer exist
 	if _, ok := c.instances[env.Origin.InstanceID]; ok {
 		return env.Origin.InstanceID, true, nil
 	}
@@ -249,9 +258,9 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		s.env.Message,
 		func() {
 			if s.env.Role == message.EventRole {
-				err = c.Config.Handler().HandleEvent(ctx, s, s.env.Message)
+				err = c.Config.Handler().HandleEvent(ctx, s.root, s, s.env.Message)
 			} else {
-				err = c.Config.Handler().HandleTimeout(ctx, s, s.env.Message)
+				err = c.Config.Handler().HandleTimeout(ctx, s.root, s, s.env.Message)
 			}
 		},
 	)
