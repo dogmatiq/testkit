@@ -426,6 +426,37 @@ var _ = Describe("type scope", func() {
 				),
 			))
 		})
+
+		It("reverts a prior call to End()", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				_ dogma.ProcessRoot,
+				s dogma.ProcessEventScope,
+				_ dogma.Message,
+			) error {
+				s.End()
+				s.ScheduleTimeout(MessageT1, time.Now())
+				return nil
+			}
+
+			buf := &fact.Buffer{}
+			_, err := ctrl.Handle(
+				context.Background(),
+				buf,
+				time.Now(),
+				event,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buf.Facts()).To(ContainElement(
+				fact.ProcessInstanceEndingReverted{
+					Handler:    config,
+					InstanceID: "<instance>",
+					Root:       &ProcessRoot{},
+					Envelope:   event,
+				},
+			))
+		})
 	})
 
 	Describe("func Log()", func() {
