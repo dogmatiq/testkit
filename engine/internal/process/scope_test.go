@@ -459,6 +459,48 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
+	Describe("func ScheduledFor()", func() {
+		It("returns the time that the timeout message was scheduled to occur", func() {
+			_, err := ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event, // create the instance
+			)
+
+			timeout := event.NewTimeout(
+				"2000",
+				MessageT1,
+				time.Now(),
+				time.Now().Add(10*time.Second),
+				envelope.Origin{
+					Handler:     config,
+					HandlerType: configkit.ProcessHandlerType,
+					InstanceID:  "<instance>",
+				},
+			)
+
+			handler.HandleTimeoutFunc = func(
+				_ context.Context,
+				_ dogma.ProcessRoot,
+				s dogma.ProcessTimeoutScope,
+				_ dogma.Message,
+			) error {
+				Expect(s.ScheduledFor()).To(BeTemporally("==", timeout.ScheduledFor))
+				return nil
+			}
+
+			_, err = ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				timeout,
+			)
+
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
 	Describe("func Log()", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(

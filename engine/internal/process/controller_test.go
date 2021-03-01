@@ -38,7 +38,7 @@ var _ = Describe("type Controller", func() {
 			"2000",
 			MessageT1,
 			time.Now(),
-			time.Now(),
+			time.Now().Add(10*time.Second),
 			envelope.Origin{
 				Handler:     config,
 				HandlerType: configkit.ProcessHandlerType,
