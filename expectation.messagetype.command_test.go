@@ -63,11 +63,11 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 					},
 					HandleEventFunc: func(
 						_ context.Context,
+						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
 						m dogma.Message,
 					) error {
 						if _, ok := m.(MessageE); ok {
-							s.Begin()
 							s.ExecuteCommand(MessageC1)
 						}
 						return nil

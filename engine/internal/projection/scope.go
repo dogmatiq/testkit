@@ -13,7 +13,8 @@ import (
 type scope struct {
 	config   configkit.RichProjection
 	observer fact.Observer
-	event    *envelope.Envelope
+	event    *envelope.Envelope // nil if compacting
+	now      time.Time
 }
 
 func (s *scope) RecordedAt() time.Time {
@@ -27,4 +28,8 @@ func (s *scope) Log(f string, v ...interface{}) {
 		LogFormat:    f,
 		LogArguments: v,
 	})
+}
+
+func (s *scope) Now() time.Time {
+	return s.now
 }

@@ -38,7 +38,7 @@ var _ = Describe("type Controller", func() {
 			"2000",
 			MessageT1,
 			time.Now(),
-			time.Now(),
+			time.Now().Add(10*time.Second),
 			envelope.Origin{
 				Handler:     config,
 				HandlerType: configkit.ProcessHandlerType,
@@ -105,11 +105,10 @@ var _ = Describe("type Controller", func() {
 
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
 				_ dogma.Message,
 			) error {
-				s.Begin()
-
 				// note, calls to ScheduleTimeout are NOT in chronological order
 				s.ScheduleTimeout(MessageT3, t3Time)
 				s.ScheduleTimeout(MessageT2, t2Time)
@@ -183,7 +182,7 @@ var _ = Describe("type Controller", func() {
 			Expect(timeouts).To(BeEmpty())
 		})
 
-		It("does not return timeouts for instances that have been deleted", func() {
+		It("does not return timeouts for instances that have been ended", func() {
 			secondInstanceEvent := envelope.NewEvent(
 				"3000",
 				MessageE2, // different message value = different instance
@@ -201,6 +200,7 @@ var _ = Describe("type Controller", func() {
 			// end our original instance
 			handler.HandleEventFunc = func(
 				_ context.Context,
+				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
 				_ dogma.Message,
 			) error {
@@ -257,6 +257,7 @@ var _ = Describe("type Controller", func() {
 				called := false
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
 					m dogma.Message,
 				) error {
@@ -281,6 +282,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
@@ -302,10 +304,10 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.Begin()
 					s.ExecuteCommand(MessageC1)
 					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
 					return nil
@@ -349,10 +351,10 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.Begin()
 					s.ScheduleTimeout(MessageT1, now.Add(-1))
 					return nil
 				}
@@ -373,10 +375,10 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.Begin()
 					s.ScheduleTimeout(MessageT1, now.Add(1))
 					return nil
 				}
@@ -400,6 +402,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleEventFunc = func(
 					ctx context.Context,
+					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
@@ -432,6 +435,7 @@ var _ = Describe("type Controller", func() {
 				It("does not forward the message to the handler", func() {
 					handler.HandleEventFunc = func(
 						context.Context,
+						dogma.ProcessRoot,
 						dogma.ProcessEventScope,
 						dogma.Message,
 					) error {
@@ -472,11 +476,11 @@ var _ = Describe("type Controller", func() {
 		When("handling a timeout", func() {
 			BeforeEach(func() {
 				handler.HandleEventFunc = func(
-					_ context.Context,
-					s dogma.ProcessEventScope,
-					_ dogma.Message,
+					context.Context,
+					dogma.ProcessRoot,
+					dogma.ProcessEventScope,
+					dogma.Message,
 				) error {
-					s.Begin()
 					return nil
 				}
 
@@ -495,6 +499,7 @@ var _ = Describe("type Controller", func() {
 				called := false
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					_ dogma.ProcessTimeoutScope,
 					m dogma.Message,
 				) error {
@@ -518,9 +523,10 @@ var _ = Describe("type Controller", func() {
 				expected := errors.New("<error>")
 
 				handler.HandleTimeoutFunc = func(
-					_ context.Context,
-					_ dogma.ProcessTimeoutScope,
-					_ dogma.Message,
+					context.Context,
+					dogma.ProcessRoot,
+					dogma.ProcessTimeoutScope,
+					dogma.Message,
 				) error {
 					return expected
 				}
@@ -540,6 +546,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
@@ -586,6 +593,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
@@ -609,6 +617,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleTimeoutFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
@@ -635,6 +644,7 @@ var _ = Describe("type Controller", func() {
 
 				handler.HandleTimeoutFunc = func(
 					ctx context.Context,
+					_ dogma.ProcessRoot,
 					_ dogma.ProcessTimeoutScope,
 					_ dogma.Message,
 				) error {
@@ -654,10 +664,11 @@ var _ = Describe("type Controller", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
-			When("the instance that created the timeout no longer exists", func() {
+			When("the instance that created the timeout does not exist", func() {
 				BeforeEach(func() {
 					handler.HandleEventFunc = func(
 						_ context.Context,
+						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
 						_ dogma.Message,
 					) error {
@@ -679,6 +690,7 @@ var _ = Describe("type Controller", func() {
 				It("does not forward the message to the handler", func() {
 					handler.HandleTimeoutFunc = func(
 						context.Context,
+						dogma.ProcessRoot,
 						dogma.ProcessTimeoutScope,
 						dogma.Message,
 					) error {
@@ -776,7 +788,7 @@ var _ = Describe("type Controller", func() {
 		})
 
 		When("the instance does not exist", func() {
-			It("records a fact", func() {
+			It("records facts", func() {
 				buf := &fact.Buffer{}
 				_, err := ctrl.Handle(
 					context.Background(),
@@ -790,6 +802,14 @@ var _ = Describe("type Controller", func() {
 					fact.ProcessInstanceNotFound{
 						Handler:    config,
 						InstanceID: "<instance-E1>",
+						Envelope:   event,
+					},
+				))
+				Expect(buf.Facts()).To(ContainElement(
+					fact.ProcessInstanceBegun{
+						Handler:    config,
+						InstanceID: "<instance-E1>",
+						Root:       &ProcessRoot{},
 						Envelope:   event,
 					},
 				))
@@ -833,10 +853,10 @@ var _ = Describe("type Controller", func() {
 			BeforeEach(func() {
 				handler.HandleEventFunc = func(
 					_ context.Context,
+					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
 					_ dogma.Message,
 				) error {
-					s.Begin()
 					return nil
 				}
 
@@ -918,6 +938,7 @@ var _ = Describe("type Controller", func() {
 		It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
 			handler.HandleEventFunc = func(
 				context.Context,
+				dogma.ProcessRoot,
 				dogma.ProcessEventScope,
 				dogma.Message,
 			) error {
@@ -946,11 +967,11 @@ var _ = Describe("type Controller", func() {
 
 		It("provides more context to UnexpectedMessage panics from HandleTimeout()", func() {
 			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				context.Context,
+				dogma.ProcessRoot,
+				dogma.ProcessEventScope,
+				dogma.Message,
 			) error {
-				s.Begin()
 				return nil
 			}
 
@@ -963,6 +984,7 @@ var _ = Describe("type Controller", func() {
 
 			handler.HandleTimeoutFunc = func(
 				context.Context,
+				dogma.ProcessRoot,
 				dogma.ProcessTimeoutScope,
 				dogma.Message,
 			) error {
@@ -1020,11 +1042,11 @@ var _ = Describe("type Controller", func() {
 	Describe("func Reset()", func() {
 		BeforeEach(func() {
 			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProcessEventScope,
-				m dogma.Message,
+				context.Context,
+				dogma.ProcessRoot,
+				dogma.ProcessEventScope,
+				dogma.Message,
 			) error {
-				s.Begin()
 				return nil
 			}
 
