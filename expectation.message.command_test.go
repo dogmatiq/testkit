@@ -109,7 +109,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`✗ execute a specific 'fixtures.MessageX' command`,
 				``,
 				`  | EXPLANATION`,
-				`  |     none of the engaged handlers executed the expected command`,
+				`  |     none of the engaged handlers executed a matching command`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,

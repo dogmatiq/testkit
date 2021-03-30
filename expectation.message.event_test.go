@@ -112,7 +112,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`✗ record a specific 'fixtures.MessageX' event`,
 				``,
 				`  | EXPLANATION`,
-				`  |     none of the engaged handlers recorded the expected event`,
+				`  |     none of the engaged handlers recorded a matching event`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • enable integration handlers using the EnableHandlerType() option`,

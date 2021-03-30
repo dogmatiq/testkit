@@ -58,9 +58,9 @@ func reportNoMatch(rep *Report, t *tracker) {
 	} else if t.produced == 0 {
 		rep.Explanation = inflect.Sprint(t.role, "no <messages> were <produced> at all")
 	} else if t.options.MatchDispatchCycleStartedFacts {
-		rep.Explanation = inflect.Sprint(t.role, "nothing <produced> the expected <message>")
+		rep.Explanation = inflect.Sprint(t.role, "nothing <produced> a matching <message>")
 	} else {
-		rep.Explanation = inflect.Sprint(t.role, "none of the engaged handlers <produced> the expected <message>")
+		rep.Explanation = inflect.Sprint(t.role, "none of the engaged handlers <produced> a matching <message>")
 	}
 
 	for _, n := range t.engagedOrder {
