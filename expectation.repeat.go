@@ -46,7 +46,7 @@ type repeatExpectation struct {
 }
 
 func (e *repeatExpectation) Caption() string {
-	return fmt.Sprintf("to %s %d times", e.criteria, e.count)
+	return fmt.Sprintf("to %s", e.criteria)
 }
 
 func (e *repeatExpectation) Predicate(s PredicateScope) (Predicate, error) {
@@ -68,7 +68,7 @@ func (e *repeatExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	}
 
 	return &repeatPredicate{
-		criteria: fmt.Sprintf("to %s %d times", e.criteria, e.count),
+		criteria: e.criteria,
 		children: predicates,
 	}, nil
 }
@@ -138,8 +138,9 @@ func (p *repeatPredicate) Report(treeOk bool) *Report {
 	if failureCount != 0 {
 		rep.Ok = false
 		rep.Outcome = fmt.Sprintf(
-			"%d of the iterations failed, iteration #%d shown",
+			"%d of %d iteration(s) failed, iteration #%d shown",
 			failureCount,
+			len(p.children),
 			failureShown,
 		)
 	}

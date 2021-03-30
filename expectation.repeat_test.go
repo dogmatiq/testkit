@@ -61,7 +61,7 @@ var _ = Describe("func ToRepeatedly()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ to <description> 2 times`,
+				`✓ <description>`,
 			),
 		),
 		Entry(
@@ -82,7 +82,7 @@ var _ = Describe("func ToRepeatedly()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ to <description> 2 times (1 of the iterations failed, iteration #1 shown)`,
+				`✗ <description> (1 of 2 iteration(s) failed, iteration #1 shown)`,
 				`    ✗ <always fail>`,
 			),
 		),
@@ -104,7 +104,7 @@ var _ = Describe("func ToRepeatedly()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ to <description> 2 times (2 of the iterations failed, iteration #0 shown)`,
+				`✗ <description> (2 of 2 iteration(s) failed, iteration #0 shown)`,
 				`    ✗ <always fail>`,
 			),
 		),
@@ -123,7 +123,7 @@ var _ = Describe("func ToRepeatedly()", func() {
 		)
 
 		Expect(testingT.Logs).To(ContainElement(
-			"--- expect [no-op] to <description> 1 times ---",
+			"--- expect [no-op] to <description> ---",
 		))
 	})
 
