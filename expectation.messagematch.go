@@ -40,8 +40,8 @@ func ToExecuteCommandMatching(
 // result should not affect the expectation's result.
 var IgnoreMessage = errors.New("this message does not need to be inspected by the predicate")
 
-// messageMatchExpectation is an Expectation that checks that a message that
-// satisfies a predicate function is produced.
+// messageMatchExpectation is an Expectation that checks that at least one
+// message that satisfies a predicate function is produced.
 //
 // It is the implementation used by ToExecuteCommandMatching() and
 // ToRecordEventMatching().
