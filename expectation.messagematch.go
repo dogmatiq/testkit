@@ -20,7 +20,7 @@ import (
 // as an imperative statement, such as "debit the customer".
 //
 // pred is the predicate function. It is called for each executed command. It
-// must return nil at least one for the expectation to pass.
+// must return nil at least once for the expectation to pass.
 func ToExecuteCommandMatching(
 	pred func(dogma.Message) error,
 ) Expectation {
