@@ -17,6 +17,11 @@ const (
 	// logSection is the heading for the section of the test report where
 	// log messages from user-defined expectations are shown.
 	logSection = "Log Messages"
+
+	// failedMatchesSection is the heading for the section of the test report
+	// where errors from predicate functions used with
+	// ToExecuteCommandMatching() and ToRecordEventMatching() are shown.
+	failedMatchesSection = "Failed Matches"
 )
 
 // Report is a report on the outcome of an expectation.
