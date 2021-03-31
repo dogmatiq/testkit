@@ -11,6 +11,6 @@ require (
 	github.com/dogmatiq/linger v0.2.1
 	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
-	github.com/sergi/go-diff v1.1.0
+	github.com/sergi/go-diff v1.2.0
 	go.uber.org/multierr v1.6.0
 )
