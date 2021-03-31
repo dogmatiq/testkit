@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ### Added
 
-- Add `ToExecuteCommandMatching()` expectation
+- Add `ToExecuteCommandMatching()` and `ToRecordEventMatching()` expectations
 - Add `ToRepeatedly()` expectation
 
 ## [0.13.0] - 2021-03-01
