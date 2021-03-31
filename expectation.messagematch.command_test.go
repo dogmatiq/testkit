@@ -2,6 +2,7 @@ package testkit_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
@@ -13,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommand()", func() {
+var _ = Describe("func ToExecuteCommandMatching()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
@@ -49,10 +50,9 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "<process-key>")
-						c.ConsumesEventType(MessageE{})    // E = event
-						c.ConsumesEventType(MessageN{})    // N = (do) nothing
-						c.ProducesCommandType(MessageC{})  // C = command
-						c.ProducesCommandType(&MessageC{}) // pointer, used to test type similarity
+						c.ConsumesEventType(MessageE{})   // E = event
+						c.ConsumesEventType(MessageN{})   // N = (do) nothing
+						c.ProducesCommandType(MessageC{}) // C = command
 						c.ProducesCommandType(MessageX{})
 					},
 					RouteEventToInstanceFunc: func(
@@ -67,8 +67,12 @@ var _ = Describe("func ToExecuteCommand()", func() {
 						s dogma.ProcessEventScope,
 						m dogma.Message,
 					) error {
-						if _, ok := m.(MessageE); ok {
+						if m, ok := m.(MessageE); ok {
 							s.ExecuteCommand(MessageC1)
+
+							if m.Value == "<multiple>" {
+								s.ExecuteCommand(MessageC1)
+							}
 						}
 						return nil
 					},
@@ -92,36 +96,60 @@ var _ = Describe("func ToExecuteCommand()", func() {
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
 		Entry(
-			"command executed as expected",
+			"matching command executed as expected",
 			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageC1),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					if m == MessageC1 {
+						return nil
+					}
+
+					return errors.New("<error>")
+				},
+			),
 			expectPass,
 			expectReport(
-				`✓ execute a specific 'fixtures.MessageC' command`,
+				`✓ execute a command that satisfies a predicate function`,
 			),
 		),
 		Entry(
 			"no matching command executed",
 			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageX1),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					if m == MessageX1 {
+						return nil
+					}
+
+					return errors.New("<error>")
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
 				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageC: <error>`,
+				`  | `,
 				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function`,
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
 		Entry(
 			"no messages produced at all",
 			RecordEvent(MessageN1),
-			ToExecuteCommand(MessageX1),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					panic("unexpected call")
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -133,10 +161,14 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		Entry(
 			"no commands produced at all",
 			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageC1),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					return IgnoreMessage
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageC' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -148,10 +180,18 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		Entry(
 			"no matching command executed and all relevant handler types disabled",
 			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageX1),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					if m == MessageX1 {
+						return nil
+					}
+
+					return errors.New("<error>")
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -164,89 +204,55 @@ var _ = Describe("func ToExecuteCommand()", func() {
 			),
 		),
 		Entry(
-			"similar command executed with a different type",
+			"no matching command executed and commands were ignored",
 			RecordEvent(MessageE1),
-			ToExecuteCommand(&MessageC1), // note: message type is pointer
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					return IgnoreMessage
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific '*fixtures.MessageC' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a command of a similar type was executed by the '<process>' process message handler`,
+				`  |     none of the engaged handlers executed a matching command`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageC{`,
-				`  |         Value: "C1"`,
-				`  |     }`,
+				`  |     • verify the logic within the predicate function, it ignored 1 command`,
+				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
 		Entry(
-			"similar command executed with a different value",
-			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageC2),
+			"no matching command executed and error messages were repeated",
+			RecordEvent(MessageE{
+				Value: "<multiple>", // trigger multiple MessageC commands
+			}),
+			ToExecuteCommandMatching(
+				func(m dogma.Message) error {
+					return errors.New("<error>")
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageC' command`,
+				`✗ execute a command that satisfies a predicate function`,
 				``,
 				`  | EXPLANATION`,
-				`  |     a similar command was executed by the '<process>' process message handler`,
+				`  |     none of the engaged handlers executed a matching command`,
+				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageC: <error> (repeated 2 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • check the content of the message`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageC{`,
-				`  |         Value: "C[-2-]{+1+}"`,
-				`  |     }`,
+				`  |     • verify the logic within the predicate function`,
+				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
 	)
 
-	It("fails the test if the message type is unrecognized", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToExecuteCommand(MessageU1),
-		)
-
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
-			"a command of type fixtures.MessageU can never be executed, the application does not use this message type",
-		))
-	})
-
-	It("fails the test if the message type is not a command", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToExecuteCommand(MessageE1),
-		)
-
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
-			"fixtures.MessageE is an event, it can never be executed as a command",
-		))
-	})
-
-	It("fails the test if the message type is not produced by any handlers", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToExecuteCommand(MessageR1),
-		)
-
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
-			"no handlers execute commands of type fixtures.MessageR, it is only ever consumed",
-		))
-	})
-
-	It("panics if the message is invalid", func() {
+	It("panics if the function is nil", func() {
 		Expect(func() {
-			ToExecuteCommand(nil)
-		}).To(PanicWith("ToExecuteCommand(<nil>): message must not be nil"))
+			ToExecuteCommandMatching(nil)
+		}).To(PanicWith("ToExecuteCommandMatching(<nil>): function must not be nil"))
 	})
 })
