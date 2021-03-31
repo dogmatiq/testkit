@@ -34,6 +34,30 @@ func ToExecuteCommandMatching(
 	}
 }
 
+// ToRecordEventMatching returns an expectation that passes if a command is
+// executed that satisfies the given predicate function.
+//
+// Always prefer using ToRecordEvent() instead, if possible, as it provides
+// more meaningful information in the result of a failure.
+//
+// desc is a human-readable description of the expectation. It should be phrased
+// as an imperative statement, such as "debit the customer".
+//
+// pred is the predicate function. It is called for each executed command. It
+// must return nil at least once for the expectation to pass.
+func ToRecordEventMatching(
+	pred func(dogma.Message) error,
+) Expectation {
+	if pred == nil {
+		panic("ToRecordEventMatching(<nil>): function must not be nil")
+	}
+
+	return &messageMatchExpectation{
+		pred:         pred,
+		expectedRole: message.EventRole,
+	}
+}
+
 // IgnoreMessage is an error that can be returned by predicate functions used
 // with ToExecuteCommandMatching() and ToRecordEventMatching() to indicate that
 // the predicate does not care about the message and therefore the predicate's
