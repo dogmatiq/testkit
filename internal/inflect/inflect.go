@@ -3,6 +3,7 @@ package inflect
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/dogmatiq/configkit/message"
@@ -38,6 +39,9 @@ var corrections = map[string]string{
 	"an command": "a command",
 	"a event":    "an event",
 	"an timeout": "a timeout",
+	"1 commands": "1 command",
+	"1 events":   "1 event",
+	"1 timeouts": "1 timeout",
 }
 
 // Sprint formats a string, inflecting words in s match the message role r.
@@ -48,8 +52,8 @@ func Sprint(r message.Role, s string) string {
 	}
 
 	for k, v := range corrections {
-		s = strings.ReplaceAll(s, k, v)
-		s = strings.ReplaceAll(s, strings.ToUpper(k), strings.ToUpper(v))
+		s = replaceAll(s, k, v)
+		s = replaceAll(s, strings.ToUpper(k), strings.ToUpper(v))
 	}
 
 	return s
@@ -71,4 +75,9 @@ func Error(r message.Role, s string) error {
 // Errorf returns a new error, inflecting words in f to match the message role r.
 func Errorf(r message.Role, f string, v ...interface{}) error {
 	return errors.New(Sprintf(r, f, v...))
+}
+
+// replaceAll replaces all instances of k with v, at word boundaries.
+func replaceAll(s, k, v string) string {
+	return regexp.MustCompile(`(?m)\b`+regexp.QuoteMeta(k)+`\b`).ReplaceAllLiteralString(s, v)
 }

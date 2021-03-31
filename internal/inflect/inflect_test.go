@@ -42,6 +42,22 @@ var _ = Describe("func Sprint()", func() {
 		entry(message.EventRole, "the <messages>", "the events"),
 		entry(message.TimeoutRole, "the <messages>", "the timeouts"),
 
+		entry(message.CommandRole, "1 <messages>", "1 command"),
+		entry(message.EventRole, "1 <messages>", "1 event"),
+		entry(message.TimeoutRole, "1 <messages>", "1 timeout"),
+
+		entry(message.CommandRole, "21 <messages>", "21 commands"),
+		entry(message.EventRole, "21 <messages>", "21 events"),
+		entry(message.TimeoutRole, "21 <messages>", "21 timeouts"),
+
+		entry(message.CommandRole, "only 1 <messages>", "only 1 command"),
+		entry(message.EventRole, "only 1 <messages>", "only 1 event"),
+		entry(message.TimeoutRole, "only 1 <messages>", "only 1 timeout"),
+
+		entry(message.CommandRole, "only 21 <messages>", "only 21 commands"),
+		entry(message.EventRole, "only 21 <messages>", "only 21 events"),
+		entry(message.TimeoutRole, "only 21 <messages>", "only 21 timeouts"),
+
 		entry(message.CommandRole, "<produce> a specific <message>", "execute a specific command"),
 		entry(message.EventRole, "<produce> a specific <message>", "record a specific event"),
 		entry(message.TimeoutRole, "<produce> a specific <message>", "schedule a specific timeout"),
