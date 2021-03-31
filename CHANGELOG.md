@@ -29,8 +29,8 @@ should continue to work without modification.
 
 ### Added
 
-- **[BC]** Added `PredicateOptions` to `PredicateScope`
-- **[BC]** Added `Action.Location()` method
+- **[BC]** Add `PredicateOptions` to `PredicateScope`
+- **[BC]** Add `Action.Location()` method
 
 ### Changed
 
