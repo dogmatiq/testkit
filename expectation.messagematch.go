@@ -16,9 +16,6 @@ import (
 // Always prefer using ToExecuteCommand() instead, if possible, as it provides
 // more meaningful information in the result of a failure.
 //
-// desc is a human-readable description of the expectation. It should be phrased
-// as an imperative statement, such as "debit the customer".
-//
 // pred is the predicate function. It is called for each executed command. It
 // must return nil at least once for the expectation to pass.
 func ToExecuteCommandMatching(
@@ -39,9 +36,6 @@ func ToExecuteCommandMatching(
 //
 // Always prefer using ToRecordEvent() instead, if possible, as it provides
 // more meaningful information in the result of a failure.
-//
-// desc is a human-readable description of the expectation. It should be phrased
-// as an imperative statement, such as "debit the customer".
 //
 // pred is the predicate function. It is called for each executed command. It
 // must return nil at least once for the expectation to pass.
