@@ -113,7 +113,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ record an event that satisfies a predicate function`,
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:106`,
 			),
 		),
 		Entry(
@@ -130,7 +130,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:123`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -154,7 +154,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:151`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -174,7 +174,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:172`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -194,7 +194,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:191`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -219,7 +219,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:217`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -242,7 +242,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that satisfies a predicate function`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:239`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,

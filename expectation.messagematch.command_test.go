@@ -109,7 +109,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that satisfies a predicate function`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:102`,
 			),
 		),
 		Entry(
@@ -126,7 +126,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:119`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -149,7 +149,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:146`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -168,7 +168,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:166`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -191,7 +191,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:184`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -213,7 +213,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:211`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -235,7 +235,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that satisfies a predicate function`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:232`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
