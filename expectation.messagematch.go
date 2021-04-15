@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/location"
 )
 
 // ToExecuteCommandMatching returns an expectation that passes if a command is
@@ -71,7 +72,8 @@ type messageMatchExpectation struct {
 func (e *messageMatchExpectation) Caption() string {
 	return inflect.Sprintf(
 		e.expectedRole,
-		"to <produce> a <message> that satisfies a predicate function",
+		"to <produce> a <message> that matches the predicate near %s",
+		location.OfFunc(e.pred),
 	)
 }
 
@@ -158,7 +160,8 @@ func (p *messageMatchPredicate) Report(treeOk bool) *Report {
 		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
 			p.expectedRole,
-			"<produce> a <message> that satisfies a predicate function",
+			"<produce> a <message> that matches the predicate near %s",
+			location.OfFunc(p.pred),
 		),
 	}
 
