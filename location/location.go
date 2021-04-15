@@ -27,28 +27,46 @@ type Location struct {
 }
 
 func (l Location) String() string {
-	if l.Func != "" && l.File != "" {
-		return fmt.Sprintf(
-			"%s() %s:%d",
-			l.Func,
-			path.Base(l.File),
-			l.Line,
-		)
+	if fl, ok := l.FileLine(); ok {
+		// We know the file/line number which is enough to identify the
+		// location, so only include the function name if it actually
+		// provides more context. That means we DON'T render the function
+		// name if it refers to a global closure.
+		if l.Func != "" && !strings.Contains(l.Func, "glob..") {
+			return fmt.Sprintf(
+				"%s [%s(...)]",
+				fl,
+				l.Func,
+			)
+		}
+
+		return fl
 	}
 
 	if l.Func != "" {
-		return fmt.Sprintf("%s()", l.Func)
-	}
-
-	if l.File != "" {
-		return fmt.Sprintf(
-			"%s:%d",
-			path.Base(l.File),
-			l.Line,
-		)
+		// We don't know the file/line number, but we do know the function name,
+		// so render it even if it refers to a global closure because it's the
+		// best information we have.
+		return fmt.Sprintf("%s(...)", l.Func)
 	}
 
 	return "<unknown>"
+}
+
+// FileLine returns the file and line number of the location in <file>:<line>
+// format.
+//
+// ok is false if this information is unknown.
+func (l Location) FileLine() (_ string, ok bool) {
+	if l.File == "" {
+		return "", false
+	}
+
+	return fmt.Sprintf(
+		"%s:%d",
+		path.Base(l.File),
+		l.Line,
+	), true
 }
 
 // OfFunc returns the location of the definition of fn.

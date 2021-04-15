@@ -89,9 +89,11 @@ var _ = Describe("type Location", func() {
 				Expect(l.String()).To(Equal(s))
 			},
 			Entry("empty", "<unknown>", Location{}),
-			Entry("function name only", "<function>()", Location{Func: "<function>"}),
+			Entry("function name only", "<function>(...)", Location{Func: "<function>"}),
+			Entry("function name only (global closure)", "<function glob..>(...)", Location{Func: "<function glob..>"}),
 			Entry("file location only", "<file>:123", Location{File: "<file>", Line: 123}),
-			Entry("both", "<function>() <file>:123", Location{Func: "<function>", File: "<file>", Line: 123}),
+			Entry("both", "<file>:123 [<function>(...)]", Location{Func: "<function>", File: "<file>", Line: 123}),
+			Entry("both (global closure)", "<file>:123", Location{Func: "<function glob..>", File: "<file>", Line: 123}),
 		)
 	})
 })
