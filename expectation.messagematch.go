@@ -19,6 +19,9 @@ import (
 //
 // pred is the predicate function. It is called for each executed command. It
 // must return nil at least once for the expectation to pass.
+//
+// pred may return the IgnoreMessage error to indicate that the predicate does
+// not apply to a specific message.
 func ToExecuteCommandMatching(
 	pred func(dogma.Message) error,
 ) Expectation {
@@ -29,6 +32,32 @@ func ToExecuteCommandMatching(
 	return &messageMatchExpectation{
 		pred:         pred,
 		expectedRole: message.CommandRole,
+		exhaustive:   false,
+	}
+}
+
+// ToOnlyExecuteCommandsMatching returns an expectation that passes if all
+// executed commands satisfy the given predicate function.
+//
+// The expectation does NOT fail if other unrelated actions are performed, such
+// as recording an event.
+//
+// pred is the predicate function. It is called for each executed command. It
+// must return nil (or IgnoreMessage) every time for the expectation to pass.
+//
+// pred may return the IgnoreMessage error to indicate that the predicate does
+// not apply to a specific message.
+func ToOnlyExecuteCommandsMatching(
+	pred func(dogma.Message) error,
+) Expectation {
+	if pred == nil {
+		panic("ToOnlyExecuteCommandsMatching(<nil>): function must not be nil")
+	}
+
+	return &messageMatchExpectation{
+		pred:         pred,
+		expectedRole: message.CommandRole,
+		exhaustive:   true,
 	}
 }
 
@@ -40,6 +69,9 @@ func ToExecuteCommandMatching(
 //
 // pred is the predicate function. It is called for each executed command. It
 // must return nil at least once for the expectation to pass.
+//
+// pred may return the IgnoreMessage error to indicate that the predicate does
+// not apply to a specific message.
 func ToRecordEventMatching(
 	pred func(dogma.Message) error,
 ) Expectation {
@@ -50,13 +82,38 @@ func ToRecordEventMatching(
 	return &messageMatchExpectation{
 		pred:         pred,
 		expectedRole: message.EventRole,
+		exhaustive:   false,
 	}
 }
 
-// IgnoreMessage is an error that can be returned by predicate functions used
-// with ToExecuteCommandMatching() and ToRecordEventMatching() to indicate that
-// the predicate does not care about the message and therefore the predicate's
-// result should not affect the expectation's result.
+// ToOnlyRecordEventsMatching returns an expectation that passes if all
+// recorded events satisfy the given predicate function.
+//
+// The expectation does NOT fail if other unrelated actions are performed, such
+// as executing a command.
+//
+// pred is the predicate function. It is called for each recorded event. It
+// must return nil (or IgnoreMessage) every time for the expectation to pass.
+//
+// pred may return the IgnoreMessage error to indicate that the predicate does
+// not apply to a specific message.
+func ToOnlyRecordEventsMatching(
+	pred func(dogma.Message) error,
+) Expectation {
+	if pred == nil {
+		panic("ToOnlyRecordEventsMatching(<nil>): function must not be nil")
+	}
+
+	return &messageMatchExpectation{
+		pred:         pred,
+		expectedRole: message.EventRole,
+		exhaustive:   true,
+	}
+}
+
+// IgnoreMessage is an error that can be returned by predicate functions to
+// indicate that the predicate does not care about the message and therefore the
+// predicate's result should not affect the expectation's result.
 var IgnoreMessage = errors.New("this message does not need to be inspected by the predicate")
 
 // messageMatchExpectation is an Expectation that checks that at least one
@@ -67,9 +124,18 @@ var IgnoreMessage = errors.New("this message does not need to be inspected by th
 type messageMatchExpectation struct {
 	pred         func(dogma.Message) error
 	expectedRole message.Role
+	exhaustive   bool
 }
 
 func (e *messageMatchExpectation) Caption() string {
+	if e.exhaustive {
+		return inflect.Sprintf(
+			e.expectedRole,
+			"to only <produce> <messages> that match the predicate near %s",
+			location.OfFunc(e.pred),
+		)
+	}
+
 	return inflect.Sprintf(
 		e.expectedRole,
 		"to <produce> a <message> that matches the predicate near %s",
@@ -81,6 +147,7 @@ func (e *messageMatchExpectation) Predicate(s PredicateScope) (Predicate, error)
 	return &messageMatchPredicate{
 		pred:         e.pred,
 		expectedRole: e.expectedRole,
+		exhaustive:   e.exhaustive,
 		tracker: tracker{
 			role:    e.expectedRole,
 			options: s.Options,
@@ -93,7 +160,9 @@ func (e *messageMatchExpectation) Predicate(s PredicateScope) (Predicate, error)
 type messageMatchPredicate struct {
 	pred         func(dogma.Message) error
 	expectedRole message.Role
+	exhaustive   bool
 	failures     []*failedMatch
+	matched      int
 	ignored      int
 	ok           bool
 	tracker      tracker
@@ -120,8 +189,16 @@ func (p *messageMatchPredicate) messageProduced(env *envelope.Envelope) {
 	err := p.pred(env.Message)
 
 	if err == nil {
-		p.ok = true
-		p.failures = nil
+		p.matched++
+
+		if !p.exhaustive {
+			// We're only looking for "at least one match", and we've found it.
+			// Mark the predicate as satisfied so that we don't bother looking
+			// for future matches.
+			p.ok = true
+			p.failures = nil
+		}
+
 		return
 	}
 
@@ -152,6 +229,9 @@ func (p *messageMatchPredicate) Ok() bool {
 }
 
 func (p *messageMatchPredicate) Done() {
+	if p.exhaustive && len(p.failures) == 0 {
+		p.ok = true
+	}
 }
 
 func (p *messageMatchPredicate) Report(treeOk bool) *Report {
@@ -163,6 +243,14 @@ func (p *messageMatchPredicate) Report(treeOk bool) *Report {
 			"<produce> a <message> that matches the predicate near %s",
 			location.OfFunc(p.pred),
 		),
+	}
+
+	if p.exhaustive {
+		rep.Criteria = inflect.Sprintf(
+			p.expectedRole,
+			"only <produce> <messages> that match the predicate near %s",
+			location.OfFunc(p.pred),
+		)
 	}
 
 	if treeOk || p.ok {
@@ -202,6 +290,15 @@ func (p *messageMatchPredicate) Report(treeOk bool) *Report {
 	}
 
 	reportNoMatch(rep, &p.tracker)
+
+	if p.exhaustive {
+		rep.Explanation = inflect.Sprintf(
+			p.expectedRole,
+			"only %d of %d relevant <messages> matched the predicate",
+			p.matched,
+			p.tracker.produced-p.ignored,
+		)
+	}
 
 	return rep
 }
