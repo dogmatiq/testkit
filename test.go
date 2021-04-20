@@ -22,6 +22,7 @@ type Test struct {
 	engine           *engine.Engine
 	executor         engine.CommandExecutor
 	recorder         engine.EventRecorder
+	predicateOptions PredicateOptions
 	operationOptions []engine.OperationOption
 }
 
@@ -94,7 +95,11 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) *Test {
 	t.testingT.Helper()
 
-	s := PredicateScope{App: t.app}
+	s := PredicateScope{
+		App:     t.app,
+		Options: t.predicateOptions,
+	}
+
 	act.ConfigurePredicate(&s.Options)
 
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())

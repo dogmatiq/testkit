@@ -52,3 +52,45 @@ var _ = Describe("func StartTimeAt()", func() {
 		Expect(called).To(BeTrue())
 	})
 })
+
+var _ = Describe("func WithMessageComparator()", func() {
+	It("configures how messages are compared", func() {
+		handler := &IntegrationMessageHandler{
+			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+				c.Identity("<handler-name>", "<handler-key>")
+				c.ConsumesCommandType(MessageC{})
+				c.ProducesEventType(MessageE{})
+			},
+			HandleCommandFunc: func(
+				_ context.Context,
+				s dogma.IntegrationCommandScope,
+				_ dogma.Message,
+			) error {
+				s.RecordEvent(MessageE1)
+				return nil
+			},
+		}
+
+		app := &Application{
+			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+				c.Identity("<app>", "<app-key>")
+				c.RegisterIntegration(handler)
+			},
+		}
+
+		Begin(
+			&testingmock.T{},
+			app,
+			WithMessageComparator(
+				func(a, b dogma.Message) bool {
+					return true
+				},
+			),
+		).
+			EnableHandlers("<handler-name>").
+			Expect(
+				ExecuteCommand(MessageC1),
+				ToRecordEvent(MessageE2), // this would fail without our custom comparator
+			)
+	})
+})

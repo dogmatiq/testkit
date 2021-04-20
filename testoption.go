@@ -27,6 +27,18 @@ func StartTimeAt(st time.Time) TestOption {
 	})
 }
 
+// WithMessageComparator returns a test options that configures the comparator
+// to use when comparing messages for equality.
+//
+// This effects the ToExecuteCommand() and ToRecordEvent() expectations.
+//
+// By default, DefaultMessageComparator is used.
+func WithMessageComparator(c MessageComparator) TestOption {
+	return testOptionFunc(func(t *Test) {
+		t.predicateOptions.MessageComparator = c
+	})
+}
+
 // WithUnsafeOperationOptions returns a TestOption that applies a set of engine
 // operation options when performing any action.
 //
