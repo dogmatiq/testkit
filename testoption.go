@@ -27,8 +27,8 @@ func StartTimeAt(st time.Time) TestOption {
 	})
 }
 
-// WithMessageComparator returns a test options that configures the comparator
-// to use when comparing messages for equality.
+// WithMessageComparator returns a test option that sets the comparator
+// to be used when comparing messages for equality.
 //
 // This effects the ToExecuteCommand() and ToRecordEvent() expectations.
 //
