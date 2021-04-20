@@ -22,6 +22,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 - Add `ToExecuteCommandMatching()` and `ToRecordEventMatching()` expectations
 - Add `ToRepeatedly()` expectation
 
+## [Unreleased]
+
+### Added
+
+- Add `WithMessageComparator()` for specifying custom message comparison behavior within a test
+- Add `DefaultMessageComparator()`, the default comparator, with support for protocol buffers messages
+
 ## [0.13.0] - 2021-03-01
 
 ### Changed

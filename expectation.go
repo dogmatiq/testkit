@@ -60,6 +60,10 @@ type PredicateScope struct {
 
 // PredicateOptions contains values that dictate how a predicate should behave.
 type PredicateOptions struct {
+	// MessageComparator is the comparator to use when testing two messages for
+	// equality.
+	MessageComparator MessageComparator
+
 	// MatchDispatchCycleStartedFacts controls whether predicates that look for
 	// specific messages should consider messages from DispatchCycleStarted
 	// facts.

@@ -61,6 +61,7 @@ func (e *messageExpectation) Caption() string {
 
 func (e *messageExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	return &messagePredicate{
+		messageComparator: s.Options.MessageComparator,
 		expectedMessage:   e.expectedMessage,
 		expectedType:      e.expectedType,
 		expectedRole:      e.expectedRole,
@@ -74,6 +75,7 @@ func (e *messageExpectation) Predicate(s PredicateScope) (Predicate, error) {
 
 // messagePredicate is the Predicate implementation for messageExpectation.
 type messagePredicate struct {
+	messageComparator MessageComparator
 	expectedMessage   dogma.Message
 	expectedRole      message.Role
 	expectedType      message.Type
@@ -98,7 +100,12 @@ func (p *messagePredicate) Notify(f fact.Fact) {
 // messageProduced updates the predicate's state to reflect the fact that a
 // message has been produced.
 func (p *messagePredicate) messageProduced(env *envelope.Envelope) {
-	if !reflect.DeepEqual(env.Message, p.expectedMessage) {
+	isEqual := p.messageComparator
+	if isEqual == nil {
+		isEqual = DefaultMessageComparator
+	}
+
+	if !isEqual(env.Message, p.expectedMessage) {
 		p.updateBestMatch(env)
 		return
 	}

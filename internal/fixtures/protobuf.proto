@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dogmatiq.testkit.fixtures;
+
+option go_package = "github.com/dogmatiq/testkit/internal/fixtures";
+
+// ProtoMessage is a Dogma message implemented as a Protocol Buffers message.
+message ProtoMessage {
+    string value = 1;
+}
