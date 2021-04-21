@@ -50,17 +50,13 @@ func (a callAction) ConfigurePredicate(o *PredicateOptions) {
 }
 
 func (a callAction) Do(ctx context.Context, s ActionScope) error {
-	s.Executor.Engine = s.Engine
 	s.Recorder.Engine = s.Engine
-	s.Executor.Options = s.OperationOptions
 	s.Recorder.Options = s.OperationOptions
 
 	defer func() {
 		// Reset the engine and options to nil so that the executor and recorder
 		// can not be used after this Call() action ends.
-		s.Executor.Engine = nil
 		s.Recorder.Engine = nil
-		s.Executor.Options = nil
 		s.Recorder.Options = nil
 	}()
 
