@@ -8,12 +8,12 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 )
 
-// commandExecutor is an implementation of dogma.CommandExecutor that executes
-// commands within the context of a test.
+// CommandExecutor is an implementation of dogma.CommandExecutor that executes
+// commands within the context of a Test.
 //
-// An instance can be obtained at any time by calling Test.CommandExecutor(),
-// but the executor can only be used within an Action.
-type commandExecutor struct {
+// Each instance is bound to a particular Test. Use Test.CommandExecutor() to
+// obtain an instance.
+type CommandExecutor struct {
 	m           sync.RWMutex
 	next        engine.CommandExecutor
 	interceptor CommandExecutorInterceptor
@@ -21,13 +21,14 @@ type commandExecutor struct {
 
 // ExecuteCommand executes the command message m.
 //
-// It panics unless an Action is in progress. See bind() and unbind().
-func (c *commandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
+// It panics unless it is called during an Action, such as when calling
+// Test.Prepare() or Test.Expect().
+func (c *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	c.m.RLock()
 	defer c.m.RUnlock()
 
 	if c.next.Engine == nil {
-		panic("ExecuteCommand(): can not be called outside of a test action")
+		panic("ExecuteCommand(): can not be called outside of a test")
 	}
 
 	if c.interceptor != nil {
@@ -37,13 +38,15 @@ func (c *commandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) e
 	return c.next.ExecuteCommand(ctx, m)
 }
 
-// bind sets the engine and options used to execute commands.
+// Bind sets the engine and options used to execute commands.
 //
-// It is called at the start of each Action with options that allow the Test to
-// inspect the facts produced by the commands executed via this executor.
+// It is intended for use within Action implementations that support executing
+// commands outside of a Dogma handler, such as Call().
 //
-// unbind() must be called after each action.
-func (c *commandExecutor) bind(e *engine.Engine, options []engine.OperationOption) {
+// It must be called before ExecuteCommand(), otherwise ExecuteCommand() panics.
+//
+// It must be accompanied by a call to Unbind() upon completion of the Action.
+func (c *CommandExecutor) Bind(e *engine.Engine, options []engine.OperationOption) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -51,8 +54,10 @@ func (c *commandExecutor) bind(e *engine.Engine, options []engine.OperationOptio
 	c.next.Options = options
 }
 
-// unbind removes the engine and options configured by a prior call to bind().
-func (c *commandExecutor) unbind() {
+// Unbind removes the engine and options configured by a prior call to Bind().
+//
+// Calls to ExecuteCommand() on an unbound to executor cause a panic.
+func (c *CommandExecutor) Unbind() {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -60,13 +65,13 @@ func (c *commandExecutor) unbind() {
 	c.next.Options = nil
 }
 
-// intercept installs an interceptor function that is invoked whenever
+// Intercept installs an interceptor function that is invoked whenever
 // ExecuteCommand() is called.
 //
 // If fn is nil the interceptor is removed.
 //
 // It returns the previous interceptor, if any.
-func (c *commandExecutor) intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
+func (c *CommandExecutor) intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
 	c.m.Lock()
 	defer c.m.Unlock()
 

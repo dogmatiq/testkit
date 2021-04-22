@@ -44,6 +44,10 @@ type ActionScope struct {
 	// Engine is the engine used to handle messages.
 	Engine *engine.Engine
 
+	// Executor is the command executor returned by the Test's CommandExecutor()
+	// method.
+	Executor *CommandExecutor
+
 	// Recorder is the event recorder returned by the Test's EventRecorder()
 	// method.
 	Recorder *engine.EventRecorder
