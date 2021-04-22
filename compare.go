@@ -26,3 +26,15 @@ func DefaultMessageComparator(a, b dogma.Message) bool {
 
 	return reflect.DeepEqual(a, b)
 }
+
+// WithMessageComparator returns a test option that sets the comparator
+// to be used when comparing messages for equality.
+//
+// This effects the ToExecuteCommand() and ToRecordEvent() expectations.
+//
+// By default, DefaultMessageComparator is used.
+func WithMessageComparator(c MessageComparator) TestOption {
+	return testOptionFunc(func(t *Test) {
+		t.predicateOptions.MessageComparator = c
+	})
+}
