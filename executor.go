@@ -11,7 +11,8 @@ import (
 // commandExecutor is an implementation of dogma.CommandExecutor that executes
 // commands within the context of a test.
 //
-// An instance can be obtained at any time by calling Test.CommandExecutor().
+// An instance can be obtained at any time by calling Test.CommandExecutor(),
+// but the executor can only be used within an Action.
 type commandExecutor struct {
 	m           sync.RWMutex
 	next        engine.CommandExecutor
@@ -19,6 +20,8 @@ type commandExecutor struct {
 }
 
 // ExecuteCommand executes the command message m.
+//
+// It panics unless an Action is in progress. See bind() and unbind().
 func (c *commandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
 	c.m.RLock()
 	defer c.m.RUnlock()
@@ -34,10 +37,12 @@ func (c *commandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) e
 	return c.next.ExecuteCommand(ctx, m)
 }
 
-// bind sets the engine and options that should be used to execute commands.
+// bind sets the engine and options used to execute commands.
 //
-// Binding to an engine allows the executor to be used. A call to unbind() must
-// be made when the executor should not longer be used.
+// It is called at the start of each Action with options that allow the Test to
+// inspect the facts produced by the commands executed via this executor.
+//
+// unbind() must be called after each action.
 func (c *commandExecutor) bind(e *engine.Engine, options []engine.OperationOption) {
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -46,9 +51,7 @@ func (c *commandExecutor) bind(e *engine.Engine, options []engine.OperationOptio
 	c.next.Options = options
 }
 
-// unbind removes the engine and options configured by the prior call to bind().
-//
-// Calling ExecuteCommand() on an unbound executor causes a panic.
+// unbind removes the engine and options configured by a prior call to bind().
 func (c *commandExecutor) unbind() {
 	c.m.Lock()
 	defer c.m.Unlock()
