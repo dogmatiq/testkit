@@ -10,8 +10,8 @@ github.com/dogmatiq/configkit v0.11.0 h1:oMA1QWZEfCxVRVEz/nfBiEOndGXzS0DqohxwxKj
 github.com/dogmatiq/configkit v0.11.0/go.mod h1:D6lk29dCR31uGbmJPiA9bHT10+liEyPp7WKK/80W/w4=
 github.com/dogmatiq/cosyne v0.2.0 h1:tO957BpS4I9kqSw31ds6Ef4CXvV8zPAqWzbXKElsGWg=
 github.com/dogmatiq/cosyne v0.2.0/go.mod h1:dD8EZjbRX7FFw9t6P7l1nwoZbA7YxtOCfl9ZZAHPucU=
-github.com/dogmatiq/dapper v0.4.1 h1:HULzWJulT93izao/24QUpQYRDTG0ELSL4c13+BRbw5g=
-github.com/dogmatiq/dapper v0.4.1/go.mod h1:U32cRxzGYI5owhc/hMKjYLgBTVCdW/s3MdFJHwfDrLQ=
+github.com/dogmatiq/dapper v0.4.2 h1:9tdWCBMgUJRU6O21IkKeQtLBbSy5Q8GrdQ/TxhJc6xM=
+github.com/dogmatiq/dapper v0.4.2/go.mod h1:U32cRxzGYI5owhc/hMKjYLgBTVCdW/s3MdFJHwfDrLQ=
 github.com/dogmatiq/dogma v0.11.0/go.mod h1:8TdjQ5jjV2DcCPb/jjHPgSrqU66H6092yMEIF5HGx0g=
 github.com/dogmatiq/dogma v0.11.1 h1:N80eSyJ6uk7Bi20pZa4TJ5W/0B83ZgMLblENLB0Pv6U=
 github.com/dogmatiq/dogma v0.11.1/go.mod h1:8TdjQ5jjV2DcCPb/jjHPgSrqU66H6092yMEIF5HGx0g=

@@ -21,4 +21,5 @@ func init() {
 
 	// Then modify the settings we want to change.
 	printer.Config.OmitPackagePaths = true
+	printer.Config.OmitUnexportedFields = true
 }
