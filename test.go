@@ -152,7 +152,7 @@ func (t *Test) CommandExecutor() dogma.CommandExecutor {
 // EventRecorder returns a dogma.EventRecorder which can be used to record
 // events within the context of this test.
 //
-// The recorder can be obtained at any time, but it can only be used within a
+// The recorder can be obtained at any time, but it can only be used within
 // specific test actions.
 //
 // Call() is the only built-in action that supports the event recorder. It may

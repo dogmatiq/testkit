@@ -56,7 +56,7 @@ func (c *CommandExecutor) Bind(e *engine.Engine, options []engine.OperationOptio
 
 // Unbind removes the engine and options configured by a prior call to Bind().
 //
-// Calls to ExecuteCommand() on an unbound to executor cause a panic.
+// Calls to ExecuteCommand() on an unbound executor will cause a panic.
 func (c *CommandExecutor) Unbind() {
 	c.m.Lock()
 	defer c.m.Unlock()
