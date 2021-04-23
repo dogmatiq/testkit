@@ -6,7 +6,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 )
 
-// TestOption applies optional settings to a test.
+// TestOption applies optional settings to a Test.
 type TestOption interface {
 	applyTestOption(*Test)
 }

@@ -13,66 +13,170 @@ import (
 )
 
 var _ = Describe("func InterceptCommandExecutor()", func() {
-	var app dogma.Application
+	var (
+		testingT                     *testingmock.T
+		app                          dogma.Application
+		doNothing                    CommandExecutorInterceptor
+		executeCommandAndReturnError CommandExecutorInterceptor
+	)
 
 	BeforeEach(func() {
-		handler := &IntegrationMessageHandler{
-			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-				c.Identity("<handler-name>", "<handler-key>")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
-			},
-			HandleCommandFunc: func(
-				_ context.Context,
-				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
-			) error {
-				s.RecordEvent(MessageE1)
-				return nil
-			},
-		}
+		testingT = &testingmock.T{}
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "<app-key>")
-				c.RegisterIntegration(handler)
+
+				c.RegisterIntegration(&IntegrationMessageHandler{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<handler-name>", "<handler-key>")
+						c.ConsumesCommandType(MessageC{})
+						c.ProducesEventType(MessageE{})
+					},
+					HandleCommandFunc: func(
+						_ context.Context,
+						s dogma.IntegrationCommandScope,
+						_ dogma.Message,
+					) error {
+						s.RecordEvent(MessageE1)
+						return nil
+					},
+				})
 			},
 		}
+
+		doNothing = func(
+			context.Context,
+			dogma.Message,
+			dogma.CommandExecutor,
+		) error {
+			return nil
+		}
+
+		executeCommandAndReturnError = func(
+			ctx context.Context,
+			m dogma.Message,
+			e dogma.CommandExecutor,
+		) error {
+			Expect(m).To(Equal(MessageC1))
+
+			err := e.ExecuteCommand(ctx, m)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			return errors.New("<error>")
+		}
+	})
+
+	It("panics if the interceptor function is nil", func() {
+		Expect(func() {
+			InterceptCommandExecutor(nil)
+		}).To(PanicWith("InterceptCommandExecutor(<nil>): function must not be nil"))
 	})
 
 	When("used as a TestOption", func() {
 		It("intercepts calls to ExecuteCommand()", func() {
 			test := Begin(
-				&testingmock.T{},
+				testingT,
 				app,
-				InterceptCommandExecutor(
-					func(
-						ctx context.Context,
-						m dogma.Message,
-						e dogma.CommandExecutor,
-					) error {
-						Expect(m).To(Equal(MessageC1))
-
-						err := e.ExecuteCommand(ctx, m)
-						Expect(err).ShouldNot(HaveOccurred())
-
-						return errors.New("<error>")
-					},
-				),
+				InterceptCommandExecutor(executeCommandAndReturnError),
 			)
 
-			test.
-				EnableHandlers("<handler-name>").
-				Expect(
-					Call(func() {
+			test.EnableHandlers("<handler-name>")
+
+			test.Expect(
+				Call(func() {
+					err := test.CommandExecutor().ExecuteCommand(
+						context.Background(),
+						MessageC1,
+					)
+					Expect(err).To(MatchError("<error>"))
+				}),
+				ToRecordEvent(MessageE1),
+			)
+		})
+	})
+
+	When("used as a CallOption", func() {
+		It("intercepts calls to ExecuteCommand()", func() {
+			test := Begin(
+				&testingmock.T{},
+				app,
+			)
+
+			test.EnableHandlers("<handler-name>")
+
+			test.Expect(
+				Call(
+					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
 							MessageC1,
 						)
 						Expect(err).To(MatchError("<error>"))
-					}),
-					ToRecordEvent(MessageE1),
-				)
+					},
+					InterceptCommandExecutor(executeCommandAndReturnError),
+				),
+				ToRecordEvent(MessageE1),
+			)
+		})
+
+		It("uninstalls the interceptor upon completion of the Call() action", func() {
+			test := Begin(
+				&testingmock.T{},
+				app,
+			)
+
+			test.Prepare(
+				Call(
+					func() {
+						err := test.CommandExecutor().ExecuteCommand(
+							context.Background(),
+							MessageC1,
+						)
+						Expect(err).To(MatchError("<error>"))
+					},
+					InterceptCommandExecutor(executeCommandAndReturnError),
+				),
+				Call(
+					func() {
+						err := test.CommandExecutor().ExecuteCommand(
+							context.Background(),
+							MessageC1,
+						)
+						Expect(err).ShouldNot(HaveOccurred())
+					},
+				),
+			)
+		})
+
+		It("re-installs the test-level interceptor upon completion of the Call() action", func() {
+			test := Begin(
+				&testingmock.T{},
+				app,
+				InterceptCommandExecutor(executeCommandAndReturnError),
+			)
+
+			test.Prepare(
+				Call(
+					func() {
+						err := test.CommandExecutor().ExecuteCommand(
+							context.Background(),
+							MessageC1,
+						)
+						Expect(err).ShouldNot(HaveOccurred())
+					},
+					InterceptCommandExecutor(doNothing),
+				),
+				Call(
+					func() {
+						err := test.CommandExecutor().ExecuteCommand(
+							context.Background(),
+							MessageC1,
+						)
+						Expect(err).To(MatchError("<error>"))
+					},
+				),
+			)
 		})
 	})
 })
