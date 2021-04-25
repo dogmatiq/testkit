@@ -41,12 +41,12 @@ type ActionScope struct {
 	// NEXT Action.
 	VirtualClock *time.Time
 
-	// Engine is the engine used to handled messages.
+	// Engine is the engine used to handle messages.
 	Engine *engine.Engine
 
 	// Executor is the command executor returned by the Test's CommandExecutor()
 	// method.
-	Executor *engine.CommandExecutor
+	Executor *CommandExecutor
 
 	// Recorder is the event recorder returned by the Test's EventRecorder()
 	// method.

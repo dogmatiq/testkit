@@ -20,7 +20,7 @@ type Test struct {
 	app              configkit.RichApplication
 	virtualClock     time.Time
 	engine           *engine.Engine
-	executor         engine.CommandExecutor
+	executor         CommandExecutor
 	recorder         engine.EventRecorder
 	predicateOptions PredicateOptions
 	operationOptions []engine.OperationOption
@@ -139,12 +139,24 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 
 // CommandExecutor returns a dogma.CommandExecutor which can be used to execute
 // commands within the context of this test.
+//
+// The executor can be obtained at any time, but it can only be used within
+// specific test actions.
+//
+// Call() is the only built-in action that supports the command executor. It may
+// be supported by other user-defined actions.
 func (t *Test) CommandExecutor() dogma.CommandExecutor {
 	return &t.executor
 }
 
 // EventRecorder returns a dogma.EventRecorder which can be used to record
 // events within the context of this test.
+//
+// The recorder can be obtained at any time, but it can only be used within
+// specific test actions.
+//
+// Call() is the only built-in action that supports the event recorder. It may
+// be supported by other user-defined actions.
 func (t *Test) EventRecorder() dogma.EventRecorder {
 	return &t.recorder
 }
