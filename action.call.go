@@ -19,22 +19,34 @@ import (
 // When Call() is used with Test.Expect() the expectation will match the
 // messages dispatched via the test's executor and recorder, as well as those
 // produced by handlers within the Dogma application.
-func Call(fn func()) Action {
+func Call(fn func(), options ...CallOption) Action {
 	if fn == nil {
 		panic("Call(<nil>): function must not be nil")
 	}
 
-	return callAction{
-		fn,
-		location.OfCall(),
+	act := callAction{
+		fn:  fn,
+		loc: location.OfCall(),
 	}
+
+	for _, opt := range options {
+		opt.applyCallOption(&act)
+	}
+
+	return act
+}
+
+// CallOption applies optional settings to a Call action.
+type CallOption interface {
+	applyCallOption(*callAction)
 }
 
 // callAction is an implementation of Action that invokes a user-defined
 // function.
 type callAction struct {
-	fn  func()
-	loc location.Location
+	fn     func()
+	loc    location.Location
+	onExec CommandExecutorInterceptor
 }
 
 func (a callAction) Caption() string {
@@ -51,6 +63,12 @@ func (a callAction) ConfigurePredicate(o *PredicateOptions) {
 
 func (a callAction) Do(ctx context.Context, s ActionScope) error {
 	s.Executor.Bind(s.Engine, s.OperationOptions)
+	defer s.Executor.Unbind()
+
+	if a.onExec != nil {
+		prev := s.Executor.Intercept(a.onExec)
+		defer s.Executor.Intercept(prev)
+	}
 
 	s.Recorder.Engine = s.Engine
 	s.Recorder.Options = s.OperationOptions
@@ -58,8 +76,6 @@ func (a callAction) Do(ctx context.Context, s ActionScope) error {
 	defer func() {
 		// Reset the engine and options to nil so that the executor and recorder
 		// can not be used after this Call() action ends.
-		s.Executor.Unbind()
-
 		s.Recorder.Engine = nil
 		s.Recorder.Options = nil
 	}()

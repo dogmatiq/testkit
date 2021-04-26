@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Added
 
 - Add `InterceptCommandExecutor()` option
+- Add functional options to `Call()`, see `CallOption`
 
 ## [0.13.4] - 2021-04-22
 

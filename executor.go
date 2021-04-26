@@ -71,7 +71,7 @@ func (c *CommandExecutor) Unbind() {
 // If fn is nil the interceptor is removed.
 //
 // It returns the previous interceptor, if any.
-func (c *CommandExecutor) intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
+func (c *CommandExecutor) Intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -101,8 +101,28 @@ type CommandExecutorInterceptor func(
 //
 // Intercepting calls to the command executor allows the user to simulate
 // failures (or any other behavior) in the command executor.
-func InterceptCommandExecutor(fn CommandExecutorInterceptor) TestOption {
-	return testOptionFunc(func(t *Test) {
-		t.executor.intercept(fn)
-	})
+func InterceptCommandExecutor(fn CommandExecutorInterceptor) interface {
+	TestOption
+	CallOption
+} {
+	if fn == nil {
+		panic("InterceptCommandExecutor(<nil>): function must not be nil")
+	}
+
+	return interceptCommandExecutorOption{fn}
+}
+
+// interceptCommandExecutorOption is an implementation of both TestOption and
+// CallOption that allows the InterceptCommandExecutor() option to be used with
+// both Test.Begin() and Call().
+type interceptCommandExecutorOption struct {
+	fn CommandExecutorInterceptor
+}
+
+func (o interceptCommandExecutorOption) applyTestOption(t *Test) {
+	t.executor.Intercept(o.fn)
+}
+
+func (o interceptCommandExecutorOption) applyCallOption(a *callAction) {
+	a.onExec = o.fn
 }
