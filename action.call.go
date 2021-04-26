@@ -44,9 +44,9 @@ type CallOption interface {
 // callAction is an implementation of Action that invokes a user-defined
 // function.
 type callAction struct {
-	fn     func()
-	loc    location.Location
-	onExec CommandExecutorInterceptor
+	fn        func()
+	loc       location.Location
+	onExecute CommandExecutorInterceptor
 }
 
 func (a callAction) Caption() string {
@@ -62,11 +62,12 @@ func (a callAction) ConfigurePredicate(o *PredicateOptions) {
 }
 
 func (a callAction) Do(ctx context.Context, s ActionScope) error {
+	// Setup the command executor for use during this action.
 	s.Executor.Bind(s.Engine, s.OperationOptions)
 	defer s.Executor.Unbind()
 
-	if a.onExec != nil {
-		prev := s.Executor.Intercept(a.onExec)
+	if a.onExecute != nil {
+		prev := s.Executor.Intercept(a.onExecute)
 		defer s.Executor.Intercept(prev)
 	}
 
@@ -80,6 +81,7 @@ func (a callAction) Do(ctx context.Context, s ActionScope) error {
 		s.Recorder.Options = nil
 	}()
 
+	// Execute the user-supplied function.
 	a.fn()
 
 	return nil

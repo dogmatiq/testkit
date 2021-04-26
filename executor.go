@@ -23,19 +23,19 @@ type CommandExecutor struct {
 //
 // It panics unless it is called during an Action, such as when calling
 // Test.Prepare() or Test.Expect().
-func (c *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
-	c.m.RLock()
-	defer c.m.RUnlock()
+func (e *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
+	e.m.RLock()
+	defer e.m.RUnlock()
 
-	if c.next.Engine == nil {
+	if e.next.Engine == nil {
 		panic("ExecuteCommand(): can not be called outside of a test")
 	}
 
-	if c.interceptor != nil {
-		return c.interceptor(ctx, m, c.next)
+	if e.interceptor != nil {
+		return e.interceptor(ctx, m, e.next)
 	}
 
-	return c.next.ExecuteCommand(ctx, m)
+	return e.next.ExecuteCommand(ctx, m)
 }
 
 // Bind sets the engine and options used to execute commands.
@@ -46,23 +46,23 @@ func (c *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) e
 // It must be called before ExecuteCommand(), otherwise ExecuteCommand() panics.
 //
 // It must be accompanied by a call to Unbind() upon completion of the Action.
-func (c *CommandExecutor) Bind(e *engine.Engine, options []engine.OperationOption) {
-	c.m.Lock()
-	defer c.m.Unlock()
+func (e *CommandExecutor) Bind(eng *engine.Engine, options []engine.OperationOption) {
+	e.m.Lock()
+	defer e.m.Unlock()
 
-	c.next.Engine = e
-	c.next.Options = options
+	e.next.Engine = eng
+	e.next.Options = options
 }
 
 // Unbind removes the engine and options configured by a prior call to Bind().
 //
 // Calls to ExecuteCommand() on an unbound executor will cause a panic.
-func (c *CommandExecutor) Unbind() {
-	c.m.Lock()
-	defer c.m.Unlock()
+func (e *CommandExecutor) Unbind() {
+	e.m.Lock()
+	defer e.m.Unlock()
 
-	c.next.Engine = nil
-	c.next.Options = nil
+	e.next.Engine = nil
+	e.next.Options = nil
 }
 
 // Intercept installs an interceptor function that is invoked whenever
@@ -71,12 +71,12 @@ func (c *CommandExecutor) Unbind() {
 // If fn is nil the interceptor is removed.
 //
 // It returns the previous interceptor, if any.
-func (c *CommandExecutor) Intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
-	c.m.Lock()
-	defer c.m.Unlock()
+func (e *CommandExecutor) Intercept(fn CommandExecutorInterceptor) CommandExecutorInterceptor {
+	e.m.Lock()
+	defer e.m.Unlock()
 
-	prev := c.interceptor
-	c.interceptor = fn
+	prev := e.interceptor
+	e.interceptor = fn
 
 	return prev
 }
@@ -124,5 +124,5 @@ func (o interceptCommandExecutorOption) applyTestOption(t *Test) {
 }
 
 func (o interceptCommandExecutorOption) applyCallOption(a *callAction) {
-	a.onExec = o.fn
+	a.onExecute = o.fn
 }
