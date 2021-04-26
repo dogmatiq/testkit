@@ -50,7 +50,7 @@ type ActionScope struct {
 
 	// Recorder is the event recorder returned by the Test's EventRecorder()
 	// method.
-	Recorder *engine.EventRecorder
+	Recorder *EventRecorder
 
 	// OperationOptions is the set of options that should be used with calling
 	// Engine.Dispatch() or Engine.Tick().

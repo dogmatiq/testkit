@@ -47,6 +47,7 @@ type callAction struct {
 	fn        func()
 	loc       location.Location
 	onExecute CommandExecutorInterceptor
+	onRecord  EventRecorderInterceptor
 }
 
 func (a callAction) Caption() string {
@@ -71,15 +72,14 @@ func (a callAction) Do(ctx context.Context, s ActionScope) error {
 		defer s.Executor.Intercept(prev)
 	}
 
-	s.Recorder.Engine = s.Engine
-	s.Recorder.Options = s.OperationOptions
+	// Setup the event recorder for use during this action.
+	s.Recorder.Bind(s.Engine, s.OperationOptions)
+	defer s.Recorder.Unbind()
 
-	defer func() {
-		// Reset the engine and options to nil so that the executor and recorder
-		// can not be used after this Call() action ends.
-		s.Recorder.Engine = nil
-		s.Recorder.Options = nil
-	}()
+	if a.onRecord != nil {
+		prev := s.Recorder.Intercept(a.onRecord)
+		defer s.Recorder.Intercept(prev)
+	}
 
 	// Execute the user-supplied function.
 	a.fn()

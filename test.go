@@ -21,7 +21,7 @@ type Test struct {
 	virtualClock     time.Time
 	engine           *engine.Engine
 	executor         CommandExecutor
-	recorder         engine.EventRecorder
+	recorder         EventRecorder
 	predicateOptions PredicateOptions
 	operationOptions []engine.OperationOption
 }
