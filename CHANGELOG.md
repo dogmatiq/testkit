@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.13.5] - 2021-04-26
 
 ### Added
 
@@ -289,6 +289,7 @@ simple to migrate existing tests to the new API. Please see the
 [0.13.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.2
 [0.13.3]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.3
 [0.13.4]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.4
+[0.13.5]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.5
 
 [v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/main/docs/MIGRATING-v0.11.0.md
 
