@@ -66,7 +66,7 @@ func MustNew(app configkit.RichApplication, options ...Option) *Engine {
 
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
-	e.m.Lock(context.Background())
+	_ = e.m.Lock(context.Background())
 	defer e.m.Unlock()
 
 	e.messageIDs.Reset()
