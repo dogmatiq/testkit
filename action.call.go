@@ -10,7 +10,12 @@ import (
 // a test.
 //
 // It is intended to execute application code that makes use of the
-// dogma.CommandExecutor or dogma.EventRecorder interfaces.
+// dogma.CommandExecutor or dogma.EventRecorder interfaces. Typically this
+// occurs in API handlers, where the "outside world" begins to interface with
+// the Dogma application.
+//
+// If a test does not need to involve such application code, use of the
+// ExecuteCommand() and RecordEvent() actions is preferred.
 //
 // Test implementations of these interfaces can be OBTAINED via the
 // Test.CommandExecutor() and Test.EventRecorder() methods at any time; however,
