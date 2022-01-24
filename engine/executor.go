@@ -21,8 +21,5 @@ type CommandExecutor struct {
 //
 // It panics if the command is not routed to any handlers.
 func (e CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
-	t := message.TypeOf(m)
-	e.Engine.roles[t].MustBe(message.CommandRole)
-
-	return e.Engine.Dispatch(ctx, m, e.Options...)
+	return e.Engine.mustDispatch(ctx, message.CommandRole, m, e.Options...)
 }

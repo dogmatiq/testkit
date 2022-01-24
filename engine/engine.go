@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/inflect"
 	"go.uber.org/multierr"
 )
 
@@ -244,6 +245,39 @@ func (e *Engine) Dispatch(
 	)
 
 	return err
+}
+
+// mustDispatch is a variant of Dispatch() that panics if m is does not
+// have the expected role.
+func (e *Engine) mustDispatch(
+	ctx context.Context,
+	expected message.Role,
+	m dogma.Message,
+	options ...OperationOption,
+) error {
+	t := message.TypeOf(m)
+
+	if r, ok := e.roles[t]; ok {
+		if r.Is(expected) {
+			return e.Dispatch(ctx, m, options...)
+		}
+
+		panic(inflect.Sprintf(
+			expected,
+			"can not <produce> <message>, %s",
+			inflect.Sprintf(
+				r,
+				"%T is configured as a <message>",
+				m,
+			),
+		))
+	}
+
+	panic(inflect.Sprintf(
+		expected,
+		"can not <produce> <message>, %T is a not a recognized message type",
+		m,
+	))
 }
 
 func (e *Engine) dispatch(
