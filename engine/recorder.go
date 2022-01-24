@@ -21,8 +21,5 @@ type EventRecorder struct {
 //
 // It is not an error to record an event that is not routed to any handlers.
 func (r EventRecorder) RecordEvent(ctx context.Context, m dogma.Message) error {
-	t := message.TypeOf(m)
-	r.Engine.roles[t].MustBe(message.EventRole)
-
-	return r.Engine.Dispatch(ctx, m, r.Options...)
+	return r.Engine.mustDispatch(ctx, message.EventRole, m, r.Options...)
 }

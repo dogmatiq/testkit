@@ -63,5 +63,17 @@ var _ = Describe("type CommandExecutor", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(called).To(BeTrue())
 		})
+
+		It("panics if the message is not a command", func() {
+			Expect(func() {
+				executor.ExecuteCommand(context.Background(), MessageE1)
+			}).To(PanicWith("can not execute command, fixtures.MessageE is configured as an event"))
+		})
+
+		It("panics if the message is unrecognized", func() {
+			Expect(func() {
+				executor.ExecuteCommand(context.Background(), MessageX1)
+			}).To(PanicWith("can not execute command, fixtures.MessageX is a not a recognized message type"))
+		})
 	})
 })
