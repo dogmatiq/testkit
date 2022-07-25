@@ -21,7 +21,8 @@ func expectReport(expected ...string) reportMatcher {
 		// expectation.
 		for i, l := range t.Logs {
 			if l == "--- TEST REPORT ---" {
-				Expect(t.Logs[i+1:]).To(Equal(expected))
+				remainder := t.Logs[i+1:]
+				Expect(remainder).To(Equal(expected))
 				return
 			}
 		}

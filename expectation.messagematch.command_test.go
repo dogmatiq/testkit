@@ -168,7 +168,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:166`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:165`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -213,7 +213,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:211`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:210`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,

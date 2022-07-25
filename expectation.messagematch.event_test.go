@@ -174,7 +174,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:172`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:171`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -219,7 +219,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:217`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:216`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
