@@ -13,7 +13,7 @@ require (
 	github.com/onsi/gomega v1.20.0
 	github.com/sergi/go-diff v1.2.0
 	go.uber.org/multierr v1.8.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
