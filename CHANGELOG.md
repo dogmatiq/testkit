@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.13.8] - 2022-08-07
+
+### Changed
+
+- Bumped `dogmatiq/dogma` to v0.4.4 to gain support for `dapper.Stringer`
+
 ## [0.13.7] - 2022-01-24
 
 ### Fixed
