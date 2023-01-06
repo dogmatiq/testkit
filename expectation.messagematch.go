@@ -61,13 +61,13 @@ func ToOnlyExecuteCommandsMatching(
 	}
 }
 
-// ToRecordEventMatching returns an expectation that passes if a command is
-// executed that satisfies the given predicate function.
+// ToRecordEventMatching returns an expectation that passes if an event is
+// recorded that satisfies the given predicate function.
 //
 // Always prefer using ToRecordEvent() instead, if possible, as it provides
 // more meaningful information in the result of a failure.
 //
-// pred is the predicate function. It is called for each executed command. It
+// pred is the predicate function. It is called for each recorded event. It
 // must return nil at least once for the expectation to pass.
 //
 // pred may return the IgnoreMessage error to indicate that the predicate does
