@@ -8,7 +8,7 @@ require (
 	github.com/dogmatiq/dapper v0.4.5
 	github.com/dogmatiq/dogma v0.11.1
 	github.com/dogmatiq/iago v0.4.0
-	github.com/dogmatiq/linger v1.0.0
+	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.25.0
 	github.com/sergi/go-diff v1.3.1
