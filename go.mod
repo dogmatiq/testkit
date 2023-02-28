@@ -10,7 +10,7 @@ require (
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.27.1
+	github.com/onsi/gomega v1.27.2
 	github.com/sergi/go-diff v1.3.1
 	go.uber.org/multierr v1.9.0
 	google.golang.org/protobuf v1.28.1
