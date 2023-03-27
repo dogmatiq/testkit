@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.13.10] - 2023-03-27
+
+### Added
+
+- Added `MessageDescription` method to internal test messages in preparation for it becoming mandatory
+
 ## [0.13.9] - 2023-01-06
 
 ### Changed
@@ -100,8 +106,8 @@ concepts of "actions" and "expectations" with the goal of a more consistent API
 and a greater level of extensibility.
 
 Despite the large number of backwards incompatible changes it is relatively
-simple to migrate existing tests to the new API. Please see the
-[v0.11.0 migration guide] for detailed instructions.
+simple to migrate existing tests to the new API. Please see the [migration
+guide][0.11.0 migration guide] for detailed instructions.
 
 ### Testing API
 
@@ -308,6 +314,7 @@ simple to migrate existing tests to the new API. Please see the
 [0.9.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.9.0
 [0.10.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.10.0
 [0.11.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.11.0
+[0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/main/docs/MIGRATING-v0.11.0.md
 [0.12.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.12.0
 [0.13.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.0
 [0.13.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.1
@@ -319,7 +326,7 @@ simple to migrate existing tests to the new API. Please see the
 [0.13.7]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.7
 [0.13.8]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.8
 [0.13.9]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.9
-[v0.11.0 migration guide]: https://github.com/dogmatiq/testkit/blob/main/docs/MIGRATING-v0.11.0.md
+[0.13.10]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.10
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
