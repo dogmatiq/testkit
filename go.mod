@@ -12,7 +12,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.27.6
 	github.com/sergi/go-diff v1.3.1
-	go.uber.org/multierr v1.10.0
+	go.uber.org/multierr v1.11.0
 	google.golang.org/protobuf v1.30.0
 )
 
