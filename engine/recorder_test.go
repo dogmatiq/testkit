@@ -22,7 +22,7 @@ var _ = Describe("type EventRecorder", func() {
 	BeforeEach(func() {
 		process = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<process>", "<process-key>")
+				c.Identity("<process>", "173b93f6-8359-4605-8c0a-f1076e14993e")
 				c.ConsumesEventType(MessageE{})
 				c.ProducesCommandType(MessageC{})
 			},
@@ -30,7 +30,7 @@ var _ = Describe("type EventRecorder", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "6b4206e5-8d36-440b-828f-9fb4623432e2")
 				c.RegisterProcess(process)
 			},
 		}

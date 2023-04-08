@@ -25,11 +25,11 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "b5453327-a0fa-4e94-bb46-8464e727c4fd")
 
 				c.RegisterIntegration(&IntegrationMessageHandler{
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<handler-name>", "<handler-key>")
+						c.Identity("<handler-name>", "67c167a8-d09e-4827-beab-7c8c9817bb1a")
 						c.ConsumesCommandType(MessageC{})
 						c.ProducesEventType(MessageE{})
 					},

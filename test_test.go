@@ -17,7 +17,7 @@ var _ = Describe("type Test", func() {
 		It("fails the test if the action returns an error", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Identity("<app>", "<app-key>")
+					c.Identity("<app>", "c654acb2-3e87-493a-8b9b-f662cd5e0f55")
 				},
 			}
 
@@ -36,7 +36,7 @@ var _ = Describe("type Test", func() {
 		It("fails the test if the action returns an error", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Identity("<app>", "<app-key>")
+					c.Identity("<app>", "c691b2ca-4c07-4473-bc42-060266cc7a56")
 				},
 			}
 
@@ -57,10 +57,10 @@ var _ = Describe("type Test", func() {
 			called := false
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Identity("<app>", "<app-key>")
+					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 					c.RegisterProjection(&ProjectionMessageHandler{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "<projection-key>")
+							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.ConsumesEventType(MessageE{})
 						},
 						HandleEventFunc: func(
@@ -88,10 +88,10 @@ var _ = Describe("type Test", func() {
 		It("disables the handler", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-					c.Identity("<app>", "<app-key>")
+					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
 					c.RegisterAggregate(&AggregateMessageHandler{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "<aggregate-key>")
+							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.ConsumesCommandType(MessageC{})
 							c.ProducesEventType(MessageE{})
 						},

@@ -14,7 +14,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "a0eab8dd-db22-467a-87c2-c38138c582e8")
 				c.ConsumesEventType(MessageE{})
 			},
 		},
@@ -50,7 +50,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "b665eca3-936e-41e3-b9ab-c618cfa95ec2")
 				c.ConsumesEventType(MessageE{})
 			},
 		},

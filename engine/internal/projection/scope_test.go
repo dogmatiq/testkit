@@ -29,7 +29,7 @@ var _ = Describe("type scope", func() {
 	BeforeEach(func() {
 		handler = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "deaaf068-bfd3-4ed2-a69d-850cb9bfab8d")
 				c.ConsumesEventType(MessageE{})
 			},
 		}
@@ -52,6 +52,28 @@ var _ = Describe("type scope", func() {
 				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
 				)
+				return true, nil
+			}
+
+			_, err := ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Describe("func IsPrimaryDelivery()", func() {
+		It("returns true", func() {
+			handler.HandleEventFunc = func(
+				_ context.Context,
+				_, _, _ []byte,
+				s dogma.ProjectionEventScope,
+				_ dogma.Message,
+			) (bool, error) {
+				Expect(s.IsPrimaryDelivery()).To(BeTrue())
 				return true, nil
 			}
 

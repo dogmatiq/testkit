@@ -22,7 +22,7 @@ var _ = Describe("type CommandExecutor", func() {
 	BeforeEach(func() {
 		aggregate = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<aggregate>", "<aggregate-key>")
+				c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
 				c.ConsumesCommandType(MessageC{})
 				c.ProducesEventType(MessageE{})
 			},
@@ -33,7 +33,7 @@ var _ = Describe("type CommandExecutor", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "d905114d-b026-4f1a-9bc6-3abd86058e2d")
 				c.RegisterAggregate(aggregate)
 			},
 		}

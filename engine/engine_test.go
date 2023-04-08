@@ -31,7 +31,7 @@ var _ = Describe("type Engine", func() {
 	BeforeEach(func() {
 		aggregate = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<aggregate>", "<aggregate-key>")
+				c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
 				c.ConsumesCommandType(MessageA{})
 				c.ProducesEventType(MessageE{})
 			},
@@ -42,7 +42,7 @@ var _ = Describe("type Engine", func() {
 
 		process = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<process>", "<process-key>")
+				c.Identity("<process>", "4721492d-7fa3-4cfa-9f0f-a3cb1f95933e")
 				c.ConsumesEventType(MessageB{})
 				c.ConsumesEventType(MessageE{}) // shared with <projection>
 				c.ProducesCommandType(MessageC{})
@@ -54,7 +54,7 @@ var _ = Describe("type Engine", func() {
 
 		integration = &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-				c.Identity("<integration>", "<integration-key>")
+				c.Identity("<integration>", "8b840c55-0b04-4107-bd4c-c69052c9fca3")
 				c.ConsumesCommandType(MessageC{})
 				c.ProducesEventType(MessageF{})
 			},
@@ -62,7 +62,7 @@ var _ = Describe("type Engine", func() {
 
 		projection = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<projection>", "<projection-key>")
+				c.Identity("<projection>", "f2b324d6-74f1-409e-8b28-8e44454037a9")
 				c.ConsumesEventType(MessageD{})
 				c.ConsumesEventType(MessageE{}) // shared with <process>
 			},
@@ -70,7 +70,7 @@ var _ = Describe("type Engine", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "9bc07eeb-5821-4649-941a-d931c8c88cb9")
 				c.RegisterAggregate(aggregate)
 				c.RegisterProcess(process)
 				c.RegisterIntegration(integration)

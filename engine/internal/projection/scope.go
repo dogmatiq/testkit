@@ -21,6 +21,10 @@ func (s *scope) RecordedAt() time.Time {
 	return s.event.CreatedAt
 }
 
+func (s *scope) IsPrimaryDelivery() bool {
+	return true
+}
+
 func (s *scope) Log(f string, v ...interface{}) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
 		Handler:      s.config,

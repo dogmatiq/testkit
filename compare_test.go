@@ -81,7 +81,7 @@ var _ = Describe("func WithMessageComparator()", func() {
 	It("configures how messages are compared", func() {
 		handler := &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-				c.Identity("<handler-name>", "<handler-key>")
+				c.Identity("<handler-name>", "7cb41db6-0116-4d03-80d7-277cc391b47e")
 				c.ConsumesCommandType(MessageC{})
 				c.ProducesEventType(MessageE{})
 			},
@@ -97,7 +97,7 @@ var _ = Describe("func WithMessageComparator()", func() {
 
 		app := &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "477a9515-8318-4229-8f9d-57d84f463cb7")
 				c.RegisterIntegration(handler)
 			},
 		}

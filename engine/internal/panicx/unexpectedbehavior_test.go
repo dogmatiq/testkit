@@ -13,7 +13,7 @@ var _ = Describe("type UnexpectedBehavior", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "fce4f9f3-e8ee-45ce-924f-be8c3c0a9285")
 				c.ConsumesEventType(MessageE{})
 			},
 		},

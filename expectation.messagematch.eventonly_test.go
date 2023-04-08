@@ -26,11 +26,11 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
 
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
 						c.ConsumesCommandType(MessageC{}) // C = command
 						c.ProducesEventType(MessageE{})   // E = event
 					},

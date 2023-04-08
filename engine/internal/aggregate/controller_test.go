@@ -34,7 +34,7 @@ var _ = Describe("type Controller", func() {
 
 		handler = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
 				c.ConsumesCommandType(MessageC{})
 				c.ProducesEventType(MessageE{})
 			},

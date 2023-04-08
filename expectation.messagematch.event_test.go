@@ -27,11 +27,11 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "43962b88-b25c-4a59-938e-64540c473a7c")
 
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "8305181b-b87f-4446-8f56-a3c38d5bd32f")
 						c.ConsumesCommandType(MessageR{}) // R = record an event
 						c.ConsumesCommandType(MessageN{}) // N = do nothing
 						c.ProducesEventType(MessageE{})
@@ -58,7 +58,7 @@ var _ = Describe("func ToRecordEventMatching()", func() {
 
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "0bd19cfa-c910-453f-a6cc-959fdce9c34f")
 						c.ConsumesEventType(MessageE{}) // E = execute a command
 						c.ConsumesEventType(MessageO{}) // O = only consumed, never produced
 						c.ProducesCommandType(MessageN{})

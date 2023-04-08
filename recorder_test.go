@@ -25,11 +25,11 @@ var _ = Describe("func InterceptEventRecorder()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "01fdba5c-9010-4b6e-9cc4-bdb63f95c423")
 
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<handler-name>", "<handler-key>")
+						c.Identity("<handler-name>", "531c9909-ebcc-4214-8dba-b0a3a93ae5b4")
 						c.ConsumesEventType(MessageE{})
 						c.ProducesCommandType(MessageC{})
 					},

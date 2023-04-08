@@ -34,7 +34,7 @@ var _ = Describe("type scope", func() {
 
 		handler = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
 				c.ConsumesEventType(MessageE{})
 				c.ProducesCommandType(MessageC{})
 				c.SchedulesTimeoutType(MessageT{})

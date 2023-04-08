@@ -27,11 +27,11 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "386480e5-4b83-4d3b-9b87-51e6d56e41e7")
 
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
 						c.ConsumesEventType(MessageE{})   // E = event
 						c.ProducesCommandType(MessageC{}) // C = command
 					},

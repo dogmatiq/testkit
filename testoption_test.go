@@ -19,7 +19,7 @@ var _ = Describe("func StartTimeAt()", func() {
 
 		handler := &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<handler-name>", "<handler-key>")
+				c.Identity("<handler-name>", "ca76057c-9ad0-4a55-a9d9-7fbffe92e644")
 				c.ConsumesEventType(MessageA{})
 			},
 			HandleEventFunc: func(
@@ -36,7 +36,7 @@ var _ = Describe("func StartTimeAt()", func() {
 
 		app := &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "d61d15c0-0df7-466b-b0cc-749084399d73")
 				c.RegisterProjection(handler)
 			},
 		}
@@ -57,7 +57,7 @@ var _ = Describe("func WithMessageComparator()", func() {
 	It("configures how messages are compared", func() {
 		handler := &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-				c.Identity("<handler-name>", "<handler-key>")
+				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")
 				c.ConsumesCommandType(MessageC{})
 				c.ProducesEventType(MessageE{})
 			},
@@ -73,7 +73,7 @@ var _ = Describe("func WithMessageComparator()", func() {
 
 		app := &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "ad2a18d6-d87a-4b5c-a396-aa293ec64fdf")
 				c.RegisterIntegration(handler)
 			},
 		}

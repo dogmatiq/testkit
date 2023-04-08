@@ -25,7 +25,7 @@ var _ = Describe("func ToSatisfy()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "04061ede-3f5d-429c-9c14-b140f1cb80c0")
 			},
 		}
 

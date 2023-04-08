@@ -31,7 +31,7 @@ var _ = Describe("type Controller", func() {
 	BeforeEach(func() {
 		handler = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "fcbe8fe1-1085-497d-ba8e-09bedb031db2")
 				c.ConsumesEventType(MessageE{})
 			},
 		}

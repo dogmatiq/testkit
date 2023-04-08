@@ -25,7 +25,7 @@ var _ = Describe("func ToRepeatedly()", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "259ae495-fcef-43e2-986a-ea6b82f65fcd")
 			},
 		}
 

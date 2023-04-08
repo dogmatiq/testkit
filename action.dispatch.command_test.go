@@ -30,10 +30,10 @@ var _ = Describe("func ExecuteCommand()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "a84b2620-4675-4024-b55b-cd5dbeb6e293")
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
 						c.ConsumesCommandType(MessageC{})
 						c.ProducesEventType(MessageE{})
 					},

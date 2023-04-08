@@ -31,10 +31,10 @@ var _ = Describe("func RecordEvent()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "38408e83-e8eb-4f82-abe1-7fa02cee0657")
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
 						c.ConsumesEventType(MessageE{})
 						c.ProducesCommandType(MessageC{})
 					},

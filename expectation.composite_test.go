@@ -25,7 +25,7 @@ var _ = Context("composite expectations", func() {
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "00df8612-2fd4-4ae3-9acf-afc2b4daf272")
 			},
 		}
 

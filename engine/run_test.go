@@ -22,7 +22,7 @@ var _ = Describe("func Run()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "9e55f1ed-1f9a-46d9-a01f-e57638f74eb7")
 			},
 		}
 
@@ -87,7 +87,7 @@ var _ = Describe("func RunTimeScaled()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "4f06c58d-b854-41e9-92ee-d4e4ba137670")
 			},
 		}
 

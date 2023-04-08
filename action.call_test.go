@@ -31,10 +31,10 @@ var _ = Describe("func Call()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "b51cde16-aaec-4d75-ae14-06282e3a72c8")
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
 						c.ConsumesCommandType(MessageC{})
 						c.ProducesEventType(MessageE{})
 					},
@@ -46,7 +46,7 @@ var _ = Describe("func Call()", func() {
 				})
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "b64cdd19-782e-4e4e-9e5f-a95a943d6340")
 						c.ConsumesEventType(MessageE{})
 						c.ProducesCommandType(MessageC{})
 					},

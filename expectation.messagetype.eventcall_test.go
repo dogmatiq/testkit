@@ -27,11 +27,11 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "9d18eaa1-3721-464d-8957-59a2349c3fbc")
 
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "23c7a071-0a52-4aae-8dbf-d2bc06e32079")
 						c.ConsumesCommandType(MessageR{}) // R = record an event
 						c.ConsumesCommandType(MessageN{}) // N = do nothing
 						c.ProducesEventType(MessageE{})
@@ -54,7 +54,7 @@ var _ = Describe("func ToRecordEventOfType() (when used with the Call() action)"
 
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "d2fdcbb0-b600-487c-97b4-f885b997cad3")
 						c.ConsumesEventType(MessageE{}) // E = execute a command
 						c.ConsumesEventType(MessageA{}) // A = also execute a command
 						c.ProducesCommandType(MessageN{})

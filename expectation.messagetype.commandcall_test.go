@@ -27,11 +27,11 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "f38c3003-bbd0-4b4a-b1f8-6922e9545acd")
 
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "<aggregate-key>")
+						c.Identity("<aggregate>", "5c44e153-9e42-4816-87b0-59b4b4943dc4")
 						c.ConsumesCommandType(MessageR{})  // R = record an event
 						c.ConsumesCommandType(&MessageR{}) // pointer, used to test type similarity
 						c.ConsumesCommandType(MessageX{})
@@ -51,7 +51,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "<process-key>")
+						c.Identity("<process>", "3994dd62-43f7-4569-813f-a616dc444486")
 						c.ConsumesEventType(MessageE{})   // E = event
 						c.ConsumesEventType(MessageN{})   // N = (do) nothing
 						c.ProducesCommandType(MessageC{}) // C = command

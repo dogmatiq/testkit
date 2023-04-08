@@ -48,7 +48,7 @@ var _ = Describe("type Controller", func() {
 
 		handler = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<name>", "<key>")
+				c.Identity("<name>", "7db72921-b805-4db5-8287-0af94a768643")
 				c.ConsumesEventType(MessageE{})
 				c.ProducesCommandType(MessageC{})
 				c.SchedulesTimeoutType(MessageT{})

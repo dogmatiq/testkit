@@ -28,7 +28,7 @@ var _ = Describe("func AdvanceTime()", func() {
 	BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "<app-key>")
+				c.Identity("<app>", "140ca29b-7a05-4f26-968b-6285255e6d8a")
 			},
 		}
 
