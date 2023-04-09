@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.13.11] - 2023-04-09
+
+This release updates the `testkit` implementation to adhere to Dogma v0.12.0
+interfaces.
+
 ## [0.13.10] - 2023-03-27
 
 ### Added
@@ -327,6 +332,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.13.8]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.8
 [0.13.9]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.9
 [0.13.10]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.10
+[0.13.11]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.11
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
