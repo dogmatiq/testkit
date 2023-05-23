@@ -9,18 +9,17 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommandMatching()", func() {
+var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -81,7 +80,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 		}
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -95,7 +94,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"matching command executed as expected",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
@@ -109,10 +108,10 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:102`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:101`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
@@ -126,7 +125,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:119`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:118`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -139,7 +138,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			RecordEvent(MessageN1),
 			ToExecuteCommandMatching(
@@ -149,7 +148,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:146`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:145`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -158,7 +157,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no commands produced at all",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommandMatching(
@@ -168,7 +167,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:165`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:164`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -177,7 +176,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommandMatching(
@@ -191,7 +190,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:184`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:183`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -203,7 +202,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 				engine.EnableProcesses(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed and commands were ignored",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
@@ -213,7 +212,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:210`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:209`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -223,7 +222,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed and error messages were repeated",
 			RecordEvent(MessageE{
 				Value: "<multiple>", // trigger multiple MessageC commands
@@ -235,7 +234,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:232`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:231`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -250,7 +249,7 @@ var _ = Describe("func ToExecuteCommandMatching()", func() {
 		),
 	)
 
-	It("panics if the function is nil", func() {
+	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			ToExecuteCommandMatching(nil)
 		}).To(PanicWith("ToExecuteCommandMatching(<nil>): function must not be nil"))

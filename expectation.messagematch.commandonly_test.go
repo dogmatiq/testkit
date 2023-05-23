@@ -9,18 +9,17 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
+var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -57,7 +56,7 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		}
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -71,7 +70,7 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"all executed commands match",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
@@ -81,10 +80,10 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:79`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:78`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no commands executed at all",
 			noop,
 			ToOnlyExecuteCommandsMatching(
@@ -94,10 +93,10 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:91`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:90`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"some matching commands executed",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
@@ -114,7 +113,7 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:104`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:103`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -129,7 +128,7 @@ var _ = Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		),
 	)
 
-	It("panics if the function is nil", func() {
+	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			ToOnlyExecuteCommandsMatching(nil)
 		}).To(PanicWith("ToOnlyExecuteCommandsMatching(<nil>): function must not be nil"))

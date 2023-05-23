@@ -6,19 +6,18 @@ import (
 	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToSatisfy()", func() {
+var _ = g.Describe("func ToSatisfy()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 		test     *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -32,7 +31,7 @@ var _ = Describe("func ToSatisfy()", func() {
 		test = testkit.Begin(testingT, app)
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			x func(*SatisfyT),
@@ -47,7 +46,7 @@ var _ = Describe("func ToSatisfy()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"it passes when the expectation does nothing",
 			func(*SatisfyT) {},
 			expectPass,
@@ -55,7 +54,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✓ <description>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"it fails if Fail() is called",
 			func(t *SatisfyT) {
 				t.Fail()
@@ -65,10 +64,10 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at expectation.satisfy_test.go:61`,
+				`  |     Fail() called at expectation.satisfy_test.go:60`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"it passes if the expectation is skipped",
 			func(t *SatisfyT) {
 				t.SkipNow()
@@ -78,10 +77,10 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✓ <description> (the expectation was skipped)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     SkipNow() called at expectation.satisfy_test.go:74`,
+				`  |     SkipNow() called at expectation.satisfy_test.go:73`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"it includes Log() messages in the test report",
 			func(t *SatisfyT) {
 				t.Log("<message>")
@@ -94,7 +93,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				`  |     <message>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"it includes Logf() messages in the test report",
 			func(t *SatisfyT) {
 				t.Logf("<format %s>", "value")
@@ -107,7 +106,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				`  |     <format value>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"it fails if Error() is called",
 			func(t *SatisfyT) {
 				t.Error("<message>")
@@ -117,13 +116,13 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Error() called at expectation.satisfy_test.go:113`,
+				`  |     Error() called at expectation.satisfy_test.go:112`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Errorf() is called",
 			func(t *SatisfyT) {
 				t.Errorf("<format %s>", "value")
@@ -133,13 +132,13 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Errorf() called at expectation.satisfy_test.go:129`,
+				`  |     Errorf() called at expectation.satisfy_test.go:128`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Fatal() is called",
 			func(t *SatisfyT) {
 				t.Fatal("<message>")
@@ -149,13 +148,13 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatal() called at expectation.satisfy_test.go:145`,
+				`  |     Fatal() called at expectation.satisfy_test.go:144`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Fatalf() is called",
 			func(t *SatisfyT) {
 				t.Fatalf("<format %s>", "value")
@@ -165,13 +164,13 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatalf() called at expectation.satisfy_test.go:161`,
+				`  |     Fatalf() called at expectation.satisfy_test.go:160`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Fail() is called within a helper function",
 			func(t *SatisfyT) {
 				helper := func() {
@@ -186,10 +185,10 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:182`,
+				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:181`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Fail() is called when the expectation function itself is a helper function",
 			func(t *SatisfyT) {
 				t.Helper()
@@ -200,10 +199,10 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at expectation.satisfy_test.go:196`,
+				`  |     Fail() called at expectation.satisfy_test.go:195`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"fails if Fail() is called within a helper function when the expectation function itself is also a helper function",
 			func(t *SatisfyT) {
 				t.Helper()
@@ -220,12 +219,12 @@ var _ = Describe("func ToSatisfy()", func() {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:216`,
+				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:215`,
 			),
 		),
 	)
 
-	It("produces the expected caption", func() {
+	g.It("produces the expected caption", func() {
 		test.Expect(
 			noop,
 			ToSatisfy(
@@ -239,19 +238,19 @@ var _ = Describe("func ToSatisfy()", func() {
 		))
 	})
 
-	It("panics if the description is empty", func() {
+	g.It("panics if the description is empty", func() {
 		Expect(func() {
 			ToSatisfy("", func(*SatisfyT) {})
 		}).To(PanicWith(`ToSatisfy("", <func>): description must not be empty`))
 	})
 
-	It("panics if the function is nil", func() {
+	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			ToSatisfy("<description>", nil)
 		}).To(PanicWith(`ToSatisfy("<description>", <nil>): function must not be nil`))
 	})
 
-	Describe("type SatisfyT", func() {
+	g.Describe("type SatisfyT", func() {
 		run := func(x func(*SatisfyT)) {
 			test.Expect(
 				noop,
@@ -262,8 +261,8 @@ var _ = Describe("func ToSatisfy()", func() {
 			)
 		}
 
-		Describe("func Cleanup()", func() {
-			It("registers a function to be executed when the test ends", func() {
+		g.Describe("func Cleanup()", func() {
+			g.It("registers a function to be executed when the test ends", func() {
 				var order []int
 
 				run(func(t *SatisfyT) {
@@ -282,15 +281,15 @@ var _ = Describe("func ToSatisfy()", func() {
 			})
 		})
 
-		Describe("func Error()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func Error()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Error()
 					Expect(t.Failed()).To(BeTrue())
 				})
 			})
 
-			It("does not abort execution", func() {
+			g.It("does not abort execution", func() {
 				completed := false
 				run(func(t *SatisfyT) {
 					t.Error()
@@ -301,15 +300,15 @@ var _ = Describe("func ToSatisfy()", func() {
 			})
 		})
 
-		Describe("func Errorf()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func Errorf()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Errorf("<format>")
 					Expect(t.Failed()).To(BeTrue())
 				})
 			})
 
-			It("does not abort execution", func() {
+			g.It("does not abort execution", func() {
 				completed := false
 				run(func(t *SatisfyT) {
 					t.Errorf("<format>")
@@ -320,15 +319,15 @@ var _ = Describe("func ToSatisfy()", func() {
 			})
 		})
 
-		Describe("func Fail()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func Fail()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Fail()
 					Expect(t.Failed()).To(BeTrue())
 				})
 			})
 
-			It("does not abort execution", func() {
+			g.It("does not abort execution", func() {
 				completed := false
 				run(func(t *SatisfyT) {
 					t.Fail()
@@ -339,8 +338,8 @@ var _ = Describe("func ToSatisfy()", func() {
 			})
 		})
 
-		Describe("func FailNow()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func FailNow()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Failed()).To(BeTrue())
@@ -350,16 +349,16 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.FailNow()
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})
 
-		Describe("func Fatal()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func Fatal()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Failed()).To(BeTrue())
@@ -369,16 +368,16 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.Fatal()
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})
 
-		Describe("func Fatalf()", func() {
-			It("marks the test as failed", func() {
+		g.Describe("func Fatalf()", func() {
+			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Failed()).To(BeTrue())
@@ -388,16 +387,16 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.Fatalf("<format>")
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})
 
-		Describe("func Parallel()", func() {
-			It("does not panic", func() {
+		g.Describe("func Parallel()", func() {
+			g.It("does not panic", func() {
 				run(func(t *SatisfyT) {
 					Expect(func() {
 						t.Parallel()
@@ -406,16 +405,16 @@ var _ = Describe("func ToSatisfy()", func() {
 			})
 		})
 
-		Describe("func Name()", func() {
-			It("returns the description", func() {
+		g.Describe("func Name()", func() {
+			g.It("returns the description", func() {
 				run(func(t *SatisfyT) {
 					Expect(t.Name()).To(Equal("<description>"))
 				})
 			})
 		})
 
-		Describe("func Skip()", func() {
-			It("marks the test as skipped", func() {
+		g.Describe("func Skip()", func() {
+			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Skipped()).To(BeTrue())
@@ -425,7 +424,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("prevents a failure from taking effect", func() {
+			g.It("prevents a failure from taking effect", func() {
 				run(func(t *SatisfyT) {
 					t.Fail()
 					t.Skip()
@@ -434,16 +433,16 @@ var _ = Describe("func ToSatisfy()", func() {
 				Expect(testingT.Failed()).To(BeFalse())
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.Skip()
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})
 
-		Describe("func SkipNow(", func() {
-			It("marks the test as skipped", func() {
+		g.Describe("func SkipNow(", func() {
+			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Skipped()).To(BeTrue())
@@ -453,7 +452,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("prevents a failure from taking effect", func() {
+			g.It("prevents a failure from taking effect", func() {
 				run(func(t *SatisfyT) {
 					t.Fail()
 					t.SkipNow()
@@ -462,16 +461,16 @@ var _ = Describe("func ToSatisfy()", func() {
 				Expect(testingT.Failed()).To(BeFalse())
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.SkipNow()
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})
 
-		Describe("func Skipf()", func() {
-			It("marks the test as skipped", func() {
+		g.Describe("func Skipf()", func() {
+			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
 						Expect(t.Skipped()).To(BeTrue())
@@ -481,7 +480,7 @@ var _ = Describe("func ToSatisfy()", func() {
 				})
 			})
 
-			It("prevents a failure from taking effect", func() {
+			g.It("prevents a failure from taking effect", func() {
 				run(func(t *SatisfyT) {
 					t.Fail()
 					t.Skipf("<format>")
@@ -490,10 +489,10 @@ var _ = Describe("func ToSatisfy()", func() {
 				Expect(testingT.Failed()).To(BeFalse())
 			})
 
-			It("aborts execution", func() {
+			g.It("aborts execution", func() {
 				run(func(t *SatisfyT) {
 					t.Skipf("<format>")
-					Fail("execution was not aborted")
+					g.Fail("execution was not aborted")
 				})
 			})
 		})

@@ -8,13 +8,13 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type Test", func() {
-	Describe("func Prepare()", func() {
-		It("fails the test if the action returns an error", func() {
+var _ = g.Describe("type Test", func() {
+	g.Describe("func Prepare()", func() {
+		g.It("fails the test if the action returns an error", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "c654acb2-3e87-493a-8b9b-f662cd5e0f55")
@@ -32,8 +32,8 @@ var _ = Describe("type Test", func() {
 		})
 	})
 
-	Describe("func Expect()", func() {
-		It("fails the test if the action returns an error", func() {
+	g.Describe("func Expect()", func() {
+		g.It("fails the test if the action returns an error", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "c691b2ca-4c07-4473-bc42-060266cc7a56")
@@ -52,8 +52,8 @@ var _ = Describe("type Test", func() {
 		})
 	})
 
-	Describe("func EnableHandlers()", func() {
-		It("enables the handler", func() {
+	g.Describe("func EnableHandlers()", func() {
+		g.It("enables the handler", func() {
 			called := false
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
@@ -84,8 +84,8 @@ var _ = Describe("type Test", func() {
 		})
 	})
 
-	Describe("func DisableHandlers()", func() {
-		It("disables the handler", func() {
+	g.Describe("func DisableHandlers()", func() {
+		g.It("disables the handler", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
@@ -103,7 +103,7 @@ var _ = Describe("type Test", func() {
 							dogma.AggregateCommandScope,
 							dogma.Message,
 						) {
-							Fail("unexpected call")
+							g.Fail("unexpected call")
 						},
 					})
 				},

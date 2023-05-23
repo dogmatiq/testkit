@@ -11,12 +11,12 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type Controller", func() {
+var _ = g.Describe("type Controller", func() {
 	var (
 		handler *ProjectionMessageHandler
 		config  configkit.RichProjection
@@ -28,7 +28,7 @@ var _ = Describe("type Controller", func() {
 		)
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		handler = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fcbe8fe1-1085-497d-ba8e-09bedb031db2")
@@ -43,14 +43,14 @@ var _ = Describe("type Controller", func() {
 		}
 	})
 
-	Describe("func HandlerConfig()", func() {
-		It("returns the handler config", func() {
+	g.Describe("func HandlerConfig()", func() {
+		g.It("returns the handler config", func() {
 			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 
-	Describe("func Tick()", func() {
-		It("does not return any envelopes", func() {
+	g.Describe("func Tick()", func() {
+		g.It("does not return any envelopes", func() {
 			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
@@ -60,7 +60,7 @@ var _ = Describe("type Controller", func() {
 			Expect(envelopes).To(BeEmpty())
 		})
 
-		It("performs projection compaction", func() {
+		g.It("performs projection compaction", func() {
 			expect := errors.New("<error>")
 
 			handler.CompactFunc = func(
@@ -90,7 +90,7 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		It("does not compact again until CompactDuration has elapsed", func() {
+		g.It("does not compact again until CompactDuration has elapsed", func() {
 			handler.CompactFunc = func(
 				context.Context,
 				dogma.ProjectionCompactScope,
@@ -122,8 +122,8 @@ var _ = Describe("type Controller", func() {
 		})
 	})
 
-	Describe("func Handle()", func() {
-		It("forwards the message to the handler", func() {
+	g.Describe("func Handle()", func() {
+		g.It("forwards the message to the handler", func() {
 			called := false
 			handler.HandleEventFunc = func(
 				_ context.Context,
@@ -147,7 +147,7 @@ var _ = Describe("type Controller", func() {
 			Expect(called).To(BeTrue())
 		})
 
-		It("propagates handler errors", func() {
+		g.It("propagates handler errors", func() {
 			expected := errors.New("<error>")
 
 			handler.HandleEventFunc = func(
@@ -169,7 +169,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).To(Equal(expected))
 		})
 
-		It("propagates errors when loading the resource version", func() {
+		g.It("propagates errors when loading the resource version", func() {
 			expected := errors.New("<error>")
 
 			handler.ResourceVersionFunc = func(
@@ -189,7 +189,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).To(Equal(expected))
 		})
 
-		It("passes the correct OCC values", func() {
+		g.It("passes the correct OCC values", func() {
 			handler.HandleEventFunc = func(
 				ctx context.Context,
 				r, c, n []byte,
@@ -212,7 +212,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("does not handle events that have already been applied", func() {
+		g.It("does not handle events that have already been applied", func() {
 			handler.ResourceVersionFunc = func(
 				context.Context,
 				[]byte,
@@ -226,7 +226,7 @@ var _ = Describe("type Controller", func() {
 				_ dogma.ProjectionEventScope,
 				_ dogma.Message,
 			) (bool, error) {
-				Fail("unexpected call")
+				g.Fail("unexpected call")
 				return false, nil
 			}
 
@@ -240,7 +240,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("closes the resource if the event is applied", func() {
+		g.It("closes the resource if the event is applied", func() {
 			called := false
 			handler.CloseResourceFunc = func(
 				_ context.Context,
@@ -262,7 +262,7 @@ var _ = Describe("type Controller", func() {
 			Expect(called).To(BeTrue())
 		})
 
-		It("does not close the resource if the event is not applied", func() {
+		g.It("does not close the resource if the event is not applied", func() {
 			handler.HandleEventFunc = func(
 				ctx context.Context,
 				_, _, _ []byte,
@@ -276,7 +276,7 @@ var _ = Describe("type Controller", func() {
 				_ context.Context,
 				r []byte,
 			) error {
-				Fail("unexpected call")
+				g.Fail("unexpected call")
 				return nil
 			}
 
@@ -290,7 +290,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("uses the handler's timeout hint", func() {
+		g.It("uses the handler's timeout hint", func() {
 			hint := 3 * time.Second
 			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				return hint
@@ -318,7 +318,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
+		g.It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_, _, _ []byte,
@@ -348,7 +348,7 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
 			handler.TimeoutHintFunc = func(
 				dogma.Message,
 			) time.Duration {
@@ -375,8 +375,8 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		When("compact-during-handling is disabled", func() {
-			It("does not perform compaction", func() {
+		g.When("compact-during-handling is disabled", func() {
+			g.It("does not perform compaction", func() {
 				handler.CompactFunc = func(
 					context.Context,
 					dogma.ProjectionCompactScope,
@@ -402,12 +402,12 @@ var _ = Describe("type Controller", func() {
 			})
 		})
 
-		When("compact-during-handling is enabled", func() {
-			BeforeEach(func() {
+		g.When("compact-during-handling is enabled", func() {
+			g.BeforeEach(func() {
 				ctrl.CompactDuringHandling = true
 			})
 
-			It("performs projection compaction", func() {
+			g.It("performs projection compaction", func() {
 				expect := errors.New("<error>")
 
 				handler.CompactFunc = func(
@@ -440,8 +440,8 @@ var _ = Describe("type Controller", func() {
 		})
 	})
 
-	Describe("func Reset()", func() {
-		It("does nothing", func() {
+	g.Describe("func Reset()", func() {
+		g.It("does nothing", func() {
 			ctrl.Reset()
 		})
 	})

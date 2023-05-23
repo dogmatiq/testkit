@@ -11,12 +11,12 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type scope", func() {
+var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandler
@@ -25,7 +25,7 @@ var _ = Describe("type scope", func() {
 		command    *envelope.Envelope
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
 			MessageA1,
@@ -58,9 +58,9 @@ var _ = Describe("type scope", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	When("the instance does not exist", func() {
-		Describe("func Destroy()", func() {
-			It("does not record a fact", func() {
+	g.When("the instance does not exist", func() {
+		g.Describe("func Destroy()", func() {
+			g.It("does not record a fact", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -84,8 +84,8 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func RecordEvent()", func() {
-			It("records facts about instance creation and the event", func() {
+		g.Describe("func RecordEvent()", func() {
+			g.It("records facts about instance creation and the event", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -142,8 +142,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	When("the instance exists", func() {
-		BeforeEach(func() {
+	g.When("the instance exists", func() {
+		g.BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
@@ -168,8 +168,8 @@ var _ = Describe("type scope", func() {
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
 
-		Describe("func Destroy()", func() {
-			It("records a fact", func() {
+		g.Describe("func Destroy()", func() {
+			g.It("records a fact", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -198,8 +198,8 @@ var _ = Describe("type scope", func() {
 			})
 		})
 
-		Describe("func RecordEvent()", func() {
-			BeforeEach(func() {
+		g.Describe("func RecordEvent()", func() {
+			g.BeforeEach(func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -209,7 +209,7 @@ var _ = Describe("type scope", func() {
 				}
 			})
 
-			It("records a fact", func() {
+			g.It("records a fact", func() {
 				messageIDs.Reset() // reset after setup for a predictable ID.
 
 				buf := &fact.Buffer{}
@@ -247,7 +247,7 @@ var _ = Describe("type scope", func() {
 				))
 			})
 
-			It("does not record a fact about instance creation", func() {
+			g.It("does not record a fact about instance creation", func() {
 				buf := &fact.Buffer{}
 				_, err := ctrl.Handle(
 					context.Background(),
@@ -262,7 +262,7 @@ var _ = Describe("type scope", func() {
 				))
 			})
 
-			It("records facts about reverting destruction and the event if called after Destroy()", func() {
+			g.It("records facts about reverting destruction and the event if called after Destroy()", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -318,7 +318,7 @@ var _ = Describe("type scope", func() {
 				))
 			})
 
-			It("panics if the event type is not configured to be produced", func() {
+			g.It("panics if the event type is not configured to be produced", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -355,7 +355,7 @@ var _ = Describe("type scope", func() {
 				))
 			})
 
-			It("panics if the event is invalid", func() {
+			g.It("panics if the event is invalid", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
@@ -396,8 +396,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func InstanceID()", func() {
-		It("returns the instance ID", func() {
+	g.Describe("func InstanceID()", func() {
+		g.It("returns the instance ID", func() {
 			called := false
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
@@ -420,8 +420,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log()", func() {
-		BeforeEach(func() {
+	g.Describe("func Log()", func() {
+		g.BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
@@ -431,7 +431,7 @@ var _ = Describe("type scope", func() {
 			}
 		})
 
-		It("records a fact", func() {
+		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Handle(
 				context.Background(),

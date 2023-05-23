@@ -4,13 +4,13 @@ import (
 	"time"
 
 	. "github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type ObserverGroup", func() {
-	Describe("func Notify()", func() {
-		It("notifies each of the observers in the group", func() {
+var _ = g.Describe("type ObserverGroup", func() {
+	g.Describe("func Notify()", func() {
+		g.It("notifies each of the observers in the group", func() {
 			f := TickCycleBegun{}
 
 			n := 0
@@ -32,9 +32,9 @@ var _ = Describe("type ObserverGroup", func() {
 	})
 })
 
-var _ = Describe("type Buffer", func() {
-	Describe("func Notify()", func() {
-		It("appends the fact to the buffer", func() {
+var _ = g.Describe("type Buffer", func() {
+	g.Describe("func Notify()", func() {
+		g.It("appends the fact to the buffer", func() {
 			f1 := TickCycleBegun{
 				EngineTime: time.Now(),
 			}
@@ -54,9 +54,9 @@ var _ = Describe("type Buffer", func() {
 	})
 })
 
-var _ = Describe("var Ignore", func() {
-	Describe("func Notify()", func() {
-		It("does nothing", func() {
+var _ = g.Describe("var Ignore", func() {
+	g.Describe("func Notify()", func() {
+		g.It("does nothing", func() {
 			Ignore.Notify(TickCycleBegun{})
 		})
 	})

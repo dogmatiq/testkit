@@ -5,11 +5,11 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type UnexpectedBehavior", func() {
+var _ = g.Describe("type UnexpectedBehavior", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -19,8 +19,8 @@ var _ = Describe("type UnexpectedBehavior", func() {
 		},
 	)
 
-	Describe("func String()", func() {
-		It("returns a description of the panic", func() {
+	g.Describe("func String()", func() {
+		g.It("returns a description of the panic", func() {
 			x := UnexpectedBehavior{
 				Handler:        config,
 				Interface:      "<interface>",

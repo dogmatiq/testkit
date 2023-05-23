@@ -13,11 +13,11 @@ import (
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type Engine", func() {
+var _ = g.Describe("type Engine", func() {
 	var (
 		aggregate   *AggregateMessageHandler
 		process     *ProcessMessageHandler
@@ -28,7 +28,7 @@ var _ = Describe("type Engine", func() {
 		engine      *Engine
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		aggregate = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
@@ -82,14 +82,14 @@ var _ = Describe("type Engine", func() {
 		engine = MustNew(config)
 	})
 
-	Describe("func Dispatch()", func() {
-		It("skips handlers that are disabled by type", func() {
+	g.Describe("func Dispatch()", func() {
+		g.It("skips handlers that are disabled by type", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
 				dogma.Message,
 			) {
-				Fail("unexpected call")
+				g.Fail("unexpected call")
 			}
 
 			now := time.Now()
@@ -121,13 +121,13 @@ var _ = Describe("type Engine", func() {
 			))
 		})
 
-		It("skips handlers that are disabled by name", func() {
+		g.It("skips handlers that are disabled by name", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
 				dogma.Message,
 			) {
-				Fail("unexpected call")
+				g.Fail("unexpected call")
 			}
 
 			now := time.Now()
@@ -159,7 +159,7 @@ var _ = Describe("type Engine", func() {
 			))
 		})
 
-		It("does not skip handlers that are enabled by name", func() {
+		g.It("does not skip handlers that are enabled by name", func() {
 			called := false
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
@@ -179,7 +179,7 @@ var _ = Describe("type Engine", func() {
 			Expect(called).To(BeTrue())
 		})
 
-		It("always returns context errors even if other errors occur", func() {
+		g.It("always returns context errors even if other errors occur", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			integration.HandleCommandFunc = func(
@@ -195,7 +195,7 @@ var _ = Describe("type Engine", func() {
 			Expect(err).To(Equal(context.Canceled))
 		})
 
-		It("adds handler details to controller errors", func() {
+		g.It("adds handler details to controller errors", func() {
 			integration.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
@@ -208,7 +208,7 @@ var _ = Describe("type Engine", func() {
 			Expect(err).To(MatchError("<integration> integration: <error>"))
 		})
 
-		It("panics if the message is invalid", func() {
+		g.It("panics if the message is invalid", func() {
 			Expect(func() {
 				engine.Dispatch(
 					context.Background(),
@@ -219,15 +219,15 @@ var _ = Describe("type Engine", func() {
 			}).To(PanicWith("can not dispatch invalid fixtures.MessageA message: <invalid>"))
 		})
 
-		It("panics if the message type is unrecognized", func() {
+		g.It("panics if the message type is unrecognized", func() {
 			Expect(func() {
 				engine.Dispatch(context.Background(), MessageX1)
 			}).To(PanicWith("the fixtures.MessageX message type is not consumed by any handlers"))
 		})
 	})
 
-	Describe("func Tick()", func() {
-		It("skips handlers that are disabled by type", func() {
+	g.Describe("func Tick()", func() {
+		g.It("skips handlers that are disabled by type", func() {
 			buf := &fact.Buffer{}
 			err := engine.Tick(
 				context.Background(),
@@ -245,7 +245,7 @@ var _ = Describe("type Engine", func() {
 			))
 		})
 
-		It("skips handlers that are disabled by name", func() {
+		g.It("skips handlers that are disabled by name", func() {
 			buf := &fact.Buffer{}
 			err := engine.Tick(
 				context.Background(),
@@ -263,7 +263,7 @@ var _ = Describe("type Engine", func() {
 			))
 		})
 
-		It("does not skip handlers that are enabled by name", func() {
+		g.It("does not skip handlers that are enabled by name", func() {
 			buf := &fact.Buffer{}
 			err := engine.Tick(
 				context.Background(),
@@ -281,7 +281,7 @@ var _ = Describe("type Engine", func() {
 			))
 		})
 
-		It("always returns context errors even if other errors occur", func() {
+		g.It("always returns context errors even if other errors occur", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			projection.CompactFunc = func(
@@ -296,7 +296,7 @@ var _ = Describe("type Engine", func() {
 			Expect(err).To(Equal(context.Canceled))
 		})
 
-		It("adds handler details to controller errors", func() {
+		g.It("adds handler details to controller errors", func() {
 			projection.CompactFunc = func(
 				context.Context,
 				dogma.ProjectionCompactScope,

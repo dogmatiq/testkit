@@ -8,19 +8,18 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", func() {
+var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 		test     *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -92,7 +91,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 		})
 	}
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -106,7 +105,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"command executed as expected",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommand(MessageR1),
@@ -115,7 +114,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				`✓ execute a specific 'fixtures.MessageR' command`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed",
 			recordEventViaRecorder(MessageE1),
 			ToExecuteCommand(MessageX1),
@@ -131,7 +130,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
 			ToExecuteCommand(MessageC{}),
@@ -146,7 +145,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no commands produced at all",
 			recordEventViaRecorder(MessageN1),
 			ToExecuteCommand(MessageC{}),
@@ -162,7 +161,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommand(MessageC1),
@@ -181,7 +180,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				engine.EnableProcesses(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar command executed with a different type",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommand(&MessageR1), // note: message type is pointer
@@ -201,7 +200,7 @@ var _ = Describe("func ToExecuteCommand() (when used with the Call() action)", f
 				`  |     }`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar command executed with a different value",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommand(MessageR2), // note: message type is pointer

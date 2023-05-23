@@ -14,12 +14,12 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("func Call()", func() {
+var _ = g.Describe("func Call()", func() {
 	var (
 		app       *Application
 		t         *testingmock.T
@@ -28,7 +28,7 @@ var _ = Describe("func Call()", func() {
 		test      *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "b51cde16-aaec-4d75-ae14-06282e3a72c8")
@@ -74,7 +74,7 @@ var _ = Describe("func Call()", func() {
 		)
 	})
 
-	It("allows use of the test's executor", func() {
+	g.It("allows use of the test's executor", func() {
 		e := test.CommandExecutor()
 
 		test.Prepare(
@@ -109,7 +109,7 @@ var _ = Describe("func Call()", func() {
 		))
 	})
 
-	It("allows use of the test's recorder", func() {
+	g.It("allows use of the test's recorder", func() {
 		r := test.EventRecorder()
 
 		test.Prepare(
@@ -144,7 +144,7 @@ var _ = Describe("func Call()", func() {
 		))
 	})
 
-	It("allows expectations to match commands executed via the test's executor", func() {
+	g.It("allows expectations to match commands executed via the test's executor", func() {
 		e := test.CommandExecutor()
 
 		test.Expect(
@@ -158,7 +158,7 @@ var _ = Describe("func Call()", func() {
 		)
 	})
 
-	It("allows expectations to match events recorded via the test's recorder", func() {
+	g.It("allows expectations to match events recorded via the test's recorder", func() {
 		r := test.EventRecorder()
 
 		test.Expect(
@@ -172,7 +172,7 @@ var _ = Describe("func Call()", func() {
 		)
 	})
 
-	It("produces the expected caption", func() {
+	g.It("produces the expected caption", func() {
 		test.Prepare(
 			Call(func() {}),
 		)
@@ -182,13 +182,13 @@ var _ = Describe("func Call()", func() {
 		))
 	})
 
-	It("panics if the function is nil", func() {
+	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			Call(nil)
 		}).To(PanicWith("Call(<nil>): function must not be nil"))
 	})
 
-	It("captures the location that the action was created", func() {
+	g.It("captures the location that the action was created", func() {
 		act := call(func() {})
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{

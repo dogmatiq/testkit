@@ -9,13 +9,13 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/envelope"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type Envelope", func() {
-	Describe("func NewCommand()", func() {
-		It("returns the expected envelope", func() {
+var _ = g.Describe("type Envelope", func() {
+	g.Describe("func NewCommand()", func() {
+		g.It("returns the expected envelope", func() {
 			now := time.Now()
 			env := NewCommand(
 				"100",
@@ -37,8 +37,8 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewEvent()", func() {
-		It("returns the expected envelope", func() {
+	g.Describe("func NewEvent()", func() {
+		g.It("returns the expected envelope", func() {
 			now := time.Now()
 			env := NewEvent(
 				"100",
@@ -60,7 +60,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewCommand()", func() {
+	g.Describe("func NewCommand()", func() {
 		handler := configkit.FromProcess(&ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
@@ -69,7 +69,7 @@ var _ = Describe("type Envelope", func() {
 			},
 		})
 
-		It("returns the expected envelope", func() {
+		g.It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
 				MessageP1,
@@ -103,7 +103,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewEvent()", func() {
+	g.Describe("func NewEvent()", func() {
 		handler := configkit.FromAggregate(&AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
@@ -112,7 +112,7 @@ var _ = Describe("type Envelope", func() {
 			},
 		})
 
-		It("returns the expected envelope", func() {
+		g.It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
 				MessageP1,
@@ -146,7 +146,7 @@ var _ = Describe("type Envelope", func() {
 		})
 	})
 
-	Describe("func NewTimeout()", func() {
+	g.Describe("func NewTimeout()", func() {
 		handler := configkit.FromProcess(&ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
@@ -156,7 +156,7 @@ var _ = Describe("type Envelope", func() {
 			},
 		})
 
-		It("returns the expected envelope", func() {
+		g.It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
 				MessageP1,

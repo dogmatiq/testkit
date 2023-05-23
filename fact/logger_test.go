@@ -9,13 +9,12 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type Logger", func() {
-	Describe("func Notify()", func() {
+var _ = g.Describe("type Logger", func() {
+	g.Describe("func Notify()", func() {
 		now, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
 		if err != nil {
 			panic(err)
@@ -64,7 +63,7 @@ var _ = Describe("type Logger", func() {
 			},
 		})
 
-		DescribeTable(
+		g.DescribeTable(
 			"logs the expected message",
 			func(m string, f Fact) {
 				var (
@@ -92,7 +91,7 @@ var _ = Describe("type Logger", func() {
 
 			// dispatch ...
 
-			Entry(
+			g.Entry(
 				"DispatchCycleBegun",
 				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatching ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 				DispatchCycleBegun{
@@ -108,14 +107,14 @@ var _ = Describe("type Logger", func() {
 					},
 				},
 			),
-			Entry(
+			g.Entry(
 				"DispatchCycleCompleted (success)",
 				"",
 				DispatchCycleCompleted{
 					Envelope: command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"DispatchCycleCompleted (failure)",
 				"",
 				DispatchCycleCompleted{
@@ -124,21 +123,21 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"DispatchBegun",
 				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    fixtures.MessageC? ● {C1}",
 				DispatchBegun{
 					Envelope: command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"DispatchCompleted (success)",
 				"",
 				DispatchCompleted{
 					Envelope: command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"DispatchCompleted (failure)",
 				"",
 				DispatchCompleted{
@@ -147,17 +146,17 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"HandlingBegun",
 				"",
 				HandlingBegun{},
 			),
-			Entry(
+			g.Entry(
 				"HandlingCompleted (success)",
 				"",
 				HandlingCompleted{},
 			),
-			Entry(
+			g.Entry(
 				"HandlingCompleted (failure)",
 				"= 10  ∵ 10  ⋲ 10  ▽ ∴ ✖  <aggregate> ● <error>",
 				HandlingCompleted{
@@ -166,7 +165,7 @@ var _ = Describe("type Logger", func() {
 					Error:    errors.New("<error>"),
 				},
 			),
-			Entry(
+			g.Entry(
 				"HandlingSkipped",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
@@ -177,7 +176,7 @@ var _ = Describe("type Logger", func() {
 
 			// tick ...
 
-			Entry(
+			g.Entry(
 				"TickCycleBegun",
 				"= --  ∵ --  ⋲ --    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 				TickCycleBegun{
@@ -192,12 +191,12 @@ var _ = Describe("type Logger", func() {
 					},
 				},
 			),
-			Entry(
+			g.Entry(
 				"TickCycleCompleted (success)",
 				"",
 				TickCycleCompleted{},
 			),
-			Entry(
+			g.Entry(
 				"TickCycleCompleted (failure)",
 				"",
 				TickCycleCompleted{
@@ -205,17 +204,17 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"TickBegun",
 				"",
 				TickBegun{},
 			),
-			Entry(
+			g.Entry(
 				"TickCompleted (success)",
 				"",
 				TickCompleted{},
 			),
-			Entry(
+			g.Entry(
 				"TickCompleted (failure)",
 				"= --  ∵ --  ⋲ --    ∴ ✖  <aggregate> ● <error>",
 				TickCompleted{
@@ -226,7 +225,7 @@ var _ = Describe("type Logger", func() {
 
 			// aggregates ...
 
-			Entry(
+			g.Entry(
 				"AggregateInstanceLoaded",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
 				AggregateInstanceLoaded{
@@ -235,7 +234,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"AggregateInstanceNotFound",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
 				AggregateInstanceNotFound{
@@ -244,7 +243,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"AggregateInstanceCreated",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance created",
 				AggregateInstanceCreated{
@@ -253,7 +252,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"AggregateInstanceDestroyed",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance destroyed",
 				AggregateInstanceDestroyed{
@@ -262,7 +261,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"AggregateInstanceDestructionReverted",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● destruction of instance reverted",
 				AggregateInstanceDestructionReverted{
@@ -271,7 +270,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   command,
 				},
 			),
-			Entry(
+			g.Entry(
 				"EventRecordedByAggregate",
 				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByAggregate{
@@ -286,7 +285,7 @@ var _ = Describe("type Logger", func() {
 					),
 				},
 			),
-			Entry(
+			g.Entry(
 				"MessageLoggedByAggregate",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <message>",
 				MessageLoggedByAggregate{
@@ -300,7 +299,7 @@ var _ = Describe("type Logger", func() {
 
 			// processes ...
 
-			Entry(
+			g.Entry(
 				"ProcessInstanceLoaded",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● loaded an existing instance",
 				ProcessInstanceLoaded{
@@ -309,7 +308,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessEventIgnored",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> ● event ignored because it was not routed to any instance",
 				ProcessEventIgnored{
@@ -317,7 +316,7 @@ var _ = Describe("type Logger", func() {
 					Envelope: event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessTimeoutIgnored",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance no longer exists",
 				ProcessTimeoutIgnored{
@@ -326,7 +325,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessInstanceNotFound",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance does not yet exist",
 				ProcessInstanceNotFound{
@@ -335,7 +334,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessInstanceBegun",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance begun",
 				ProcessInstanceBegun{
@@ -344,7 +343,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessInstanceEnded",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance ended",
 				ProcessInstanceEnded{
@@ -353,7 +352,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"ProcessInstanceEndingReverted",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● reverted ending process instance",
 				ProcessInstanceEndingReverted{
@@ -362,7 +361,7 @@ var _ = Describe("type Logger", func() {
 					Envelope:   event,
 				},
 			),
-			Entry(
+			g.Entry(
 				"CommandExecutedByProcess",
 				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● fixtures.MessageC? ● {C1}",
 				CommandExecutedByProcess{
@@ -377,7 +376,7 @@ var _ = Describe("type Logger", func() {
 					),
 				},
 			),
-			Entry(
+			g.Entry(
 				"TimeoutScheduledByProcess",
 				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● fixtures.MessageT@ ● {T1}",
 				TimeoutScheduledByProcess{
@@ -396,7 +395,7 @@ var _ = Describe("type Logger", func() {
 					),
 				},
 			),
-			Entry(
+			g.Entry(
 				"MessageLoggedByProcess",
 				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <message>",
 				MessageLoggedByProcess{
@@ -410,7 +409,7 @@ var _ = Describe("type Logger", func() {
 
 			// integrations ...
 
-			Entry(
+			g.Entry(
 				"EventRecordedByIntegration",
 				"= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● fixtures.MessageE! ● {E1}",
 				EventRecordedByIntegration{
@@ -424,7 +423,7 @@ var _ = Describe("type Logger", func() {
 					),
 				},
 			),
-			Entry(
+			g.Entry(
 				"MessageLoggedByIntegration",
 				"= 10  ∵ 10  ⋲ 10  ▼ ⨝    <integration> ● <message>",
 				MessageLoggedByIntegration{
@@ -437,13 +436,13 @@ var _ = Describe("type Logger", func() {
 
 			// projections ...
 
-			Entry(
+			g.Entry(
 				"ProjectionCompactionBegun",
 				"",
 				ProjectionCompactionBegun{},
 			),
 
-			Entry(
+			g.Entry(
 				"ProjectionCompactionCompleted (success)",
 				"= --  ∵ --  ⋲ --    Σ    <projection> ● compacted",
 				ProjectionCompactionCompleted{
@@ -451,7 +450,7 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"ProjectionCompactionCompleted (failure)",
 				"= --  ∵ --  ⋲ --    Σ ✖  <projection> ● compaction failed: <error>",
 				ProjectionCompactionCompleted{
@@ -460,7 +459,7 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"MessageLoggedByProjection",
 				"= 10  ∵ 10  ⋲ 10  ▼ Σ    <projection> ● <message>",
 				MessageLoggedByProjection{
@@ -471,7 +470,7 @@ var _ = Describe("type Logger", func() {
 				},
 			),
 
-			Entry(
+			g.Entry(
 				"MessageLoggedByProjection (compacting)",
 				"= --  ∵ --  ⋲ --    Σ    <projection> ● <message>",
 				MessageLoggedByProjection{

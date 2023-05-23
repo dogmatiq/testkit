@@ -7,11 +7,11 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type EventRecorder", func() {
+var _ = g.Describe("type EventRecorder", func() {
 	var (
 		process  *ProcessMessageHandler
 		app      *Application
@@ -19,7 +19,7 @@ var _ = Describe("type EventRecorder", func() {
 		recorder *EventRecorder
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		process = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "173b93f6-8359-4605-8c0a-f1076e14993e")
@@ -44,8 +44,8 @@ var _ = Describe("type EventRecorder", func() {
 		}
 	})
 
-	Describe("func RecordEvent()", func() {
-		It("dispatches to the engine", func() {
+	g.Describe("func RecordEvent()", func() {
+		g.It("dispatches to the engine", func() {
 			called := false
 			process.RouteEventToInstanceFunc = func(
 				context.Context,
@@ -70,13 +70,13 @@ var _ = Describe("type EventRecorder", func() {
 			Expect(called).To(BeTrue())
 		})
 
-		It("panics if the message is not an event", func() {
+		g.It("panics if the message is not an event", func() {
 			Expect(func() {
 				recorder.RecordEvent(context.Background(), MessageC1)
 			}).To(PanicWith("can not record event, fixtures.MessageC is configured as a command"))
 		})
 
-		It("panics if the message is unrecognized", func() {
+		g.It("panics if the message is unrecognized", func() {
 			Expect(func() {
 				recorder.RecordEvent(context.Background(), MessageX1)
 			}).To(PanicWith("can not record event, fixtures.MessageX is a not a recognized message type"))

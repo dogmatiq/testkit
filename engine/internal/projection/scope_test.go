@@ -10,11 +10,11 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("type scope", func() {
+var _ = g.Describe("type scope", func() {
 	var (
 		handler *ProjectionMessageHandler
 		config  configkit.RichProjection
@@ -26,7 +26,7 @@ var _ = Describe("type scope", func() {
 		)
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		handler = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "deaaf068-bfd3-4ed2-a69d-850cb9bfab8d")
@@ -41,8 +41,8 @@ var _ = Describe("type scope", func() {
 		}
 	})
 
-	Describe("func RecordedAt()", func() {
-		It("returns event creation time", func() {
+	g.Describe("func RecordedAt()", func() {
+		g.It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_, _, _ []byte,
@@ -65,8 +65,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func IsPrimaryDelivery()", func() {
-		It("returns true", func() {
+	g.Describe("func IsPrimaryDelivery()", func() {
+		g.It("returns true", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_, _, _ []byte,
@@ -87,8 +87,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log()", func() {
-		BeforeEach(func() {
+	g.Describe("func Log()", func() {
+		g.BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_, _, _ []byte,
@@ -100,7 +100,7 @@ var _ = Describe("type scope", func() {
 			}
 		})
 
-		It("records a fact", func() {
+		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Handle(
 				context.Background(),
@@ -124,8 +124,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Now()", func() {
-		It("returns the current engine time", func() {
+	g.Describe("func Now()", func() {
+		g.It("returns the current engine time", func() {
 			now := time.Now()
 
 			handler.CompactFunc = func(

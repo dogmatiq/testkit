@@ -8,19 +8,18 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() action)", func() {
+var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 		test     *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -92,7 +91,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 		})
 	}
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -106,7 +105,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"command type executed as expected",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommandOfType(MessageR{}),
@@ -115,7 +114,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				`✓ execute any 'fixtures.MessageR' command`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command types executed",
 			recordEventViaRecorder(MessageE1),
 			ToExecuteCommandOfType(MessageX{}),
@@ -131,7 +130,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
 			ToExecuteCommandOfType(MessageC{}),
@@ -146,7 +145,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no commands produced at all",
 			recordEventViaRecorder(MessageN1),
 			ToExecuteCommandOfType(MessageC{}),
@@ -162,7 +161,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command type executed and all relevant handler types disabled",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommandOfType(MessageC{}),
@@ -181,7 +180,7 @@ var _ = Describe("func ToExecuteCommandOfType() (when used with the Call() actio
 				engine.EnableProcesses(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"command of a similar type executed",
 			executeCommandViaExecutor(MessageR1),
 			ToExecuteCommandOfType(&MessageR{}), // note: message type is pointer

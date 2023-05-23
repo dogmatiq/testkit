@@ -14,12 +14,12 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("func RecordEvent()", func() {
+var _ = g.Describe("func RecordEvent()", func() {
 	var (
 		app       *Application
 		t         *testingmock.T
@@ -28,7 +28,7 @@ var _ = Describe("func RecordEvent()", func() {
 		test      *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "38408e83-e8eb-4f82-abe1-7fa02cee0657")
@@ -62,7 +62,7 @@ var _ = Describe("func RecordEvent()", func() {
 		)
 	})
 
-	It("dispatches the message", func() {
+	g.It("dispatches the message", func() {
 		test.Prepare(
 			RecordEvent(MessageE1),
 		)
@@ -90,7 +90,7 @@ var _ = Describe("func RecordEvent()", func() {
 		))
 	})
 
-	It("fails the test if the message type is unrecognized", func() {
+	g.It("fails the test if the message type is unrecognized", func() {
 		t.FailSilently = true
 
 		test.Prepare(
@@ -103,7 +103,7 @@ var _ = Describe("func RecordEvent()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not an event", func() {
+	g.It("fails the test if the message type is not an event", func() {
 		t.FailSilently = true
 
 		test.Prepare(
@@ -116,7 +116,7 @@ var _ = Describe("func RecordEvent()", func() {
 		))
 	})
 
-	It("does not satisfy its own expectations", func() {
+	g.It("does not satisfy its own expectations", func() {
 		t.FailSilently = true
 
 		test.Expect(
@@ -127,7 +127,7 @@ var _ = Describe("func RecordEvent()", func() {
 		Expect(t.Failed()).To(BeTrue())
 	})
 
-	It("produces the expected caption", func() {
+	g.It("produces the expected caption", func() {
 		test.Prepare(
 			RecordEvent(MessageE1),
 		)
@@ -137,13 +137,13 @@ var _ = Describe("func RecordEvent()", func() {
 		))
 	})
 
-	It("panics if the message is nil", func() {
+	g.It("panics if the message is nil", func() {
 		Expect(func() {
 			RecordEvent(nil)
 		}).To(PanicWith("RecordEvent(<nil>): message must not be nil"))
 	})
 
-	It("captures the location that the action was created", func() {
+	g.It("captures the location that the action was created", func() {
 		act := recordEvent(MessageE1)
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{

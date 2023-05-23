@@ -8,12 +8,12 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func StartTimeAt()", func() {
-	It("sets the engine time as seen during a Prepare() call", func() {
+var _ = g.Describe("func StartTimeAt()", func() {
+	g.It("sets the engine time as seen during a Prepare() call", func() {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
 
@@ -53,8 +53,8 @@ var _ = Describe("func StartTimeAt()", func() {
 	})
 })
 
-var _ = Describe("func WithMessageComparator()", func() {
-	It("configures how messages are compared", func() {
+var _ = g.Describe("func WithMessageComparator()", func() {
+	g.It("configures how messages are compared", func() {
 		handler := &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")

@@ -8,18 +8,17 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommand()", func() {
+var _ = g.Describe("func ToExecuteCommand()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -77,7 +76,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		}
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -91,7 +90,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"command executed as expected",
 			RecordEvent(MessageE1),
 			ToExecuteCommand(MessageC1),
@@ -100,7 +99,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`✓ execute a specific 'fixtures.MessageC' command`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed",
 			RecordEvent(MessageE1),
 			ToExecuteCommand(MessageX1),
@@ -115,7 +114,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			RecordEvent(MessageN1),
 			ToExecuteCommand(MessageX1),
@@ -130,7 +129,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no commands produced at all",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommand(MessageC1),
@@ -145,7 +144,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommand(MessageX1),
@@ -163,7 +162,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				engine.EnableProcesses(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar command executed with a different type",
 			RecordEvent(MessageE1),
 			ToExecuteCommand(&MessageC1), // note: message type is pointer
@@ -183,7 +182,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 				`  |     }`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar command executed with a different value",
 			RecordEvent(MessageE1),
 			ToExecuteCommand(MessageC2),
@@ -205,7 +204,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		),
 	)
 
-	It("fails the test if the message type is unrecognized", func() {
+	g.It("fails the test if the message type is unrecognized", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -218,7 +217,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not a command", func() {
+	g.It("fails the test if the message type is not a command", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -231,7 +230,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not produced by any handlers", func() {
+	g.It("fails the test if the message type is not produced by any handlers", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -244,7 +243,7 @@ var _ = Describe("func ToExecuteCommand()", func() {
 		))
 	})
 
-	It("panics if the message is invalid", func() {
+	g.It("panics if the message is invalid", func() {
 		Expect(func() {
 			ToExecuteCommand(nil)
 		}).To(PanicWith("ToExecuteCommand(<nil>): message must not be nil"))

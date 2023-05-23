@@ -11,12 +11,12 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("func AdvanceTime()", func() {
+var _ = g.Describe("func AdvanceTime()", func() {
 	var (
 		app       *Application
 		t         *testingmock.T
@@ -25,7 +25,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		test      *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "140ca29b-7a05-4f26-968b-6285255e6d8a")
@@ -46,7 +46,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		)
 	})
 
-	It("retains the virtual time between calls", func() {
+	g.It("retains the virtual time between calls", func() {
 		test.Prepare(
 			AdvanceTime(ByDuration(1*time.Second)),
 			AdvanceTime(ByDuration(1*time.Second)),
@@ -66,7 +66,7 @@ var _ = Describe("func AdvanceTime()", func() {
 		))
 	})
 
-	It("fails the test if time is reversed", func() {
+	g.It("fails the test if time is reversed", func() {
 		t.FailSilently = true
 
 		target := startTime.Add(-1 * time.Second)
@@ -86,13 +86,13 @@ var _ = Describe("func AdvanceTime()", func() {
 		))
 	})
 
-	It("panics if the adjustment is nil", func() {
+	g.It("panics if the adjustment is nil", func() {
 		Expect(func() {
 			AdvanceTime(nil)
 		}).To(PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
 	})
 
-	It("captures the location that the action was created", func() {
+	g.It("captures the location that the action was created", func() {
 		act := advanceTime(ByDuration(10 * time.Second))
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{
@@ -103,10 +103,10 @@ var _ = Describe("func AdvanceTime()", func() {
 		))
 	})
 
-	When("passed a ToTime() adjustment", func() {
+	g.When("passed a ToTime() adjustment", func() {
 		targetTime := time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)
 
-		It("advances the clock to the provided time", func() {
+		g.It("advances the clock to the provided time", func() {
 			test.Prepare(
 				AdvanceTime(ToTime(targetTime)),
 			)
@@ -125,7 +125,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("produces the expected caption", func() {
+		g.It("produces the expected caption", func() {
 			test.Prepare(
 				AdvanceTime(ToTime(targetTime)),
 			)
@@ -136,8 +136,8 @@ var _ = Describe("func AdvanceTime()", func() {
 		})
 	})
 
-	When("passed a ByDuration() adjustment", func() {
-		It("advances the clock then performs a tick", func() {
+	g.When("passed a ByDuration() adjustment", func() {
+		g.It("advances the clock then performs a tick", func() {
 			test.Prepare(
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)
@@ -156,7 +156,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("produces the expected caption", func() {
+		g.It("produces the expected caption", func() {
 			test.Prepare(
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)
@@ -166,7 +166,7 @@ var _ = Describe("func AdvanceTime()", func() {
 			))
 		})
 
-		It("panics if the duration is negative", func() {
+		g.It("panics if the duration is negative", func() {
 			Expect(func() {
 				ByDuration(-1 * time.Second)
 			}).To(PanicWith("ByDuration(-1s): duration must not be negative"))

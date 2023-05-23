@@ -8,18 +8,17 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
+var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -51,7 +50,7 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 		}
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -65,7 +64,7 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"all recorded events match",
 			ExecuteCommand(MessageC1),
 			ToOnlyRecordEventsMatching(
@@ -75,10 +74,10 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:73`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:72`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no events recorded at all",
 			noop,
 			ToOnlyRecordEventsMatching(
@@ -88,10 +87,10 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:85`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:84`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"some matching events executed",
 			ExecuteCommand(MessageC1),
 			ToOnlyRecordEventsMatching(
@@ -108,7 +107,7 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:98`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:97`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -124,7 +123,7 @@ var _ = Describe("func ToOnlyRecordEventsMatching()", func() {
 		),
 	)
 
-	It("panics if the function is nil", func() {
+	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			ToOnlyRecordEventsMatching(nil)
 		}).To(PanicWith("ToOnlyRecordEventsMatching(<nil>): function must not be nil"))

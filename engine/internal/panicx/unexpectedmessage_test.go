@@ -5,12 +5,12 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type UnexpectedMessage", func() {
+var _ = g.Describe("type UnexpectedMessage", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -20,8 +20,8 @@ var _ = Describe("type UnexpectedMessage", func() {
 		},
 	)
 
-	Describe("func String()", func() {
-		It("returns a description of the panic", func() {
+	g.Describe("func String()", func() {
+		g.It("returns a description of the panic", func() {
 			defer func() {
 				r := recover()
 				Expect(r).To(BeAssignableToTypeOf(UnexpectedMessage{}))
@@ -46,7 +46,7 @@ var _ = Describe("type UnexpectedMessage", func() {
 	})
 })
 
-var _ = Describe("func EnrichUnexpectedMessage()", func() {
+var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 	config := configkit.FromProjection(
 		&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -56,7 +56,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 		},
 	)
 
-	It("calls the function", func() {
+	g.It("calls the function", func() {
 		called := false
 
 		EnrichUnexpectedMessage(
@@ -73,7 +73,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 		Expect(called).To(BeTrue())
 	})
 
-	It("propagates panic values", func() {
+	g.It("propagates panic values", func() {
 		Expect(func() {
 			EnrichUnexpectedMessage(
 				config,
@@ -88,7 +88,7 @@ var _ = Describe("func EnrichUnexpectedMessage()", func() {
 		}).To(PanicWith("<panic>"))
 	})
 
-	It("converts UnexpectedMessage values", func() {
+	g.It("converts UnexpectedMessage values", func() {
 		Expect(func() {
 			EnrichUnexpectedMessage(
 				config,

@@ -5,12 +5,12 @@ import (
 
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/internal/report"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func RenderMessage()", func() {
-	It("returns a suitable representation", func() {
+var _ = g.Describe("func RenderMessage()", func() {
+	g.It("returns a suitable representation", func() {
 		Expect(
 			RenderMessage(MessageA1),
 		).To(Equal(join(

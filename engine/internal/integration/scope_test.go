@@ -11,12 +11,12 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type scope", func() {
+var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
@@ -25,7 +25,7 @@ var _ = Describe("type scope", func() {
 		command    *envelope.Envelope
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
 			MessageA1,
@@ -50,8 +50,8 @@ var _ = Describe("type scope", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func RecordEvent()", func() {
-		BeforeEach(func() {
+	g.Describe("func RecordEvent()", func() {
+		g.BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -62,7 +62,7 @@ var _ = Describe("type scope", func() {
 			}
 		})
 
-		It("records a fact", func() {
+		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			now := time.Now()
 			_, err := ctrl.Handle(
@@ -90,7 +90,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the event type is not configured to be produced", func() {
+		g.It("panics if the event type is not configured to be produced", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -128,7 +128,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the event is invalid", func() {
+		g.It("panics if the event is invalid", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -169,8 +169,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log()", func() {
-		BeforeEach(func() {
+	g.Describe("func Log()", func() {
+		g.BeforeEach(func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -181,7 +181,7 @@ var _ = Describe("type scope", func() {
 			}
 		})
 
-		It("records a fact", func() {
+		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Handle(
 				context.Background(),

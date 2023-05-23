@@ -8,18 +8,17 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToExecuteCommandOfType()", func() {
+var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -80,7 +79,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		}
 	})
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -94,7 +93,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"event type recorded as expected",
 			ExecuteCommand(MessageR1),
 			ToRecordEventOfType(MessageE{}),
@@ -103,7 +102,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`✓ record any 'fixtures.MessageE' event`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching event type recorded",
 			ExecuteCommand(MessageR1),
 			ToRecordEventOfType(MessageX{}),
@@ -119,7 +118,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching event type recorded and all relevant handler types disabled",
 			ExecuteCommand(MessageR1),
 			ToRecordEventOfType(MessageX{}),
@@ -139,7 +138,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				engine.EnableIntegrations(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching event type recorded and no relevant handler types engaged",
 			ExecuteCommand(MessageR1),
 			ToRecordEventOfType(MessageX{}),
@@ -159,7 +158,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				engine.EnableIntegrations(true),
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			ExecuteCommand(MessageN1),
 			ToRecordEventOfType(MessageX{}),
@@ -175,7 +174,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no events recorded at all",
 			RecordEvent(MessageE1),
 			ToRecordEventOfType(MessageX{}),
@@ -191,7 +190,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"event of a similar type recorded",
 			ExecuteCommand(MessageR1),
 			ToRecordEventOfType(&MessageE{}), // note: message type is pointer
@@ -211,7 +210,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		),
 	)
 
-	It("fails the test if the message type is unrecognized", func() {
+	g.It("fails the test if the message type is unrecognized", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -224,7 +223,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not an event", func() {
+	g.It("fails the test if the message type is not an event", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -237,7 +236,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not produced by any handlers", func() {
+	g.It("fails the test if the message type is not produced by any handlers", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
@@ -250,7 +249,7 @@ var _ = Describe("func ToExecuteCommandOfType()", func() {
 		))
 	})
 
-	It("panics if the message is nil", func() {
+	g.It("panics if the message is nil", func() {
 		Expect(func() {
 			ToRecordEventOfType(nil)
 		}).To(PanicWith("ToRecordEventOfType(<nil>): message must not be nil"))

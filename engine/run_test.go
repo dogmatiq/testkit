@@ -9,17 +9,17 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func Run()", func() {
+var _ = g.Describe("func Run()", func() {
 	var (
 		app    *Application
 		engine *Engine
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9e55f1ed-1f9a-46d9-a01f-e57638f74eb7")
@@ -31,7 +31,7 @@ var _ = Describe("func Run()", func() {
 		)
 	})
 
-	It("calls tick repeatedly", func() {
+	g.It("calls tick repeatedly", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -57,7 +57,7 @@ var _ = Describe("func Run()", func() {
 		}
 	})
 
-	It("returns an error if the context is canceled while ticking", func() {
+	g.It("returns an error if the context is canceled while ticking", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
@@ -65,7 +65,7 @@ var _ = Describe("func Run()", func() {
 		Expect(err).To(Equal(context.Canceled))
 	})
 
-	It("returns an error if the context is canceled between ticks", func() {
+	g.It("returns an error if the context is canceled between ticks", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		go func() {
@@ -78,13 +78,13 @@ var _ = Describe("func Run()", func() {
 	})
 })
 
-var _ = Describe("func RunTimeScaled()", func() {
+var _ = g.Describe("func RunTimeScaled()", func() {
 	var (
 		app    *Application
 		engine *Engine
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "4f06c58d-b854-41e9-92ee-d4e4ba137670")
@@ -96,7 +96,7 @@ var _ = Describe("func RunTimeScaled()", func() {
 		)
 	})
 
-	It("scales type by the given factor", func() {
+	g.It("scales type by the given factor", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 

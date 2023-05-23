@@ -11,12 +11,12 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type Controller", func() {
+var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandler
@@ -25,7 +25,7 @@ var _ = Describe("type Controller", func() {
 		command    *envelope.Envelope
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
 			MessageA1,
@@ -50,14 +50,14 @@ var _ = Describe("type Controller", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func HandlerConfig()", func() {
-		It("returns the handler config", func() {
+	g.Describe("func HandlerConfig()", func() {
+		g.It("returns the handler config", func() {
 			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
 		})
 	})
 
-	Describe("func Tick()", func() {
-		It("does not return any envelopes", func() {
+	g.Describe("func Tick()", func() {
+		g.It("does not return any envelopes", func() {
 			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
@@ -67,7 +67,7 @@ var _ = Describe("type Controller", func() {
 			Expect(envelopes).To(BeEmpty())
 		})
 
-		It("does not record any facts", func() {
+		g.It("does not record any facts", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Tick(
 				context.Background(),
@@ -79,8 +79,8 @@ var _ = Describe("type Controller", func() {
 		})
 	})
 
-	Describe("func Handle()", func() {
-		It("forwards the message to the handler", func() {
+	g.Describe("func Handle()", func() {
+		g.It("forwards the message to the handler", func() {
 			called := false
 			handler.HandleCommandFunc = func(
 				_ context.Context,
@@ -103,7 +103,7 @@ var _ = Describe("type Controller", func() {
 			Expect(called).To(BeTrue())
 		})
 
-		It("returns the recorded events", func() {
+		g.It("returns the recorded events", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -145,7 +145,7 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		It("propagates handler errors", func() {
+		g.It("propagates handler errors", func() {
 			expected := errors.New("<error>")
 
 			handler.HandleCommandFunc = func(
@@ -166,7 +166,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).To(Equal(expected))
 		})
 
-		It("uses the handler's timeout hint", func() {
+		g.It("uses the handler's timeout hint", func() {
 			hint := 3 * time.Second
 			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				return hint
@@ -193,7 +193,7 @@ var _ = Describe("type Controller", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
-		It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+		g.It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
 			handler.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
@@ -222,7 +222,7 @@ var _ = Describe("type Controller", func() {
 			))
 		})
 
-		It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
+		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
 			handler.TimeoutHintFunc = func(
 				dogma.Message,
 			) time.Duration {
@@ -250,8 +250,8 @@ var _ = Describe("type Controller", func() {
 		})
 	})
 
-	Describe("func Reset()", func() {
-		It("does nothing", func() {
+	g.Describe("func Reset()", func() {
+		g.It("does nothing", func() {
 			ctrl.Reset()
 		})
 	})

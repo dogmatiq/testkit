@@ -6,19 +6,18 @@ import (
 	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Context("composite expectations", func() {
+var _ = g.Context("composite expectations", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 		test     *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -42,11 +41,11 @@ var _ = Context("composite expectations", func() {
 		Expect(testingT.Failed()).To(Equal(!ok))
 	}
 
-	Describe("func AllOf()", func() {
-		DescribeTable(
+	g.Describe("func AllOf()", func() {
+		g.DescribeTable(
 			"expectation behavior",
 			testExpectationBehavior,
-			Entry(
+			g.Entry(
 				"it flattens report output when there is a single child",
 				AllOf(pass),
 				expectPass,
@@ -54,7 +53,7 @@ var _ = Context("composite expectations", func() {
 					`✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it passes when all of the child expectations pass",
 				AllOf(pass, pass),
 				expectPass,
@@ -64,7 +63,7 @@ var _ = Context("composite expectations", func() {
 					`    ✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it fails when some of the child expectations fail",
 				AllOf(pass, fail),
 				expectFail,
@@ -74,7 +73,7 @@ var _ = Context("composite expectations", func() {
 					`    ✗ <always fail>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it fails when all of the child expectations fail",
 				AllOf(fail, fail),
 				expectFail,
@@ -86,7 +85,7 @@ var _ = Context("composite expectations", func() {
 			),
 		)
 
-		It("produces the expected caption", func() {
+		g.It("produces the expected caption", func() {
 			test.Expect(
 				noop,
 				AllOf(pass, fail),
@@ -97,7 +96,7 @@ var _ = Context("composite expectations", func() {
 			))
 		})
 
-		It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children can not construct a predicate", func() {
 			test.Expect(
 				noop,
 				AllOf(pass, failBeforeAction),
@@ -107,18 +106,18 @@ var _ = Context("composite expectations", func() {
 			Expect(testingT.Failed()).To(BeTrue())
 		})
 
-		It("panics if no children are provided", func() {
+		g.It("panics if no children are provided", func() {
 			Expect(func() {
 				AllOf()
 			}).To(PanicWith("AllOf(): at least one child expectation must be provided"))
 		})
 	})
 
-	Describe("func AnyOf()", func() {
-		DescribeTable(
+	g.Describe("func AnyOf()", func() {
+		g.DescribeTable(
 			"expectation behavior",
 			testExpectationBehavior,
-			Entry(
+			g.Entry(
 				"it flattens report output when there is a single child",
 				AnyOf(pass),
 				expectPass,
@@ -126,7 +125,7 @@ var _ = Context("composite expectations", func() {
 					`✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it passes when all of the child expectations pass",
 				AnyOf(pass, pass),
 				expectPass,
@@ -136,7 +135,7 @@ var _ = Context("composite expectations", func() {
 					`    ✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it passes when some of the child expectations fail",
 				AnyOf(pass, fail),
 				expectPass,
@@ -146,7 +145,7 @@ var _ = Context("composite expectations", func() {
 					`    ✗ <always fail>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it fails when all of the child expectations fail",
 				AnyOf(fail, fail),
 				expectFail,
@@ -158,7 +157,7 @@ var _ = Context("composite expectations", func() {
 			),
 		)
 
-		It("produces the expected caption", func() {
+		g.It("produces the expected caption", func() {
 			test.Expect(
 				noop,
 				AnyOf(pass, fail),
@@ -169,7 +168,7 @@ var _ = Context("composite expectations", func() {
 			))
 		})
 
-		It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children can not construct a predicate", func() {
 			test.Expect(
 				noop,
 				AnyOf(pass, failBeforeAction),
@@ -179,18 +178,18 @@ var _ = Context("composite expectations", func() {
 			Expect(testingT.Failed()).To(BeTrue())
 		})
 
-		It("panics if no children are provided", func() {
+		g.It("panics if no children are provided", func() {
 			Expect(func() {
 				AnyOf()
 			}).To(PanicWith("AnyOf(): at least one child expectation must be provided"))
 		})
 	})
 
-	Describe("func NoneOf()", func() {
-		DescribeTable(
+	g.Describe("func NoneOf()", func() {
+		g.DescribeTable(
 			"expectation behavior",
 			testExpectationBehavior,
-			Entry(
+			g.Entry(
 				"it does not flatten report output when there is a single child",
 				NoneOf(pass),
 				expectFail,
@@ -199,7 +198,7 @@ var _ = Context("composite expectations", func() {
 					`    ✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it fails when all of the child expecations pass",
 				NoneOf(pass, pass),
 				expectFail,
@@ -209,7 +208,7 @@ var _ = Context("composite expectations", func() {
 					`    ✓ <always pass>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"it fails when some of the child expectations pass",
 				NoneOf(pass, fail),
 				expectFail,
@@ -219,7 +218,7 @@ var _ = Context("composite expectations", func() {
 					`    ✗ <always fail>`,
 				),
 			),
-			Entry(
+			g.Entry(
 				"passes when all of the child expectations fail",
 				NoneOf(fail, fail),
 				expectPass,
@@ -231,7 +230,7 @@ var _ = Context("composite expectations", func() {
 			),
 		)
 
-		It("produces the expected caption", func() {
+		g.It("produces the expected caption", func() {
 			test.Expect(
 				noop,
 				NoneOf(pass, fail),
@@ -242,7 +241,7 @@ var _ = Context("composite expectations", func() {
 			))
 		})
 
-		It("produces the expected caption when there is only one child", func() {
+		g.It("produces the expected caption when there is only one child", func() {
 			test.Expect(
 				noop,
 				NoneOf(pass),
@@ -253,7 +252,7 @@ var _ = Context("composite expectations", func() {
 			))
 		})
 
-		It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children can not construct a predicate", func() {
 			test.Expect(
 				noop,
 				NoneOf(pass, failBeforeAction),
@@ -263,7 +262,7 @@ var _ = Context("composite expectations", func() {
 			Expect(testingT.Failed()).To(BeTrue())
 		})
 
-		It("panics if no children are provided", func() {
+		g.It("panics if no children are provided", func() {
 			Expect(func() {
 				NoneOf()
 			}).To(PanicWith("NoneOf(): at least one child expectation must be provided"))

@@ -11,12 +11,12 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("type scope", func() {
+var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandler
@@ -25,7 +25,7 @@ var _ = Describe("type scope", func() {
 		event      *envelope.Envelope
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
 			MessageA1,
@@ -62,8 +62,8 @@ var _ = Describe("type scope", func() {
 		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	Describe("func InstanceID()", func() {
-		It("returns the instance ID", func() {
+	g.Describe("func InstanceID()", func() {
+		g.It("returns the instance ID", func() {
 			called := false
 			handler.HandleEventFunc = func(
 				_ context.Context,
@@ -88,8 +88,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func End()", func() {
-		It("records a fact", func() {
+	g.Describe("func End()", func() {
+		g.It("records a fact", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -119,7 +119,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("does nothing if the instance has already been ended", func() {
+		g.It("does nothing if the instance has already been ended", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -145,8 +145,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func ExecuteCommand()", func() {
-		It("records a fact", func() {
+	g.Describe("func ExecuteCommand()", func() {
+		g.It("records a fact", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -187,7 +187,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the command type is not configured to be produced", func() {
+		g.It("panics if the command type is not configured to be produced", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -226,7 +226,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the command is invalid", func() {
+		g.It("panics if the command is invalid", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -267,7 +267,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("reverts a prior call to End()", func() {
+		g.It("reverts a prior call to End()", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -299,8 +299,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func ScheduleTimeout()", func() {
-		It("records a fact", func() {
+	g.Describe("func ScheduleTimeout()", func() {
+		g.It("records a fact", func() {
 			t := time.Now().Add(10 * time.Second)
 
 			handler.HandleEventFunc = func(
@@ -344,7 +344,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the timeout type is not configured to be scheduled", func() {
+		g.It("panics if the timeout type is not configured to be scheduled", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -383,7 +383,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("panics if the timeout is invalid", func() {
+		g.It("panics if the timeout is invalid", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -427,7 +427,7 @@ var _ = Describe("type scope", func() {
 			))
 		})
 
-		It("reverts a prior call to End()", func() {
+		g.It("reverts a prior call to End()", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -459,8 +459,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func ScheduledFor()", func() {
-		It("returns the time that the timeout message was scheduled to occur", func() {
+	g.Describe("func ScheduledFor()", func() {
+		g.It("returns the time that the timeout message was scheduled to occur", func() {
 			_, err := ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
@@ -501,8 +501,8 @@ var _ = Describe("type scope", func() {
 		})
 	})
 
-	Describe("func Log()", func() {
-		BeforeEach(func() {
+	g.Describe("func Log()", func() {
+		g.BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -514,7 +514,7 @@ var _ = Describe("type scope", func() {
 			}
 		})
 
-		It("records a fact", func() {
+		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Handle(
 				context.Background(),

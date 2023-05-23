@@ -6,14 +6,13 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit/internal/inflect"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func Sprint()", func() {
-	entry := func(r message.Role, in, out string) TableEntry {
-		return Entry(
+var _ = g.Describe("func Sprint()", func() {
+	entry := func(r message.Role, in, out string) g.TableEntry {
+		return g.Entry(
 			in+" ("+r.String()+")",
 			r,
 			in,
@@ -21,7 +20,7 @@ var _ = Describe("func Sprint()", func() {
 		)
 	}
 
-	DescribeTable(
+	g.DescribeTable(
 		"returns a properly inflected string",
 		func(r message.Role, in, out string) {
 			Expect(Sprint(r, in)).To(Equal(out))
@@ -71,8 +70,8 @@ var _ = Describe("func Sprint()", func() {
 	)
 })
 
-var _ = Describe("func Sprintf()", func() {
-	It("returns the inflected and substituted string", func() {
+var _ = g.Describe("func Sprintf()", func() {
+	g.It("returns the inflected and substituted string", func() {
 		Expect(
 			Sprintf(
 				message.CommandRole,
@@ -83,8 +82,8 @@ var _ = Describe("func Sprintf()", func() {
 	})
 })
 
-var _ = Describe("func Error()", func() {
-	It("returns an error with the inflected message", func() {
+var _ = g.Describe("func Error()", func() {
+	g.It("returns an error with the inflected message", func() {
 		Expect(
 			Error(
 				message.CommandRole,
@@ -94,8 +93,8 @@ var _ = Describe("func Error()", func() {
 	})
 })
 
-var _ = Describe("func Errorf()", func() {
-	It("returns an error with the inflected and substituted message", func() {
+var _ = g.Describe("func Errorf()", func() {
+	g.It("returns an error with the inflected and substituted message", func() {
 		Expect(
 			Errorf(
 				message.CommandRole,

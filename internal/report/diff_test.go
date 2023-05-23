@@ -4,12 +4,12 @@ import (
 	"strings"
 
 	. "github.com/dogmatiq/testkit/internal/report"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func WriteDiff()", func() {
-	It("produces a word-diff of the input", func() {
+var _ = g.Describe("func WriteDiff()", func() {
+	g.It("produces a word-diff of the input", func() {
 		var w strings.Builder
 
 		WriteDiff(

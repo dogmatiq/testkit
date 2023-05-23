@@ -13,12 +13,12 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("func ExecuteCommand()", func() {
+var _ = g.Describe("func ExecuteCommand()", func() {
 	var (
 		app       *Application
 		t         *testingmock.T
@@ -27,7 +27,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		test      *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "a84b2620-4675-4024-b55b-cd5dbeb6e293")
@@ -60,7 +60,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		)
 	})
 
-	It("dispatches the message", func() {
+	g.It("dispatches the message", func() {
 		test.Prepare(
 			ExecuteCommand(MessageC1),
 		)
@@ -88,7 +88,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		))
 	})
 
-	It("fails the test if the message type is unrecognized", func() {
+	g.It("fails the test if the message type is unrecognized", func() {
 		t.FailSilently = true
 
 		test.Prepare(
@@ -101,7 +101,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		))
 	})
 
-	It("fails the test if the message type is not a command", func() {
+	g.It("fails the test if the message type is not a command", func() {
 		t.FailSilently = true
 
 		test.Prepare(
@@ -114,7 +114,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		))
 	})
 
-	It("does not satisfy its own expectations", func() {
+	g.It("does not satisfy its own expectations", func() {
 		t.FailSilently = true
 
 		test.Expect(
@@ -125,7 +125,7 @@ var _ = Describe("func ExecuteCommand()", func() {
 		Expect(t.Failed()).To(BeTrue())
 	})
 
-	It("produces the expected caption", func() {
+	g.It("produces the expected caption", func() {
 		test.Prepare(
 			ExecuteCommand(MessageC1),
 		)
@@ -135,13 +135,13 @@ var _ = Describe("func ExecuteCommand()", func() {
 		))
 	})
 
-	It("panics if the message is nil", func() {
+	g.It("panics if the message is nil", func() {
 		Expect(func() {
 			ExecuteCommand(nil)
 		}).To(PanicWith("ExecuteCommand(<nil>): message must not be nil"))
 	})
 
-	It("captures the location that the action was created", func() {
+	g.It("captures the location that the action was created", func() {
 		act := executeCommand(MessageC1)
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{

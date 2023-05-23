@@ -8,11 +8,11 @@ import (
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func InterceptCommandExecutor()", func() {
+var _ = g.Describe("func InterceptCommandExecutor()", func() {
 	var (
 		testingT                     *testingmock.T
 		app                          dogma.Application
@@ -20,7 +20,7 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 		executeCommandAndReturnError CommandExecutorInterceptor
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{}
 
 		app = &Application{
@@ -67,14 +67,14 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 		}
 	})
 
-	It("panics if the interceptor function is nil", func() {
+	g.It("panics if the interceptor function is nil", func() {
 		Expect(func() {
 			InterceptCommandExecutor(nil)
 		}).To(PanicWith("InterceptCommandExecutor(<nil>): function must not be nil"))
 	})
 
-	When("used as a TestOption", func() {
-		It("intercepts calls to ExecuteCommand()", func() {
+	g.When("used as a TestOption", func() {
+		g.It("intercepts calls to ExecuteCommand()", func() {
 			test := Begin(
 				testingT,
 				app,
@@ -96,8 +96,8 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 		})
 	})
 
-	When("used as a CallOption", func() {
-		It("intercepts calls to ExecuteCommand()", func() {
+	g.When("used as a CallOption", func() {
+		g.It("intercepts calls to ExecuteCommand()", func() {
 			test := Begin(
 				&testingmock.T{},
 				app,
@@ -120,7 +120,7 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 			)
 		})
 
-		It("uninstalls the interceptor upon completion of the Call() action", func() {
+		g.It("uninstalls the interceptor upon completion of the Call() action", func() {
 			test := Begin(
 				&testingmock.T{},
 				app,
@@ -149,7 +149,7 @@ var _ = Describe("func InterceptCommandExecutor()", func() {
 			)
 		})
 
-		It("re-installs the test-level interceptor upon completion of the Call() action", func() {
+		g.It("re-installs the test-level interceptor upon completion of the Call() action", func() {
 			test := Begin(
 				&testingmock.T{},
 				app,

@@ -8,19 +8,18 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func() {
+var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
 		test     *Test
 	)
 
-	BeforeEach(func() {
+	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
 		}
@@ -95,7 +94,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 		})
 	}
 
-	DescribeTable(
+	g.DescribeTable(
 		"expectation behavior",
 		func(
 			a Action,
@@ -109,7 +108,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		Entry(
+		g.Entry(
 			"event recorded as expected",
 			recordEventViaRecorder(MessageE1),
 			ToRecordEvent(MessageE1),
@@ -118,7 +117,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`✓ record a specific 'fixtures.MessageE' event`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching event recorded",
 			executeCommandViaExecutor(MessageR1),
 			ToRecordEvent(MessageX1),
@@ -135,7 +134,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
 			ToRecordEvent(MessageE1),
@@ -150,7 +149,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no events recorded at all",
 			executeCommandViaExecutor(MessageN1),
 			ToRecordEvent(MessageE1),
@@ -167,7 +166,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"no matching event recorded and all relevant handler types disabled",
 			recordEventViaRecorder(MessageA1),
 			ToRecordEvent(MessageE1),
@@ -187,7 +186,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				engine.EnableAggregates(false),
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar event recorded with a different type",
 			recordEventViaRecorder(MessageE1),
 			ToRecordEvent(&MessageE1), // note: message type is pointer
@@ -207,7 +206,7 @@ var _ = Describe("func ToRecordEvent() (when used with the Call() action)", func
 				`  |     }`,
 			),
 		),
-		Entry(
+		g.Entry(
 			"similar event recorded with a different value",
 			recordEventViaRecorder(MessageE1),
 			ToRecordEvent(MessageE2),
