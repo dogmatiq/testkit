@@ -28,7 +28,7 @@ func (e *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) e
 	defer e.m.RUnlock()
 
 	if e.next.Engine == nil {
-		panic("ExecuteCommand(): can not be called outside of a test")
+		panic("ExecuteCommand(): cannot be called outside of a test")
 	}
 
 	if e.interceptor != nil {

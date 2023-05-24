@@ -70,13 +70,13 @@ func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	if !ok {
 		return inflect.Errorf(
 			a.r,
-			"can not <produce> <message>, %T is a not a recognized message type",
+			"cannot <produce> <message>, %T is a not a recognized message type",
 			a.m,
 		)
 	} else if r != a.r {
 		return inflect.Errorf(
 			a.r,
-			"can not <produce> <message>, %s",
+			"cannot <produce> <message>, %s",
 			inflect.Sprintf(
 				r,
 				"%T is configured as a <message>",

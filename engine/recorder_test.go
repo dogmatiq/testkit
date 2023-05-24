@@ -73,13 +73,13 @@ var _ = g.Describe("type EventRecorder", func() {
 		g.It("panics if the message is not an event", func() {
 			Expect(func() {
 				recorder.RecordEvent(context.Background(), MessageC1)
-			}).To(PanicWith("can not record event, fixtures.MessageC is configured as a command"))
+			}).To(PanicWith("cannot record event, fixtures.MessageC is configured as a command"))
 		})
 
 		g.It("panics if the message is unrecognized", func() {
 			Expect(func() {
 				recorder.RecordEvent(context.Background(), MessageX1)
-			}).To(PanicWith("can not record event, fixtures.MessageX is a not a recognized message type"))
+			}).To(PanicWith("cannot record event, fixtures.MessageX is a not a recognized message type"))
 		})
 	})
 })

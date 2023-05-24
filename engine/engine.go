@@ -192,7 +192,7 @@ func (e *Engine) Dispatch(
 ) error {
 	if err := dogma.ValidateMessage(m); err != nil {
 		panic(fmt.Sprintf(
-			"can not dispatch invalid %T message: %s",
+			"cannot dispatch invalid %T message: %s",
 			m,
 			err,
 		))
@@ -264,7 +264,7 @@ func (e *Engine) mustDispatch(
 
 		panic(inflect.Sprintf(
 			expected,
-			"can not <produce> <message>, %s",
+			"cannot <produce> <message>, %s",
 			inflect.Sprintf(
 				r,
 				"%T is configured as a <message>",
@@ -275,7 +275,7 @@ func (e *Engine) mustDispatch(
 
 	panic(inflect.Sprintf(
 		expected,
-		"can not <produce> <message>, %T is a not a recognized message type",
+		"cannot <produce> <message>, %T is a not a recognized message type",
 		m,
 	))
 }

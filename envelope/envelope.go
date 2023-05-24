@@ -66,7 +66,7 @@ func NewEvent(
 
 // new constructs a new envelope containing the given message.
 //
-// It panics if r is message.TimeoutRole, as a timeout can not occur except as a
+// It panics if r is message.TimeoutRole, as a timeout cannot occur except as a
 // result of some other message.
 func new(
 	id string,

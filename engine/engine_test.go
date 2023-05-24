@@ -216,7 +216,7 @@ var _ = g.Describe("type Engine", func() {
 						Value: errors.New("<invalid>"),
 					},
 				)
-			}).To(PanicWith("can not dispatch invalid fixtures.MessageA message: <invalid>"))
+			}).To(PanicWith("cannot dispatch invalid fixtures.MessageA message: <invalid>"))
 		})
 
 		g.It("panics if the message type is unrecognized", func() {

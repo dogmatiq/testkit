@@ -28,7 +28,7 @@ func (r *EventRecorder) RecordEvent(ctx context.Context, m dogma.Message) error 
 	defer r.m.RUnlock()
 
 	if r.next.Engine == nil {
-		panic("RecordEvent(): can not be called outside of a test")
+		panic("RecordEvent(): cannot be called outside of a test")
 	}
 
 	if r.interceptor != nil {

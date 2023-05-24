@@ -99,7 +99,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"can not record event, fixtures.MessageX is a not a recognized message type",
+			"cannot record event, fixtures.MessageX is a not a recognized message type",
 		))
 	})
 
@@ -112,7 +112,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"can not record event, fixtures.MessageC is configured as a command",
+			"cannot record event, fixtures.MessageC is configured as a command",
 		))
 	})
 

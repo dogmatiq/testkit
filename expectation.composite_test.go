@@ -96,7 +96,7 @@ var _ = g.Context("composite expectations", func() {
 			))
 		})
 
-		g.It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children cannot construct a predicate", func() {
 			test.Expect(
 				noop,
 				AllOf(pass, failBeforeAction),
@@ -168,7 +168,7 @@ var _ = g.Context("composite expectations", func() {
 			))
 		})
 
-		g.It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children cannot construct a predicate", func() {
 			test.Expect(
 				noop,
 				AnyOf(pass, failBeforeAction),
@@ -252,7 +252,7 @@ var _ = g.Context("composite expectations", func() {
 			))
 		})
 
-		g.It("fails the test if one of its children can not construct a predicate", func() {
+		g.It("fails the test if one of its children cannot construct a predicate", func() {
 			test.Expect(
 				noop,
 				NoneOf(pass, failBeforeAction),
