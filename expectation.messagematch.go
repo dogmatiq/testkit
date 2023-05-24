@@ -114,7 +114,7 @@ func ToOnlyRecordEventsMatching(
 // IgnoreMessage is an error that can be returned by predicate functions to
 // indicate that the predicate does not care about the message and therefore the
 // predicate's result should not affect the expectation's result.
-var IgnoreMessage = errors.New("this message does not need to be inspected by the predicate")
+var IgnoreMessage = errors.New("this message does not need to be inspected by the predicate") //revive:disable-line:error-naming
 
 // messageMatchExpectation is an Expectation that checks that at least one
 // message that satisfies a predicate function is produced.
