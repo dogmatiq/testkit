@@ -6,7 +6,7 @@ require (
 	github.com/dogmatiq/configkit v0.12.1
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.4.6
-	github.com/dogmatiq/dogma v0.12.0
+	github.com/dogmatiq/dogma v0.12.1
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo/v2 v2.10.0
