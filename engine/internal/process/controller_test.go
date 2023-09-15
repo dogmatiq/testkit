@@ -774,7 +774,7 @@ var _ = g.Describe("type Controller", func() {
 						"Method":         Equal("RouteEventToInstance"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("routed an event of type fixtures.MessageE to an empty instance ID"),
+						"Description":    Equal("routed an event of type fixtures.MessageE to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),

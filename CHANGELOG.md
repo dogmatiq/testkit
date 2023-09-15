@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## Unreleased
+
+### Changed
+
+- Improved wording of "empty instance ID" error message.
+
 ## [0.13.11] - 2023-04-09
 
 This release updates the `testkit` implementation to adhere to Dogma v0.12.0

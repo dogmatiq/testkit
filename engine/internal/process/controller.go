@@ -213,7 +213,7 @@ func (c *Controller) routeEvent(
 				Method:         "RouteEventToInstance",
 				Implementation: handler,
 				Message:        env.Message,
-				Description:    fmt.Sprintf("routed an event of type %T to an empty instance ID", env.Message),
+				Description:    fmt.Sprintf("routed an event of type %T to an empty ID", env.Message),
 				Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
 			})
 		}
