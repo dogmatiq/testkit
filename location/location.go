@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 )
@@ -31,8 +32,8 @@ func (l Location) String() string {
 		// We know the file/line number which is enough to identify the
 		// location, so only include the function name if it actually
 		// provides more context. That means we DON'T render the function
-		// name if it refers to a global closure.
-		if l.Func != "" && !strings.Contains(l.Func, "glob..") {
+		// name if it refers to an anonymous closure.
+		if l.isNamedFunc() {
 			return fmt.Sprintf(
 				"%s [%s(...)]",
 				fl,
@@ -67,6 +68,21 @@ func (l Location) FileLine() (_ string, ok bool) {
 		path.Base(l.File),
 		l.Line,
 	), true
+}
+
+var closurePattern = regexp.MustCompile(`\.func\d+(\.\d+)*$`)
+
+func (l Location) isNamedFunc() bool {
+	if l.Func == "" {
+		return false
+	}
+	if strings.Contains(l.Func, "glob..") {
+		return false
+	}
+	if closurePattern.MatchString(l.Func) {
+		return false
+	}
+	return true
 }
 
 // OfFunc returns the location of the definition of fn.

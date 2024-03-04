@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - Improved wording of "empty instance ID" error message.
 
+### Fixed
+
+- Fixed issue that caused internal/mangled names of anonymous functions to be
+  rendered in test reports on some platforms.
+
 ## [0.13.11] - 2023-04-09
 
 This release updates the `testkit` implementation to adhere to Dogma v0.12.0
