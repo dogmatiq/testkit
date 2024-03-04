@@ -19,5 +19,5 @@ type MessageLoggedByIntegration struct {
 	Handler      configkit.RichIntegration
 	Envelope     *envelope.Envelope
 	LogFormat    string
-	LogArguments []interface{}
+	LogArguments []any
 }

@@ -19,19 +19,19 @@ func (t *T) Failed() bool {
 }
 
 // Log is an implementation of testing.TB.Log().
-func (t *T) Log(args ...interface{}) {
+func (t *T) Log(args ...any) {
 	lines := strings.Split(fmt.Sprint(args...), "\n")
 	t.Logs = append(t.Logs, lines...)
 }
 
 // Logf is an implementation of testing.TB.Logf().
-func (t *T) Logf(f string, args ...interface{}) {
+func (t *T) Logf(f string, args ...any) {
 	lines := strings.Split(fmt.Sprintf(f, args...), "\n")
 	t.Logs = append(t.Logs, lines...)
 }
 
 // Fatal is an implementation of testing.TB.Fatal().
-func (t *T) Fatal(args ...interface{}) {
+func (t *T) Fatal(args ...any) {
 	lines := strings.Split(fmt.Sprint(args...), "\n")
 	t.Logs = append(t.Logs, lines...)
 	t.failed = true

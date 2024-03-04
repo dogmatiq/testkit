@@ -24,7 +24,7 @@ type UnexpectedBehavior struct {
 	Method string
 
 	// Implementation is the value that implements the nominated interface.
-	Implementation interface{}
+	Implementation any
 
 	// Message is the message that was being handled at the time, if any.
 	Message dogma.Message

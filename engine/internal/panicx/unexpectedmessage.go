@@ -19,7 +19,7 @@ type UnexpectedMessage struct {
 	Interface string
 
 	// Implementation is the value that implements the nominated interface.
-	Implementation interface{}
+	Implementation any
 
 	// Method is the name of the method that the controller called resulting in
 	// the panic.
@@ -49,7 +49,7 @@ func (x UnexpectedMessage) String() string {
 func EnrichUnexpectedMessage(
 	h configkit.RichHandler,
 	iface string, method string,
-	impl interface{},
+	impl any,
 	m dogma.Message,
 	fn func(),
 ) {

@@ -6,9 +6,9 @@ package testkit
 // It allows use of stand-ins, such as Ginkgo's GinkgoT() value.
 type TestingT interface {
 	Failed() bool
-	Log(args ...interface{})
-	Logf(f string, args ...interface{})
-	Fatal(args ...interface{})
+	Log(args ...any)
+	Logf(f string, args ...any)
+	Fatal(args ...any)
 	FailNow()
 	Helper()
 }

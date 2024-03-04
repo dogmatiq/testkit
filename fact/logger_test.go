@@ -293,7 +293,7 @@ var _ = g.Describe("type Logger", func() {
 					InstanceID:   "<instance>",
 					Envelope:     command,
 					LogFormat:    "<%s>",
-					LogArguments: []interface{}{"message"},
+					LogArguments: []any{"message"},
 				},
 			),
 
@@ -403,7 +403,7 @@ var _ = g.Describe("type Logger", func() {
 					InstanceID:   "<instance>",
 					Envelope:     event,
 					LogFormat:    "<%s>",
-					LogArguments: []interface{}{"message"},
+					LogArguments: []any{"message"},
 				},
 			),
 
@@ -430,7 +430,7 @@ var _ = g.Describe("type Logger", func() {
 					Handler:      integration,
 					Envelope:     command,
 					LogFormat:    "<%s>",
-					LogArguments: []interface{}{"message"},
+					LogArguments: []any{"message"},
 				},
 			),
 
@@ -466,7 +466,7 @@ var _ = g.Describe("type Logger", func() {
 					Handler:      projection,
 					Envelope:     command,
 					LogFormat:    "<%s>",
-					LogArguments: []interface{}{"message"},
+					LogArguments: []any{"message"},
 				},
 			),
 
@@ -476,7 +476,7 @@ var _ = g.Describe("type Logger", func() {
 				MessageLoggedByProjection{
 					Handler:      projection,
 					LogFormat:    "<%s>",
-					LogArguments: []interface{}{"message"},
+					LogArguments: []any{"message"},
 				},
 			),
 		)

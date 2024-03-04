@@ -1,7 +1,7 @@
 package testkit
 
-func log(t TestingT, args ...interface{})            { t.Log(args...) }
-func logf(t TestingT, f string, args ...interface{}) { t.Logf(f, args...) }
+func log(t TestingT, args ...any)            { t.Log(args...) }
+func logf(t TestingT, f string, args ...any) { t.Logf(f, args...) }
 
 // ABOUT THIS FILE (dogma.go)
 //

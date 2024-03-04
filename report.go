@@ -151,12 +151,12 @@ type ReportSection struct {
 }
 
 // Append appends a line of text to the section's content.
-func (s *ReportSection) Append(f string, v ...interface{}) {
+func (s *ReportSection) Append(f string, v ...any) {
 	must.Fprintf(&s.Content, f+"\n", v...)
 }
 
 // AppendListItem appends a line of text prefixed with a bullet.
-func (s *ReportSection) AppendListItem(f string, v ...interface{}) {
+func (s *ReportSection) AppendListItem(f string, v ...any) {
 	s.Append("• "+f, v...)
 }
 

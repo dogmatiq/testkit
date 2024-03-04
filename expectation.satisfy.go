@@ -162,7 +162,7 @@ func (t *SatisfyT) Cleanup(fn func()) {
 }
 
 // Error is equivalent to Log() followed by Fail().
-func (t *SatisfyT) Error(args ...interface{}) {
+func (t *SatisfyT) Error(args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -171,7 +171,7 @@ func (t *SatisfyT) Error(args ...interface{}) {
 }
 
 // Errorf is equivalent to Logf() followed by Fail().
-func (t *SatisfyT) Errorf(format string, args ...interface{}) {
+func (t *SatisfyT) Errorf(format string, args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -205,7 +205,7 @@ func (t *SatisfyT) Failed() bool {
 }
 
 // Fatal is equivalent to Log() followed by FailNow().
-func (t *SatisfyT) Fatal(args ...interface{}) {
+func (t *SatisfyT) Fatal(args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -215,7 +215,7 @@ func (t *SatisfyT) Fatal(args ...interface{}) {
 }
 
 // Fatalf is equivalent to Logf() followed by FailNow().
-func (t *SatisfyT) Fatalf(format string, args ...interface{}) {
+func (t *SatisfyT) Fatalf(format string, args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -246,7 +246,7 @@ func (t *SatisfyT) Helper() {
 
 // Log formats its arguments using default formatting, analogous to Println(),
 // and records the text in the test report.
-func (t *SatisfyT) Log(args ...interface{}) {
+func (t *SatisfyT) Log(args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -255,7 +255,7 @@ func (t *SatisfyT) Log(args ...interface{}) {
 
 // Logf formats its arguments according to the format, analogous to Printf(),
 // and records the text in the test report.
-func (t *SatisfyT) Logf(format string, args ...interface{}) {
+func (t *SatisfyT) Logf(format string, args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -273,7 +273,7 @@ func (t *SatisfyT) Name() string {
 }
 
 // Skip is equivalent to Log() followed by SkipNow().
-func (t *SatisfyT) Skip(args ...interface{}) {
+func (t *SatisfyT) Skip(args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -290,7 +290,7 @@ func (t *SatisfyT) SkipNow() {
 }
 
 // Skipf is equivalent to Logf() followed by SkipNow().
-func (t *SatisfyT) Skipf(format string, args ...interface{}) {
+func (t *SatisfyT) Skipf(format string, args ...any) {
 	t.m.Lock()
 	defer t.m.Unlock()
 
@@ -307,13 +307,13 @@ func (t *SatisfyT) Skipped() bool {
 }
 
 // log adds a log message.
-func (t *SatisfyT) log(args []interface{}) {
+func (t *SatisfyT) log(args []any) {
 	m := fmt.Sprint(args...)
 	t.messages = append(t.messages, m)
 }
 
 // logf formats and adds a log message.
-func (t *SatisfyT) logf(format string, args []interface{}) {
+func (t *SatisfyT) logf(format string, args []any) {
 	m := fmt.Sprintf(format, args...)
 	t.messages = append(t.messages, m)
 }

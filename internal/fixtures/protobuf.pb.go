@@ -98,7 +98,7 @@ func file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_rawDescGZ
 }
 
 var file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_goTypes = []interface{}{
+var file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_goTypes = []any{
 	(*ProtoMessage)(nil), // 0: dogmatiq.testkit.fixtures.ProtoMessage
 }
 var file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_depIdxs = []int32{
@@ -115,7 +115,7 @@ func file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_dogmatiq_testkit_internal_fixtures_protobuf_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*ProtoMessage); i {
 			case 0:
 				return &v.state

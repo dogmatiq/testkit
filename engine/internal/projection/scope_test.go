@@ -115,7 +115,7 @@ var _ = g.Describe("type scope", func() {
 					Handler:   config,
 					Envelope:  event,
 					LogFormat: "<format>",
-					LogArguments: []interface{}{
+					LogArguments: []any{
 						"<arg-1>",
 						"<arg-2>",
 					},

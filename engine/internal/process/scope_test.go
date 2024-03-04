@@ -531,7 +531,7 @@ var _ = g.Describe("type scope", func() {
 					Root:       &ProcessRoot{},
 					Envelope:   event,
 					LogFormat:  "<format>",
-					LogArguments: []interface{}{
+					LogArguments: []any{
 						"<arg-1>",
 						"<arg-2>",
 					},

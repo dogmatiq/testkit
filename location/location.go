@@ -70,7 +70,7 @@ func (l Location) FileLine() (_ string, ok bool) {
 }
 
 // OfFunc returns the location of the definition of fn.
-func OfFunc(fn interface{}) Location {
+func OfFunc(fn any) Location {
 	return ofFunc(reflect.ValueOf(fn))
 }
 
@@ -93,7 +93,7 @@ func ofFunc(rv reflect.Value) Location {
 }
 
 // OfMethod returns the location of the definition of fn.
-func OfMethod(recv interface{}, m string) Location {
+func OfMethod(recv any, m string) Location {
 	rt := reflect.TypeOf(recv)
 
 	rm, ok := rt.MethodByName(m)

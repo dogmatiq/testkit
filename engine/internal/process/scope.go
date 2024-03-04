@@ -178,7 +178,7 @@ func (s *scope) ScheduledFor() time.Time {
 	return s.env.ScheduledFor
 }
 
-func (s *scope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		Handler:      s.config,
 		InstanceID:   s.instanceID,

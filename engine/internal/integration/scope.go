@@ -66,7 +66,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 	})
 }
 
-func (s *scope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByIntegration{
 		Handler:      s.config,
 		Envelope:     s.command,

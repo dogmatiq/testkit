@@ -69,5 +69,5 @@ type MessageLoggedByAggregate struct {
 	Root         dogma.AggregateRoot
 	Envelope     *envelope.Envelope
 	LogFormat    string
-	LogArguments []interface{}
+	LogArguments []any
 }

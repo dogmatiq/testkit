@@ -112,7 +112,7 @@ func (i Icon) WriteTo(w io.Writer) (int64, error) {
 }
 
 // WithLabel return an IconWithLabel containing this icon and the given label.
-func (i Icon) WithLabel(f string, v ...interface{}) IconWithLabel {
+func (i Icon) WithLabel(f string, v ...any) IconWithLabel {
 	return IconWithLabel{
 		i,
 		formatLabel(fmt.Sprintf(f, v...)),

@@ -94,5 +94,5 @@ type MessageLoggedByProcess struct {
 	Root         dogma.ProcessRoot
 	Envelope     *envelope.Envelope
 	LogFormat    string
-	LogArguments []interface{}
+	LogArguments []any
 }

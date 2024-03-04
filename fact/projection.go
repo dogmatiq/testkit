@@ -26,5 +26,5 @@ type MessageLoggedByProjection struct {
 	Handler      configkit.RichProjection
 	Envelope     *envelope.Envelope
 	LogFormat    string
-	LogArguments []interface{}
+	LogArguments []any
 }

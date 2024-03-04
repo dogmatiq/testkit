@@ -25,7 +25,7 @@ func (s *scope) IsPrimaryDelivery() bool {
 	return true
 }
 
-func (s *scope) Log(f string, v ...interface{}) {
+func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByProjection{
 		Handler:      s.config,
 		Envelope:     s.event, // nil if compacting
