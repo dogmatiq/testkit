@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/dogmatiq/configkit v0.12.2
 	github.com/dogmatiq/cosyne v0.2.0
-	github.com/dogmatiq/dapper v0.5.0
+	github.com/dogmatiq/dapper v0.5.1
 	github.com/dogmatiq/dogma v0.12.1
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/dogmatiq/jumble v0.1.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
