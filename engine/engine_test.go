@@ -3,6 +3,7 @@ package engine_test
 import (
 	"context"
 	"errors"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -10,12 +11,35 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	"github.com/dogmatiq/enginekit/enginetest"
+	"github.com/dogmatiq/testkit/engine"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+func TestEngine(t *testing.T) {
+	enginetest.RunTests(
+		t,
+		func(p enginetest.SetupParams) enginetest.SetupResult {
+			e, err := New(configkit.FromApplication(p.App))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return enginetest.SetupResult{
+				RunEngine: func(ctx context.Context) error {
+					return Run(ctx, e, 0)
+				},
+				Executor: &engine.CommandExecutor{
+					Engine: e,
+				},
+			}
+		},
+	)
+}
 
 var _ = g.Describe("type Engine", func() {
 	var (
