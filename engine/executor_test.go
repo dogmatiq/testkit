@@ -23,8 +23,10 @@ var _ = g.Describe("type CommandExecutor", func() {
 		aggregate = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			RouteCommandToInstanceFunc: func(dogma.Message) string {
 				return "<instance>"

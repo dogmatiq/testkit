@@ -35,31 +35,39 @@ var _ = g.Describe("type Logger", func() {
 		aggregate := configkit.FromAggregate(&AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 		})
 
 		integration := configkit.FromIntegration(&IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "2425a151-ba72-42ec-970a-8b3b4133b22f")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 		})
 
 		process := configkit.FromProcess(&ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "570684db-0144-4628-a58f-ae815c55dea3")
-				c.ConsumesEventType(MessageE{})
-				c.ProducesCommandType(MessageC{})
+				c.Routes(
+					dogma.HandlesEvent[MessageE](),
+					dogma.ExecutesCommand[MessageC](),
+				)
 			},
 		})
 
 		projection := configkit.FromProjection(&ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "36f29880-6b87-42c5-848c-f515c9f1c74b")
-				c.ConsumesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesEvent[MessageE](),
+				)
 			},
 		})
 

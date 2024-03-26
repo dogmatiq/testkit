@@ -35,8 +35,10 @@ var _ = g.Describe("type Controller", func() {
 		handler = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content

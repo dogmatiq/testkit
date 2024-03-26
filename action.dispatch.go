@@ -12,7 +12,7 @@ import (
 
 // ExecuteCommand returns an Action that executes a command message.
 func ExecuteCommand(m dogma.Message) Action {
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
 	}
 
@@ -25,7 +25,7 @@ func ExecuteCommand(m dogma.Message) Action {
 
 // RecordEvent returns an Action that records an event message.
 func RecordEvent(m dogma.Message) Action {
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
 	}
 
@@ -56,7 +56,7 @@ func (a dispatchAction) Location() location.Location {
 	return a.loc
 }
 
-func (a dispatchAction) ConfigurePredicate(o *PredicateOptions) {
+func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
 }
 
 func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {

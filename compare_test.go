@@ -81,8 +81,10 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 		handler := &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "7cb41db6-0116-4d03-80d7-277cc391b47e")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			HandleCommandFunc: func(
 				_ context.Context,

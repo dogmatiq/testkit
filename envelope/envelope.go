@@ -50,7 +50,7 @@ func NewCommand(
 	m dogma.Message,
 	t time.Time,
 ) *Envelope {
-	return new(id, m, message.CommandRole, t)
+	return newEnvelope(id, m, message.CommandRole, t)
 }
 
 // NewEvent constructs a new envelope containing the given event message.
@@ -61,14 +61,14 @@ func NewEvent(
 	m dogma.Message,
 	t time.Time,
 ) *Envelope {
-	return new(id, m, message.EventRole, t)
+	return newEnvelope(id, m, message.EventRole, t)
 }
 
-// new constructs a new envelope containing the given message.
+// newEnvelope constructs a newEnvelope envelope containing the given message.
 //
 // It panics if r is message.TimeoutRole, as a timeout cannot occur except as a
 // result of some other message.
-func new(
+func newEnvelope(
 	id string,
 	m dogma.Message,
 	r message.Role,

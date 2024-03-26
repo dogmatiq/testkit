@@ -190,7 +190,7 @@ func (e *Engine) Dispatch(
 	m dogma.Message,
 	options ...OperationOption,
 ) error {
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := m.Validate(); err != nil {
 		panic(fmt.Sprintf(
 			"cannot dispatch invalid %T message: %s",
 			m,

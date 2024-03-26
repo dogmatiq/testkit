@@ -16,7 +16,7 @@ import (
 // ToExecuteCommand returns an expectation that passes if a command is executed
 // that is equal to m.
 func ToExecuteCommand(m dogma.Message) Expectation {
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("ToExecuteCommand(%T): %s", m, err))
 	}
 
@@ -30,7 +30,7 @@ func ToExecuteCommand(m dogma.Message) Expectation {
 // ToRecordEvent returns an expectation that passes if an event is recorded that
 // is equal to m.
 func ToRecordEvent(m dogma.Message) Expectation {
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("ToRecordEvent(%T): %s", m, err))
 	}
 

@@ -21,7 +21,6 @@ type Test struct {
 	virtualClock     time.Time
 	engine           *engine.Engine
 	executor         CommandExecutor
-	recorder         EventRecorder
 	predicateOptions PredicateOptions
 	operationOptions []engine.OperationOption
 }
@@ -149,18 +148,6 @@ func (t *Test) CommandExecutor() dogma.CommandExecutor {
 	return &t.executor
 }
 
-// EventRecorder returns a dogma.EventRecorder which can be used to record
-// events within the context of this test.
-//
-// The recorder can be obtained at any time, but it can only be used within
-// specific test actions.
-//
-// Call() is the only built-in action that supports the event recorder. It may
-// be supported by other user-defined actions.
-func (t *Test) EventRecorder() dogma.EventRecorder {
-	return &t.recorder
-}
-
 // EnableHandlers enables a set of handlers by name.
 //
 // By default all integration and projection handlers are disabled.
@@ -204,7 +191,6 @@ func (t *Test) doAction(act Action, options ...engine.OperationOption) error {
 			VirtualClock:     &t.virtualClock,
 			Engine:           t.engine,
 			Executor:         &t.executor,
-			Recorder:         &t.recorder,
 			OperationOptions: opts,
 		},
 	)

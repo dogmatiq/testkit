@@ -35,8 +35,10 @@ var _ = g.Describe("func RecordEvent()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
-						c.ConsumesEventType(MessageE{})
-						c.ProducesCommandType(MessageC{})
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),
+							dogma.ExecutesCommand[MessageC](),
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,

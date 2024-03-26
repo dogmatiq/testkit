@@ -62,7 +62,7 @@ func (s *scope) ExecuteCommand(m dogma.Message) {
 		})
 	}
 
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := m.Validate(); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -124,7 +124,7 @@ func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
 		})
 	}
 
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := m.Validate(); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",

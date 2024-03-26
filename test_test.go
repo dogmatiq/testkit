@@ -61,7 +61,9 @@ var _ = g.Describe("type Test", func() {
 					c.RegisterProjection(&ProjectionMessageHandler{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
-							c.ConsumesEventType(MessageE{})
+							c.Routes(
+								dogma.HandlesEvent[MessageE](),
+							)
 						},
 						HandleEventFunc: func(
 							_ context.Context,
@@ -92,8 +94,10 @@ var _ = g.Describe("type Test", func() {
 					c.RegisterAggregate(&AggregateMessageHandler{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
-							c.ConsumesCommandType(MessageC{})
-							c.ProducesEventType(MessageE{})
+							c.Routes(
+								dogma.HandlesCommand[MessageC](),
+								dogma.RecordsEvent[MessageE](),
+							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Message) string {
 							return "<instance>"

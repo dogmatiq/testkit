@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.14.0] - 2024-03-26
+
+This release updates the `testkit` implementation to adhere to Dogma v0.13.0
+interfaces.
+
+### Removed
+
+- **[BC]** Removed `Test.EventRecorder()`.
+- **[BC]** Removed `EventRecorder`.
+- **[BC]** Removed `EventRecorderInterceptor` and `InterceptEventRecorder()`.
+- **[BC]** Removed `engine.EventRecorder`.
+- **[BC]** Removed `ActionScope.EventRecorder`.
+
 ## [0.13.12] - 2024-03-05
 
 ### Changed
@@ -30,7 +43,8 @@ interfaces.
 
 ### Added
 
-- Added `MessageDescription` method to internal test messages in preparation for it becoming mandatory
+- Added `MessageDescription` method to internal test messages in preparation for
+  it becoming mandatory.
 
 ## [0.13.9] - 2023-01-06
 
@@ -345,6 +359,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.13.10]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.10
 [0.13.11]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.11
 [0.13.12]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.12
+[0.14.12]: https://github.com/dogmatiq/testkit/releases/tag/v0.14.0
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

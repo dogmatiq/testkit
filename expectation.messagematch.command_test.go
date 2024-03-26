@@ -31,8 +31,10 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "0c7df570-4c3b-4d88-b6aa-68f8716bd93b")
-						c.ConsumesCommandType(MessageR{}) // R = record an event
-						c.ProducesEventType(MessageN{})
+						c.Routes(
+							dogma.HandlesCommand[MessageR](), // R = record an event
+							dogma.RecordsEvent[MessageN](),
+						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -49,10 +51,12 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "d28572f4-ecce-48eb-92c5-d3968ab8636c")
-						c.ConsumesEventType(MessageE{})   // E = event
-						c.ConsumesEventType(MessageN{})   // N = (do) nothing
-						c.ProducesCommandType(MessageC{}) // C = command
-						c.ProducesCommandType(MessageX{})
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),    // E = event
+							dogma.HandlesEvent[MessageN](),    // N = [do)]()thing
+							dogma.ExecutesCommand[MessageC](), // C = command
+							dogma.ExecutesCommand[MessageX](),
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -108,7 +112,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:101`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:105`,
 			),
 		),
 		g.Entry(
@@ -125,7 +129,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:118`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:122`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -148,7 +152,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:145`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:149`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -167,7 +171,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:164`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:168`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -190,7 +194,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:183`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:187`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -212,7 +216,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:209`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:213`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -234,7 +238,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:231`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:235`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,

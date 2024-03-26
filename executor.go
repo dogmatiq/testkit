@@ -8,7 +8,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 )
 
-// CommandExecutor is an implementation of dogma.CommandExecutor that executes
+// CommandExecutor is an implementation of [dogma.CommandExecutor] that executes
 // commands within the context of a Test.
 //
 // Each instance is bound to a particular Test. Use Test.CommandExecutor() to
@@ -19,11 +19,17 @@ type CommandExecutor struct {
 	interceptor CommandExecutorInterceptor
 }
 
+var _ dogma.CommandExecutor = (*CommandExecutor)(nil)
+
 // ExecuteCommand executes the command message m.
 //
 // It panics unless it is called during an Action, such as when calling
 // Test.Prepare() or Test.Expect().
-func (e *CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message) error {
+func (e *CommandExecutor) ExecuteCommand(
+	ctx context.Context,
+	m dogma.Message,
+	_ ...dogma.ExecuteCommandOption,
+) error {
 	e.m.RLock()
 	defer e.m.RUnlock()
 

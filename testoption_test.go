@@ -20,7 +20,9 @@ var _ = g.Describe("func StartTimeAt()", func() {
 		handler := &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<handler-name>", "ca76057c-9ad0-4a55-a9d9-7fbffe92e644")
-				c.ConsumesEventType(MessageA{})
+				c.Routes(
+					dogma.HandlesEvent[MessageA](),
+				)
 			},
 			HandleEventFunc: func(
 				_ context.Context,
@@ -58,8 +60,10 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 		handler := &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			HandleCommandFunc: func(
 				_ context.Context,

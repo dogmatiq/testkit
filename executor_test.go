@@ -30,8 +30,10 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 				c.RegisterIntegration(&IntegrationMessageHandler{
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 						c.Identity("<handler-name>", "67c167a8-d09e-4827-beab-7c8c9817bb1a")
-						c.ConsumesCommandType(MessageC{})
-						c.ProducesEventType(MessageE{})
+						c.Routes(
+							dogma.HandlesCommand[MessageC](),
+							dogma.RecordsEvent[MessageE](),
+						)
 					},
 					HandleCommandFunc: func(
 						_ context.Context,

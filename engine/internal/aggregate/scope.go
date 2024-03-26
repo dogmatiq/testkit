@@ -60,7 +60,7 @@ func (s *scope) RecordEvent(m dogma.Message) {
 		})
 	}
 
-	if err := dogma.ValidateMessage(m); err != nil {
+	if err := m.Validate(); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",

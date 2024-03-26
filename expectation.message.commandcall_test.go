@@ -31,10 +31,12 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "c94fc20f-f6fc-46c6-ad6f-45bb854aeb6c")
-						c.ConsumesCommandType(MessageR{})  // R = record an event
-						c.ConsumesCommandType(&MessageR{}) // pointer, used to test type similarity
-						c.ConsumesCommandType(MessageX{})
-						c.ProducesEventType(MessageN{})
+						c.Routes(
+							dogma.HandlesCommand[MessageR](),  // R = record an event
+							dogma.HandlesCommand[*MessageR](), // pointer, used to test type similarity
+							dogma.HandlesCommand[MessageX](),
+							dogma.RecordsEvent[MessageN](),
+						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -51,9 +53,11 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "e914b7b8-745b-4635-88a7-2d06628098a4")
-						c.ConsumesEventType(MessageE{})   // E = event
-						c.ConsumesEventType(MessageN{})   // N = (do) nothing
-						c.ProducesCommandType(MessageC{}) // C = command
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),    // E = event
+							dogma.HandlesEvent[MessageN](),    // N = (do) nothing
+							dogma.ExecutesCommand[MessageC](), // C = command
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -84,13 +88,6 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 		})
 	}
 
-	recordEventViaRecorder := func(m dogma.Message) Action {
-		return Call(func() {
-			err := test.EventRecorder().RecordEvent(context.Background(), m)
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-	}
-
 	g.DescribeTable(
 		"expectation behavior",
 		func(
@@ -115,22 +112,6 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 			),
 		),
 		g.Entry(
-			"no matching command executed",
-			recordEventViaRecorder(MessageE1),
-			ToExecuteCommand(MessageX1),
-			expectFail,
-			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     nothing executed a matching command`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify the logic within the '<process>' process message handler`,
-				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
-			),
-		),
-		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
 			ToExecuteCommand(MessageC{}),
@@ -142,22 +123,6 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 				`  |     no messages were produced at all`,
 				`  | `,
 				`  | SUGGESTIONS`,
-				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
-			),
-		),
-		g.Entry(
-			"no commands produced at all",
-			recordEventViaRecorder(MessageN1),
-			ToExecuteCommand(MessageC{}),
-			expectFail,
-			expectReport(
-				`✗ execute a specific 'fixtures.MessageC' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     no commands were executed at all`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • verify the logic within the '<process>' process message handler`,
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
 		),

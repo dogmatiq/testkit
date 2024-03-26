@@ -35,8 +35,10 @@ var _ = g.Describe("type scope", func() {
 		handler = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			RouteCommandToInstanceFunc: func(m dogma.Message) string {
 				switch m.(type) {

@@ -6,7 +6,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -31,11 +30,13 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "23c7a071-0a52-4aae-8dbf-d2bc06e32079")
-						c.ConsumesCommandType(MessageR{}) // R = record an event
-						c.ConsumesCommandType(MessageN{}) // N = do nothing
-						c.ProducesEventType(MessageE{})
-						c.ProducesEventType(&MessageE{}) // pointer, used to test type similarity
-						c.ProducesEventType(MessageX{})
+						c.Routes(
+							dogma.HandlesCommand[MessageR](), // R = record an event
+							dogma.HandlesCommand[MessageN](), // N = do nothing
+							dogma.RecordsEvent[MessageE](),
+							dogma.RecordsEvent[*MessageE](), // pointer, used to test type similarity
+							dogma.RecordsEvent[MessageX](),
+						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -54,9 +55,11 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "d2fdcbb0-b600-487c-97b4-f885b997cad3")
-						c.ConsumesEventType(MessageE{}) // E = execute a command
-						c.ConsumesEventType(MessageA{}) // A = also execute a command
-						c.ProducesCommandType(MessageN{})
+						c.Routes(
+							dogma.HandlesEvent[MessageE](), // E = execute a command
+							dogma.HandlesEvent[MessageA](), // A = also execute a command
+							dogma.ExecutesCommand[MessageN](),
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -87,13 +90,6 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 		})
 	}
 
-	recordEventViaRecorder := func(m dogma.Message) Action {
-		return Call(func() {
-			err := test.EventRecorder().RecordEvent(context.Background(), m)
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-	}
-
 	g.DescribeTable(
 		"expectation behavior",
 		func(
@@ -108,15 +104,6 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 			rm(testingT)
 			Expect(testingT.Failed()).To(Equal(!ok))
 		},
-		g.Entry(
-			"event type recorded as expected",
-			recordEventViaRecorder(MessageE1),
-			ToRecordEventOfType(MessageE{}),
-			expectPass,
-			expectReport(
-				`✓ record any 'fixtures.MessageE' event`,
-			),
-		),
 		g.Entry(
 			"no matching event types recorded",
 			executeCommandViaExecutor(MessageR1),
@@ -164,44 +151,6 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
-			),
-		),
-		g.Entry(
-			"no matching event type recorded and all relevant handler types disabled",
-			recordEventViaRecorder(MessageA1),
-			ToRecordEventOfType(MessageE{}),
-			expectFail,
-			expectReport(
-				`✗ record any 'fixtures.MessageE' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     nothing recorded a matching event`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • enable aggregate handlers using the EnableHandlerType() option`,
-				`  |     • enable integration handlers using the EnableHandlerType() option`,
-				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
-			),
-			WithUnsafeOperationOptions(
-				engine.EnableAggregates(false),
-			),
-		),
-		g.Entry(
-			"event of a similar type recorded",
-			recordEventViaRecorder(MessageE1),
-			ToRecordEventOfType(&MessageE{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ record any '*fixtures.MessageE' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     an event of a similar type was recorded via a dogma.EventRecorder`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]fixtures.MessageE`,
 			),
 		),
 	)

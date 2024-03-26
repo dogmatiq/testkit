@@ -64,8 +64,10 @@ var _ = g.Describe("type Envelope", func() {
 		handler := configkit.FromProcess(&ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
-				c.ConsumesEventType(MessageE{})
-				c.ProducesCommandType(MessageC{})
+				c.Routes(
+					dogma.HandlesEvent[MessageE](),
+					dogma.ExecutesCommand[MessageC](),
+				)
 			},
 		})
 
@@ -107,8 +109,10 @@ var _ = g.Describe("type Envelope", func() {
 		handler := configkit.FromAggregate(&AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 		})
 
@@ -150,9 +154,11 @@ var _ = g.Describe("type Envelope", func() {
 		handler := configkit.FromProcess(&ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
-				c.ConsumesEventType(MessageE{})
-				c.ProducesCommandType(MessageC{})
-				c.SchedulesTimeoutType(MessageT{})
+				c.Routes(
+					dogma.HandlesEvent[MessageE](),
+					dogma.ExecutesCommand[MessageC](),
+					dogma.SchedulesTimeout[MessageT](),
+				)
 			},
 		})
 

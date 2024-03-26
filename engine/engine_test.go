@@ -32,8 +32,10 @@ var _ = g.Describe("type Engine", func() {
 		aggregate = &AggregateMessageHandler{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
-				c.ConsumesCommandType(MessageA{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageA](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 			RouteCommandToInstanceFunc: func(dogma.Message) string {
 				return "<instance>"
@@ -43,9 +45,11 @@ var _ = g.Describe("type Engine", func() {
 		process = &ProcessMessageHandler{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "4721492d-7fa3-4cfa-9f0f-a3cb1f95933e")
-				c.ConsumesEventType(MessageB{})
-				c.ConsumesEventType(MessageE{}) // shared with <projection>
-				c.ProducesCommandType(MessageC{})
+				c.Routes(
+					dogma.HandlesEvent[MessageB](),
+					dogma.HandlesEvent[MessageE](), // shared with <projection>
+					dogma.ExecutesCommand[MessageC](),
+				)
 			},
 			RouteEventToInstanceFunc: func(context.Context, dogma.Message) (string, bool, error) {
 				return "<instance>", true, nil
@@ -55,16 +59,20 @@ var _ = g.Describe("type Engine", func() {
 		integration = &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "8b840c55-0b04-4107-bd4c-c69052c9fca3")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageF{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageF](),
+				)
 			},
 		}
 
 		projection = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "f2b324d6-74f1-409e-8b28-8e44454037a9")
-				c.ConsumesEventType(MessageD{})
-				c.ConsumesEventType(MessageE{}) // shared with <process>
+				c.Routes(
+					dogma.HandlesEvent[MessageD](),
+					dogma.HandlesEvent[MessageE](), // shared with <process>
+				)
 			},
 		}
 

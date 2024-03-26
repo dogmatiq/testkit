@@ -35,8 +35,10 @@ var _ = g.Describe("type scope", func() {
 		handler = &IntegrationMessageHandler{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "24ec3839-5d51-4904-9b45-34b5282e7f24")
-				c.ConsumesCommandType(MessageC{})
-				c.ProducesEventType(MessageE{})
+				c.Routes(
+					dogma.HandlesCommand[MessageC](),
+					dogma.RecordsEvent[MessageE](),
+				)
 			},
 		}
 

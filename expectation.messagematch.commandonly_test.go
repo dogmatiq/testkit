@@ -31,8 +31,10 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
-						c.ConsumesEventType(MessageE{})   // E = event
-						c.ProducesCommandType(MessageC{}) // C = command
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),    // E = event
+							dogma.ExecutesCommand[MessageC](), // C = command
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -80,7 +82,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:78`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:80`,
 			),
 		),
 		g.Entry(
@@ -93,7 +95,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:90`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:92`,
 			),
 		),
 		g.Entry(
@@ -113,7 +115,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:103`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:105`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,

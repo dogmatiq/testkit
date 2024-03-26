@@ -33,8 +33,8 @@ func (c *Controller) HandlerConfig() configkit.RichHandler {
 
 // Tick returns the timeout messages that are ready to be handled.
 func (c *Controller) Tick(
-	ctx context.Context,
-	obs fact.Observer,
+	_ context.Context,
+	_ fact.Observer,
 	now time.Time,
 ) ([]*envelope.Envelope, error) {
 	var i int
@@ -230,7 +230,7 @@ func (c *Controller) routeEvent(
 }
 
 func (c *Controller) routeTimeout(
-	ctx context.Context,
+	_ context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {

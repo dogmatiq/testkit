@@ -35,8 +35,10 @@ var _ = g.Describe("func Call()", func() {
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
-						c.ConsumesCommandType(MessageC{})
-						c.ProducesEventType(MessageE{})
+						c.Routes(
+							dogma.HandlesCommand[MessageC](),
+							dogma.RecordsEvent[MessageE](),
+						)
 					},
 					RouteCommandToInstanceFunc: func(
 						dogma.Message,
@@ -47,8 +49,10 @@ var _ = g.Describe("func Call()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "b64cdd19-782e-4e4e-9e5f-a95a943d6340")
-						c.ConsumesEventType(MessageE{})
-						c.ProducesCommandType(MessageC{})
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),
+							dogma.ExecutesCommand[MessageC](),
+						)
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -109,41 +113,6 @@ var _ = g.Describe("func Call()", func() {
 		))
 	})
 
-	g.It("allows use of the test's recorder", func() {
-		r := test.EventRecorder()
-
-		test.Prepare(
-			Call(func() {
-				r.RecordEvent(
-					context.Background(),
-					MessageE1,
-				)
-			}),
-		)
-
-		Expect(buf.Facts()).To(ContainElement(
-			fact.DispatchCycleBegun{
-				Envelope: &envelope.Envelope{
-					MessageID:     "1",
-					CausationID:   "1",
-					CorrelationID: "1",
-					Message:       MessageE1,
-					Type:          MessageEType,
-					Role:          message.EventRole,
-					CreatedAt:     startTime,
-				},
-				EngineTime: startTime,
-				EnabledHandlerTypes: map[configkit.HandlerType]bool{
-					configkit.AggregateHandlerType:   true,
-					configkit.IntegrationHandlerType: false,
-					configkit.ProcessHandlerType:     true,
-					configkit.ProjectionHandlerType:  false,
-				},
-				EnabledHandlers: map[string]bool{},
-			},
-		))
-	})
-
 	g.It("allows expectations to match commands executed via the test's executor", func() {
 		e := test.CommandExecutor()
 
@@ -155,20 +124,6 @@ var _ = g.Describe("func Call()", func() {
 				)
 			}),
 			ToExecuteCommand(MessageC1),
-		)
-	})
-
-	g.It("allows expectations to match events recorded via the test's recorder", func() {
-		r := test.EventRecorder()
-
-		test.Expect(
-			Call(func() {
-				r.RecordEvent(
-					context.Background(),
-					MessageE1,
-				)
-			}),
-			ToRecordEvent(MessageE1),
 		)
 	})
 

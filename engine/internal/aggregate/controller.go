@@ -39,7 +39,7 @@ func (c *Controller) Tick(
 
 // Handle handles a message.
 func (c *Controller) Handle(
-	ctx context.Context,
+	_ context.Context,
 	obs fact.Observer,
 	now time.Time,
 	env *envelope.Envelope,

@@ -30,8 +30,10 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
-						c.ConsumesCommandType(MessageC{}) // C = command
-						c.ProducesEventType(MessageE{})   // E = event
+						c.Routes(
+							dogma.HandlesCommand[MessageC](), // C = command
+							dogma.RecordsEvent[MessageE](),   // E = event
+						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -74,7 +76,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:72`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:74`,
 			),
 		),
 		g.Entry(
@@ -87,7 +89,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:84`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:86`,
 			),
 		),
 		g.Entry(
@@ -107,7 +109,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:97`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:99`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,

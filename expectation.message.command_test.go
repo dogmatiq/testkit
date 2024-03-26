@@ -30,8 +30,10 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 				c.RegisterAggregate(&AggregateMessageHandler{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
-						c.ConsumesCommandType(MessageR{}) // R = record an event
-						c.ProducesEventType(MessageN{})
+						c.Routes(
+							dogma.HandlesCommand[MessageR](),
+							dogma.RecordsEvent[MessageN](),
+						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Message) string {
 						return "<instance>"
@@ -48,11 +50,14 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 				c.RegisterProcess(&ProcessMessageHandler{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
-						c.ConsumesEventType(MessageE{})    // E = event
-						c.ConsumesEventType(MessageN{})    // N = (do) nothing
-						c.ProducesCommandType(MessageC{})  // C = command
-						c.ProducesCommandType(&MessageC{}) // pointer, used to test type similarity
-						c.ProducesCommandType(MessageX{})
+						c.Routes(
+							dogma.HandlesEvent[MessageE](),     // E = event
+							dogma.HandlesEvent[MessageN](),     // N = (do) nothing
+							dogma.ExecutesCommand[MessageC](),  // C = command
+							dogma.ExecutesCommand[*MessageC](), // pointer, used to test type similarity
+							dogma.ExecutesCommand[MessageX](),
+						)
+
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,

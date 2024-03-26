@@ -83,7 +83,7 @@ func (a advanceTimeAction) Location() location.Location {
 	return a.loc
 }
 
-func (a advanceTimeAction) ConfigurePredicate(o *PredicateOptions) {
+func (a advanceTimeAction) ConfigurePredicate(*PredicateOptions) {
 }
 
 func (a advanceTimeAction) Do(ctx context.Context, s ActionScope) error {
