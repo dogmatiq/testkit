@@ -86,6 +86,40 @@ var _ = g.Describe("type Test", func() {
 		})
 	})
 
+	g.Describe("func EnableHandlersLike()", func() {
+		g.It("enables handlers with matching names", func() {
+			called := false
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
+					c.RegisterProjection(&ProjectionMessageHandler{
+						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+							c.Routes(
+								dogma.HandlesEvent[MessageE](),
+							)
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_, _, _ []byte,
+							_ dogma.ProjectionEventScope,
+							_ dogma.Message,
+						) (bool, error) {
+							called = true
+							return true, nil
+						},
+					})
+				},
+			}
+
+			Begin(&testingmock.T{}, app).
+				EnableHandlersLike(`^\<proj`).
+				Prepare(RecordEvent(MessageE1))
+
+			Expect(called).To(BeTrue())
+		})
+	})
+
 	g.Describe("func DisableHandlers()", func() {
 		g.It("disables the handler", func() {
 			app := &Application{
@@ -115,6 +149,39 @@ var _ = g.Describe("type Test", func() {
 
 			Begin(&testingmock.T{}, app).
 				DisableHandlers("<aggregate>").
+				Prepare(ExecuteCommand(MessageC1))
+		})
+	})
+
+	g.Describe("func DisableHandlersLike()", func() {
+		g.It("disables the handlers with matching names", func() {
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
+					c.RegisterAggregate(&AggregateMessageHandler{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
+							c.Routes(
+								dogma.HandlesCommand[MessageC](),
+								dogma.RecordsEvent[MessageE](),
+							)
+						},
+						RouteCommandToInstanceFunc: func(dogma.Message) string {
+							return "<instance>"
+						},
+						HandleCommandFunc: func(
+							dogma.AggregateRoot,
+							dogma.AggregateCommandScope,
+							dogma.Message,
+						) {
+							g.Fail("unexpected call")
+						},
+					})
+				},
+			}
+
+			Begin(&testingmock.T{}, app).
+				DisableHandlersLike(`^\<agg`).
 				Prepare(ExecuteCommand(MessageC1))
 		})
 	})

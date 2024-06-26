@@ -3,6 +3,7 @@ package testkit
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -150,26 +151,88 @@ func (t *Test) CommandExecutor() dogma.CommandExecutor {
 
 // EnableHandlers enables a set of handlers by name.
 //
+// It panics if any of the handler names are not recognized.
+//
 // By default all integration and projection handlers are disabled.
 func (t *Test) EnableHandlers(names ...string) *Test {
+	return t.enableHandlers(names, true)
+}
+
+// DisableHandlers disables a set of handlers by name.
+//
+// It panics if any of the handler names are not recognized.
+//
+// By default all integration and projection handlers are disabled.
+func (t *Test) DisableHandlers(names ...string) *Test {
+	return t.enableHandlers(names, false)
+}
+
+// EnableHandlersLike enables any handlers with a name that matches one of
+// the given regular expression patterns.
+//
+// It panics if any of patterns do not match any handlers.
+//
+// By default all integration and projection handlers are disabled.
+func (t *Test) EnableHandlersLike(patterns ...string) *Test {
+	return t.enableHandlersLike(patterns, true)
+}
+
+// DisableHandlersLike enables any handlers with a name that matches one of
+// the given regular expression patterns.
+//
+// It panics if any of patterns do not match any handlers.
+//
+// By default all integration and projection handlers are disabled.
+func (t *Test) DisableHandlersLike(patterns ...string) *Test {
+	return t.enableHandlersLike(patterns, false)
+}
+
+func (t *Test) enableHandlers(names []string, enable bool) *Test {
 	for _, n := range names {
+		if _, ok := t.app.Handlers().ByName(n); !ok {
+			panic(fmt.Sprintf(
+				"the %q application does not have a handler named %q",
+				t.app.Identity().Name,
+				n,
+			))
+		}
+
 		t.operationOptions = append(
 			t.operationOptions,
-			engine.EnableHandler(n, true),
+			engine.EnableHandler(n, enable),
 		)
 	}
 
 	return t
 }
 
-// DisableHandlers disables a set of handlers by name.
-//
-// By default all integration and projection handlers are disabled.
-func (t *Test) DisableHandlers(names ...string) *Test {
-	for _, n := range names {
+func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
+	names := map[string]struct{}{}
+
+	for _, p := range patterns {
+		re := regexp.MustCompile(p)
+		matched := false
+
+		for ident := range t.app.Handlers() {
+			if re.MatchString(ident.Name) {
+				names[ident.Name] = struct{}{}
+				matched = true
+			}
+		}
+
+		if !matched {
+			panic(fmt.Sprintf(
+				"the %q application does not have any handlers with names that match the regular expression: %s",
+				t.app.Identity().Name,
+				p,
+			))
+		}
+	}
+
+	for n := range names {
 		t.operationOptions = append(
 			t.operationOptions,
-			engine.EnableHandler(n, false),
+			engine.EnableHandler(n, enable),
 		)
 	}
 

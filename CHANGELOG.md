@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.15.0] - 2024-03-26
+
+### Added
+
+- Added `Test.EnableHandlersLike()` and `DisableHandlersLike()`, which
+  enable/disable any handler with a name matches at least one of a given set of
+  regular expressions.
+
+### Changed
+
+- **[BC]** `Test.EnableHandlers()` and `DisableHandlers()` will now panic when
+  called with names of handlers that do not exist.
+
 ## [0.14.0] - 2024-03-26
 
 This release updates the `testkit` implementation to adhere to Dogma v0.13.0
@@ -359,7 +372,8 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.13.10]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.10
 [0.13.11]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.11
 [0.13.12]: https://github.com/dogmatiq/testkit/releases/tag/v0.13.12
-[0.14.12]: https://github.com/dogmatiq/testkit/releases/tag/v0.14.0
+[0.14.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.14.0
+[0.15.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.0
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
