@@ -89,7 +89,7 @@ func (e *Engine) Tick(
 	ctx context.Context,
 	options ...OperationOption,
 ) error {
-	oo := newOperationOptions(options)
+	oo := newOperationOptions(e, options)
 
 	oo.observers.Notify(
 		fact.TickCycleBegun{
@@ -198,7 +198,7 @@ func (e *Engine) Dispatch(
 		))
 	}
 
-	oo := newOperationOptions(options)
+	oo := newOperationOptions(e, options)
 	t := message.TypeOf(m)
 
 	if _, ok := e.routes[t]; !ok {

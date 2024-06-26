@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/configkit"
@@ -10,13 +11,13 @@ import (
 // OperationOption applies optional settings while dispatching a message or
 // performing a tick.
 type OperationOption interface {
-	applyOperationOption(*operationOptions)
+	applyOperationOption(*Engine, *operationOptions)
 }
 
-type operationOptionFunc func(*operationOptions)
+type operationOptionFunc func(*Engine, *operationOptions)
 
-func (f operationOptionFunc) applyOperationOption(opts *operationOptions) {
-	f(opts)
+func (f operationOptionFunc) applyOperationOption(e *Engine, opts *operationOptions) {
+	f(e, opts)
 }
 
 // WithObserver returns an option that registers the given observer for the
@@ -28,7 +29,7 @@ func WithObserver(o fact.Observer) OperationOption {
 		panic("observer must not be nil")
 	}
 
-	return operationOptionFunc(func(oo *operationOptions) {
+	return operationOptionFunc(func(_ *Engine, oo *operationOptions) {
 		oo.observers = append(oo.observers, o)
 	})
 }
@@ -70,7 +71,7 @@ func EnableProjections(enabled bool) OperationOption {
 func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 	t.MustValidate()
 
-	return operationOptionFunc(func(oo *operationOptions) {
+	return operationOptionFunc(func(_ *Engine, oo *operationOptions) {
 		oo.enabledHandlerTypes[t] = enabled
 	})
 }
@@ -85,7 +86,11 @@ func EnableHandler(name string, enabled bool) OperationOption {
 		panic(err)
 	}
 
-	return operationOptionFunc(func(oo *operationOptions) {
+	return operationOptionFunc(func(e *Engine, oo *operationOptions) {
+		if _, ok := e.controllers[name]; !ok {
+			panic(fmt.Sprintf("the application does not have a handler named %q", name))
+		}
+
 		oo.enabledHandlers[name] = enabled
 	})
 }
@@ -93,7 +98,7 @@ func EnableHandler(name string, enabled bool) OperationOption {
 // WithCurrentTime returns an operation option that sets the engine's current
 // time.
 func WithCurrentTime(t time.Time) OperationOption {
-	return operationOptionFunc(func(oo *operationOptions) {
+	return operationOptionFunc(func(_ *Engine, oo *operationOptions) {
 		oo.now = t
 	})
 }
@@ -108,7 +113,7 @@ type operationOptions struct {
 }
 
 // newOperationOptions returns a new operationOptions with the given options.
-func newOperationOptions(options []OperationOption) *operationOptions {
+func newOperationOptions(e *Engine, options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),
 		enabledHandlerTypes: map[configkit.HandlerType]bool{
@@ -121,7 +126,7 @@ func newOperationOptions(options []OperationOption) *operationOptions {
 	}
 
 	for _, opt := range options {
-		opt.applyOperationOption(oo)
+		opt.applyOperationOption(e, oo)
 	}
 
 	return oo
