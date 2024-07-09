@@ -19,13 +19,13 @@ import (
 
 var _ = g.Describe("type Engine", func() {
 	var (
-		aggregate   *AggregateMessageHandler
-		process     *ProcessMessageHandler
-		integration *IntegrationMessageHandler
-		projection  *ProjectionMessageHandler
-		app         *Application
-		config      configkit.RichApplication
-		engine      *Engine
+		aggregate            *AggregateMessageHandler
+		process              *ProcessMessageHandler
+		integration          *IntegrationMessageHandler
+		projection, disabled *ProjectionMessageHandler
+		app                  *Application
+		config               configkit.RichApplication
+		engine               *Engine
 	)
 
 	g.BeforeEach(func() {
@@ -76,6 +76,16 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
+		disabled = &ProjectionMessageHandler{
+			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+				c.Identity("<disabled-projection>", "06426c1f-788d-4852-9a3f-c77580dafaed")
+				c.Routes(
+					dogma.HandlesEvent[MessageG](),
+				)
+				c.Disable()
+			},
+		}
+
 		app = &Application{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9bc07eeb-5821-4649-941a-d931c8c88cb9")
@@ -83,6 +93,7 @@ var _ = g.Describe("type Engine", func() {
 				c.RegisterProcess(process)
 				c.RegisterIntegration(integration)
 				c.RegisterProjection(projection)
+				c.RegisterProjection(disabled)
 			},
 		}
 
@@ -282,6 +293,58 @@ var _ = g.Describe("type Engine", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickBegun{
+					Handler: h,
+				},
+			))
+		})
+
+		g.It("skips handlers that are disabled by their configuration", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<disabled-projection>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickSkipped{
+					Handler: h,
+					Reason:  fact.IndividualHandlerDisabledByConfiguration,
+				},
+			))
+		})
+
+		g.It("skips handlers that are disabled by their configuration, even if they are explicitly enabled by type", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+				EnableProjections(true),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<disabled-projection>")
+			Expect(buf.Facts()).To(ContainElement(
+				fact.TickSkipped{
+					Handler: h,
+					Reason:  fact.IndividualHandlerDisabledByConfiguration,
+				},
+			))
+		})
+
+		g.It("does not skip handlers that are enabled by name, even if they are disabled by their configuration", func() {
+			buf := &fact.Buffer{}
+			err := engine.Tick(
+				context.Background(),
+				WithObserver(buf),
+				EnableHandler("<disabled-projection>", true),
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			h, _ := config.RichHandlers().ByName("<disabled-projection>")
 			Expect(buf.Facts()).To(ContainElement(
 				fact.TickBegun{
 					Handler: h,
