@@ -12,6 +12,8 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Test contains the state of a single test.
@@ -189,11 +191,24 @@ func (t *Test) DisableHandlersLike(patterns ...string) *Test {
 
 func (t *Test) enableHandlers(names []string, enable bool) *Test {
 	for _, n := range names {
-		if _, ok := t.app.Handlers().ByName(n); !ok {
+		h, ok := t.app.Handlers().ByName(n)
+		if !ok {
 			panic(fmt.Sprintf(
 				"the %q application does not have a handler named %q",
 				t.app.Identity().Name,
 				n,
+			))
+		}
+
+		if enable && h.IsDisabled() {
+			panic(fmt.Sprintf(
+				"cannot enable the %q handler, it has been disabled by a call to %sConfigurer.Disable()",
+				n,
+				cases.
+					Title(language.English).
+					String(
+						h.HandlerType().String(),
+					),
 			))
 		}
 
