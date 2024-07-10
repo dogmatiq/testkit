@@ -164,7 +164,29 @@ var _ = g.Describe("type Test", func() {
 			Expect(func() {
 				Begin(&testingmock.T{}, app).
 					EnableHandlersLike(`^\<proj`)
-			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression: ^\<proj`))
+			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
+		})
+
+		g.It("does not enable handlers that are disabled by their own configuration", func() {
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
+					c.RegisterProjection(&ProjectionMessageHandler{
+						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+							c.Routes(
+								dogma.HandlesEvent[MessageE](),
+							)
+							c.Disable()
+						},
+					})
+				},
+			}
+
+			Expect(func() {
+				Begin(&testingmock.T{}, app).
+					EnableHandlersLike(`^\<proj`)
+			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
 
@@ -256,7 +278,7 @@ var _ = g.Describe("type Test", func() {
 			Expect(func() {
 				Begin(&testingmock.T{}, app).
 					DisableHandlersLike(`^\<proj`)
-			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression: ^\<proj`))
+			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
 })
