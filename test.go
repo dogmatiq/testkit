@@ -12,6 +12,8 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Test contains the state of a single test.
@@ -189,11 +191,24 @@ func (t *Test) DisableHandlersLike(patterns ...string) *Test {
 
 func (t *Test) enableHandlers(names []string, enable bool) *Test {
 	for _, n := range names {
-		if _, ok := t.app.Handlers().ByName(n); !ok {
+		h, ok := t.app.Handlers().ByName(n)
+		if !ok {
 			panic(fmt.Sprintf(
 				"the %q application does not have a handler named %q",
 				t.app.Identity().Name,
 				n,
+			))
+		}
+
+		if enable && h.IsDisabled() {
+			panic(fmt.Sprintf(
+				"cannot enable the %q handler, it has been disabled by a call to %sConfigurer.Disable()",
+				n,
+				cases.
+					Title(language.English).
+					String(
+						h.HandlerType().String(),
+					),
 			))
 		}
 
@@ -213,8 +228,8 @@ func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
 		re := regexp.MustCompile(p)
 		matched := false
 
-		for ident := range t.app.Handlers() {
-			if re.MatchString(ident.Name) {
+		for ident, h := range t.app.Handlers() {
+			if !h.IsDisabled() && re.MatchString(ident.Name) {
 				names[ident.Name] = struct{}{}
 				matched = true
 			}
@@ -222,7 +237,7 @@ func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
 
 		if !matched {
 			panic(fmt.Sprintf(
-				"the %q application does not have any handlers with names that match the regular expression: %s",
+				"the %q application does not have any handlers with names that match the regular expression (%s), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()",
 				t.app.Identity().Name,
 				p,
 			))

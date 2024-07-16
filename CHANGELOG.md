@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Added
+
+- Added support for `Disable()` method in `dogmatiq/dogma` v0.13.1.
+
 ## [0.15.0] - 2024-03-26
 
 ### Added

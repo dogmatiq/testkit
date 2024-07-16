@@ -400,6 +400,10 @@ func (e *Engine) skipHandler(
 		return !en, fact.IndividualHandlerDisabled
 	}
 
+	if h.IsDisabled() {
+		return true, fact.IndividualHandlerDisabledByConfiguration
+	}
+
 	en := oo.enabledHandlerTypes[h.HandlerType()]
 	return !en, fact.HandlerTypeDisabled
 }

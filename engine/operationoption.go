@@ -81,6 +81,9 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 //
 // This option takes precedence over any EnableAggregates(), EnableProcesses(),
 // EnableIntegrations() or EnableProjections() options.
+//
+// It also takes precedence over the handler's own configuration, which may lead
+// to unexpected behavior.
 func EnableHandler(name string, enabled bool) OperationOption {
 	if err := configkit.ValidateIdentityName(name); err != nil {
 		panic(err)

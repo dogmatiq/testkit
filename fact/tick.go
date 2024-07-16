@@ -31,9 +31,7 @@ type TickCompleted struct {
 	Error   error
 }
 
-// TickSkipped indicates that a call to Controller.Tick() has been skipped,
-// either because all handlers of that type are or the handler itself is
-// disabled.
+// TickSkipped indicates that a call to Controller.Tick() has been skipped.
 type TickSkipped struct {
 	Handler configkit.RichHandler
 	Reason  HandlerSkipReason
