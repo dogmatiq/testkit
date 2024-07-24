@@ -131,6 +131,17 @@ func (l *Logger) handlingCompleted(f HandlingCompleted) {
 
 // handlingSkipped returns the log message for f.
 func (l *Logger) handlingSkipped(f HandlingSkipped) {
+	var reason string
+
+	switch f.Reason {
+	case HandlerTypeDisabled:
+		reason = fmt.Sprintf("handler skipped because %s handlers are disabled", f.Handler.HandlerType())
+	case IndividualHandlerDisabled:
+		reason = "handler skipped because it is disabled during this tick of the test engine"
+	case IndividualHandlerDisabledByConfiguration:
+		reason = "handler skipped because it is disabled by its Configure() method"
+	}
+
 	l.log(
 		f.Envelope,
 		[]logging.Icon{
@@ -139,10 +150,7 @@ func (l *Logger) handlingSkipped(f HandlingSkipped) {
 			"",
 		},
 		f.Handler.Identity().Name,
-		fmt.Sprintf(
-			"handler skipped because %s handlers are disabled",
-			f.Handler.HandlerType(),
-		),
+		reason,
 	)
 }
 

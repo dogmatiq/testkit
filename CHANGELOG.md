@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed log messages about disabled handlers to properly indicate why they are
+  disabled.
+
 ## [0.15.1] - 2024-07-16
 
 ### Added

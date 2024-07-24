@@ -174,11 +174,30 @@ var _ = g.Describe("type Logger", func() {
 				},
 			),
 			g.Entry(
-				"HandlingSkipped",
+				"HandlingSkipped (handler type)",
 				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
 				HandlingSkipped{
 					Handler:  aggregate,
 					Envelope: command,
+					Reason:   HandlerTypeDisabled,
+				},
+			),
+			g.Entry(
+				"HandlingSkipped (individual handler)",
+				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled during this tick of the test engine",
+				HandlingSkipped{
+					Handler:  aggregate,
+					Envelope: command,
+					Reason:   IndividualHandlerDisabled,
+				},
+			),
+			g.Entry(
+				"HandlingSkipped (individual handler via configuration)",
+				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled by its Configure() method",
+				HandlingSkipped{
+					Handler:  aggregate,
+					Envelope: command,
+					Reason:   IndividualHandlerDisabledByConfiguration,
 				},
 			),
 
