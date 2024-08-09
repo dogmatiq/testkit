@@ -78,9 +78,9 @@ var _ = g.Describe("func Scenario()", func() {
 	})
 
 	g.It("executes command message", func() {
-		Scenario("<scenario>").
-			ExecuteCommand(MessageC1).
-			Prepare(test)
+		test.Given(
+			Scenario("<scenario>").ExecuteCommand(MessageC1),
+		)
 
 		Expect(buf.Facts()).To(ContainElement(
 			fact.DispatchCycleBegun{
@@ -106,9 +106,9 @@ var _ = g.Describe("func Scenario()", func() {
 	})
 
 	g.It("records the event message", func() {
-		Scenario("<scenario>").
-			RecordEvent(MessageE1).
-			Prepare(test)
+		test.Given(
+			Scenario("<scenario>").RecordEvent(MessageE1),
+		)
 
 		Expect(buf.Facts()).To(ContainElement(
 			fact.DispatchCycleBegun{
@@ -134,9 +134,9 @@ var _ = g.Describe("func Scenario()", func() {
 	})
 
 	g.It("advances the time", func() {
-		Scenario("<scenario>").
-			AdvanceTime(ByDuration(1 * time.Second)).
-			Prepare(test)
+		test.Given(
+			Scenario("<scenario>").AdvanceTime(ByDuration(1 * time.Second)),
+		)
 
 		Expect(buf.Facts()).To(ContainElement(
 			fact.TickCycleBegun{
@@ -155,14 +155,14 @@ var _ = g.Describe("func Scenario()", func() {
 	g.It("executes the command via the call", func() {
 		e := test.CommandExecutor()
 
-		Scenario("<scenario>").
-			Call(func() {
+		test.Given(
+			Scenario("<scenario>").Call(func() {
 				e.ExecuteCommand(
 					context.Background(),
 					MessageC1,
 				)
-			}).
-			Prepare(test)
+			}),
+		)
 
 		Expect(buf.Facts()).To(ContainElement(
 			fact.DispatchCycleBegun{
