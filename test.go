@@ -78,6 +78,26 @@ func BeginContext(
 	return test
 }
 
+// Given prepares the test by performing the actions described by the given
+// scenarios.
+func (t *Test) Given(scenarios ...TestScenario) *Test {
+	t.testingT.Helper()
+
+	log(t.testingT, "=== GIVEN ===")
+
+	for _, s := range scenarios {
+		for _, caption := range s.captions {
+			logf(t.testingT, "• %s", caption)
+		}
+	}
+
+	for _, s := range scenarios {
+		t.Prepare(s.actions...)
+	}
+
+	return t
+}
+
 // Prepare performs a group of actions without making any expectations. It is
 // used to place the application into a particular state.
 func (t *Test) Prepare(actions ...Action) *Test {

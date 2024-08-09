@@ -18,27 +18,27 @@ type TestScenario struct {
 
 // Scenario starts a new scenario, which may be used to prepare multiple tests
 // with the same initial state.
-func Scenario(caption string) *TestScenario {
-	return &TestScenario{
+func Scenario(caption string) TestScenario {
+	return TestScenario{
 		captions: []string{caption},
 	}
 }
 
 // Scenario creates a new "sub scenario" within s.
-func (s *TestScenario) Scenario(caption string) *TestScenario {
-	return &TestScenario{
+func (s TestScenario) Scenario(caption string) TestScenario {
+	return TestScenario{
 		captions: append(slices.Clone(s.captions), caption),
 		actions:  slices.Clone(s.actions),
 	}
 }
 
 // ExecuteCommand returns an Action that executes a command message.
-func (s *TestScenario) ExecuteCommand(m dogma.Message) *TestScenario {
+func (s TestScenario) ExecuteCommand(m dogma.Message) TestScenario {
 	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
 	}
 
-	return &TestScenario{
+	return TestScenario{
 		captions: s.captions,
 		actions: append(
 			slices.Clone(s.actions),
@@ -52,12 +52,12 @@ func (s *TestScenario) ExecuteCommand(m dogma.Message) *TestScenario {
 }
 
 // RecordEvent returns an Action that records an event message.
-func (s *TestScenario) RecordEvent(m dogma.Message) *TestScenario {
+func (s TestScenario) RecordEvent(m dogma.Message) TestScenario {
 	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
 	}
 
-	return &TestScenario{
+	return TestScenario{
 		captions: s.captions,
 		actions: append(
 			slices.Clone(s.actions),
@@ -83,12 +83,12 @@ func (s *TestScenario) RecordEvent(m dogma.Message) *TestScenario {
 // There are two built-in adjustment types; ToTime() and ByDuration(). Users may
 // provide their own TimeAdjustment implementations that model time-related
 // concepts within the application's business domain.
-func (s *TestScenario) AdvanceTime(adj TimeAdjustment) *TestScenario {
+func (s TestScenario) AdvanceTime(adj TimeAdjustment) TestScenario {
 	if adj == nil {
 		panic("AdvanceTime(<nil>): adjustment must not be nil")
 	}
 
-	return &TestScenario{
+	return TestScenario{
 		captions: s.captions,
 		actions: append(
 			slices.Clone(s.actions),
@@ -118,7 +118,7 @@ func (s *TestScenario) AdvanceTime(adj TimeAdjustment) *TestScenario {
 // When Call() is used with Test.Expect() the expectation will match the
 // messages dispatched via the test's executor and recorder, as well as those
 // produced by handlers within the Dogma application.
-func (s *TestScenario) Call(fn func(), options ...CallOption) *TestScenario {
+func (s TestScenario) Call(fn func(), options ...CallOption) TestScenario {
 	if fn == nil {
 		panic("Call(<nil>): function must not be nil")
 	}
@@ -132,23 +132,11 @@ func (s *TestScenario) Call(fn func(), options ...CallOption) *TestScenario {
 		opt.applyCallOption(&act)
 	}
 
-	return &TestScenario{
+	return TestScenario{
 		captions: s.captions,
 		actions: append(
 			slices.Clone(s.actions),
 			act,
 		),
 	}
-}
-
-// Prepare performs a the scenario's actions within the given test.
-func (s *TestScenario) Prepare(t *Test) {
-	t.testingT.Helper()
-
-	log(t.testingT, "=== SCENARIO ===")
-	for _, caption := range s.captions {
-		logf(t.testingT, " • %s", caption)
-	}
-
-	t.Prepare(s.actions...)
 }
