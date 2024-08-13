@@ -137,10 +137,16 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 		iw := indent.NewIndenter(w, subReportsIndent)
 		for _, sr := range r.SubReports {
 			if (r.Criteria == "any of" || r.Criteria == "all of") && sr.Criteria == "none of" {
-				if !r.Ok && sr.Ok {
-					for _, ssr := range sr.SubReports {
-						ssr.WriteNoneOfCompositesCriteria(iw)
-					}
+				if sr.Ok {
+					must.WriteString(iw, "✓ ")
+				} else {
+					must.WriteString(iw, "✗ ")
+				}
+				must.WriteString(iw, sr.Criteria)
+				must.WriteByte(iw, '\n')
+
+				for _, ssr := range sr.SubReports {
+					ssr.WriteNoneOfCompositesCriteria(iw)
 				}
 			} else {
 				must.WriteTo(iw, sr)
@@ -153,7 +159,11 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 
 func (r *Report) WriteNoneOfCompositesCriteria(w io.Writer) {
 	iw := indent.NewIndenter(w, subReportsIndent)
-	must.WriteString(iw, "✗ ")
+	if r.Ok {
+		must.WriteString(iw, "✓ ")
+	} else {
+		must.WriteString(iw, "✗ ")
+	}
 	must.WriteString(iw, r.Criteria)
 	must.WriteByte(iw, '\n')
 }

@@ -64,6 +64,42 @@ var _ = g.Context("composite expectations", func() {
 				),
 			),
 			g.Entry(
+				"it passes when the child None Of expectation passes",
+				AllOf(pass, NoneOf(fail, fail)),
+				expectPass,
+				expectReport(
+					`✓ all of`,
+					`    ✓ <always pass>`,
+					`    ✓ none of`,
+					`        ✗ <always fail>`,
+					`        ✗ <always fail>`,
+				),
+			),
+			g.Entry(
+				"it fails when the child None Of expectation fails",
+				AllOf(pass, NoneOf(pass, pass)),
+				expectFail,
+				expectReport(
+					`✗ all of (1 of the expectations failed)`,
+					`    ✓ <always pass>`,
+					`    ✗ none of`,
+					`        ✓ <always pass>`,
+					`        ✓ <always pass>`,
+				),
+			),
+			g.Entry(
+				"it fails when the sibling child of None Of expectation fails",
+				AllOf(fail, NoneOf(fail, fail)),
+				expectFail,
+				expectReport(
+					`✗ all of (1 of the expectations failed)`,
+					`    ✗ <always fail>`,
+					`    ✓ none of`,
+					`        ✗ <always fail>`,
+					`        ✗ <always fail>`,
+				),
+			),
+			g.Entry(
 				"it fails when some of the child expectations fail",
 				AllOf(pass, fail),
 				expectFail,
