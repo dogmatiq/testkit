@@ -136,11 +136,26 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 	if len(r.SubReports) != 0 {
 		iw := indent.NewIndenter(w, subReportsIndent)
 		for _, sr := range r.SubReports {
-			must.WriteTo(iw, sr)
+			if (r.Criteria == "any of" || r.Criteria == "all of") && sr.Criteria == "none of" {
+				if !r.Ok && sr.Ok {
+					for _, ssr := range sr.SubReports {
+						ssr.WriteNoneOfCompositesCriteria(iw)
+					}
+				}
+			} else {
+				must.WriteTo(iw, sr)
+			}
 		}
 	}
 
 	return int64(w.Count()), nil
+}
+
+func (r *Report) WriteNoneOfCompositesCriteria(w io.Writer) {
+	iw := indent.NewIndenter(w, subReportsIndent)
+	must.WriteString(iw, "✗ ")
+	must.WriteString(iw, r.Criteria)
+	must.WriteByte(iw, '\n')
 }
 
 // ReportSection is a section of a report containing additional information
