@@ -37,7 +37,7 @@ var _ = g.Describe("type Engine", func() {
 					dogma.RecordsEvent[MessageE](),
 				)
 			},
-			RouteCommandToInstanceFunc: func(dogma.Message) string {
+			RouteCommandToInstanceFunc: func(dogma.Command) string {
 				return "<instance>"
 			},
 		}
@@ -51,7 +51,7 @@ var _ = g.Describe("type Engine", func() {
 					dogma.ExecutesCommand[MessageC](),
 				)
 			},
-			RouteEventToInstanceFunc: func(context.Context, dogma.Message) (string, bool, error) {
+			RouteEventToInstanceFunc: func(context.Context, dogma.Event) (string, bool, error) {
 				return "<instance>", true, nil
 			},
 		}
@@ -106,7 +106,7 @@ var _ = g.Describe("type Engine", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) {
 				g.Fail("unexpected call")
 			}
@@ -144,7 +144,7 @@ var _ = g.Describe("type Engine", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) {
 				g.Fail("unexpected call")
 			}
@@ -183,7 +183,7 @@ var _ = g.Describe("type Engine", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) {
 				called = true
 			}
@@ -204,7 +204,7 @@ var _ = g.Describe("type Engine", func() {
 			integration.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) error {
 				cancel()
 				return errors.New("<error>")
@@ -218,7 +218,7 @@ var _ = g.Describe("type Engine", func() {
 			integration.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) error {
 				return errors.New("<error>")
 			}

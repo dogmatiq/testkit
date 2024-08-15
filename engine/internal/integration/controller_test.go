@@ -87,7 +87,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				_ dogma.IntegrationCommandScope,
-				m dogma.Message,
+				m dogma.Command,
 			) error {
 				called = true
 				Expect(m).To(Equal(MessageA1))
@@ -109,7 +109,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(MessageE1)
 				s.RecordEvent(MessageE2)
@@ -153,7 +153,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				_ dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				return expected
 			}
@@ -177,7 +177,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				ctx context.Context,
 				_ dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				dl, ok := ctx.Deadline()
 				Expect(ok).To(BeTrue())
@@ -199,7 +199,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) error {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -225,9 +225,7 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
-			handler.TimeoutHintFunc = func(
-				dogma.Message,
-			) time.Duration {
+			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				panic(dogma.UnexpectedMessage)
 			}
 

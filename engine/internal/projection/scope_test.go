@@ -49,7 +49,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				Expect(s.RecordedAt()).To(
 					BeTemporally("==", event.CreatedAt),
@@ -73,7 +73,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				Expect(s.IsPrimaryDelivery()).To(BeTrue())
 				return true, nil
@@ -95,7 +95,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 				return true, nil

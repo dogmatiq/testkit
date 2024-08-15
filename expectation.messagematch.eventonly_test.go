@@ -35,13 +35,13 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 							dogma.RecordsEvent[MessageE](),   // E = event
 						)
 					},
-					RouteCommandToInstanceFunc: func(dogma.Message) string {
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
 						_ dogma.AggregateRoot,
 						s dogma.AggregateCommandScope,
-						m dogma.Message,
+						m dogma.Command,
 					) {
 						s.RecordEvent(MessageE1)
 						s.RecordEvent(MessageE2)
@@ -70,7 +70,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			"all recorded events match",
 			ExecuteCommand(MessageC1),
 			ToOnlyRecordEventsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Event) error {
 					return nil
 				},
 			),
@@ -83,7 +83,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			"no events recorded at all",
 			noop,
 			ToOnlyRecordEventsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Event) error {
 					panic("unexpected call")
 				},
 			),
@@ -96,7 +96,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			"some matching events executed",
 			ExecuteCommand(MessageC1),
 			ToOnlyRecordEventsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Event) error {
 					switch m {
 					case fixtures.MessageE1:
 						return errors.New("<error>")

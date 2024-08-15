@@ -49,5 +49,5 @@ import (
 
 func advanceTime(adj TimeAdjustment) Action { return AdvanceTime(adj) }
 func call(fn func()) Action                 { return Call(fn) }
-func executeCommand(m dogma.Message) Action { return ExecuteCommand(m) }
-func recordEvent(m dogma.Message) Action    { return RecordEvent(m) }
+func executeCommand(m dogma.Command) Action { return ExecuteCommand(m) }
+func recordEvent(m dogma.Event) Action      { return RecordEvent(m) }

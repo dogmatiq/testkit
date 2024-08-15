@@ -11,7 +11,7 @@ import (
 )
 
 // ExecuteCommand returns an Action that executes a command message.
-func ExecuteCommand(m dogma.Message) Action {
+func ExecuteCommand(m dogma.Command) Action {
 	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
 	}
@@ -24,7 +24,7 @@ func ExecuteCommand(m dogma.Message) Action {
 }
 
 // RecordEvent returns an Action that records an event message.
-func RecordEvent(m dogma.Message) Action {
+func RecordEvent(m dogma.Event) Action {
 	if err := validateMessage(m); err != nil {
 		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
 	}

@@ -59,7 +59,7 @@ var _ = g.Describe("type Controller", func() {
 			// message's content
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
-				m dogma.Message,
+				m dogma.Event,
 			) (string, bool, error) {
 				switch x := m.(type) {
 				case MessageE:
@@ -109,7 +109,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				// note, calls to ScheduleTimeout are NOT in chronological order
 				s.ScheduleTimeout(MessageT3, t3Time)
@@ -204,7 +204,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.End()
 				return nil
@@ -261,7 +261,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
-					m dogma.Message,
+					m dogma.Event,
 				) error {
 					called = true
 					Expect(m).To(Equal(MessageE1))
@@ -286,7 +286,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					return expected
 				}
@@ -308,7 +308,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					s.ExecuteCommand(MessageC1)
 					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
@@ -355,7 +355,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					s.ScheduleTimeout(MessageT1, now.Add(-1))
 					return nil
@@ -379,7 +379,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					s.ScheduleTimeout(MessageT1, now.Add(1))
 					return nil
@@ -406,7 +406,7 @@ var _ = g.Describe("type Controller", func() {
 					ctx context.Context,
 					_ dogma.ProcessRoot,
 					_ dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					dl, ok := ctx.Deadline()
 					Expect(ok).To(BeTrue())
@@ -428,7 +428,7 @@ var _ = g.Describe("type Controller", func() {
 				g.BeforeEach(func() {
 					handler.RouteEventToInstanceFunc = func(
 						_ context.Context,
-						_ dogma.Message,
+						_ dogma.Event,
 					) (string, bool, error) {
 						return "", false, nil
 					}
@@ -439,7 +439,7 @@ var _ = g.Describe("type Controller", func() {
 						context.Context,
 						dogma.ProcessRoot,
 						dogma.ProcessEventScope,
-						dogma.Message,
+						dogma.Event,
 					) error {
 						g.Fail("unexpected call to HandleEvent()")
 						return nil
@@ -481,7 +481,7 @@ var _ = g.Describe("type Controller", func() {
 					context.Context,
 					dogma.ProcessRoot,
 					dogma.ProcessEventScope,
-					dogma.Message,
+					dogma.Event,
 				) error {
 					return nil
 				}
@@ -503,7 +503,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					_ dogma.ProcessTimeoutScope,
-					m dogma.Message,
+					m dogma.Event,
 				) error {
 					called = true
 					Expect(m).To(Equal(MessageT1))
@@ -528,7 +528,7 @@ var _ = g.Describe("type Controller", func() {
 					context.Context,
 					dogma.ProcessRoot,
 					dogma.ProcessTimeoutScope,
-					dogma.Message,
+					dogma.Timeout,
 				) error {
 					return expected
 				}
@@ -550,7 +550,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
-					_ dogma.Message,
+					_ dogma.Timeout,
 				) error {
 					s.ExecuteCommand(MessageC1)
 					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
@@ -597,7 +597,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
-					_ dogma.Message,
+					_ dogma.Timeout,
 				) error {
 					s.ScheduleTimeout(MessageT2, now.Add(-1))
 					return nil
@@ -621,7 +621,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessTimeoutScope,
-					_ dogma.Message,
+					_ dogma.Timeout,
 				) error {
 					s.ScheduleTimeout(MessageT2, now.Add(1))
 					return nil
@@ -648,7 +648,7 @@ var _ = g.Describe("type Controller", func() {
 					ctx context.Context,
 					_ dogma.ProcessRoot,
 					_ dogma.ProcessTimeoutScope,
-					_ dogma.Message,
+					_ dogma.Timeout,
 				) error {
 					dl, ok := ctx.Deadline()
 					Expect(ok).To(BeTrue())
@@ -672,7 +672,7 @@ var _ = g.Describe("type Controller", func() {
 						_ context.Context,
 						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
-						_ dogma.Message,
+						_ dogma.Event,
 					) error {
 						s.End()
 						return nil
@@ -694,7 +694,7 @@ var _ = g.Describe("type Controller", func() {
 						context.Context,
 						dogma.ProcessRoot,
 						dogma.ProcessTimeoutScope,
-						dogma.Message,
+						dogma.Timeout,
 					) error {
 						g.Fail("unexpected call to HandleEvent()")
 						return nil
@@ -736,7 +736,7 @@ var _ = g.Describe("type Controller", func() {
 
 			handler.RouteEventToInstanceFunc = func(
 				_ context.Context,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (string, bool, error) {
 				// note, we return a valid id and true here to verify that the error is
 				// checked first.
@@ -756,7 +756,7 @@ var _ = g.Describe("type Controller", func() {
 		g.It("panics when the handler routes to an empty instance ID", func() {
 			handler.RouteEventToInstanceFunc = func(
 				context.Context,
-				dogma.Message,
+				dogma.Event,
 			) (string, bool, error) {
 				return "", true, nil
 			}
@@ -857,7 +857,7 @@ var _ = g.Describe("type Controller", func() {
 					_ context.Context,
 					_ dogma.ProcessRoot,
 					s dogma.ProcessEventScope,
-					_ dogma.Message,
+					_ dogma.Event,
 				) error {
 					return nil
 				}
@@ -912,7 +912,7 @@ var _ = g.Describe("type Controller", func() {
 		g.It("provides more context to UnexpectedMessage panics from RouteEventToInstance()", func() {
 			handler.RouteEventToInstanceFunc = func(
 				context.Context,
-				dogma.Message,
+				dogma.Event,
 			) (string, bool, error) {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -942,7 +942,7 @@ var _ = g.Describe("type Controller", func() {
 				context.Context,
 				dogma.ProcessRoot,
 				dogma.ProcessEventScope,
-				dogma.Message,
+				dogma.Event,
 			) error {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -972,7 +972,7 @@ var _ = g.Describe("type Controller", func() {
 				context.Context,
 				dogma.ProcessRoot,
 				dogma.ProcessEventScope,
-				dogma.Message,
+				dogma.Event,
 			) error {
 				return nil
 			}
@@ -988,7 +988,7 @@ var _ = g.Describe("type Controller", func() {
 				context.Context,
 				dogma.ProcessRoot,
 				dogma.ProcessTimeoutScope,
-				dogma.Message,
+				dogma.Timeout,
 			) error {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -1014,9 +1014,7 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
-			handler.TimeoutHintFunc = func(
-				dogma.Message,
-			) time.Duration {
+			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				panic(dogma.UnexpectedMessage)
 			}
 
@@ -1047,7 +1045,7 @@ var _ = g.Describe("type Controller", func() {
 				context.Context,
 				dogma.ProcessRoot,
 				dogma.ProcessEventScope,
-				dogma.Message,
+				dogma.Event,
 			) error {
 				return nil
 			}

@@ -36,13 +36,13 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 							dogma.RecordsEvent[MessageN](),
 						)
 					},
-					RouteCommandToInstanceFunc: func(dogma.Message) string {
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
 						_ dogma.AggregateRoot,
 						s dogma.AggregateCommandScope,
-						_ dogma.Message,
+						_ dogma.Command,
 					) {
 						s.RecordEvent(MessageN1)
 					},
@@ -60,7 +60,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},
@@ -68,7 +68,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 						_ context.Context,
 						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
-						m dogma.Message,
+						m dogma.Event,
 					) error {
 						if m, ok := m.(MessageE); ok {
 							s.ExecuteCommand(MessageC1)
@@ -102,7 +102,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"matching command executed as expected",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					if m == MessageC1 {
 						return nil
 					}
@@ -119,7 +119,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"no matching command executed",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					if m == MessageX1 {
 						return nil
 					}
@@ -146,7 +146,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"no messages produced at all",
 			RecordEvent(MessageN1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					panic("unexpected call")
 				},
 			),
@@ -165,7 +165,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"no commands produced at all",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					return IgnoreMessage
 				},
 			),
@@ -184,7 +184,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"no matching command executed and all relevant handler types disabled",
 			ExecuteCommand(MessageR1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					if m == MessageX1 {
 						return nil
 					}
@@ -210,7 +210,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			"no matching command executed and commands were ignored",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					return IgnoreMessage
 				},
 			),
@@ -232,7 +232,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 				Value: "<multiple>", // trigger multiple MessageC commands
 			}),
 			ToExecuteCommandMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					return errors.New("<error>")
 				},
 			),
@@ -256,7 +256,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			RecordEvent(MessageE1),
 			NoneOf(
 				ToExecuteCommandMatching(
-					func(m dogma.Message) error {
+					func(m dogma.Command) error {
 						if m == MessageC1 {
 							return nil
 						}
@@ -265,7 +265,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 					},
 				),
 				ToExecuteCommandMatching(
-					func(m dogma.Message) error {
+					func(m dogma.Command) error {
 						if m == MessageX1 {
 							return nil
 						}

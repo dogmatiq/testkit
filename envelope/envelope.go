@@ -47,7 +47,7 @@ type Envelope struct {
 // t is the time at which the message was created.
 func NewCommand(
 	id string,
-	m dogma.Message,
+	m dogma.Command,
 	t time.Time,
 ) *Envelope {
 	return newEnvelope(id, m, message.CommandRole, t)
@@ -58,7 +58,7 @@ func NewCommand(
 // t is the time at which the message was created.
 func NewEvent(
 	id string,
-	m dogma.Message,
+	m dogma.Event,
 	t time.Time,
 ) *Envelope {
 	return newEnvelope(id, m, message.EventRole, t)
@@ -97,7 +97,7 @@ func newEnvelope(
 // t is the time at which the message was created.
 func (e *Envelope) NewCommand(
 	id string,
-	m dogma.Message,
+	m dogma.Command,
 	t time.Time,
 	o Origin,
 ) *Envelope {
@@ -110,7 +110,7 @@ func (e *Envelope) NewCommand(
 // t is the time at which the message was created.
 func (e *Envelope) NewEvent(
 	id string,
-	m dogma.Message,
+	m dogma.Event,
 	t time.Time,
 	o Origin,
 ) *Envelope {
@@ -124,7 +124,7 @@ func (e *Envelope) NewEvent(
 // timeout is scheduled to occur.
 func (e *Envelope) NewTimeout(
 	id string,
-	m dogma.Message,
+	m dogma.Timeout,
 	t time.Time,
 	s time.Time,
 	o Origin,

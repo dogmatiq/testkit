@@ -47,7 +47,7 @@ func (s *scope) Destroy() {
 	})
 }
 
-func (s *scope) RecordEvent(m dogma.Message) {
+func (s *scope) RecordEvent(m dogma.Event) {
 	if !s.config.MessageTypes().Produced.HasM(m) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,

@@ -57,7 +57,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(MessageE1)
 				return nil
@@ -96,7 +96,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				m dogma.Message,
+				m dogma.Command,
 			) error {
 				s.RecordEvent(MessageX1)
 				return nil
@@ -134,7 +134,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(MessageE{
 					Value: errors.New("<invalid>"),
@@ -176,7 +176,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 				return nil

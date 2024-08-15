@@ -38,13 +38,13 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 							dogma.RecordsEvent[MessageX](),
 						)
 					},
-					RouteCommandToInstanceFunc: func(dogma.Message) string {
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
 						_ dogma.AggregateRoot,
 						s dogma.AggregateCommandScope,
-						m dogma.Message,
+						m dogma.Command,
 					) {
 						if _, ok := m.(MessageR); ok {
 							s.RecordEvent(MessageE1)
@@ -63,7 +63,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},
@@ -71,7 +71,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 						_ context.Context,
 						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
-						m dogma.Message,
+						m dogma.Event,
 					) error {
 						if _, ok := m.(MessageE); ok {
 							s.ExecuteCommand(MessageN1)

@@ -43,7 +43,7 @@ var _ = g.Describe("type scope", func() {
 			},
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
-				m dogma.Message,
+				m dogma.Event,
 			) (string, bool, error) {
 				switch m.(type) {
 				case MessageA:
@@ -71,7 +71,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				called = true
 				Expect(s.InstanceID()).To(Equal("<instance>"))
@@ -96,7 +96,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.End()
 				return nil
@@ -126,7 +126,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.End()
 				s.End()
@@ -153,7 +153,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(MessageC1)
 				return nil
@@ -194,7 +194,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(MessageX1)
 				return nil
@@ -233,7 +233,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(MessageC{
 					Value: errors.New("<invalid>"),
@@ -274,7 +274,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.End()
 				s.ExecuteCommand(MessageC1)
@@ -309,7 +309,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(MessageT1, t)
 				return nil
@@ -351,7 +351,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(MessageX1, time.Now())
 				return nil
@@ -390,7 +390,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				m dogma.Message,
+				m dogma.Event,
 			) error {
 				s.ScheduleTimeout(
 					MessageT{
@@ -434,7 +434,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.End()
 				s.ScheduleTimeout(MessageT1, time.Now())
@@ -486,7 +486,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessTimeoutScope,
-				_ dogma.Message,
+				_ dogma.Timeout,
 			) error {
 				Expect(s.ScheduledFor()).To(BeTemporally("==", timeout.ScheduledFor))
 				return nil
@@ -509,7 +509,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) error {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 				return nil

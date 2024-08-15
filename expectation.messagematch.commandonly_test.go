@@ -38,7 +38,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},
@@ -46,7 +46,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 						_ context.Context,
 						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
-						m dogma.Message,
+						m dogma.Event,
 					) error {
 						s.ExecuteCommand(MessageC1)
 						s.ExecuteCommand(MessageC2)
@@ -76,7 +76,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			"all executed commands match",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					return nil
 				},
 			),
@@ -89,7 +89,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			"no commands executed at all",
 			noop,
 			ToOnlyExecuteCommandsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					panic("unexpected call")
 				},
 			),
@@ -102,7 +102,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			"some matching commands executed",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
-				func(m dogma.Message) error {
+				func(m dogma.Command) error {
 					switch m {
 					case fixtures.MessageC1:
 						return errors.New("<error>")

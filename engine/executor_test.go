@@ -28,7 +28,7 @@ var _ = g.Describe("type CommandExecutor", func() {
 					dogma.RecordsEvent[MessageE](),
 				)
 			},
-			RouteCommandToInstanceFunc: func(dogma.Message) string {
+			RouteCommandToInstanceFunc: func(dogma.Command) string {
 				return "<instance>"
 			},
 		}
@@ -55,7 +55,7 @@ var _ = g.Describe("type CommandExecutor", func() {
 			aggregate.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				_ dogma.AggregateCommandScope,
-				m dogma.Message,
+				m dogma.Command,
 			) {
 				called = true
 				Expect(m).To(Equal(MessageC1))

@@ -20,6 +20,10 @@ type CommandExecutor struct {
 // ExecuteCommand enqueues a command for execution.
 //
 // It panics if the command is not routed to any handlers.
-func (e CommandExecutor) ExecuteCommand(ctx context.Context, m dogma.Message, _ ...dogma.ExecuteCommandOption) error {
+func (e CommandExecutor) ExecuteCommand(
+	ctx context.Context,
+	m dogma.Command,
+	_ ...dogma.ExecuteCommandOption,
+) error {
 	return e.Engine.mustDispatch(ctx, message.CommandRole, m, e.Options...)
 }

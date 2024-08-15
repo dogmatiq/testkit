@@ -23,7 +23,7 @@ import (
 // pred may return the IgnoreMessage error to indicate that the predicate does
 // not apply to a specific message.
 func ToExecuteCommandMatching(
-	pred func(dogma.Message) error,
+	pred func(dogma.Command) error,
 ) Expectation {
 	if pred == nil {
 		panic("ToExecuteCommandMatching(<nil>): function must not be nil")
@@ -48,7 +48,7 @@ func ToExecuteCommandMatching(
 // pred may return the IgnoreMessage error to indicate that the predicate does
 // not apply to a specific message.
 func ToOnlyExecuteCommandsMatching(
-	pred func(dogma.Message) error,
+	pred func(dogma.Command) error,
 ) Expectation {
 	if pred == nil {
 		panic("ToOnlyExecuteCommandsMatching(<nil>): function must not be nil")
@@ -73,7 +73,7 @@ func ToOnlyExecuteCommandsMatching(
 // pred may return the IgnoreMessage error to indicate that the predicate does
 // not apply to a specific message.
 func ToRecordEventMatching(
-	pred func(dogma.Message) error,
+	pred func(dogma.Command) error,
 ) Expectation {
 	if pred == nil {
 		panic("ToRecordEventMatching(<nil>): function must not be nil")
@@ -98,7 +98,7 @@ func ToRecordEventMatching(
 // pred may return the IgnoreMessage error to indicate that the predicate does
 // not apply to a specific message.
 func ToOnlyRecordEventsMatching(
-	pred func(dogma.Message) error,
+	pred func(dogma.Command) error,
 ) Expectation {
 	if pred == nil {
 		panic("ToOnlyRecordEventsMatching(<nil>): function must not be nil")

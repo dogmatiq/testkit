@@ -42,7 +42,7 @@ var _ = g.Describe("type Controller", func() {
 			},
 			// setup routes for "C" (command) messages to an instance ID based on the
 			// message's content
-			RouteCommandToInstanceFunc: func(m dogma.Message) string {
+			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch x := m.(type) {
 				case MessageC:
 					return fmt.Sprintf(
@@ -100,7 +100,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				_ dogma.AggregateCommandScope,
-				m dogma.Message,
+				m dogma.Command,
 			) {
 				called = true
 				Expect(m).To(Equal(MessageC1))
@@ -121,7 +121,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.RecordEvent(MessageE1)
 				s.RecordEvent(MessageE2)
@@ -161,7 +161,7 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("panics when the handler routes to an empty instance ID", func() {
-			handler.RouteCommandToInstanceFunc = func(dogma.Message) string {
+			handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
 				return ""
 			}
 
@@ -217,7 +217,7 @@ var _ = g.Describe("type Controller", func() {
 				handler.HandleCommandFunc = func(
 					r dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					Expect(r).To(Equal(&AggregateRoot{}))
 				}
@@ -271,7 +271,7 @@ var _ = g.Describe("type Controller", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.RecordEvent(MessageE1) // record event to create the instance
 				}
@@ -303,7 +303,7 @@ var _ = g.Describe("type Controller", func() {
 						Handler:    config,
 						InstanceID: "<instance-C1>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -316,11 +316,11 @@ var _ = g.Describe("type Controller", func() {
 				handler.HandleCommandFunc = func(
 					r dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					Expect(r).To(Equal(
 						&AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -339,7 +339,7 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from RouteCommandToInstance()", func() {
-			handler.RouteCommandToInstanceFunc = func(dogma.Message) string {
+			handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
 				panic(dogma.UnexpectedMessage)
 			}
 
@@ -367,7 +367,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				dogma.AggregateRoot,
 				dogma.AggregateCommandScope,
-				dogma.Message,
+				dogma.Command,
 			) {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -396,14 +396,14 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.RecordEvent(MessageE1)
 			}
 
 			handler.NewFunc = func() dogma.AggregateRoot {
 				return &AggregateRoot{
-					ApplyEventFunc: func(dogma.Message) {
+					ApplyEventFunc: func(dogma.Event) {
 						panic(dogma.UnexpectedMessage)
 					},
 				}
@@ -433,7 +433,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.RecordEvent(MessageE1)
 			}
@@ -448,7 +448,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = nil
 			handler.NewFunc = func() dogma.AggregateRoot {
 				return &AggregateRoot{
-					ApplyEventFunc: func(dogma.Message) {
+					ApplyEventFunc: func(dogma.Event) {
 						panic(dogma.UnexpectedMessage)
 					},
 				}
@@ -480,7 +480,7 @@ var _ = g.Describe("type Controller", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.RecordEvent(MessageE1) // record event to create the instance
 			}

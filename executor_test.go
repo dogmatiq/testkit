@@ -38,7 +38,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					HandleCommandFunc: func(
 						_ context.Context,
 						s dogma.IntegrationCommandScope,
-						_ dogma.Message,
+						_ dogma.Command,
 					) error {
 						s.RecordEvent(MessageE1)
 						return nil
@@ -49,7 +49,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 
 		doNothing = func(
 			context.Context,
-			dogma.Message,
+			dogma.Command,
 			dogma.CommandExecutor,
 		) error {
 			return nil
@@ -57,7 +57,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 
 		executeCommandAndReturnError = func(
 			ctx context.Context,
-			m dogma.Message,
+			m dogma.Command,
 			e dogma.CommandExecutor,
 		) error {
 			Expect(m).To(Equal(MessageC1))

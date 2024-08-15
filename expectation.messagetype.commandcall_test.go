@@ -38,13 +38,13 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 							dogma.RecordsEvent[MessageN](),
 						)
 					},
-					RouteCommandToInstanceFunc: func(dogma.Message) string {
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
 						_ dogma.AggregateRoot,
 						s dogma.AggregateCommandScope,
-						_ dogma.Message,
+						_ dogma.Command,
 					) {
 						s.RecordEvent(MessageN1)
 					},
@@ -61,7 +61,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},
@@ -69,7 +69,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 						_ context.Context,
 						_ dogma.ProcessRoot,
 						s dogma.ProcessEventScope,
-						m dogma.Message,
+						m dogma.Event,
 					) error {
 						if _, ok := m.(MessageE); ok {
 							s.ExecuteCommand(MessageC1)
@@ -81,7 +81,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 		}
 	})
 
-	executeCommandViaExecutor := func(m dogma.Message) Action {
+	executeCommandViaExecutor := func(m dogma.Command) Action {
 		return Call(func() {
 			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
 			Expect(err).ShouldNot(HaveOccurred())

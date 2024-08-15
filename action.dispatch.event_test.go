@@ -42,7 +42,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},

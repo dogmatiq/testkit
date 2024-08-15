@@ -40,7 +40,7 @@ var _ = g.Describe("type scope", func() {
 					dogma.RecordsEvent[MessageE](),
 				)
 			},
-			RouteCommandToInstanceFunc: func(m dogma.Message) string {
+			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch m.(type) {
 				case MessageA:
 					return "<instance>"
@@ -66,7 +66,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.Destroy()
 				}
@@ -91,7 +91,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.RecordEvent(MessageE1)
 				}
@@ -111,7 +111,7 @@ var _ = g.Describe("type scope", func() {
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -123,7 +123,7 @@ var _ = g.Describe("type scope", func() {
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -149,7 +149,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.RecordEvent(MessageE1) // record event to create the instance
 			}
@@ -175,7 +175,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.Destroy()
 				}
@@ -205,7 +205,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.RecordEvent(MessageE1)
 				}
@@ -229,7 +229,7 @@ var _ = g.Describe("type scope", func() {
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 								MessageE1,
 							},
@@ -268,7 +268,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.Destroy()
 					s.RecordEvent(MessageE1)
@@ -289,7 +289,7 @@ var _ = g.Describe("type scope", func() {
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -301,7 +301,7 @@ var _ = g.Describe("type scope", func() {
 						Handler:    config,
 						InstanceID: "<instance>",
 						Root: &AggregateRoot{
-							AppliedEvents: []dogma.Message{
+							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
 						},
@@ -324,7 +324,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.RecordEvent(MessageX1)
 				}
@@ -361,7 +361,7 @@ var _ = g.Describe("type scope", func() {
 				handler.HandleCommandFunc = func(
 					_ dogma.AggregateRoot,
 					s dogma.AggregateCommandScope,
-					_ dogma.Message,
+					_ dogma.Command,
 				) {
 					s.RecordEvent(MessageE{
 						Value: errors.New("<invalid>"),
@@ -404,7 +404,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				called = true
 				Expect(s.InstanceID()).To(Equal("<instance>"))
@@ -427,7 +427,7 @@ var _ = g.Describe("type scope", func() {
 			handler.HandleCommandFunc = func(
 				_ dogma.AggregateRoot,
 				s dogma.AggregateCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 			}

@@ -27,7 +27,7 @@ var _ dogma.CommandExecutor = (*CommandExecutor)(nil)
 // Test.Prepare() or Test.Expect().
 func (e *CommandExecutor) ExecuteCommand(
 	ctx context.Context,
-	m dogma.Message,
+	m dogma.Command,
 	_ ...dogma.ExecuteCommandOption,
 ) error {
 	e.m.RLock()
@@ -97,7 +97,7 @@ func (e *CommandExecutor) Intercept(fn CommandExecutorInterceptor) CommandExecut
 // interceptor installed.
 type CommandExecutorInterceptor func(
 	ctx context.Context,
-	m dogma.Message,
+	m dogma.Command,
 	e dogma.CommandExecutor,
 ) error
 

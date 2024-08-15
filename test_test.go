@@ -69,7 +69,7 @@ var _ = g.Describe("type Test", func() {
 							_ context.Context,
 							_, _, _ []byte,
 							_ dogma.ProjectionEventScope,
-							_ dogma.Message,
+							_ dogma.Event,
 						) (bool, error) {
 							called = true
 							return true, nil
@@ -138,7 +138,7 @@ var _ = g.Describe("type Test", func() {
 							_ context.Context,
 							_, _, _ []byte,
 							_ dogma.ProjectionEventScope,
-							_ dogma.Message,
+							_ dogma.Event,
 						) (bool, error) {
 							called = true
 							return true, nil
@@ -203,13 +203,13 @@ var _ = g.Describe("type Test", func() {
 								dogma.RecordsEvent[MessageE](),
 							)
 						},
-						RouteCommandToInstanceFunc: func(dogma.Message) string {
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
 							return "<instance>"
 						},
 						HandleCommandFunc: func(
 							dogma.AggregateRoot,
 							dogma.AggregateCommandScope,
-							dogma.Message,
+							dogma.Command,
 						) {
 							g.Fail("unexpected call")
 						},
@@ -249,13 +249,13 @@ var _ = g.Describe("type Test", func() {
 								dogma.RecordsEvent[MessageE](),
 							)
 						},
-						RouteCommandToInstanceFunc: func(dogma.Message) string {
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
 							return "<instance>"
 						},
 						HandleCommandFunc: func(
 							dogma.AggregateRoot,
 							dogma.AggregateCommandScope,
-							dogma.Message,
+							dogma.Command,
 						) {
 							g.Fail("unexpected call")
 						},

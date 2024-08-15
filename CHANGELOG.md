@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unrelesed]
+
+### Changed
+
+- Use `dogma.Command`, `Event` and `Timeout` interfaces instead of
+  `dogma.Message` where appropriate.
+
+### Fixed
+
+- Supress rendering of explanation and suggestions in test reports when a failed
+  expectation is negated by `NoneOf()` (thanks [@sameaste92]).
+
 ## [0.15.2] - 2024-07-24
 
 ### Fixed
@@ -389,6 +401,10 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.15.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.0
 [0.15.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.1
 [0.15.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.2
+
+<!-- contributors -->
+
+[@sameaste92]: https://github.com/sameaste92
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

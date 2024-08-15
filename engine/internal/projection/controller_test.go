@@ -131,7 +131,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				m dogma.Message,
+				m dogma.Event,
 			) (bool, error) {
 				called = true
 				Expect(m).To(Equal(MessageA1))
@@ -156,7 +156,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				return false, expected
 			}
@@ -196,7 +196,7 @@ var _ = g.Describe("type Controller", func() {
 				ctx context.Context,
 				r, c, n []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				Expect(r).To(Equal([]byte(event.MessageID)))
 				Expect(c).To(BeEmpty())
@@ -226,7 +226,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				g.Fail("unexpected call")
 				return false, nil
@@ -269,7 +269,7 @@ var _ = g.Describe("type Controller", func() {
 				ctx context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				return false, nil
 			}
@@ -302,7 +302,7 @@ var _ = g.Describe("type Controller", func() {
 				ctx context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				dl, ok := ctx.Deadline()
 				Expect(ok).To(BeTrue())
@@ -325,7 +325,7 @@ var _ = g.Describe("type Controller", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				_ dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -351,9 +351,7 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
-			handler.TimeoutHintFunc = func(
-				dogma.Message,
-			) time.Duration {
+			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
 				panic(dogma.UnexpectedMessage)
 			}
 

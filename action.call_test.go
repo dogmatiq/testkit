@@ -41,7 +41,7 @@ var _ = g.Describe("func Call()", func() {
 						)
 					},
 					RouteCommandToInstanceFunc: func(
-						dogma.Message,
+						dogma.Command,
 					) string {
 						return "<instance>"
 					},
@@ -56,7 +56,7 @@ var _ = g.Describe("func Call()", func() {
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
-						dogma.Message,
+						dogma.Event,
 					) (string, bool, error) {
 						return "<instance>", true, nil
 					},

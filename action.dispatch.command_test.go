@@ -40,7 +40,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 						)
 					},
 					RouteCommandToInstanceFunc: func(
-						dogma.Message,
+						dogma.Command,
 					) string {
 						return "<instance>"
 					},

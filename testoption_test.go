@@ -28,7 +28,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 				_ context.Context,
 				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
-				_ dogma.Message,
+				_ dogma.Event,
 			) (bool, error) {
 				Expect(s.RecordedAt()).To(BeTemporally("==", now))
 				called = true
@@ -68,7 +68,7 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 			HandleCommandFunc: func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(MessageE1)
 				return nil
