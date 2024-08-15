@@ -125,7 +125,7 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 	}
 
 	treeOk := p.Ok()
-	rep := p.Report(treeOk)
+	rep := p.Report(treeOk, false)
 
 	buf := &strings.Builder{}
 	fmt.Fprint(buf, "--- TEST REPORT ---\n\n")

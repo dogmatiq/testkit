@@ -251,6 +251,36 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
+		g.Entry(
+			"does not include an explanation when negated and a sibling expectation passes",
+			RecordEvent(MessageE1),
+			NoneOf(
+				ToExecuteCommandMatching(
+					func(m dogma.Message) error {
+						if m == MessageC1 {
+							return nil
+						}
+
+						return errors.New("<error>")
+					},
+				),
+				ToExecuteCommandMatching(
+					func(m dogma.Message) error {
+						if m == MessageX1 {
+							return nil
+						}
+
+						return errors.New("<error>")
+					},
+				),
+			),
+			expectFail,
+			expectReport(
+				`✗ none of (1 of the expectations passed unexpectedly)`,
+				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:259`,
+				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:268`,
+			),
+		),
 	)
 
 	g.It("panics if the function is nil", func() {

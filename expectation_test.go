@@ -39,7 +39,7 @@ func (e staticExpectation) Predicate(PredicateScope) (Predicate, error) { return
 func (e staticExpectation) Notify(fact.Fact)                            {}
 func (e staticExpectation) Ok() bool                                    { return e.ok }
 func (e staticExpectation) Done()                                       {}
-func (e staticExpectation) Report(treeOk bool) *Report {
+func (e staticExpectation) Report(treeOk, isInverted bool) *Report {
 	c := "<always fail>"
 	if e.ok {
 		c = "<always pass>"

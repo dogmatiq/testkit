@@ -95,6 +95,7 @@ func NoneOf(children ...Expectation) Expectation {
 				passed,
 			), false
 		},
+		isInverted: true,
 	}
 }
 
@@ -105,10 +106,11 @@ func NoneOf(children ...Expectation) Expectation {
 // It uses a predicate function to determine whether the composite expectation
 // is met based on how many of the "child" expectations are met.
 type compositeExpectation struct {
-	caption  string
-	criteria string
-	children []Expectation
-	pred     func(passed int) (outcome string, ok bool)
+	caption    string
+	criteria   string
+	children   []Expectation
+	pred       func(passed int) (outcome string, ok bool)
+	isInverted bool
 }
 
 func (e *compositeExpectation) Caption() string {
@@ -128,17 +130,19 @@ func (e *compositeExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	}
 
 	return &compositePredicate{
-		criteria: e.criteria,
-		children: children,
-		pred:     e.pred,
+		criteria:   e.criteria,
+		children:   children,
+		pred:       e.pred,
+		isInverted: e.isInverted,
 	}, nil
 }
 
 // compositePredicate is the Predicate implementation for compositeExpectation.
 type compositePredicate struct {
-	criteria string
-	children []Predicate
-	pred     func(int) (string, bool)
+	criteria   string
+	children   []Predicate
+	pred       func(int) (string, bool)
+	isInverted bool
 }
 
 func (p *compositePredicate) Notify(f fact.Fact) {
@@ -158,7 +162,11 @@ func (p *compositePredicate) Done() {
 	}
 }
 
-func (p *compositePredicate) Report(treeOk bool) *Report {
+func (p *compositePredicate) Report(treeOk, isInverted bool) *Report {
+	if p.isInverted {
+		isInverted = !isInverted
+	}
+
 	m, ok := p.ok()
 
 	rep := &Report{
@@ -170,7 +178,7 @@ func (p *compositePredicate) Report(treeOk bool) *Report {
 
 	for _, c := range p.children {
 		rep.Append(
-			c.Report(treeOk),
+			c.Report(treeOk, isInverted),
 		)
 	}
 

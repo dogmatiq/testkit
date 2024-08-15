@@ -93,7 +93,7 @@ func (p *satisfyPredicate) Done() {
 	p.pred(&p.satisfyT)
 }
 
-func (p *satisfyPredicate) Report(treeOk bool) *Report {
+func (p *satisfyPredicate) Report(treeOk, isInverted bool) *Report {
 	rep := &Report{
 		TreeOk:   treeOk,
 		Ok:       p.Ok(),
@@ -104,6 +104,10 @@ func (p *satisfyPredicate) Report(treeOk bool) *Report {
 		rep.Outcome = "the expectation was skipped"
 	} else if p.satisfyT.failed {
 		rep.Outcome = "the expectation failed"
+	}
+
+	if !rep.Ok && isInverted {
+		return rep
 	}
 
 	rep.Explanation = p.satisfyT.explanation
