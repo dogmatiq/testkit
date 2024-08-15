@@ -101,7 +101,7 @@ func (p *repeatPredicate) Done() {
 	}
 }
 
-func (p *repeatPredicate) Report(treeOk bool) *Report {
+func (p *repeatPredicate) Report(treeOk, isInverted bool) *Report {
 	rep := &Report{
 		TreeOk:   treeOk,
 		Ok:       true,
@@ -128,7 +128,7 @@ func (p *repeatPredicate) Report(treeOk bool) *Report {
 			// potentially thousands of very similar expectations which would
 			// pollute the report and make it harder to find the problem.
 			rep.Append(
-				c.Report(treeOk),
+				c.Report(treeOk, isInverted),
 			)
 
 		}

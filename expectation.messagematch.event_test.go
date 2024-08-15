@@ -259,6 +259,36 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
 		),
+		g.Entry(
+			"does not include an explanation when negated and a sibling expectation passes",
+			ExecuteCommand(MessageR1),
+			NoneOf(
+				ToRecordEventMatching(
+					func(m dogma.Message) error {
+						if m == MessageE1 {
+							return nil
+						}
+
+						return errors.New("<error>")
+					},
+				),
+				ToRecordEventMatching(
+					func(m dogma.Message) error {
+						if m == MessageX1 {
+							return nil
+						}
+
+						return errors.New("<error>")
+					},
+				),
+			),
+			expectFail,
+			expectReport(
+				`✗ none of (1 of the expectations passed unexpectedly)`,
+				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:267`,
+				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:276`,
+			),
+		),
 	)
 
 	g.It("panics if the function is nil", func() {

@@ -234,7 +234,7 @@ func (p *messageMatchPredicate) Done() {
 	}
 }
 
-func (p *messageMatchPredicate) Report(treeOk bool) *Report {
+func (p *messageMatchPredicate) Report(treeOk, isInverted bool) *Report {
 	rep := &Report{
 		TreeOk: treeOk,
 		Ok:     p.ok,
@@ -253,7 +253,7 @@ func (p *messageMatchPredicate) Report(treeOk bool) *Report {
 		)
 	}
 
-	if treeOk || p.ok {
+	if treeOk || p.ok || isInverted {
 		return rep
 	}
 
