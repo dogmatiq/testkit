@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToExecuteCommandOfType()", func() {
+var _ = g.Describe("func ToExecuteCommandType()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application

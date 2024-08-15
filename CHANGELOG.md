@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.15.4] - 2024-08-16
+
+### Added
+
+- Added `ToExecuteCommandType[T]()` and `ToRecordEventType[T]()` expectations.
+
+### Deprecated
+
+- Marked `ToExecuteCommandOfType()` and `ToRecordEventOfType()` as deprecated.
+  These functions will be removed in a future release; use the new generic
+  versions instead.
+
 ## [0.15.3] - 2024-08-16
 
 ### Changed
@@ -402,6 +414,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.15.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.1
 [0.15.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.2
 [0.15.3]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.3
+[0.15.4]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.4
 
 <!-- contributors -->
 

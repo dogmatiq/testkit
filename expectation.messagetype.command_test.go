@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToExecuteCommandOfType()", func() {
+var _ = g.Describe("func ToExecuteCommandType()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
@@ -97,7 +97,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"command type executed as expected",
 			RecordEvent(MessageE1),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectPass,
 			expectReport(
 				`✓ execute any 'fixtures.MessageC' command`,
@@ -106,7 +106,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"no matching command types executed",
 			RecordEvent(MessageE1),
-			ToExecuteCommandOfType(MessageX{}),
+			ToExecuteCommandType[MessageX](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageX' command`,
@@ -121,7 +121,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"no messages produced at all",
 			RecordEvent(MessageN1),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
@@ -136,7 +136,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"no commands produced at all",
 			ExecuteCommand(MessageR1),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
@@ -151,7 +151,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"no matching command type executed and all relevant handler types disabled",
 			RecordEvent(MessageN1),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
@@ -169,7 +169,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		g.Entry(
 			"command of a similar type executed",
 			RecordEvent(MessageE1),
-			ToExecuteCommandOfType(&MessageC{}), // note: message type is pointer
+			ToExecuteCommandType[*MessageC](), // note: message type is pointer
 			expectFail,
 			expectReport(
 				`✗ execute any '*fixtures.MessageC' command`,
@@ -188,8 +188,8 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 			"does not include an explanation when negated and a sibling expectation passes",
 			RecordEvent(MessageE1),
 			NoneOf(
-				ToExecuteCommandOfType(MessageC{}),
-				ToExecuteCommandOfType(MessageX{}),
+				ToExecuteCommandType[MessageC](),
+				ToExecuteCommandType[MessageX](),
 			),
 			expectFail,
 			expectReport(
@@ -204,7 +204,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommandOfType(MessageU{}),
+			ToExecuteCommandType[MessageU](),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
@@ -217,7 +217,7 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommandOfType(MessageE{}),
+			ToExecuteCommandType[MessageE](),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
@@ -230,18 +230,12 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommandOfType(MessageR{}),
+			ToExecuteCommandType[MessageR](),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
 		Expect(testingT.Logs).To(ContainElement(
 			"no handlers execute commands of type fixtures.MessageR, it is only ever consumed",
 		))
-	})
-
-	g.It("panics if the message is nil", func() {
-		Expect(func() {
-			ToExecuteCommandOfType(nil)
-		}).To(PanicWith("ToExecuteCommandOfType(<nil>): message must not be nil"))
 	})
 })

@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() action)", func() {
+var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
@@ -105,7 +105,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 		g.Entry(
 			"command type executed as expected",
 			executeCommandViaExecutor(MessageR1),
-			ToExecuteCommandOfType(MessageR{}),
+			ToExecuteCommandType[MessageR](),
 			expectPass,
 			expectReport(
 				`✓ execute any 'fixtures.MessageR' command`,
@@ -114,7 +114,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
@@ -129,7 +129,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 		g.Entry(
 			"no matching command type executed and all relevant handler types disabled",
 			executeCommandViaExecutor(MessageR1),
-			ToExecuteCommandOfType(MessageC{}),
+			ToExecuteCommandType[MessageC](),
 			expectFail,
 			expectReport(
 				`✗ execute any 'fixtures.MessageC' command`,
@@ -148,7 +148,7 @@ var _ = g.Describe("func ToExecuteCommandOfType() (when used with the Call() act
 		g.Entry(
 			"command of a similar type executed",
 			executeCommandViaExecutor(MessageR1),
-			ToExecuteCommandOfType(&MessageR{}), // note: message type is pointer
+			ToExecuteCommandType[*MessageR](), // note: message type is pointer
 			expectFail,
 			expectReport(
 				`✗ execute any '*fixtures.MessageR' command`,

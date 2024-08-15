@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action)", func() {
+var _ = g.Describe("func ToRecordEventType() (when used with the Call() action)", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
@@ -107,7 +107,7 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 		g.Entry(
 			"no matching event types recorded",
 			executeCommandViaExecutor(MessageR1),
-			ToRecordEventOfType(MessageX{}),
+			ToRecordEventType[MessageX](),
 			expectFail,
 			expectReport(
 				`✗ record any 'fixtures.MessageX' event`,
@@ -124,7 +124,7 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
-			ToRecordEventOfType(MessageE{}),
+			ToRecordEventType[MessageE](),
 			expectFail,
 			expectReport(
 				`✗ record any 'fixtures.MessageE' event`,
@@ -139,7 +139,7 @@ var _ = g.Describe("func ToRecordEventOfType() (when used with the Call() action
 		g.Entry(
 			"no events produced at all",
 			executeCommandViaExecutor(MessageN1),
-			ToRecordEventOfType(MessageE{}),
+			ToRecordEventType[MessageE](),
 			expectFail,
 			expectReport(
 				`✗ record any 'fixtures.MessageE' event`,

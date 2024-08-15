@@ -10,8 +10,19 @@ import (
 	"github.com/dogmatiq/testkit/internal/typecmp"
 )
 
+// ToExecuteCommandType returns an expectation that passes if a command of type
+// T is executed.
+func ToExecuteCommandType[T dogma.Command]() Expectation {
+	return &messageTypeExpectation{
+		expectedType: message.TypeFor[T](),
+		expectedRole: message.CommandRole,
+	}
+}
+
 // ToExecuteCommandOfType returns an expectation that passes if a command of the
 // same type as m is executed.
+//
+// Deprecated: Use [ToExecuteCommandType] instead.
 func ToExecuteCommandOfType(m dogma.Command) Expectation {
 	if m == nil {
 		panic("ToExecuteCommandOfType(<nil>): message must not be nil")
@@ -23,8 +34,19 @@ func ToExecuteCommandOfType(m dogma.Command) Expectation {
 	}
 }
 
+// ToRecordEventType returns an expectation that passes if an event of type T is
+// recorded.
+func ToRecordEventType[T dogma.Event]() Expectation {
+	return &messageTypeExpectation{
+		expectedType: message.TypeFor[T](),
+		expectedRole: message.EventRole,
+	}
+}
+
 // ToRecordEventOfType returns an expectation that passes if an event of the
 // same type as m is recorded.
+//
+// Deprecated: Use [ToRecordEventType] instead.
 func ToRecordEventOfType(m dogma.Command) Expectation {
 	if m == nil {
 		panic("ToRecordEventOfType(<nil>): message must not be nil")
