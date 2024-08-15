@@ -224,6 +224,25 @@ var _ = g.Describe("func ToSatisfy()", func() {
 		),
 	)
 
+	g.It("does not include an explanation when negated and a sibling expectation passes", func() {
+		test.Expect(
+			noop,
+			NoneOf(
+				ToSatisfy("<always pass>", func(*SatisfyT) {}),
+				ToSatisfy("<always fail>", func(t *SatisfyT) { t.Fail() }),
+			),
+		)
+
+		rm := expectReport(
+			`✗ none of (1 of the expectations passed unexpectedly)`,
+			`    ✓ <always pass>`,
+			`    ✗ <always fail> (the expectation failed)`,
+		)
+
+		rm(testingT)
+		Expect(testingT.Failed()).To(BeTrue())
+	})
+
 	g.It("produces the expected caption", func() {
 		test.Expect(
 			noop,

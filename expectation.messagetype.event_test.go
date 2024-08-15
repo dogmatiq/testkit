@@ -212,6 +212,20 @@ var _ = g.Describe("func ToExecuteCommandOfType()", func() {
 				`  |     [-*-]fixtures.MessageE`,
 			),
 		),
+		g.Entry(
+			"does not include an explanation when negated and a sibling expectation passes",
+			ExecuteCommand(MessageR1),
+			NoneOf(
+				ToRecordEventOfType(MessageE{}),
+				ToRecordEventOfType(MessageX{}),
+			),
+			expectFail,
+			expectReport(
+				`✗ none of (1 of the expectations passed unexpectedly)`,
+				`    ✓ record any 'fixtures.MessageE' event`,
+				`    ✗ record any 'fixtures.MessageX' event`,
+			),
+		),
 	)
 
 	g.It("fails the test if the message type is unrecognized", func() {
