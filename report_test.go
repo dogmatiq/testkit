@@ -22,13 +22,14 @@ func expectReport(expected ...string) reportMatcher {
 		for i, l := range t.Logs {
 			if l == "--- TEST REPORT ---" {
 				remainder := t.Logs[i+1:]
-				Expect(remainder).To(Equal(expected))
+				ExpectWithOffset(1, remainder).To(Equal(expected))
 				return
 			}
 		}
 
 		// If we didn't find the test report at all just compare all of the logs
 		// to the expectation so at least we know what *was* printed.
-		Expect(t.Logs).To(Equal(expected))
+		ExpectWithOffset(1, t.Logs).To(Equal(expected))
+
 	}
 }

@@ -76,24 +76,6 @@ func (c *Controller) Handle(
 
 	handler := c.Config.Handler()
 
-	var t time.Duration
-	panicx.EnrichUnexpectedMessage(
-		c.Config,
-		"ProjectionMessageHandler",
-		"TimeoutHint",
-		handler,
-		env.Message,
-		func() {
-			t = handler.TimeoutHint(env.Message)
-		},
-	)
-
-	if t != 0 {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, t)
-		defer cancel()
-	}
-
 	s := &scope{
 		config:   c.Config,
 		observer: obs,

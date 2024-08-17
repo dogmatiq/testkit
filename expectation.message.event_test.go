@@ -38,13 +38,13 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 							dogma.RecordsEvent[MessageX](),
 						)
 					},
-					RouteCommandToInstanceFunc: func(dogma.Event) string {
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
 						_ dogma.AggregateRoot,
 						s dogma.AggregateCommandScope,
-						m dogma.Event,
+						m dogma.Command,
 					) {
 						if _, ok := m.(MessageR); ok {
 							s.RecordEvent(MessageE1)

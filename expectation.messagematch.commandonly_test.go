@@ -86,6 +86,19 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 		),
 		g.Entry(
+			"all executed commands match, using predicate with application-defined type parameter",
+			RecordEvent(MessageE1),
+			ToOnlyExecuteCommandsMatching(
+				func(m MessageC) error {
+					return nil
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:93`,
+			),
+		),
+		g.Entry(
 			"no commands executed at all",
 			noop,
 			ToOnlyExecuteCommandsMatching(
@@ -95,7 +108,30 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:92`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:105`,
+			),
+		),
+		g.Entry(
+			"none of the executed commands match",
+			RecordEvent(MessageE1),
+			ToOnlyExecuteCommandsMatching(
+				func(m dogma.Command) error {
+					return errors.New("<error>")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:118`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the 3 relevant commands matched the predicate`,
+				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageC: <error> (repeated 3 times)`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function`,
+				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
 		g.Entry(
@@ -115,7 +151,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:105`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:141`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -128,11 +164,35 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
 		),
+		g.Entry(
+			"no executed commands match, using predicate with application-defined type parameter",
+			RecordEvent(MessageE1),
+			ToOnlyExecuteCommandsMatching(
+				func(m MessageX) error {
+					panic("unexpected call")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:171`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the 3 relevant commands matched the predicate`,
+				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageC: predicate function expected fixtures.MessageX (repeated 3 times)`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function`,
+				`  |     • verify the logic within the '<process>' process message handler`,
+			),
+		),
 	)
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
-			ToOnlyExecuteCommandsMatching(nil)
+			var fn func(dogma.Command) error
+			ToOnlyExecuteCommandsMatching(fn)
 		}).To(PanicWith("ToOnlyExecuteCommandsMatching(<nil>): function must not be nil"))
 	})
 })

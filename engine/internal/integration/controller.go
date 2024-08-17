@@ -42,24 +42,6 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.CommandRole)
 
-	var t time.Duration
-	panicx.EnrichUnexpectedMessage(
-		c.Config,
-		"IntegrationMessageHandler",
-		"TimeoutHint",
-		c.Config.Handler(),
-		env.Message,
-		func() {
-			t = c.Config.Handler().TimeoutHint(env.Message)
-		},
-	)
-
-	if t != 0 {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, t)
-		defer cancel()
-	}
-
 	s := &scope{
 		config:     c.Config,
 		messageIDs: c.MessageIDs,

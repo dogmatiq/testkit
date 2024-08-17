@@ -89,7 +89,7 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 			HandleCommandFunc: func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				_ dogma.Message,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(MessageE1)
 				return nil

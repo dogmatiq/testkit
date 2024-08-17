@@ -49,7 +49,7 @@ func (s *scope) End() {
 	})
 }
 
-func (s *scope) ExecuteCommand(m dogma.Message) {
+func (s *scope) ExecuteCommand(m dogma.Command) {
 	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.CommandRole {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
@@ -111,7 +111,7 @@ func (s *scope) RecordedAt() time.Time {
 	return s.env.CreatedAt
 }
 
-func (s *scope) ScheduleTimeout(m dogma.Message, t time.Time) {
+func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.TimeoutRole {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,

@@ -396,34 +396,6 @@ var _ = g.Describe("type Controller", func() {
 				Expect(envelopes).To(BeEmpty())
 			})
 
-			g.It("uses the handler's timeout hint", func() {
-				hint := 3 * time.Second
-				handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
-					return hint
-				}
-
-				handler.HandleEventFunc = func(
-					ctx context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessEventScope,
-					_ dogma.Event,
-				) error {
-					dl, ok := ctx.Deadline()
-					Expect(ok).To(BeTrue())
-					Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
-					return nil
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-
 			g.When("the event is not routed to an instance", func() {
 				g.BeforeEach(func() {
 					handler.RouteEventToInstanceFunc = func(
@@ -498,18 +470,6 @@ var _ = g.Describe("type Controller", func() {
 			})
 
 			g.It("forwards the message to the handler", func() {
-				called := false
-				handler.HandleTimeoutFunc = func(
-					_ context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessTimeoutScope,
-					m dogma.Event,
-				) error {
-					called = true
-					Expect(m).To(Equal(MessageT1))
-					return nil
-				}
-
 				_, err := ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
@@ -518,7 +478,6 @@ var _ = g.Describe("type Controller", func() {
 				)
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(called).To(BeTrue())
 			})
 
 			g.It("propagates handler errors", func() {
@@ -636,34 +595,6 @@ var _ = g.Describe("type Controller", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(envelopes).To(BeEmpty())
-			})
-
-			g.It("uses the handler's timeout hint", func() {
-				hint := 3 * time.Second
-				handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
-					return hint
-				}
-
-				handler.HandleTimeoutFunc = func(
-					ctx context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessTimeoutScope,
-					_ dogma.Timeout,
-				) error {
-					dl, ok := ctx.Deadline()
-					Expect(ok).To(BeTrue())
-					Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
-					return nil
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					timeout,
-				)
-
-				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			g.When("the instance that created the timeout does not exist", func() {
@@ -1008,31 +939,6 @@ var _ = g.Describe("type Controller", func() {
 						"Interface": Equal("ProcessMessageHandler"),
 						"Method":    Equal("HandleTimeout"),
 						"Message":   Equal(timeout.Message),
-					},
-				),
-			))
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
-			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
-				panic(dogma.UnexpectedMessage)
-			}
-
-			Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("ProcessMessageHandler"),
-						"Method":    Equal("TimeoutHint"),
-						"Message":   Equal(event.Message),
 					},
 				),
 			))

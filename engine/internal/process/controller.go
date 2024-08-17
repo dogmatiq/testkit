@@ -66,24 +66,6 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	env.Role.MustBe(message.EventRole, message.TimeoutRole)
 
-	var t time.Duration
-	panicx.EnrichUnexpectedMessage(
-		c.Config,
-		"ProcessMessageHandler",
-		"TimeoutHint",
-		c.Config.Handler(),
-		env.Message,
-		func() {
-			t = c.Config.Handler().TimeoutHint(env.Message)
-		},
-	)
-
-	if t != 0 {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, t)
-		defer cancel()
-	}
-
 	id, ok, err := c.route(ctx, obs, env)
 	if !ok || err != nil {
 		return nil, err

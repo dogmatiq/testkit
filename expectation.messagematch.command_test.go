@@ -116,6 +116,23 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		),
 		g.Entry(
+			"matching command executed as expected, using predicate with application-defined type parameter",
+			RecordEvent(MessageE1),
+			ToExecuteCommandMatching(
+				func(m MessageC) error {
+					if m == MessageC1 {
+						return nil
+					}
+
+					return errors.New("<error>")
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:122`,
+			),
+		),
+		g.Entry(
 			"no matching command executed",
 			RecordEvent(MessageE1),
 			ToExecuteCommandMatching(
@@ -129,7 +146,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:122`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:139`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -143,6 +160,25 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		),
 		g.Entry(
+			"no matching command executed, using predicate with application-defined type parameter",
+			RecordEvent(MessageE1),
+			ToExecuteCommandMatching(
+				func(m MessageX) error {
+					panic("unexpected call")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:166`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the engaged handlers executed a matching command`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function, it ignored 1 command`,
+				`  |     • verify the logic within the '<process>' process message handler`),
+		),
+		g.Entry(
 			"no messages produced at all",
 			RecordEvent(MessageN1),
 			ToExecuteCommandMatching(
@@ -152,7 +188,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:149`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:185`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -171,7 +207,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:168`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:204`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -194,7 +230,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:187`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:223`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -216,7 +252,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:213`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:249`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -238,7 +274,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:235`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:271`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -277,15 +313,16 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:259`,
-				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:268`,
+				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:295`,
+				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:304`,
 			),
 		),
 	)
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
-			ToExecuteCommandMatching(nil)
+			var fn func(dogma.Command) error
+			ToExecuteCommandMatching(fn)
 		}).To(PanicWith("ToExecuteCommandMatching(<nil>): function must not be nil"))
 	})
 })

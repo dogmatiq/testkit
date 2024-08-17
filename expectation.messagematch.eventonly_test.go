@@ -80,6 +80,19 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		),
 		g.Entry(
+			"all recorded events match, using predicate with application-defined type parameter",
+			ExecuteCommand(MessageC1),
+			ToOnlyRecordEventsMatching(
+				func(m MessageE) error {
+					return nil
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:87`,
+			),
+		),
+		g.Entry(
 			"no events recorded at all",
 			noop,
 			ToOnlyRecordEventsMatching(
@@ -89,11 +102,35 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:86`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:99`,
 			),
 		),
 		g.Entry(
-			"some matching events executed",
+			"none of the recorded events match",
+			ExecuteCommand(MessageC1),
+			ToOnlyRecordEventsMatching(
+				func(m dogma.Event) error {
+					return errors.New("<error>")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:112`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the 3 relevant events matched the predicate`,
+				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageE: <error> (repeated 3 times)`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function`,
+				`  |     • enable integration handlers using the EnableHandlerType() option`,
+				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
+			),
+		),
+		g.Entry(
+			"some matching events recorded",
 			ExecuteCommand(MessageC1),
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
@@ -109,7 +146,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:99`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:136`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -123,11 +160,36 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
 		),
+		g.Entry(
+			"no matching events recorded, using predicate with application-defined type parameter",
+			ExecuteCommand(MessageC1),
+			ToOnlyRecordEventsMatching(
+				func(m MessageX) error {
+					panic("unexpected call")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:167`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the 3 relevant events matched the predicate`,
+				`  | `,
+				`  | FAILED MATCHES`,
+				`  |     • fixtures.MessageE: predicate function expected fixtures.MessageX (repeated 3 times)`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function`,
+				`  |     • enable integration handlers using the EnableHandlerType() option`,
+				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
+			),
+		),
 	)
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
-			ToOnlyRecordEventsMatching(nil)
+			var fn func(dogma.Event) error
+			ToOnlyRecordEventsMatching(fn)
 		}).To(PanicWith("ToOnlyRecordEventsMatching(<nil>): function must not be nil"))
 	})
 })

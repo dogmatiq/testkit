@@ -10,6 +10,28 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- Bumped Dogma to v0.14.0, which involved removing any calls to the
+  `TimeoutHint()` method on the handler interfaces, which has been removed.
+- `ToExecuteCommandMatching()` and `ToRecordEventMatching()` now accept
+  predicate functions with a more specific argument type than `dogma.Command`
+  and `dogma.Event`, respectively. Any message that does not match the argument
+  type of the predicate is ignored.
+- `ToOnlyExecuteCommandsMatching()` and `ToOnlyRecordEventsMatching()` now
+  accept predicate functions with a more specific argument type than
+  `dogma.Command` and `dogma.Event`, respectively. Any message that does not
+  match the argument type of the predicate is considered a failure.
+
+### Fixed
+
+- Fixed poor wording of `ToOnlyExecuteCommandsMatching()` and
+  `ToOnlyRecordEventsMatching()` failure reports when no messages were matched.
+- Fixed a few swapped references to `dogma.Command` and `dogma.Event` which were
+  aliases preior to Dogma v0.14.0.
+
 ## [0.15.4] - 2024-08-16
 
 ### Added

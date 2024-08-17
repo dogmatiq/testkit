@@ -168,33 +168,6 @@ var _ = g.Describe("type Controller", func() {
 			Expect(err).To(Equal(expected))
 		})
 
-		g.It("uses the handler's timeout hint", func() {
-			hint := 3 * time.Second
-			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
-				return hint
-			}
-
-			handler.HandleCommandFunc = func(
-				ctx context.Context,
-				_ dogma.IntegrationCommandScope,
-				_ dogma.Command,
-			) error {
-				dl, ok := ctx.Deadline()
-				Expect(ok).To(BeTrue())
-				Expect(dl).To(BeTemporally("~", time.Now().Add(hint)))
-				return nil
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				command,
-			)
-
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-
 		g.It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
 			handler.HandleCommandFunc = func(
 				context.Context,
@@ -218,31 +191,6 @@ var _ = g.Describe("type Controller", func() {
 						"Handler":   Equal(config),
 						"Interface": Equal("IntegrationMessageHandler"),
 						"Method":    Equal("HandleCommand"),
-						"Message":   Equal(command.Message),
-					},
-				),
-			))
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from TimeoutHint()", func() {
-			handler.TimeoutHintFunc = func(dogma.Message) time.Duration {
-				panic(dogma.UnexpectedMessage)
-			}
-
-			Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("IntegrationMessageHandler"),
-						"Method":    Equal("TimeoutHint"),
 						"Message":   Equal(command.Message),
 					},
 				),

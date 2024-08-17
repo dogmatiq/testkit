@@ -120,6 +120,23 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
+			"matching event recorded as expected, using predicate with application-defined type parameter",
+			ExecuteCommand(MessageR1),
+			ToRecordEventMatching(
+				func(m MessageE) error {
+					if m == MessageE1 {
+						return nil
+					}
+
+					return errors.New("<error>")
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:126`,
+			),
+		),
+		g.Entry(
 			"no matching event recorded",
 			ExecuteCommand(MessageR1),
 			ToRecordEventMatching(
@@ -133,7 +150,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:126`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:143`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -148,6 +165,27 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
+			"no matching event recorded, using predicate with application-defined type parameter",
+			ExecuteCommand(MessageR1),
+			ToRecordEventMatching(
+				func(m MessageX) error {
+					panic("unexpected call")
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:171`,
+				``,
+				`  | EXPLANATION`,
+				`  |     none of the engaged handlers recorded a matching event`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • verify the logic within the predicate function, it ignored 1 event`,
+				`  |     • enable integration handlers using the EnableHandlerType() option`,
+				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
+			),
+		),
+		g.Entry(
 			"no messages produced at all",
 			ExecuteCommand(MessageN1),
 			ToRecordEventMatching(
@@ -157,7 +195,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:154`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:192`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -177,7 +215,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:174`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:212`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -197,7 +235,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:194`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:232`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -222,7 +260,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:219`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:257`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -245,7 +283,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:242`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:280`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -285,15 +323,16 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:267`,
-				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:276`,
+				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:305`,
+				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:314`,
 			),
 		),
 	)
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
-			ToRecordEventMatching(nil)
+			var fn func(dogma.Event) error
+			ToRecordEventMatching(fn)
 		}).To(PanicWith("ToRecordEventMatching(<nil>): function must not be nil"))
 	})
 })
