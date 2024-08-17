@@ -28,7 +28,7 @@ var _ = g.Describe("type scope", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageA1,
+			MessageC1,
 			time.Now(),
 		)
 

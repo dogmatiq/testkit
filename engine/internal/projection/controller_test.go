@@ -21,14 +21,16 @@ var _ = g.Describe("type Controller", func() {
 		handler *ProjectionMessageHandler
 		config  configkit.RichProjection
 		ctrl    *Controller
-		event   = envelope.NewEvent(
-			"1000",
-			MessageA1,
-			time.Now(),
-		)
+		event   *envelope.Envelope
 	)
 
 	g.BeforeEach(func() {
+		event = envelope.NewEvent(
+			"1000",
+			MessageE1,
+			time.Now(),
+		)
+
 		handler = &ProjectionMessageHandler{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fcbe8fe1-1085-497d-ba8e-09bedb031db2")
@@ -134,7 +136,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Event,
 			) (bool, error) {
 				called = true
-				Expect(m).To(Equal(MessageA1))
+				Expect(m).To(Equal(MessageE1))
 				return true, nil
 			}
 

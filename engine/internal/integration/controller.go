@@ -2,10 +2,10 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -40,7 +40,9 @@ func (c *Controller) Handle(
 	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
-	env.Role.MustBe(message.CommandRole)
+	if !c.Config.MessageTypes().Consumed.Has(env.Type) {
+		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), env.Type))
+	}
 
 	s := &scope{
 		config:     c.Config,

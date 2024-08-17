@@ -28,7 +28,7 @@ var _ = g.Describe("type scope", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageA1,
+			MessageC1,
 			time.Now(),
 		)
 
@@ -42,7 +42,7 @@ var _ = g.Describe("type scope", func() {
 			},
 			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch m.(type) {
-				case MessageA:
+				case MessageC:
 					return "<instance>"
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -160,7 +160,7 @@ var _ = g.Describe("type scope", func() {
 				time.Now(),
 				envelope.NewCommand(
 					"2000",
-					MessageA2, // use a different message to create the instance
+					MessageC2, // use a different message to create the instance
 					time.Now(),
 				),
 			)

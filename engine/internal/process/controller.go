@@ -64,7 +64,9 @@ func (c *Controller) Handle(
 	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
-	env.Role.MustBe(message.EventRole, message.TimeoutRole)
+	if !c.Config.MessageTypes().Consumed.Has(env.Type) {
+		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), env.Type))
+	}
 
 	id, ok, err := c.route(ctx, obs, env)
 	if !ok || err != nil {

@@ -28,7 +28,7 @@ var _ = g.Describe("type scope", func() {
 	g.BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			MessageA1,
+			MessageE1,
 			time.Now(),
 		)
 
@@ -46,7 +46,7 @@ var _ = g.Describe("type scope", func() {
 				m dogma.Event,
 			) (string, bool, error) {
 				switch m.(type) {
-				case MessageA:
+				case MessageE:
 					return "<instance>", true, nil
 				default:
 					panic(dogma.UnexpectedMessage)

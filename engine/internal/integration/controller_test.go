@@ -28,7 +28,7 @@ var _ = g.Describe("type Controller", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageA1,
+			MessageC1,
 			time.Now(),
 		)
 
@@ -90,7 +90,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Command,
 			) error {
 				called = true
-				Expect(m).To(Equal(MessageA1))
+				Expect(m).To(Equal(MessageC1))
 				return nil
 			}
 
