@@ -139,11 +139,11 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 			options,
 			dapper.WithAnnotator(
 				func(v dapper.Value) string {
+					// Check that the types are EXACT, otherwise the annotation
+					// can be duplicated, for example, once when boxed in an
+					// interface, and again when descending into that boxed
+					// value.
 					if rt != v.Value.Type() {
-						return ""
-					}
-
-					if !v.Value.CanInterface() {
 						return ""
 					}
 
