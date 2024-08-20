@@ -198,16 +198,16 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 		s.AppendListItem("check the message type, should it be a pointer?")
 	}
 
-	p.buildDiff(rep)
+	p.buildDiff(ctx, rep)
 
 	return rep
 }
 
 // buildDiff adds a "message diff" section to the result.
-func (p *messagePredicate) buildDiff(rep *Report) {
+func (p *messagePredicate) buildDiff(ctx ReportGenerationContext, rep *Report) {
 	report.WriteDiff(
 		&rep.Section("Message Diff").Content,
-		report.RenderMessage(p.expectedMessage),
-		report.RenderMessage(p.bestMatch.Message),
+		ctx.renderMessage(p.expectedMessage),
+		ctx.renderMessage(p.bestMatch.Message),
 	)
 }

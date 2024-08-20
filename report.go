@@ -4,6 +4,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/dogmatiq/dapper"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/count"
 	"github.com/dogmatiq/iago/indent"
 	"github.com/dogmatiq/iago/must"
@@ -24,6 +26,13 @@ const (
 	failedMatchesSection = "Failed Matches"
 )
 
+// Annotation is a textual description of a value that provides additional
+// context in test reports.
+type Annotation struct {
+	Value any
+	Text  string
+}
+
 // ReportGenerationContext is the context in which a report is generated.
 type ReportGenerationContext struct {
 	// TreeOk is true if the entire "tree" of expectations is considered to have
@@ -33,6 +42,12 @@ type ReportGenerationContext struct {
 	// IsInverted is true if the expectation is inverted, i.e. it is expected
 	// NOT to be met.
 	IsInverted bool
+
+	printer *dapper.Printer
+}
+
+func (c ReportGenerationContext) renderMessage(m dogma.Message) string {
+	return c.printer.Format(m)
 }
 
 // Report is a report on the outcome of an expectation.

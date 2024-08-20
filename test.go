@@ -3,11 +3,13 @@ package testkit
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/dapper"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
@@ -26,6 +28,7 @@ type Test struct {
 	executor         CommandExecutor
 	predicateOptions PredicateOptions
 	operationOptions []engine.OperationOption
+	annotations      []Annotation
 }
 
 // Begin starts a new test.
@@ -124,9 +127,41 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		return t // required when using a mock testingT that does not panic
 	}
 
-	ctx := ReportGenerationContext{
-		TreeOk: p.Ok(),
+	options := []dapper.Option{
+		dapper.WithPackagePaths(false),
+		dapper.WithUnexportedStructFields(false),
 	}
+
+	for _, a := range t.annotations {
+		rt := reflect.TypeOf(a.Value)
+
+		options = append(
+			options,
+			dapper.WithAnnotator(
+				func(v dapper.Value) string {
+					if rt != v.Value.Type() {
+						return ""
+					}
+
+					if !v.Value.CanInterface() {
+						return ""
+					}
+
+					if !equal(a.Value, v.Value.Interface()) {
+						return ""
+					}
+
+					return a.Text
+				},
+			),
+		)
+	}
+
+	ctx := ReportGenerationContext{
+		TreeOk:  p.Ok(),
+		printer: dapper.NewPrinter(options...),
+	}
+
 	rep := p.Report(ctx)
 
 	buf := &strings.Builder{}
@@ -151,6 +186,14 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 // be supported by other user-defined actions.
 func (t *Test) CommandExecutor() dogma.CommandExecutor {
 	return &t.executor
+}
+
+// Annotate adds an annotation to v.
+//
+// The annotation text is displayed whenever v is rendered in a test report.
+func (t *Test) Annotate(v any, text string) *Test {
+	t.annotations = append(t.annotations, Annotation{v, text})
+	return t
 }
 
 // EnableHandlers enables a set of handlers by name.
