@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.17.0] - 2024-08-21
 
 ### Added
 
@@ -452,6 +452,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.15.3]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.3
 [0.15.4]: https://github.com/dogmatiq/testkit/releases/tag/v0.15.4
 [0.16.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.16.0
+[0.17.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.16.0
 
 <!-- contributors -->
 
