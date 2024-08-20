@@ -24,6 +24,17 @@ const (
 	failedMatchesSection = "Failed Matches"
 )
 
+// ReportGenerationContext is the context in which a report is generated.
+type ReportGenerationContext struct {
+	// TreeOk is true if the entire "tree" of expectations is considered to have
+	// passed. This may be different to the individual expectation's outcome.
+	TreeOk bool
+
+	// IsInverted is true if the expectation is inverted, i.e. it is expected
+	// NOT to be met.
+	IsInverted bool
+}
+
 // Report is a report on the outcome of an expectation.
 type Report struct {
 	// TreeOk is true if the "tree" that the expectation belongs to passed.

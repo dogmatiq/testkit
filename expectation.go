@@ -42,15 +42,8 @@ type Predicate interface {
 	// Report returns a report describing whether or not the expectation was
 	// met.
 	//
-	// treeOk is true if the entire "tree" of expectations is considered to have
-	// passed. This may not be the same value as returned from Ok() when this
-	// expectation is used as a child of a composite expectation.
-	//
-	// isInverted is true if the expectation is inverted, i.e. it is expected
-	// not be met.
-	//
 	// The behavior of Report() is undefined if Done() has not been called.
-	Report(treeOk, isInverted bool) *Report
+	Report(ReportGenerationContext) *Report
 }
 
 // PredicateScope encapsulates the element's of a Test's state that may be

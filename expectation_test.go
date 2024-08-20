@@ -39,14 +39,14 @@ func (e staticExpectation) Predicate(PredicateScope) (Predicate, error) { return
 func (e staticExpectation) Notify(fact.Fact)                            {}
 func (e staticExpectation) Ok() bool                                    { return e.ok }
 func (e staticExpectation) Done()                                       {}
-func (e staticExpectation) Report(treeOk, isInverted bool) *Report {
+func (e staticExpectation) Report(ctx ReportGenerationContext) *Report {
 	c := "<always fail>"
 	if e.ok {
 		c = "<always pass>"
 	}
 
 	return &Report{
-		TreeOk:   treeOk,
+		TreeOk:   ctx.TreeOk,
 		Ok:       e.ok,
 		Criteria: c,
 	}

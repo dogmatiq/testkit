@@ -93,9 +93,9 @@ func (p *satisfyPredicate) Done() {
 	p.pred(&p.satisfyT)
 }
 
-func (p *satisfyPredicate) Report(treeOk, isInverted bool) *Report {
+func (p *satisfyPredicate) Report(ctx ReportGenerationContext) *Report {
 	rep := &Report{
-		TreeOk:   treeOk,
+		TreeOk:   ctx.TreeOk,
 		Ok:       p.Ok(),
 		Criteria: p.criteria,
 	}
@@ -106,7 +106,7 @@ func (p *satisfyPredicate) Report(treeOk, isInverted bool) *Report {
 		rep.Outcome = "the expectation failed"
 	}
 
-	if !rep.Ok && isInverted {
+	if !rep.Ok && ctx.IsInverted {
 		return rep
 	}
 

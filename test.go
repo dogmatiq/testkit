@@ -124,15 +124,17 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		return t // required when using a mock testingT that does not panic
 	}
 
-	treeOk := p.Ok()
-	rep := p.Report(treeOk, false)
+	ctx := ReportGenerationContext{
+		TreeOk: p.Ok(),
+	}
+	rep := p.Report(ctx)
 
 	buf := &strings.Builder{}
 	fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
 	must.WriteTo(buf, rep)
 	t.testingT.Log(buf.String())
 
-	if !treeOk {
+	if !ctx.TreeOk {
 		t.testingT.FailNow()
 	}
 

@@ -162,24 +162,22 @@ func (p *compositePredicate) Done() {
 	}
 }
 
-func (p *compositePredicate) Report(treeOk, isInverted bool) *Report {
+func (p *compositePredicate) Report(ctx ReportGenerationContext) *Report {
 	if p.isInverted {
-		isInverted = !isInverted
+		ctx.IsInverted = !ctx.IsInverted
 	}
 
 	m, ok := p.ok()
 
 	rep := &Report{
-		TreeOk:   treeOk,
+		TreeOk:   ctx.TreeOk,
 		Ok:       ok,
 		Criteria: p.criteria,
 		Outcome:  m,
 	}
 
 	for _, c := range p.children {
-		rep.Append(
-			c.Report(treeOk, isInverted),
-		)
+		rep.Append(c.Report(ctx))
 	}
 
 	return rep

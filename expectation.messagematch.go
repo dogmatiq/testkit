@@ -249,9 +249,9 @@ func (p *messageMatchPredicate[T]) Done() {
 	}
 }
 
-func (p *messageMatchPredicate[T]) Report(treeOk, isInverted bool) *Report {
+func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 	rep := &Report{
-		TreeOk: treeOk,
+		TreeOk: ctx.TreeOk,
 		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
 			p.expectedRole,
@@ -268,7 +268,7 @@ func (p *messageMatchPredicate[T]) Report(treeOk, isInverted bool) *Report {
 		)
 	}
 
-	if treeOk || p.ok || isInverted {
+	if p.ok || ctx.TreeOk || ctx.IsInverted {
 		return rep
 	}
 

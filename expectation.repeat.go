@@ -101,9 +101,9 @@ func (p *repeatPredicate) Done() {
 	}
 }
 
-func (p *repeatPredicate) Report(treeOk, isInverted bool) *Report {
+func (p *repeatPredicate) Report(ctx ReportGenerationContext) *Report {
 	rep := &Report{
-		TreeOk:   treeOk,
+		TreeOk:   ctx.TreeOk,
 		Ok:       true,
 		Criteria: p.criteria,
 	}
@@ -127,9 +127,7 @@ func (p *repeatPredicate) Report(treeOk, isInverted bool) *Report {
 			// to the report, as the assumption is the factory produces
 			// potentially thousands of very similar expectations which would
 			// pollute the report and make it harder to find the problem.
-			rep.Append(
-				c.Report(treeOk, isInverted),
-			)
+			rep.Append(c.Report(ctx))
 
 		}
 
