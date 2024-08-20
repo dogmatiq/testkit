@@ -281,4 +281,59 @@ var _ = g.Describe("type Test", func() {
 			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
+
+	g.Describe("func Annotate()", func() {
+		g.It("includes annotations in diffs", func() {
+			app := &Application{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "8ec6465c-d4e3-411c-a05b-898a4b608284")
+
+					c.RegisterAggregate(&AggregateMessageHandler{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
+							c.Routes(
+								dogma.HandlesCommand[MessageC](),
+								dogma.RecordsEvent[MessageE](),
+							)
+						},
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
+							return "<instance>"
+						},
+						HandleCommandFunc: func(
+							_ dogma.AggregateRoot,
+							s dogma.AggregateCommandScope,
+							m dogma.Command,
+						) {
+							s.RecordEvent(MessageE1)
+						},
+					})
+				},
+			}
+
+			t := &testingmock.T{FailSilently: true}
+
+			Begin(t, app).
+				Annotate("E1", "anna's customer ID").
+				Annotate("E2", "bob's customer ID").
+				Expect(
+					ExecuteCommand(MessageC1),
+					ToRecordEvent(MessageE2),
+				)
+
+			expectReport(
+				`✗ record a specific 'fixtures.MessageE' event`,
+				``,
+				`  | EXPLANATION`,
+				`  |     a similar event was recorded by the '<aggregate>' aggregate message handler`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • check the content of the message`,
+				`  | `,
+				`  | MESSAGE DIFF`,
+				`  |     fixtures.MessageE{`,
+				`  |         Value: "E[-2-]{+1+}" <<[-bob-]{+anna+}'s customer ID>>`,
+				`  |     }`,
+			)(t)
+		})
+	})
 })

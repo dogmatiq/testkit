@@ -7,7 +7,7 @@ toolchain go1.22.3
 require (
 	github.com/dogmatiq/configkit v0.13.6
 	github.com/dogmatiq/cosyne v0.2.0
-	github.com/dogmatiq/dapper v0.5.3
+	github.com/dogmatiq/dapper v0.6.0
 	github.com/dogmatiq/dogma v0.14.1
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0

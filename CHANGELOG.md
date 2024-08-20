@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - Added `ReportGenerationContext` to hold information required when generating
   test reports.
+- Added `Test.Annotate()` to add human-readable annotations to values within
+  test reports.
 
 ### Changed
 
