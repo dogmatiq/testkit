@@ -6,7 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
@@ -15,12 +15,12 @@ import (
 
 var _ = g.Describe("func Run()", func() {
 	var (
-		app    *Application
+		app    *ApplicationStub
 		engine *Engine
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9e55f1ed-1f9a-46d9-a01f-e57638f74eb7")
 			},
@@ -80,12 +80,12 @@ var _ = g.Describe("func Run()", func() {
 
 var _ = g.Describe("func RunTimeScaled()", func() {
 	var (
-		app    *Application
+		app    *ApplicationStub
 		engine *Engine
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "4f06c58d-b854-41e9-92ee-d4e4ba137670")
 			},

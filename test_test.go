@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -58,7 +59,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandler{
+					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
@@ -102,7 +103,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandler{
+					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
@@ -127,7 +128,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandler{
+					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
@@ -171,7 +172,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandler{
+					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
@@ -195,7 +196,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
-					c.RegisterAggregate(&AggregateMessageHandler{
+					c.RegisterAggregate(&AggregateMessageHandlerStub{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
@@ -241,7 +242,7 @@ var _ = g.Describe("type Test", func() {
 			app := &Application{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
-					c.RegisterAggregate(&AggregateMessageHandler{
+					c.RegisterAggregate(&AggregateMessageHandlerStub{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
@@ -288,7 +289,7 @@ var _ = g.Describe("type Test", func() {
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "8ec6465c-d4e3-411c-a05b-898a4b608284")
 
-					c.RegisterAggregate(&AggregateMessageHandler{
+					c.RegisterAggregate(&AggregateMessageHandlerStub{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
 							c.Routes(

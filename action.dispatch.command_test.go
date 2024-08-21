@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
@@ -20,7 +21,7 @@ import (
 
 var _ = g.Describe("func ExecuteCommand()", func() {
 	var (
-		app       *Application
+		app       *ApplicationStub
 		t         *testingmock.T
 		startTime time.Time
 		buf       *fact.Buffer
@@ -28,10 +29,10 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "a84b2620-4675-4024-b55b-cd5dbeb6e293")
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
 						c.Routes(

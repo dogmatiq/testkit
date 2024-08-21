@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -19,7 +20,7 @@ import (
 var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *AggregateMessageHandler
+		handler    *AggregateMessageHandlerStub
 		config     configkit.RichAggregate
 		ctrl       *Controller
 		command    *envelope.Envelope
@@ -32,7 +33,7 @@ var _ = g.Describe("type Controller", func() {
 			time.Now(),
 		)
 
-		handler = &AggregateMessageHandler{
+		handler = &AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
 				c.Routes(
@@ -184,7 +185,7 @@ var _ = g.Describe("type Controller", func() {
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/fixtures/aggregate.go"), // from dogmatiq/dogma module
+								"File": HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
 								"Line": Not(BeZero()),
 							},
 						),
@@ -219,7 +220,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					Expect(r).To(Equal(&AggregateRoot{}))
+					Expect(r).To(Equal(&AggregateRootStub{}))
 				}
 
 				_, err := ctrl.Handle(
@@ -256,7 +257,7 @@ var _ = g.Describe("type Controller", func() {
 							"Location": MatchAllFields(
 								Fields{
 									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/fixtures/aggregate.go"), // from dogmatiq/dogma module
+									"File": HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
 									"Line": Not(BeZero()),
 								},
 							),
@@ -302,7 +303,7 @@ var _ = g.Describe("type Controller", func() {
 					fact.AggregateInstanceLoaded{
 						Handler:    config,
 						InstanceID: "<instance-C1>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -319,7 +320,7 @@ var _ = g.Describe("type Controller", func() {
 					_ dogma.Command,
 				) {
 					Expect(r).To(Equal(
-						&AggregateRoot{
+						&AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -402,7 +403,7 @@ var _ = g.Describe("type Controller", func() {
 			}
 
 			handler.NewFunc = func() dogma.AggregateRoot {
-				return &AggregateRoot{
+				return &AggregateRootStub{
 					ApplyEventFunc: func(dogma.Event) {
 						panic(dogma.UnexpectedMessage)
 					},
@@ -447,7 +448,7 @@ var _ = g.Describe("type Controller", func() {
 
 			handler.HandleCommandFunc = nil
 			handler.NewFunc = func() dogma.AggregateRoot {
-				return &AggregateRoot{
+				return &AggregateRootStub{
 					ApplyEventFunc: func(dogma.Event) {
 						panic(dogma.UnexpectedMessage)
 					},

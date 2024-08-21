@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
@@ -21,7 +22,7 @@ import (
 
 var _ = g.Describe("func Call()", func() {
 	var (
-		app       *Application
+		app       *ApplicationStub
 		t         *testingmock.T
 		startTime time.Time
 		buf       *fact.Buffer
@@ -29,10 +30,10 @@ var _ = g.Describe("func Call()", func() {
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "b51cde16-aaec-4d75-ae14-06282e3a72c8")
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
 						c.Routes(
@@ -46,7 +47,7 @@ var _ = g.Describe("func Call()", func() {
 						return "<instance>"
 					},
 				})
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "b64cdd19-782e-4e4e-9e5f-a95a943d6340")
 						c.Routes(

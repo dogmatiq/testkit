@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -24,11 +25,11 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			FailSilently: true,
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "43962b88-b25c-4a59-938e-64540c473a7c")
 
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "8305181b-b87f-4446-8f56-a3c38d5bd32f")
 						c.Routes(
@@ -57,7 +58,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 					},
 				})
 
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "0bd19cfa-c910-453f-a6cc-959fdce9c34f")
 						c.Routes(
@@ -116,7 +117,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:109`,
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:110`,
 			),
 		),
 		g.Entry(
@@ -133,7 +134,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:126`,
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:127`,
 			),
 		),
 		g.Entry(
@@ -150,7 +151,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:143`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:144`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -174,7 +175,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:171`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:172`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -195,7 +196,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:192`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:193`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -215,7 +216,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:212`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:213`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -235,7 +236,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:232`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:233`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -260,7 +261,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:257`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:258`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -283,7 +284,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:280`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:281`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -323,8 +324,8 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:305`,
-				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:314`,
+				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:306`,
+				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:315`,
 			),
 		),
 	)

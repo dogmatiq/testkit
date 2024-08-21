@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -24,11 +25,11 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			FailSilently: true,
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "386480e5-4b83-4d3b-9b87-51e6d56e41e7")
 
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
 						c.Routes(
@@ -82,7 +83,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:80`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:81`,
 			),
 		),
 		g.Entry(
@@ -95,7 +96,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:93`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:94`,
 			),
 		),
 		g.Entry(
@@ -108,7 +109,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:105`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:106`,
 			),
 		),
 		g.Entry(
@@ -121,7 +122,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:118`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:119`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -151,7 +152,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:141`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:142`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -174,7 +175,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:171`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:172`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,

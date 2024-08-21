@@ -5,6 +5,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -23,11 +24,11 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 			FailSilently: true,
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "936ab3fa-f379-42e7-9100-a4d28accc932")
 
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "c0094d00-d270-4fa0-bb4b-3cb24060cbe2")
 						c.Routes(
@@ -47,7 +48,7 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 					},
 				})
 
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "551c1b77-4c4c-4b0c-b97f-b7c1ff6eada2")
 						c.Routes(

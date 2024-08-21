@@ -6,7 +6,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
@@ -18,7 +18,7 @@ import (
 
 var _ = g.Describe("func AdvanceTime()", func() {
 	var (
-		app       *Application
+		app       *ApplicationStub
 		t         *testingmock.T
 		startTime time.Time
 		buf       *fact.Buffer
@@ -26,7 +26,7 @@ var _ = g.Describe("func AdvanceTime()", func() {
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "140ca29b-7a05-4f26-968b-6285255e6d8a")
 			},

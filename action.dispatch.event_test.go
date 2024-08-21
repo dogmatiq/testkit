@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
@@ -21,7 +22,7 @@ import (
 
 var _ = g.Describe("func RecordEvent()", func() {
 	var (
-		app       *Application
+		app       *ApplicationStub
 		t         *testingmock.T
 		startTime time.Time
 		buf       *fact.Buffer
@@ -29,10 +30,10 @@ var _ = g.Describe("func RecordEvent()", func() {
 	)
 
 	g.BeforeEach(func() {
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "38408e83-e8eb-4f82-abe1-7fa02cee0657")
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
 						c.Routes(

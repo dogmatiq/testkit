@@ -12,6 +12,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
 	"github.com/dogmatiq/enginekit/enginetest"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/engine"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
@@ -43,17 +44,17 @@ func TestEngine(t *testing.T) {
 
 var _ = g.Describe("type Engine", func() {
 	var (
-		aggregate            *AggregateMessageHandler
-		process              *ProcessMessageHandler
-		integration          *IntegrationMessageHandler
-		projection, disabled *ProjectionMessageHandler
-		app                  *Application
+		aggregate            *AggregateMessageHandlerStub
+		process              *ProcessMessageHandlerStub
+		integration          *IntegrationMessageHandlerStub
+		projection, disabled *ProjectionMessageHandlerStub
+		app                  *ApplicationStub
 		config               configkit.RichApplication
 		engine               *Engine
 	)
 
 	g.BeforeEach(func() {
-		aggregate = &AggregateMessageHandler{
+		aggregate = &AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
 				c.Routes(
@@ -66,7 +67,7 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		process = &ProcessMessageHandler{
+		process = &ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "4721492d-7fa3-4cfa-9f0f-a3cb1f95933e")
 				c.Routes(
@@ -80,7 +81,7 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		integration = &IntegrationMessageHandler{
+		integration = &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "8b840c55-0b04-4107-bd4c-c69052c9fca3")
 				c.Routes(
@@ -90,7 +91,7 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		projection = &ProjectionMessageHandler{
+		projection = &ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "f2b324d6-74f1-409e-8b28-8e44454037a9")
 				c.Routes(
@@ -100,7 +101,7 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		disabled = &ProjectionMessageHandler{
+		disabled = &ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<disabled-projection>", "06426c1f-788d-4852-9a3f-c77580dafaed")
 				c.Routes(
@@ -110,7 +111,7 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9bc07eeb-5821-4649-941a-d931c8c88cb9")
 				c.RegisterAggregate(aggregate)

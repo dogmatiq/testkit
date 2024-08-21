@@ -9,6 +9,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -20,7 +21,7 @@ import (
 var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *ProcessMessageHandler
+		handler    *ProcessMessageHandlerStub
 		config     configkit.RichProcess
 		ctrl       *Controller
 		event      *envelope.Envelope
@@ -46,7 +47,7 @@ var _ = g.Describe("type Controller", func() {
 			},
 		)
 
-		handler = &ProcessMessageHandler{
+		handler = &ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "7db72921-b805-4db5-8287-0af94a768643")
 				c.Routes(
@@ -711,7 +712,7 @@ var _ = g.Describe("type Controller", func() {
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/fixtures/process.go"), // from dogmatiq/dogma module
+								"File": HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
 								"Line": Not(BeZero()),
 							},
 						),
@@ -742,7 +743,7 @@ var _ = g.Describe("type Controller", func() {
 					fact.ProcessInstanceBegun{
 						Handler:    config,
 						InstanceID: "<instance-E1>",
-						Root:       &ProcessRoot{},
+						Root:       &ProcessRootStub{},
 						Envelope:   event,
 					},
 				))
@@ -772,7 +773,7 @@ var _ = g.Describe("type Controller", func() {
 							"Location": MatchAllFields(
 								Fields{
 									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/fixtures/process.go"), // from dogmatiq/dogma module
+									"File": HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
 									"Line": Not(BeZero()),
 								},
 							),
@@ -819,7 +820,7 @@ var _ = g.Describe("type Controller", func() {
 					fact.ProcessInstanceLoaded{
 						Handler:    config,
 						InstanceID: "<instance-E1>",
-						Root:       &ProcessRoot{},
+						Root:       &ProcessRootStub{},
 						Envelope:   event,
 					},
 				))

@@ -5,6 +5,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -23,11 +24,11 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 			FailSilently: true,
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "58067ffe-c1d6-4097-8acb-c55a7936cb4b")
 
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "eb9a40bd-6edf-4922-88dd-dfbdad42c88a")
 						c.Routes(
@@ -52,7 +53,7 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 					},
 				})
 
-				c.RegisterProcess(&ProcessMessageHandler{
+				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "c8e3b9de-c8e5-4e91-8658-58c9e989b048")
 						c.Routes(

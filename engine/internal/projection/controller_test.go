@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -18,7 +19,7 @@ import (
 
 var _ = g.Describe("type Controller", func() {
 	var (
-		handler *ProjectionMessageHandler
+		handler *ProjectionMessageHandlerStub
 		config  configkit.RichProjection
 		ctrl    *Controller
 		event   *envelope.Envelope
@@ -31,7 +32,7 @@ var _ = g.Describe("type Controller", func() {
 			time.Now(),
 		)
 
-		handler = &ProjectionMessageHandler{
+		handler = &ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fcbe8fe1-1085-497d-ba8e-09bedb031db2")
 				c.Routes(

@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -19,7 +20,7 @@ import (
 var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *IntegrationMessageHandler
+		handler    *IntegrationMessageHandlerStub
 		config     configkit.RichIntegration
 		ctrl       *Controller
 		command    *envelope.Envelope
@@ -32,7 +33,7 @@ var _ = g.Describe("type scope", func() {
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandler{
+		handler = &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "24ec3839-5d51-4904-9b45-34b5282e7f24")
 				c.Routes(

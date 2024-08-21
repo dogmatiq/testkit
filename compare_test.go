@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -78,7 +79,7 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 
 var _ = g.Describe("func WithMessageComparator()", func() {
 	g.It("configures how messages are compared", func() {
-		handler := &IntegrationMessageHandler{
+		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "7cb41db6-0116-4d03-80d7-277cc391b47e")
 				c.Routes(

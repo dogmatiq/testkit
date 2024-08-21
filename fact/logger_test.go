@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
@@ -32,7 +33,7 @@ var _ = g.Describe("type Logger", func() {
 			time.Now(),
 		)
 
-		aggregate := configkit.FromAggregate(&AggregateMessageHandler{
+		aggregate := configkit.FromAggregate(&AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
 				c.Routes(
@@ -42,7 +43,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		integration := configkit.FromIntegration(&IntegrationMessageHandler{
+		integration := configkit.FromIntegration(&IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "2425a151-ba72-42ec-970a-8b3b4133b22f")
 				c.Routes(
@@ -52,7 +53,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		process := configkit.FromProcess(&ProcessMessageHandler{
+		process := configkit.FromProcess(&ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "570684db-0144-4628-a58f-ae815c55dea3")
 				c.Routes(
@@ -62,7 +63,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		projection := configkit.FromProjection(&ProjectionMessageHandler{
+		projection := configkit.FromProjection(&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "36f29880-6b87-42c5-848c-f515c9f1c74b")
 				c.Routes(

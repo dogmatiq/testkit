@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,14 +14,14 @@ import (
 
 var _ = g.Describe("type CommandExecutor", func() {
 	var (
-		aggregate *AggregateMessageHandler
-		app       *Application
+		aggregate *AggregateMessageHandlerStub
+		app       *ApplicationStub
 		engine    *Engine
 		executor  *CommandExecutor
 	)
 
 	g.BeforeEach(func() {
-		aggregate = &AggregateMessageHandler{
+		aggregate = &AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
 				c.Routes(
@@ -33,7 +34,7 @@ var _ = g.Describe("type CommandExecutor", func() {
 			},
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "d905114d-b026-4f1a-9bc6-3abd86058e2d")
 				c.RegisterAggregate(aggregate)

@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -19,7 +20,7 @@ import (
 var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *ProcessMessageHandler
+		handler    *ProcessMessageHandlerStub
 		config     configkit.RichProcess
 		ctrl       *Controller
 		event      *envelope.Envelope
@@ -32,7 +33,7 @@ var _ = g.Describe("type scope", func() {
 			time.Now(),
 		)
 
-		handler = &ProcessMessageHandler{
+		handler = &ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
 				c.Routes(
@@ -115,7 +116,7 @@ var _ = g.Describe("type scope", func() {
 				fact.ProcessInstanceEnded{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 				},
 			))
@@ -173,7 +174,7 @@ var _ = g.Describe("type scope", func() {
 				fact.CommandExecutedByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 					CommandEnvelope: event.NewCommand(
 						"1",
@@ -294,7 +295,7 @@ var _ = g.Describe("type scope", func() {
 				fact.ProcessInstanceEndingReverted{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 				},
 			))
@@ -329,7 +330,7 @@ var _ = g.Describe("type scope", func() {
 				fact.TimeoutScheduledByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 					TimeoutEnvelope: event.NewTimeout(
 						"1",
@@ -454,7 +455,7 @@ var _ = g.Describe("type scope", func() {
 				fact.ProcessInstanceEndingReverted{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 				},
 			))
@@ -530,7 +531,7 @@ var _ = g.Describe("type scope", func() {
 				fact.MessageLoggedByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &ProcessRoot{},
+					Root:       &ProcessRootStub{},
 					Envelope:   event,
 					LogFormat:  "<format>",
 					LogArguments: []any{

@@ -6,6 +6,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -23,11 +24,11 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			FailSilently: true,
 		}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
 
-				c.RegisterAggregate(&AggregateMessageHandler{
+				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
 						c.Routes(
@@ -76,7 +77,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:74`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:75`,
 			),
 		),
 		g.Entry(
@@ -89,7 +90,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:87`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:88`,
 			),
 		),
 		g.Entry(
@@ -102,7 +103,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:99`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:100`,
 			),
 		),
 		g.Entry(
@@ -115,7 +116,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:112`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:113`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -146,7 +147,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:136`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:137`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -170,7 +171,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:167`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:168`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,

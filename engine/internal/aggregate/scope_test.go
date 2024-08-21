@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -19,7 +20,7 @@ import (
 var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
-		handler    *AggregateMessageHandler
+		handler    *AggregateMessageHandlerStub
 		config     configkit.RichAggregate
 		ctrl       *Controller
 		command    *envelope.Envelope
@@ -32,7 +33,7 @@ var _ = g.Describe("type scope", func() {
 			time.Now(),
 		)
 
-		handler = &AggregateMessageHandler{
+		handler = &AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
 				c.Routes(
@@ -110,7 +111,7 @@ var _ = g.Describe("type scope", func() {
 					fact.AggregateInstanceCreated{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -122,7 +123,7 @@ var _ = g.Describe("type scope", func() {
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -193,7 +194,7 @@ var _ = g.Describe("type scope", func() {
 					fact.AggregateInstanceDestroyed{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root:       &AggregateRoot{},
+						Root:       &AggregateRootStub{},
 						Envelope:   command,
 					},
 				))
@@ -228,7 +229,7 @@ var _ = g.Describe("type scope", func() {
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 								MessageE1,
@@ -288,7 +289,7 @@ var _ = g.Describe("type scope", func() {
 					fact.AggregateInstanceDestructionReverted{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -300,7 +301,7 @@ var _ = g.Describe("type scope", func() {
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
-						Root: &AggregateRoot{
+						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								MessageE1,
 							},
@@ -447,7 +448,7 @@ var _ = g.Describe("type scope", func() {
 				fact.MessageLoggedByAggregate{
 					Handler:    config,
 					InstanceID: "<instance>",
-					Root:       &AggregateRoot{},
+					Root:       &AggregateRootStub{},
 					Envelope:   command,
 					LogFormat:  "<format>",
 					LogArguments: []any{

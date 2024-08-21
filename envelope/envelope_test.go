@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -61,7 +62,7 @@ var _ = g.Describe("type Envelope", func() {
 	})
 
 	g.Describe("func NewCommand()", func() {
-		handler := configkit.FromProcess(&ProcessMessageHandler{
+		handler := configkit.FromProcess(&ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
 				c.Routes(
@@ -106,7 +107,7 @@ var _ = g.Describe("type Envelope", func() {
 	})
 
 	g.Describe("func NewEvent()", func() {
-		handler := configkit.FromAggregate(&AggregateMessageHandler{
+		handler := configkit.FromAggregate(&AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
 				c.Routes(
@@ -151,7 +152,7 @@ var _ = g.Describe("type Envelope", func() {
 	})
 
 	g.Describe("func NewTimeout()", func() {
-		handler := configkit.FromProcess(&ProcessMessageHandler{
+		handler := configkit.FromProcess(&ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
 				c.Routes(

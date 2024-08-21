@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -23,11 +24,11 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 	g.BeforeEach(func() {
 		testingT = &testingmock.T{}
 
-		app = &Application{
+		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "b5453327-a0fa-4e94-bb46-8464e727c4fd")
 
-				c.RegisterIntegration(&IntegrationMessageHandler{
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 						c.Identity("<handler-name>", "67c167a8-d09e-4827-beab-7c8c9817bb1a")
 						c.Routes(

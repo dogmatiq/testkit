@@ -4,6 +4,7 @@ import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -12,7 +13,7 @@ import (
 
 var _ = g.Describe("type UnexpectedMessage", func() {
 	config := configkit.FromProjection(
-		&ProjectionMessageHandler{
+		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "a0eab8dd-db22-467a-87c2-c38138c582e8")
 				c.Routes(
@@ -30,7 +31,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 
 				x := r.(UnexpectedMessage)
 				Expect(x.String()).To(Equal(
-					"the '<name>' projection message handler did not expect *fixtures.ProjectionMessageHandler.<method>() to be called with a message of type fixtures.MessageA",
+					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type fixtures.MessageA",
 				))
 			}()
 
@@ -50,7 +51,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 
 var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 	config := configkit.FromProjection(
-		&ProjectionMessageHandler{
+		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "b665eca3-936e-41e3-b9ab-c618cfa95ec2")
 				c.Routes(

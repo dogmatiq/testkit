@@ -6,6 +6,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
@@ -17,7 +18,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
 
-		handler := &ProjectionMessageHandler{
+		handler := &ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<handler-name>", "ca76057c-9ad0-4a55-a9d9-7fbffe92e644")
 				c.Routes(
@@ -57,7 +58,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 
 var _ = g.Describe("func WithMessageComparator()", func() {
 	g.It("configures how messages are compared", func() {
-		handler := &IntegrationMessageHandler{
+		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")
 				c.Routes(
