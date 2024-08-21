@@ -12,7 +12,7 @@ require (
 	github.com/dogmatiq/enginekit v0.10.3
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
-	github.com/onsi/ginkgo/v2 v2.20.0
+	github.com/onsi/ginkgo/v2 v2.20.1
 	github.com/onsi/gomega v1.34.1
 	github.com/sergi/go-diff v1.3.1
 	go.uber.org/multierr v1.11.0
