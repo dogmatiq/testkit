@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## Unreleased
+
+### Fixed
+
+- Fixed issue that caused an empty `SUGGESTIONS` section to be printed on test
+  reports in some circumstances.
+
 ## [0.17.0] - 2024-08-21
 
 ### Added

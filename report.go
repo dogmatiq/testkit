@@ -119,7 +119,14 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 
 	must.WriteByte(w, '\n')
 
-	if len(r.Sections) != 0 || r.Explanation != "" {
+	var sections []*ReportSection
+	for _, s := range r.Sections {
+		if s.Content.Len() != 0 {
+			sections = append(sections, s)
+		}
+	}
+
+	if len(sections) != 0 || r.Explanation != "" {
 		must.WriteByte(w, '\n')
 
 		iw := indent.NewIndenter(w, sectionsIndent)
@@ -134,12 +141,12 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 
 			must.WriteByte(iw, '\n')
 
-			if len(r.Sections) != 0 {
+			if len(sections) != 0 {
 				must.WriteByte(iw, '\n')
 			}
 		}
 
-		for i, s := range r.Sections {
+		for i, s := range sections {
 			must.WriteString(iw, strings.ToUpper(s.Title))
 			must.WriteString(iw, "\n")
 
@@ -153,7 +160,7 @@ func (r *Report) WriteTo(next io.Writer) (_ int64, err error) {
 
 			must.WriteByte(iw, '\n')
 
-			if i < len(r.Sections)-1 {
+			if i < len(sections)-1 {
 				must.WriteByte(iw, '\n')
 			}
 		}
