@@ -2,9 +2,9 @@ package testkit_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -19,6 +19,18 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		app      dogma.Application
 	)
 
+	type (
+		EventThatIsIgnored        = EventStub[TypeX]
+		EventThatSchedulesTimeout = EventStub[TypeT]
+		EventThatExecutesCommand  = EventStub[TypeC]
+
+		CommandThatIsExecuted             = CommandStub[TypeC]
+		CommandThatIsNeverExecuted        = CommandStub[TypeX]
+		CommandThatIsHandledByIntegration = CommandStub[TypeI]
+
+		TimeoutThatIsScheduled = TimeoutStub[TypeT]
+	)
+
 	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
@@ -28,35 +40,21 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "ce773269-4ad7-4c7f-a0ff-cda2e5899743")
 
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
-						c.Routes(
-							dogma.HandlesCommand[MessageR](),
-							dogma.RecordsEvent[MessageN](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						_ dogma.Command,
-					) {
-						s.RecordEvent(MessageN1)
-					},
-				})
-
+				// Register a process that will execute the commands about which
+				// we will make assertions using ToExecuteCommand().
 				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
 						c.Routes(
-							dogma.HandlesEvent[MessageE](),     // E = event
-							dogma.HandlesEvent[MessageN](),     // N = (do) nothing
-							dogma.ExecutesCommand[MessageC](),  // C = command
-							dogma.ExecutesCommand[*MessageC](), // pointer, used to test type similarity
-							dogma.ExecutesCommand[MessageX](),
+							dogma.HandlesEvent[EventThatIsIgnored](),
+
+							dogma.HandlesEvent[EventThatExecutesCommand](),
+							dogma.ExecutesCommand[CommandThatIsExecuted](),
+							dogma.ExecutesCommand[*CommandThatIsExecuted](), // pointer, used to test type similarity
+							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
+
+							dogma.HandlesEvent[EventThatSchedulesTimeout](),
+							dogma.SchedulesTimeout[TimeoutThatIsScheduled](),
 						)
 
 					},
@@ -72,10 +70,35 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 						s dogma.ProcessEventScope,
 						m dogma.Event,
 					) error {
-						if _, ok := m.(MessageE); ok {
-							s.ExecuteCommand(MessageC1)
+						switch m := m.(type) {
+						case EventThatExecutesCommand:
+							s.ExecuteCommand(
+								CommandThatIsExecuted{
+									Content: m.Content,
+								},
+							)
+						case EventThatSchedulesTimeout:
+							s.ScheduleTimeout(
+								TimeoutThatIsScheduled{
+									Content: m.Content,
+								},
+								time.Now().Add(1*time.Hour),
+							)
 						}
+
 						return nil
+					},
+				})
+
+				// Register an integration so that we can test what happens when
+				// we expect execution of a command that is never executed by
+				// any handler (only consumed).
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
+						c.Routes(
+							dogma.HandlesCommand[CommandThatIsHandledByIntegration](),
+						)
 					},
 				})
 			},
@@ -98,20 +121,20 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		},
 		g.Entry(
 			"command executed as expected",
-			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageC1),
+			RecordEvent(EventThatExecutesCommand{}),
+			ToExecuteCommand(CommandThatIsExecuted{}),
 			expectPass,
 			expectReport(
-				`✓ execute a specific 'fixtures.MessageC' command`,
+				`✓ execute a specific 'stubs.CommandStub[TypeC]' command`,
 			),
 		),
 		g.Entry(
 			"no matching command executed",
-			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageX1),
+			RecordEvent(EventThatExecutesCommand{}),
+			ToExecuteCommand(CommandThatIsNeverExecuted{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a specific 'stubs.CommandStub[TypeX]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -122,11 +145,11 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		),
 		g.Entry(
 			"no messages produced at all",
-			RecordEvent(MessageN1),
-			ToExecuteCommand(MessageX1),
+			RecordEvent(EventThatIsIgnored{}),
+			ToExecuteCommand(CommandThatIsExecuted{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -137,11 +160,11 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		),
 		g.Entry(
 			"no commands produced at all",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageC1),
+			RecordEvent(EventThatSchedulesTimeout{}),
+			ToExecuteCommand(CommandThatIsExecuted{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageC' command`,
+				`✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -152,11 +175,11 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		),
 		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
-			ExecuteCommand(MessageR1),
-			ToExecuteCommand(MessageX1),
+			RecordEvent(EventThatExecutesCommand{}),
+			ToExecuteCommand(CommandThatIsExecuted{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageX' command`,
+				`✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -170,11 +193,11 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		),
 		g.Entry(
 			"similar command executed with a different type",
-			RecordEvent(MessageE1),
-			ToExecuteCommand(&MessageC1), // note: message type is pointer
+			RecordEvent(EventThatExecutesCommand{}),
+			ToExecuteCommand(&CommandThatIsExecuted{}), // note: message type is pointer
 			expectFail,
 			expectReport(
-				`✗ execute a specific '*fixtures.MessageC' command`,
+				`✗ execute a specific '*stubs.CommandStub[TypeC]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a command of a similar type was executed by the '<process>' process message handler`,
@@ -183,18 +206,16 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 				`  |     • check the message type, should it be a pointer?`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     [-*-]fixtures.MessageC{`,
-				`  |         Value: "C1"`,
-				`  |     }`,
+				`  |     [-*-]stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeC]{<zero>}`,
 			),
 		),
 		g.Entry(
 			"similar command executed with a different value",
-			RecordEvent(MessageE1),
-			ToExecuteCommand(MessageC2),
+			RecordEvent(EventThatExecutesCommand{Content: "<content>"}),
+			ToExecuteCommand(CommandThatIsExecuted{Content: "<different>"}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'fixtures.MessageC' command`,
+				`✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a similar command was executed by the '<process>' process message handler`,
@@ -203,23 +224,24 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 				`  |     • check the content of the message`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageC{`,
-				`  |         Value: "C[-2-]{+1+}"`,
+				`  |     stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeC]{`,
+				`  |         Content:         "<[-differ-]{+cont+}ent>"`,
+				`  |         ValidationError: ""`,
 				`  |     }`,
 			),
 		),
 		g.Entry(
 			"does not include an explanation when negated and a sibling expectation passes",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			NoneOf(
-				ToExecuteCommand(MessageC1),
-				ToExecuteCommand(MessageC2),
+				ToExecuteCommand(CommandThatIsExecuted{}),
+				ToExecuteCommand(CommandThatIsExecuted{Content: "<different>"}),
 			),
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ execute a specific 'fixtures.MessageC' command`,
-				`    ✗ execute a specific 'fixtures.MessageC' command`,
+				`    ✓ execute a specific 'stubs.CommandStub[TypeC]' command`,
+				`    ✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
 			),
 		),
 	)
@@ -228,12 +250,12 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommand(MessageU1),
+			ToExecuteCommand(CommandU1),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
 		Expect(testingT.Logs).To(ContainElement(
-			"a command of type fixtures.MessageU can never be executed, the application does not use this message type",
+			"a command of type stubs.CommandStub[TypeU] can never be executed, the application does not use this message type",
 		))
 	})
 
@@ -241,12 +263,12 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommand(MessageE1),
+			ToExecuteCommand(EventThatIsIgnored{}),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
 		Expect(testingT.Logs).To(ContainElement(
-			"fixtures.MessageE is an event, it can never be executed as a command",
+			"stubs.EventStub[TypeX] is an event, it can never be executed as a command",
 		))
 	})
 
@@ -254,18 +276,26 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommand(MessageR1),
+			ToExecuteCommand(CommandThatIsHandledByIntegration{}),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
 		Expect(testingT.Logs).To(ContainElement(
-			"no handlers execute commands of type fixtures.MessageR, it is only ever consumed",
+			"no handlers execute commands of type stubs.CommandStub[TypeI], it is only ever consumed",
 		))
+	})
+
+	g.It("panics if the message is nil", func() {
+		Expect(func() {
+			ToExecuteCommand(nil)
+		}).To(PanicWith("ToExecuteCommand(<nil>): message must not be nil"))
 	})
 
 	g.It("panics if the message is invalid", func() {
 		Expect(func() {
-			ToExecuteCommand(nil)
-		}).To(PanicWith("ToExecuteCommand(<nil>): message must not be nil"))
+			ToExecuteCommand(CommandStub[TypeA]{
+				ValidationError: "<invalid>",
+			})
+		}).To(PanicWith("ToExecuteCommand(stubs.CommandStub[TypeA]): <invalid>"))
 	})
 })
