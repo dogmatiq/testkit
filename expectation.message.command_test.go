@@ -21,12 +21,12 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 
 	type (
 		EventThatIsIgnored        = EventStub[TypeX]
-		EventThatSchedulesTimeout = EventStub[TypeT]
 		EventThatExecutesCommand  = EventStub[TypeC]
+		EventThatSchedulesTimeout = EventStub[TypeT]
 
-		CommandThatIsExecuted             = CommandStub[TypeC]
-		CommandThatIsNeverExecuted        = CommandStub[TypeX]
-		CommandThatIsHandledByIntegration = CommandStub[TypeI]
+		CommandThatIsExecuted      = CommandStub[TypeC]
+		CommandThatIsNeverExecuted = CommandStub[TypeX]
+		CommandThatIsOnlyConsumed  = CommandStub[TypeO]
 
 		TimeoutThatIsScheduled = TimeoutStub[TypeT]
 	)
@@ -97,7 +97,7 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 						c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
 						c.Routes(
-							dogma.HandlesCommand[CommandThatIsHandledByIntegration](),
+							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
 						)
 					},
 				})
@@ -235,13 +235,13 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 			RecordEvent(EventThatExecutesCommand{}),
 			NoneOf(
 				ToExecuteCommand(CommandThatIsExecuted{}),
-				ToExecuteCommand(CommandThatIsExecuted{Content: "<different>"}),
+				ToExecuteCommand(CommandThatIsNeverExecuted{}),
 			),
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
 				`    ✓ execute a specific 'stubs.CommandStub[TypeC]' command`,
-				`    ✗ execute a specific 'stubs.CommandStub[TypeC]' command`,
+				`    ✗ execute a specific 'stubs.CommandStub[TypeX]' command`,
 			),
 		),
 	)
@@ -276,12 +276,12 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToExecuteCommand(CommandThatIsHandledByIntegration{}),
+			ToExecuteCommand(CommandThatIsOnlyConsumed{}),
 		)
 
 		Expect(testingT.Failed()).To(BeTrue())
 		Expect(testingT.Logs).To(ContainElement(
-			"no handlers execute commands of type stubs.CommandStub[TypeI], it is only ever consumed",
+			"no handlers execute commands of type stubs.CommandStub[TypeO], it is only ever consumed",
 		))
 	})
 
