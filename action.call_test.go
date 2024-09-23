@@ -5,10 +5,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -33,33 +31,12 @@ var _ = g.Describe("func Call()", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "b51cde16-aaec-4d75-ae14-06282e3a72c8")
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
 						c.Routes(
-							dogma.HandlesCommand[MessageC](),
-							dogma.RecordsEvent[MessageE](),
+							dogma.HandlesCommand[CommandStub[TypeA]](),
 						)
-					},
-					RouteCommandToInstanceFunc: func(
-						dogma.Command,
-					) string {
-						return "<instance>"
-					},
-				})
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "b64cdd19-782e-4e4e-9e5f-a95a943d6340")
-						c.Routes(
-							dogma.HandlesEvent[MessageE](),
-							dogma.ExecutesCommand[MessageC](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
 					},
 				})
 			},
@@ -86,7 +63,7 @@ var _ = g.Describe("func Call()", func() {
 			Call(func() {
 				e.ExecuteCommand(
 					context.Background(),
-					MessageC1,
+					CommandA1,
 				)
 			}),
 		)
@@ -97,8 +74,8 @@ var _ = g.Describe("func Call()", func() {
 					MessageID:     "1",
 					CausationID:   "1",
 					CorrelationID: "1",
-					Message:       MessageC1,
-					Type:          MessageCType,
+					Message:       CommandA1,
+					Type:          message.TypeOf(CommandA1),
 					Role:          message.CommandRole,
 					CreatedAt:     startTime,
 				},
@@ -121,10 +98,10 @@ var _ = g.Describe("func Call()", func() {
 			Call(func() {
 				e.ExecuteCommand(
 					context.Background(),
-					MessageC1,
+					CommandA1,
 				)
 			}),
-			ToExecuteCommand(MessageC1),
+			ToExecuteCommand(CommandA1),
 		)
 	})
 

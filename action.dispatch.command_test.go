@@ -4,10 +4,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -32,18 +30,13 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "a84b2620-4675-4024-b55b-cd5dbeb6e293")
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
 						c.Routes(
-							dogma.HandlesCommand[MessageC](),
-							dogma.RecordsEvent[MessageE](),
+							dogma.HandlesCommand[CommandStub[TypeA]](),
+							dogma.RecordsEvent[EventStub[TypeA]](),
 						)
-					},
-					RouteCommandToInstanceFunc: func(
-						dogma.Command,
-					) string {
-						return "<instance>"
 					},
 				})
 			},
@@ -65,7 +58,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 
 	g.It("dispatches the message", func() {
 		test.Prepare(
-			ExecuteCommand(MessageC1),
+			ExecuteCommand(CommandA1),
 		)
 
 		Expect(buf.Facts()).To(ContainElement(
@@ -74,8 +67,8 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 					MessageID:     "1",
 					CausationID:   "1",
 					CorrelationID: "1",
-					Message:       MessageC1,
-					Type:          MessageCType,
+					Message:       CommandA1,
+					Type:          message.TypeOf(CommandA1),
 					Role:          message.CommandRole,
 					CreatedAt:     startTime,
 				},
@@ -95,12 +88,12 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		t.FailSilently = true
 
 		test.Prepare(
-			ExecuteCommand(MessageX1),
+			ExecuteCommand(CommandX1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"cannot execute command, fixtures.MessageX is a not a recognized message type",
+			"cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type",
 		))
 	})
 
@@ -108,12 +101,12 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		t.FailSilently = true
 
 		test.Prepare(
-			ExecuteCommand(MessageE1),
+			ExecuteCommand(EventA1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"cannot execute command, fixtures.MessageE is configured as an event",
+			"cannot execute command, stubs.EventStub[TypeA] is configured as an event",
 		))
 	})
 
@@ -121,8 +114,8 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		t.FailSilently = true
 
 		test.Expect(
-			ExecuteCommand(MessageC1),
-			ToExecuteCommand(MessageC1),
+			ExecuteCommand(CommandA1),
+			ToExecuteCommand(CommandA1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
@@ -130,11 +123,11 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 
 	g.It("produces the expected caption", func() {
 		test.Prepare(
-			ExecuteCommand(MessageC1),
+			ExecuteCommand(CommandA1),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- executing fixtures.MessageC command ---",
+			"--- executing stubs.CommandStub[TypeA] command ---",
 		))
 	})
 
@@ -145,7 +138,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 	})
 
 	g.It("captures the location that the action was created", func() {
-		act := executeCommand(MessageC1)
+		act := executeCommand(CommandA1)
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{
 				"Func": Equal("github.com/dogmatiq/testkit_test.executeCommand"),
