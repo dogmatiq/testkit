@@ -7,7 +7,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
@@ -29,7 +28,7 @@ var _ = g.Describe("type Controller", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageC1,
+			CommandA1,
 			time.Now(),
 		)
 
@@ -37,18 +36,16 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
-			// setup routes for "C" (command) messages to an instance ID based on the
-			// message's content
 			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch x := m.(type) {
-				case MessageC:
+				case CommandStub[TypeA]:
 					return fmt.Sprintf(
 						"<instance-%s>",
-						x.Value.(string),
+						x.Content,
 					)
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -104,7 +101,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Command,
 			) {
 				called = true
-				Expect(m).To(Equal(MessageC1))
+				Expect(m).To(Equal(CommandA1))
 			}
 
 			_, err := ctrl.Handle(
@@ -124,8 +121,8 @@ var _ = g.Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Command,
 			) {
-				s.RecordEvent(MessageE1)
-				s.RecordEvent(MessageE2)
+				s.RecordEvent(EventA1)
+				s.RecordEvent(EventA2)
 			}
 
 			now := time.Now()
@@ -140,22 +137,22 @@ var _ = g.Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					"1",
-					MessageE1,
+					EventA1,
 					now,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.AggregateHandlerType,
-						InstanceID:  "<instance-C1>",
+						InstanceID:  "<instance-A1>",
 					},
 				),
 				command.NewEvent(
 					"2",
-					MessageE2,
+					EventA2,
 					now,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.AggregateHandlerType,
-						InstanceID:  "<instance-C1>",
+						InstanceID:  "<instance-A1>",
 					},
 				),
 			))
@@ -181,7 +178,7 @@ var _ = g.Describe("type Controller", func() {
 						"Method":         Equal("RouteCommandToInstance"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(command.Message),
-						"Description":    Equal("routed a command of type fixtures.MessageC to an empty ID"),
+						"Description":    Equal("routed a command of type stubs.CommandStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -208,7 +205,7 @@ var _ = g.Describe("type Controller", func() {
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceNotFound{
 						Handler:    config,
-						InstanceID: "<instance-C1>",
+						InstanceID: "<instance-A1>",
 						Envelope:   command,
 					},
 				))
@@ -274,7 +271,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(MessageE1) // record event to create the instance
+					s.RecordEvent(EventA1) // record event to create the instance
 				}
 
 				_, err := ctrl.Handle(
@@ -302,10 +299,10 @@ var _ = g.Describe("type Controller", func() {
 				Expect(buf.Facts()).To(ContainElement(
 					fact.AggregateInstanceLoaded{
 						Handler:    config,
-						InstanceID: "<instance-C1>",
+						InstanceID: "<instance-A1>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 						Envelope: command,
@@ -322,7 +319,7 @@ var _ = g.Describe("type Controller", func() {
 					Expect(r).To(Equal(
 						&AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 					))
@@ -399,7 +396,7 @@ var _ = g.Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Command,
 			) {
-				s.RecordEvent(MessageE1)
+				s.RecordEvent(EventA1)
 			}
 
 			handler.NewFunc = func() dogma.AggregateRoot {
@@ -424,7 +421,7 @@ var _ = g.Describe("type Controller", func() {
 						"Handler":   Equal(config),
 						"Interface": Equal("AggregateRoot"),
 						"Method":    Equal("ApplyEvent"),
-						"Message":   Equal(MessageE1),
+						"Message":   Equal(EventA1),
 					},
 				),
 			))
@@ -436,7 +433,7 @@ var _ = g.Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Command,
 			) {
-				s.RecordEvent(MessageE1)
+				s.RecordEvent(EventA1)
 			}
 
 			ctrl.Handle(
@@ -469,7 +466,7 @@ var _ = g.Describe("type Controller", func() {
 						"Handler":   Equal(config),
 						"Interface": Equal("AggregateRoot"),
 						"Method":    Equal("ApplyEvent"),
-						"Message":   Equal(MessageE1),
+						"Message":   Equal(EventA1),
 					},
 				),
 			))
@@ -483,7 +480,7 @@ var _ = g.Describe("type Controller", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Command,
 			) {
-				s.RecordEvent(MessageE1) // record event to create the instance
+				s.RecordEvent(EventA1) // record event to create the instance
 			}
 
 			_, err := ctrl.Handle(

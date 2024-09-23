@@ -2,12 +2,10 @@ package process_test
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
@@ -29,7 +27,7 @@ var _ = g.Describe("type scope", func() {
 	g.BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			MessageE1,
+			EventA1,
 			time.Now(),
 		)
 
@@ -37,9 +35,9 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
-					dogma.ExecutesCommand[MessageC](),
-					dogma.SchedulesTimeout[MessageT](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.ExecutesCommand[CommandStub[TypeA]](),
+					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
 				)
 			},
 			RouteEventToInstanceFunc: func(
@@ -47,7 +45,7 @@ var _ = g.Describe("type scope", func() {
 				m dogma.Event,
 			) (string, bool, error) {
 				switch m.(type) {
-				case MessageE:
+				case EventStub[TypeA]:
 					return "<instance>", true, nil
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -156,7 +154,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ExecuteCommand(MessageC1)
+				s.ExecuteCommand(CommandA1)
 				return nil
 			}
 
@@ -178,7 +176,7 @@ var _ = g.Describe("type scope", func() {
 					Envelope:   event,
 					CommandEnvelope: event.NewCommand(
 						"1",
-						MessageC1,
+						CommandA1,
 						now,
 						envelope.Origin{
 							Handler:     config,
@@ -197,7 +195,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ExecuteCommand(MessageX1)
+				s.ExecuteCommand(CommandX1)
 				return nil
 			}
 
@@ -216,7 +214,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         Equal("HandleEvent"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("executed a command of type fixtures.MessageX, which is not produced by this handler"),
+						"Description":    Equal("executed a command of type stubs.CommandStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -236,8 +234,8 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ExecuteCommand(MessageC{
-					Value: errors.New("<invalid>"),
+				s.ExecuteCommand(CommandStub[TypeA]{
+					ValidationError: "<invalid>",
 				})
 				return nil
 			}
@@ -257,7 +255,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         Equal("HandleEvent"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("executed an invalid fixtures.MessageC command: <invalid>"),
+						"Description":    Equal("executed an invalid stubs.CommandStub[TypeA] command: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -278,7 +276,7 @@ var _ = g.Describe("type scope", func() {
 				_ dogma.Event,
 			) error {
 				s.End()
-				s.ExecuteCommand(MessageC1)
+				s.ExecuteCommand(CommandA1)
 				return nil
 			}
 
@@ -312,7 +310,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(MessageT1, t)
+				s.ScheduleTimeout(TimeoutA1, t)
 				return nil
 			}
 
@@ -334,7 +332,7 @@ var _ = g.Describe("type scope", func() {
 					Envelope:   event,
 					TimeoutEnvelope: event.NewTimeout(
 						"1",
-						MessageT1,
+						TimeoutA1,
 						now,
 						t,
 						envelope.Origin{
@@ -354,7 +352,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(MessageX1, time.Now())
+				s.ScheduleTimeout(TimeoutX1, time.Now())
 				return nil
 			}
 
@@ -373,7 +371,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         Equal("HandleEvent"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("scheduled a timeout of type fixtures.MessageX, which is not produced by this handler"),
+						"Description":    Equal("scheduled a timeout of type stubs.TimeoutStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -394,8 +392,8 @@ var _ = g.Describe("type scope", func() {
 				m dogma.Event,
 			) error {
 				s.ScheduleTimeout(
-					MessageT{
-						Value: errors.New("<invalid>"),
+					TimeoutStub[TypeA]{
+						ValidationError: "<invalid>",
 					},
 					time.Now(),
 				)
@@ -417,7 +415,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         Equal("HandleEvent"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("scheduled an invalid fixtures.MessageT timeout: <invalid>"),
+						"Description":    Equal("scheduled an invalid stubs.TimeoutStub[TypeA] timeout: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -438,7 +436,7 @@ var _ = g.Describe("type scope", func() {
 				_ dogma.Event,
 			) error {
 				s.End()
-				s.ScheduleTimeout(MessageT1, time.Now())
+				s.ScheduleTimeout(TimeoutA1, time.Now())
 				return nil
 			}
 
@@ -473,7 +471,7 @@ var _ = g.Describe("type scope", func() {
 
 			timeout := event.NewTimeout(
 				"2000",
-				MessageT1,
+				TimeoutA1,
 				time.Now(),
 				time.Now().Add(10*time.Second),
 				envelope.Origin{

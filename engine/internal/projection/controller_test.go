@@ -7,7 +7,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
@@ -28,7 +27,7 @@ var _ = g.Describe("type Controller", func() {
 	g.BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			MessageE1,
+			EventA1,
 			time.Now(),
 		)
 
@@ -36,7 +35,7 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fcbe8fe1-1085-497d-ba8e-09bedb031db2")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
 				)
 			},
 		}
@@ -137,7 +136,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Event,
 			) (bool, error) {
 				called = true
-				Expect(m).To(Equal(MessageE1))
+				Expect(m).To(Equal(EventA1))
 				return true, nil
 			}
 

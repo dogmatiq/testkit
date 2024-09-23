@@ -3,7 +3,6 @@ package panicx_test
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
@@ -17,7 +16,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "a0eab8dd-db22-467a-87c2-c38138c582e8")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
 				)
 			},
 		},
@@ -31,7 +30,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 
 				x := r.(UnexpectedMessage)
 				Expect(x.String()).To(Equal(
-					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type fixtures.MessageA",
+					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type stubs.EventStub[TypeX]",
 				))
 			}()
 
@@ -40,7 +39,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 				"<interface>",
 				"<method>",
 				config.Handler(),
-				MessageA1,
+				EventX1,
 				func() {
 					panic(dogma.UnexpectedMessage)
 				},
@@ -55,7 +54,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "b665eca3-936e-41e3-b9ab-c618cfa95ec2")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
 				)
 			},
 		},
@@ -69,7 +68,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			"<interface>",
 			"<method>",
 			config.Handler(),
-			MessageA1,
+			EventX1,
 			func() {
 				called = true
 			},
@@ -85,7 +84,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 				"<interface>",
 				"<method>",
 				config.Handler(),
-				MessageA1,
+				EventX1,
 				func() {
 					panic("<panic>")
 				},
@@ -100,7 +99,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 				"<interface>",
 				"<method>",
 				config.Handler(),
-				MessageA1,
+				EventX1,
 				doPanic,
 			)
 		}).To(PanicWith(
@@ -110,7 +109,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 					"Interface":      Equal("<interface>"),
 					"Method":         Equal("<method>"),
 					"Implementation": Equal(config.Handler()),
-					"Message":        Equal(MessageA1),
+					"Message":        Equal(EventX1),
 					"PanicLocation": MatchAllFields(
 						Fields{
 							"Func": Equal("github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic"),

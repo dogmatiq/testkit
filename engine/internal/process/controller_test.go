@@ -8,7 +8,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
@@ -31,19 +30,19 @@ var _ = g.Describe("type Controller", func() {
 	g.BeforeEach(func() {
 		event = envelope.NewEvent(
 			"1000",
-			MessageE1,
+			EventA1,
 			time.Now(),
 		)
 
 		timeout = event.NewTimeout(
 			"2000",
-			MessageT1,
+			TimeoutA1,
 			time.Now(),
 			time.Now().Add(10*time.Second),
 			envelope.Origin{
 				Handler:     config,
 				HandlerType: configkit.ProcessHandlerType,
-				InstanceID:  "<instance-E1>",
+				InstanceID:  "<instance-A1>",
 			},
 		)
 
@@ -51,9 +50,9 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "7db72921-b805-4db5-8287-0af94a768643")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
-					dogma.ExecutesCommand[MessageC](),
-					dogma.SchedulesTimeout[MessageT](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.ExecutesCommand[CommandStub[TypeA]](),
+					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
 				)
 			},
 			// setup routes for "E" (event) messages to an instance ID based on the
@@ -63,10 +62,10 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Event,
 			) (string, bool, error) {
 				switch x := m.(type) {
-				case MessageE:
+				case EventStub[TypeA]:
 					id := fmt.Sprintf(
 						"<instance-%s>",
-						x.Value.(string),
+						x.Content,
 					)
 					return id, true, nil
 				default:
@@ -113,9 +112,9 @@ var _ = g.Describe("type Controller", func() {
 				_ dogma.Event,
 			) error {
 				// note, calls to ScheduleTimeout are NOT in chronological order
-				s.ScheduleTimeout(MessageT3, t3Time)
-				s.ScheduleTimeout(MessageT2, t2Time)
-				s.ScheduleTimeout(MessageT1, t1Time)
+				s.ScheduleTimeout(TimeoutA3, t3Time)
+				s.ScheduleTimeout(TimeoutA2, t2Time)
+				s.ScheduleTimeout(TimeoutA1, t1Time)
 
 				return nil
 			}
@@ -142,24 +141,24 @@ var _ = g.Describe("type Controller", func() {
 			Expect(timeouts).To(ConsistOf(
 				event.NewTimeout(
 					"3",
-					MessageT1,
+					TimeoutA1,
 					createdTime,
 					t1Time,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-E1>",
+						InstanceID:  "<instance-A1>",
 					},
 				),
 				event.NewTimeout(
 					"2",
-					MessageT2,
+					TimeoutA2,
 					createdTime,
 					t2Time,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-E1>",
+						InstanceID:  "<instance-A1>",
 					},
 				),
 			))
@@ -188,7 +187,7 @@ var _ = g.Describe("type Controller", func() {
 		g.It("does not return timeouts for instances that have been ended", func() {
 			secondInstanceEvent := envelope.NewEvent(
 				"3000",
-				MessageE2, // different message value = different instance
+				EventA2, // different message value = different instance
 				time.Now(),
 			)
 
@@ -230,24 +229,24 @@ var _ = g.Describe("type Controller", func() {
 			Expect(timeouts).To(ConsistOf(
 				secondInstanceEvent.NewTimeout(
 					"3",
-					MessageT1,
+					TimeoutA1,
 					createdTime,
 					t1Time,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-E2>", // E2, not E1!
+						InstanceID:  "<instance-A2>", // A2, not A1!
 					},
 				),
 				secondInstanceEvent.NewTimeout(
 					"2",
-					MessageT2,
+					TimeoutA2,
 					createdTime,
 					t2Time,
 					envelope.Origin{
 						Handler:     config,
 						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-E2>", // E2, not E1!
+						InstanceID:  "<instance-A2>", // A2, not A1!
 					},
 				),
 			))
@@ -265,7 +264,7 @@ var _ = g.Describe("type Controller", func() {
 					m dogma.Event,
 				) error {
 					called = true
-					Expect(m).To(Equal(MessageE1))
+					Expect(m).To(Equal(EventA1))
 					return nil
 				}
 
@@ -311,8 +310,8 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Event,
 				) error {
-					s.ExecuteCommand(MessageC1)
-					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
+					s.ExecuteCommand(CommandA1)
+					s.ScheduleTimeout(TimeoutA1, now) // timeouts at current time are "ready"
 					return nil
 				}
 
@@ -327,23 +326,23 @@ var _ = g.Describe("type Controller", func() {
 				Expect(envelopes).To(ConsistOf(
 					event.NewCommand(
 						"1",
-						MessageC1,
+						CommandA1,
 						now,
 						envelope.Origin{
 							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-E1>",
+							InstanceID:  "<instance-A1>",
 						},
 					),
 					event.NewTimeout(
 						"2",
-						MessageT1,
+						TimeoutA1,
 						now,
 						now,
 						envelope.Origin{
 							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-E1>",
+							InstanceID:  "<instance-A1>",
 						},
 					),
 				))
@@ -358,7 +357,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Event,
 				) error {
-					s.ScheduleTimeout(MessageT1, now.Add(-1))
+					s.ScheduleTimeout(TimeoutA1, now.Add(-1))
 					return nil
 				}
 
@@ -382,7 +381,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessEventScope,
 					_ dogma.Event,
 				) error {
-					s.ScheduleTimeout(MessageT1, now.Add(1))
+					s.ScheduleTimeout(TimeoutA1, now.Add(1))
 					return nil
 				}
 
@@ -512,8 +511,8 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Timeout,
 				) error {
-					s.ExecuteCommand(MessageC1)
-					s.ScheduleTimeout(MessageT1, now) // timeouts at current time are "ready"
+					s.ExecuteCommand(CommandA1)
+					s.ScheduleTimeout(TimeoutA1, now) // timeouts at current time are "ready"
 					return nil
 				}
 
@@ -528,23 +527,23 @@ var _ = g.Describe("type Controller", func() {
 				Expect(envelopes).To(ConsistOf(
 					timeout.NewCommand(
 						"1",
-						MessageC1,
+						CommandA1,
 						now,
 						envelope.Origin{
 							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-E1>",
+							InstanceID:  "<instance-A1>",
 						},
 					),
 					timeout.NewTimeout(
 						"2",
-						MessageT1,
+						TimeoutA1,
 						now,
 						now,
 						envelope.Origin{
 							Handler:     config,
 							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-E1>",
+							InstanceID:  "<instance-A1>",
 						},
 					),
 				))
@@ -559,7 +558,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Timeout,
 				) error {
-					s.ScheduleTimeout(MessageT2, now.Add(-1))
+					s.ScheduleTimeout(TimeoutA2, now.Add(-1))
 					return nil
 				}
 
@@ -583,7 +582,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.ProcessTimeoutScope,
 					_ dogma.Timeout,
 				) error {
-					s.ScheduleTimeout(MessageT2, now.Add(1))
+					s.ScheduleTimeout(TimeoutA2, now.Add(1))
 					return nil
 				}
 
@@ -655,7 +654,7 @@ var _ = g.Describe("type Controller", func() {
 					Expect(buf.Facts()).To(ContainElement(
 						fact.ProcessTimeoutIgnored{
 							Handler:    config,
-							InstanceID: "<instance-E1>",
+							InstanceID: "<instance-A1>",
 							Envelope:   timeout,
 						},
 					))
@@ -708,7 +707,7 @@ var _ = g.Describe("type Controller", func() {
 						"Method":         Equal("RouteEventToInstance"),
 						"Implementation": Equal(config.Handler()),
 						"Message":        Equal(event.Message),
-						"Description":    Equal("routed an event of type fixtures.MessageE to an empty ID"),
+						"Description":    Equal("routed an event of type stubs.EventStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": Not(BeEmpty()),
@@ -735,14 +734,14 @@ var _ = g.Describe("type Controller", func() {
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceNotFound{
 						Handler:    config,
-						InstanceID: "<instance-E1>",
+						InstanceID: "<instance-A1>",
 						Envelope:   event,
 					},
 				))
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceBegun{
 						Handler:    config,
-						InstanceID: "<instance-E1>",
+						InstanceID: "<instance-A1>",
 						Root:       &ProcessRootStub{},
 						Envelope:   event,
 					},
@@ -819,7 +818,7 @@ var _ = g.Describe("type Controller", func() {
 				Expect(buf.Facts()).To(ContainElement(
 					fact.ProcessInstanceLoaded{
 						Handler:    config,
-						InstanceID: "<instance-E1>",
+						InstanceID: "<instance-A1>",
 						Root:       &ProcessRootStub{},
 						Envelope:   event,
 					},

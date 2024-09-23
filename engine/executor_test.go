@@ -5,7 +5,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	g "github.com/onsi/ginkgo/v2"
@@ -25,8 +24,8 @@ var _ = g.Describe("type CommandExecutor", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -59,24 +58,24 @@ var _ = g.Describe("type CommandExecutor", func() {
 				m dogma.Command,
 			) {
 				called = true
-				Expect(m).To(Equal(MessageC1))
+				Expect(m).To(Equal(CommandA1))
 			}
 
-			err := executor.ExecuteCommand(context.Background(), MessageC1)
+			err := executor.ExecuteCommand(context.Background(), CommandA1)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(called).To(BeTrue())
 		})
 
 		g.It("panics if the message is not a command", func() {
 			Expect(func() {
-				executor.ExecuteCommand(context.Background(), MessageE1)
-			}).To(PanicWith("cannot execute command, fixtures.MessageE is configured as an event"))
+				executor.ExecuteCommand(context.Background(), EventA1)
+			}).To(PanicWith("cannot execute command, stubs.EventStub[TypeA] is configured as an event"))
 		})
 
 		g.It("panics if the message is unrecognized", func() {
 			Expect(func() {
-				executor.ExecuteCommand(context.Background(), MessageX1)
-			}).To(PanicWith("cannot execute command, fixtures.MessageX is a not a recognized message type"))
+				executor.ExecuteCommand(context.Background(), CommandX1)
+			}).To(PanicWith("cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type"))
 		})
 	})
 })

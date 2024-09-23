@@ -2,12 +2,10 @@ package aggregate_test
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
@@ -29,7 +27,7 @@ var _ = g.Describe("type scope", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageC1,
+			CommandA1,
 			time.Now(),
 		)
 
@@ -37,13 +35,13 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch m.(type) {
-				case MessageC:
+				case CommandStub[TypeA]:
 					return "<instance>"
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -94,7 +92,7 @@ var _ = g.Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(MessageE1)
+					s.RecordEvent(EventA1)
 				}
 
 				now := time.Now()
@@ -113,7 +111,7 @@ var _ = g.Describe("type scope", func() {
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 						Envelope: command,
@@ -125,13 +123,13 @@ var _ = g.Describe("type scope", func() {
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
-							MessageE1,
+							EventA1,
 							now,
 							envelope.Origin{
 								Handler:     config,
@@ -152,7 +150,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.AggregateCommandScope,
 				_ dogma.Command,
 			) {
-				s.RecordEvent(MessageE1) // record event to create the instance
+				s.RecordEvent(EventA1) // record event to create the instance
 			}
 
 			_, err := ctrl.Handle(
@@ -161,7 +159,7 @@ var _ = g.Describe("type scope", func() {
 				time.Now(),
 				envelope.NewCommand(
 					"2000",
-					MessageC2, // use a different message to create the instance
+					CommandA2, // use a different message to create the instance
 					time.Now(),
 				),
 			)
@@ -208,7 +206,7 @@ var _ = g.Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(MessageE1)
+					s.RecordEvent(EventA1)
 				}
 			})
 
@@ -231,14 +229,14 @@ var _ = g.Describe("type scope", func() {
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
-								MessageE1,
+								EventA1,
+								EventA1,
 							},
 						},
 						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
-							MessageE1,
+							EventA1,
 							now,
 							envelope.Origin{
 								Handler:     config,
@@ -272,7 +270,7 @@ var _ = g.Describe("type scope", func() {
 					_ dogma.Command,
 				) {
 					s.Destroy()
-					s.RecordEvent(MessageE1)
+					s.RecordEvent(EventA1)
 				}
 
 				now := time.Now()
@@ -291,7 +289,7 @@ var _ = g.Describe("type scope", func() {
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 						Envelope: command,
@@ -303,13 +301,13 @@ var _ = g.Describe("type scope", func() {
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
-								MessageE1,
+								EventA1,
 							},
 						},
 						Envelope: command,
 						EventEnvelope: command.NewEvent(
 							"1",
-							MessageE1,
+							EventA1,
 							now,
 							envelope.Origin{
 								Handler:     config,
@@ -327,7 +325,7 @@ var _ = g.Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(MessageX1)
+					s.RecordEvent(EventX1)
 				}
 
 				Expect(func() {
@@ -345,7 +343,7 @@ var _ = g.Describe("type scope", func() {
 							"Method":         Equal("HandleCommand"),
 							"Implementation": Equal(config.Handler()),
 							"Message":        Equal(command.Message),
-							"Description":    Equal("recorded an event of type fixtures.MessageX, which is not produced by this handler"),
+							"Description":    Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
 							"Location": MatchAllFields(
 								Fields{
 									"Func": Not(BeEmpty()),
@@ -364,8 +362,8 @@ var _ = g.Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(MessageE{
-						Value: errors.New("<invalid>"),
+					s.RecordEvent(EventStub[TypeA]{
+						ValidationError: "<invalid>",
 					})
 				}
 
@@ -384,7 +382,7 @@ var _ = g.Describe("type scope", func() {
 							"Method":         Equal("HandleCommand"),
 							"Implementation": Equal(config.Handler()),
 							"Message":        Equal(command.Message),
-							"Description":    Equal("recorded an invalid fixtures.MessageE event: <invalid>"),
+							"Description":    Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
 							"Location": MatchAllFields(
 								Fields{
 									"Func": Not(BeEmpty()),
