@@ -1,10 +1,7 @@
 package testkit
 
 import (
-	"errors"
-
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/fact"
 )
 
@@ -70,11 +67,4 @@ type PredicateOptions struct {
 	// If it is false, the predicate must only match against messages produced
 	// by handlers.
 	MatchDispatchCycleStartedFacts bool
-}
-
-func validateMessage(m dogma.Message) error {
-	if m == nil {
-		return errors.New("message must not be nil")
-	}
-	return m.Validate()
 }

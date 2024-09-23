@@ -50,14 +50,16 @@ func (s *scope) End() {
 }
 
 func (s *scope) ExecuteCommand(m dogma.Command) {
-	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.CommandRole {
+	mt := message.TypeOf(m)
+
+	if s.config.MessageTypes().Produced[mt] != message.CommandRole {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
 			Implementation: s.config.Handler(),
 			Message:        s.env.Message,
-			Description:    fmt.Sprintf("executed a command of type %T, which is not produced by this handler", m),
+			Description:    fmt.Sprintf("executed a command of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
 		})
 	}
@@ -69,7 +71,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 			Method:         s.handleMethod,
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
-			Description:    fmt.Sprintf("executed an invalid %T command: %s", m, err),
+			Description:    fmt.Sprintf("executed an invalid %s command: %s", mt, err),
 			Location:       location.OfCall(),
 		})
 	}
@@ -112,14 +114,16 @@ func (s *scope) RecordedAt() time.Time {
 }
 
 func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
-	if s.config.MessageTypes().Produced[message.TypeOf(m)] != message.TimeoutRole {
+	mt := message.TypeOf(m)
+
+	if s.config.MessageTypes().Produced[mt] != message.TimeoutRole {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
 			Implementation: s.config.Handler(),
 			Message:        s.env.Message,
-			Description:    fmt.Sprintf("scheduled a timeout of type %T, which is not produced by this handler", m),
+			Description:    fmt.Sprintf("scheduled a timeout of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
 		})
 	}
@@ -131,7 +135,7 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 			Method:         s.handleMethod,
 			Message:        s.env.Message,
 			Implementation: s.config.Handler(),
-			Description:    fmt.Sprintf("scheduled an invalid %T timeout: %s", m, err),
+			Description:    fmt.Sprintf("scheduled an invalid %s timeout: %s", mt, err),
 			Location:       location.OfCall(),
 		})
 	}

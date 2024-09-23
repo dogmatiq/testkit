@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -48,14 +49,16 @@ func (s *scope) Destroy() {
 }
 
 func (s *scope) RecordEvent(m dogma.Event) {
-	if !s.config.MessageTypes().Produced.HasM(m) {
+	mt := message.TypeOf(m)
+
+	if !s.config.MessageTypes().Produced.Has(mt) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "HandleCommand",
 			Implementation: s.config.Handler(),
 			Message:        s.command.Message,
-			Description:    fmt.Sprintf("recorded an event of type %T, which is not produced by this handler", m),
+			Description:    fmt.Sprintf("recorded an event of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
 		})
 	}
@@ -67,7 +70,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 			Method:         "HandleCommand",
 			Implementation: s.config.Handler(),
 			Message:        s.command.Message,
-			Description:    fmt.Sprintf("recorded an invalid %T event: %s", m, err),
+			Description:    fmt.Sprintf("recorded an invalid %s event: %s", mt, err),
 			Location:       location.OfCall(),
 		})
 	}

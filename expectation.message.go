@@ -16,13 +16,19 @@ import (
 // ToExecuteCommand returns an expectation that passes if a command is executed
 // that is equal to m.
 func ToExecuteCommand(m dogma.Command) Expectation {
-	if err := validateMessage(m); err != nil {
-		panic(fmt.Sprintf("ToExecuteCommand(%T): %s", m, err))
+	if m == nil {
+		panic("ToExecuteCommand(<nil>): message must not be nil")
+	}
+
+	mt := message.TypeOf(m)
+
+	if err := m.Validate(); err != nil {
+		panic(fmt.Sprintf("ToExecuteCommand(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
 		expectedMessage: m,
-		expectedType:    message.TypeOf(m),
+		expectedType:    mt,
 		expectedRole:    message.CommandRole,
 	}
 }
@@ -30,13 +36,19 @@ func ToExecuteCommand(m dogma.Command) Expectation {
 // ToRecordEvent returns an expectation that passes if an event is recorded that
 // is equal to m.
 func ToRecordEvent(m dogma.Command) Expectation {
-	if err := validateMessage(m); err != nil {
-		panic(fmt.Sprintf("ToRecordEvent(%T): %s", m, err))
+	if m == nil {
+		panic("ToRecordEvent(<nil>): message must not be nil")
+	}
+
+	mt := message.TypeOf(m)
+
+	if err := m.Validate(); err != nil {
+		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
 		expectedMessage: m,
-		expectedType:    message.TypeOf(m),
+		expectedType:    mt,
 		expectedRole:    message.EventRole,
 	}
 }

@@ -12,8 +12,14 @@ import (
 
 // ExecuteCommand returns an Action that executes a command message.
 func ExecuteCommand(m dogma.Command) Action {
-	if err := validateMessage(m); err != nil {
-		panic(fmt.Sprintf("ExecuteCommand(%T): %s", m, err))
+	if m == nil {
+		panic("ExecuteCommand(<nil>): message must not be nil")
+	}
+
+	mt := message.TypeOf(m)
+
+	if err := m.Validate(); err != nil {
+		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
 	}
 
 	return dispatchAction{
@@ -25,8 +31,14 @@ func ExecuteCommand(m dogma.Command) Action {
 
 // RecordEvent returns an Action that records an event message.
 func RecordEvent(m dogma.Event) Action {
-	if err := validateMessage(m); err != nil {
-		panic(fmt.Sprintf("RecordEvent(%T): %s", m, err))
+	if m == nil {
+		panic("RecordEvent(<nil>): message must not be nil")
+	}
+
+	mt := message.TypeOf(m)
+
+	if err := m.Validate(); err != nil {
+		panic(fmt.Sprintf("RecordEvent(%s): %s", mt, err))
 	}
 
 	return dispatchAction{
@@ -47,8 +59,8 @@ type dispatchAction struct {
 func (a dispatchAction) Caption() string {
 	return inflect.Sprintf(
 		a.r,
-		"<producing> %T <message>",
-		a.m,
+		"<producing> %s <message>",
+		message.TypeOf(a.m),
 	)
 }
 
@@ -70,8 +82,8 @@ func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	if !ok {
 		return inflect.Errorf(
 			a.r,
-			"cannot <produce> <message>, %T is a not a recognized message type",
-			a.m,
+			"cannot <produce> <message>, %s is a not a recognized message type",
+			mt,
 		)
 	} else if r != a.r {
 		return inflect.Errorf(
@@ -79,8 +91,8 @@ func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 			"cannot <produce> <message>, %s",
 			inflect.Sprintf(
 				r,
-				"%T is configured as a <message>",
-				a.m,
+				"%s is configured as a <message>",
+				mt,
 			),
 		)
 	}
