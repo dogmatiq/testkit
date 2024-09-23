@@ -4,10 +4,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
 	g "github.com/onsi/ginkgo/v2"
@@ -20,7 +18,7 @@ var _ = g.Describe("type Envelope", func() {
 			now := time.Now()
 			env := NewCommand(
 				"100",
-				MessageC1,
+				CommandA1,
 				now,
 			)
 
@@ -29,8 +27,8 @@ var _ = g.Describe("type Envelope", func() {
 					MessageID:     "100",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       MessageC1,
-					Type:          MessageCType,
+					Message:       CommandA1,
+					Type:          message.TypeOf(CommandA1),
 					Role:          message.CommandRole,
 					CreatedAt:     now,
 				},
@@ -43,7 +41,7 @@ var _ = g.Describe("type Envelope", func() {
 			now := time.Now()
 			env := NewEvent(
 				"100",
-				MessageE1,
+				EventA1,
 				now,
 			)
 
@@ -52,8 +50,8 @@ var _ = g.Describe("type Envelope", func() {
 					MessageID:     "100",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       MessageE1,
-					Type:          MessageEType,
+					Message:       EventA1,
+					Type:          message.TypeOf(EventA1),
 					Role:          message.EventRole,
 					CreatedAt:     now,
 				},
@@ -66,8 +64,8 @@ var _ = g.Describe("type Envelope", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
-					dogma.ExecutesCommand[MessageC](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.ExecutesCommand[CommandStub[TypeA]](),
 				)
 			},
 		})
@@ -75,7 +73,7 @@ var _ = g.Describe("type Envelope", func() {
 		g.It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
-				MessageP1,
+				CommandP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -86,7 +84,7 @@ var _ = g.Describe("type Envelope", func() {
 			now := time.Now()
 			child := parent.NewCommand(
 				"200",
-				MessageC1,
+				CommandA1,
 				now,
 				origin,
 			)
@@ -96,8 +94,8 @@ var _ = g.Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       MessageC1,
-					Type:          MessageCType,
+					Message:       CommandA1,
+					Type:          message.TypeOf(CommandA1),
 					Role:          message.CommandRole,
 					CreatedAt:     now,
 					Origin:        &origin,
@@ -111,8 +109,8 @@ var _ = g.Describe("type Envelope", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
 		})
@@ -120,7 +118,7 @@ var _ = g.Describe("type Envelope", func() {
 		g.It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
-				MessageP1,
+				CommandP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -131,7 +129,7 @@ var _ = g.Describe("type Envelope", func() {
 			now := time.Now()
 			child := parent.NewEvent(
 				"200",
-				MessageE1,
+				EventA1,
 				now,
 				origin,
 			)
@@ -141,8 +139,8 @@ var _ = g.Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       MessageE1,
-					Type:          MessageEType,
+					Message:       EventA1,
+					Type:          message.TypeOf(EventA1),
 					Role:          message.EventRole,
 					CreatedAt:     now,
 					Origin:        &origin,
@@ -156,9 +154,9 @@ var _ = g.Describe("type Envelope", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
-					dogma.ExecutesCommand[MessageC](),
-					dogma.SchedulesTimeout[MessageT](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.ExecutesCommand[CommandStub[TypeA]](),
+					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
 				)
 			},
 		})
@@ -166,7 +164,7 @@ var _ = g.Describe("type Envelope", func() {
 		g.It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
-				MessageP1,
+				CommandP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -178,7 +176,7 @@ var _ = g.Describe("type Envelope", func() {
 			s := time.Now()
 			child := parent.NewTimeout(
 				"200",
-				MessageT1,
+				TimeoutA1,
 				now,
 				s,
 				origin,
@@ -189,8 +187,8 @@ var _ = g.Describe("type Envelope", func() {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       MessageT1,
-					Type:          MessageTType,
+					Message:       TimeoutA1,
+					Type:          message.TypeOf(TimeoutA1),
 					Role:          message.TimeoutRole,
 					CreatedAt:     now,
 					ScheduledFor:  s,
