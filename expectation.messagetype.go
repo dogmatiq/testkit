@@ -47,7 +47,7 @@ func ToRecordEventType[T dogma.Event]() Expectation {
 // same type as m is recorded.
 //
 // Deprecated: Use [ToRecordEventType] instead.
-func ToRecordEventOfType(m dogma.Command) Expectation {
+func ToRecordEventOfType(m dogma.Event) Expectation {
 	if m == nil {
 		panic("ToRecordEventOfType(<nil>): message must not be nil")
 	}

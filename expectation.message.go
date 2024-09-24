@@ -35,7 +35,7 @@ func ToExecuteCommand(m dogma.Command) Expectation {
 
 // ToRecordEvent returns an expectation that passes if an event is recorded that
 // is equal to m.
-func ToRecordEvent(m dogma.Command) Expectation {
+func ToRecordEvent(m dogma.Event) Expectation {
 	if m == nil {
 		panic("ToRecordEvent(<nil>): message must not be nil")
 	}

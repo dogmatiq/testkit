@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.17.2] - 2024-09-25
+
+### Fixed
+
+- Fix argument type of `ToRecordEvent()` and `ToRecordEventOfType()`.
+
 ## [0.17.1] - 2024-09-25
 
 ### Fixed
@@ -465,6 +471,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.16.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.16.0
 [0.17.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.0
 [0.17.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.1
+[0.17.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.2
 
 <!-- contributors -->
 
