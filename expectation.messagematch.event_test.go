@@ -121,7 +121,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
-			"matching event recorded as expected, using predicate with application-defined type parameter",
+			"matching event recorded as expected, using predicate with a more specific type",
 			ExecuteCommand(MessageR1),
 			ToRecordEventMatching(
 				func(m MessageE) error {
@@ -166,7 +166,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
-			"no matching event recorded, using predicate with application-defined type parameter",
+			"no matching event recorded, using predicate with a more specific type",
 			ExecuteCommand(MessageR1),
 			ToRecordEventMatching(
 				func(m MessageX) error {

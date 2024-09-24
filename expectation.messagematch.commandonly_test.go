@@ -87,7 +87,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 		),
 		g.Entry(
-			"all executed commands match, using predicate with application-defined type parameter",
+			"all executed commands match, using predicate with a more specific type",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
 				func(m MessageC) error {
@@ -166,7 +166,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 		),
 		g.Entry(
-			"no executed commands match, using predicate with application-defined type parameter",
+			"no executed commands match, using predicate with a more specific type",
 			RecordEvent(MessageE1),
 			ToOnlyExecuteCommandsMatching(
 				func(m MessageX) error {
