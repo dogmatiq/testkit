@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -32,8 +31,8 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 						c.Identity("<handler-name>", "67c167a8-d09e-4827-beab-7c8c9817bb1a")
 						c.Routes(
-							dogma.HandlesCommand[MessageC](),
-							dogma.RecordsEvent[MessageE](),
+							dogma.HandlesCommand[CommandStub[TypeA]](),
+							dogma.RecordsEvent[EventStub[TypeA]](),
 						)
 					},
 					HandleCommandFunc: func(
@@ -41,7 +40,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 						s dogma.IntegrationCommandScope,
 						_ dogma.Command,
 					) error {
-						s.RecordEvent(MessageE1)
+						s.RecordEvent(EventA1)
 						return nil
 					},
 				})
@@ -61,7 +60,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 			m dogma.Command,
 			e dogma.CommandExecutor,
 		) error {
-			Expect(m).To(Equal(MessageC1))
+			Expect(m).To(Equal(CommandA1))
 
 			err := e.ExecuteCommand(ctx, m)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -90,11 +89,11 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 				Call(func() {
 					err := test.CommandExecutor().ExecuteCommand(
 						context.Background(),
-						MessageC1,
+						CommandA1,
 					)
 					Expect(err).To(MatchError("<error>"))
 				}),
-				ToRecordEvent(MessageE1),
+				ToRecordEvent(EventA1),
 			)
 		})
 	})
@@ -113,13 +112,13 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
-							MessageC1,
+							CommandA1,
 						)
 						Expect(err).To(MatchError("<error>"))
 					},
 					InterceptCommandExecutor(executeCommandAndReturnError),
 				),
-				ToRecordEvent(MessageE1),
+				ToRecordEvent(EventA1),
 			)
 		})
 
@@ -134,7 +133,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
-							MessageC1,
+							CommandA1,
 						)
 						Expect(err).To(MatchError("<error>"))
 					},
@@ -144,7 +143,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
-							MessageC1,
+							CommandA1,
 						)
 						Expect(err).ShouldNot(HaveOccurred())
 					},
@@ -164,7 +163,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
-							MessageC1,
+							CommandA1,
 						)
 						Expect(err).ShouldNot(HaveOccurred())
 					},
@@ -174,7 +173,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 					func() {
 						err := test.CommandExecutor().ExecuteCommand(
 							context.Background(),
-							MessageC1,
+							CommandA1,
 						)
 						Expect(err).To(MatchError("<error>"))
 					},

@@ -168,6 +168,9 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 	case fact.CommandExecutedByProcess:
 		t.messageProduced(x.CommandEnvelope.Role)
 		return x.CommandEnvelope, true
+	case fact.TimeoutScheduledByProcess:
+		t.messageProduced(x.TimeoutEnvelope.Role)
+		return x.TimeoutEnvelope, true
 	}
 
 	return nil, false

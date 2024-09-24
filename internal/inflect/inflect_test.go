@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/configkit/message"
-	. "github.com/dogmatiq/dogma/fixtures"
+	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/internal/inflect"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -76,9 +76,9 @@ var _ = g.Describe("func Sprintf()", func() {
 			Sprintf(
 				message.CommandRole,
 				"the %T <message>",
-				MessageA1,
+				CommandA1,
 			),
-		).To(Equal("the fixtures.MessageA command"))
+		).To(Equal("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })
 
@@ -99,8 +99,8 @@ var _ = g.Describe("func Errorf()", func() {
 			Errorf(
 				message.CommandRole,
 				"the %T <message>",
-				MessageA1,
+				CommandA1,
 			),
-		).To(MatchError("the fixtures.MessageA command"))
+		).To(MatchError("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })

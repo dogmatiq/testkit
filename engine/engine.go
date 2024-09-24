@@ -190,16 +190,17 @@ func (e *Engine) Dispatch(
 	m dogma.Message,
 	options ...OperationOption,
 ) error {
+	t := message.TypeOf(m)
+
 	if err := m.Validate(); err != nil {
 		panic(fmt.Sprintf(
-			"cannot dispatch invalid %T message: %s",
-			m,
+			"cannot dispatch invalid %s message: %s",
+			t,
 			err,
 		))
 	}
 
 	oo := newOperationOptions(e, options)
-	t := message.TypeOf(m)
 
 	if _, ok := e.routes[t]; !ok {
 		panic(fmt.Sprintf(
@@ -267,16 +268,16 @@ func (e *Engine) mustDispatch(
 			"cannot <produce> <message>, %s",
 			inflect.Sprintf(
 				r,
-				"%T is configured as a <message>",
-				m,
+				"%s is configured as a <message>",
+				t,
 			),
 		))
 	}
 
 	panic(inflect.Sprintf(
 		expected,
-		"cannot <produce> <message>, %T is a not a recognized message type",
-		m,
+		"cannot <produce> <message>, %s is a not a recognized message type",
+		t,
 	))
 }
 

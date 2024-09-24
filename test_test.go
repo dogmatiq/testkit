@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -16,7 +15,7 @@ import (
 var _ = g.Describe("type Test", func() {
 	g.Describe("func Prepare()", func() {
 		g.It("fails the test if the action returns an error", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "c654acb2-3e87-493a-8b9b-f662cd5e0f55")
 				},
@@ -35,7 +34,7 @@ var _ = g.Describe("type Test", func() {
 
 	g.Describe("func Expect()", func() {
 		g.It("fails the test if the action returns an error", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "c691b2ca-4c07-4473-bc42-060266cc7a56")
 				},
@@ -56,14 +55,14 @@ var _ = g.Describe("type Test", func() {
 	g.Describe("func EnableHandlers()", func() {
 		g.It("enables the handler", func() {
 			called := false
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
-								dogma.HandlesEvent[MessageE](),
+								dogma.HandlesEvent[EventStub[TypeA]](),
 							)
 						},
 						HandleEventFunc: func(
@@ -81,13 +80,13 @@ var _ = g.Describe("type Test", func() {
 
 			Begin(&testingmock.T{}, app).
 				EnableHandlers("<projection>").
-				Prepare(RecordEvent(MessageE1))
+				Prepare(RecordEvent(EventA1))
 
 			Expect(called).To(BeTrue())
 		})
 
 		g.It("panics if the handler is not recognized", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 				},
@@ -100,14 +99,14 @@ var _ = g.Describe("type Test", func() {
 		})
 
 		g.It("panics if the handler is disabled by its own configuration", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
-								dogma.HandlesEvent[MessageE](),
+								dogma.HandlesEvent[EventStub[TypeA]](),
 							)
 							c.Disable()
 						},
@@ -125,14 +124,14 @@ var _ = g.Describe("type Test", func() {
 	g.Describe("func EnableHandlersLike()", func() {
 		g.It("enables handlers with matching names", func() {
 			called := false
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
-								dogma.HandlesEvent[MessageE](),
+								dogma.HandlesEvent[EventStub[TypeA]](),
 							)
 						},
 						HandleEventFunc: func(
@@ -150,13 +149,13 @@ var _ = g.Describe("type Test", func() {
 
 			Begin(&testingmock.T{}, app).
 				EnableHandlersLike(`^\<proj`).
-				Prepare(RecordEvent(MessageE1))
+				Prepare(RecordEvent(EventA1))
 
 			Expect(called).To(BeTrue())
 		})
 
 		g.It("panics if there are no matching handlers", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 				},
@@ -169,14 +168,14 @@ var _ = g.Describe("type Test", func() {
 		})
 
 		g.It("does not enable handlers that are disabled by their own configuration", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 					c.RegisterProjection(&ProjectionMessageHandlerStub{
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 							c.Routes(
-								dogma.HandlesEvent[MessageE](),
+								dogma.HandlesEvent[EventStub[TypeA]](),
 							)
 							c.Disable()
 						},
@@ -193,15 +192,15 @@ var _ = g.Describe("type Test", func() {
 
 	g.Describe("func DisableHandlers()", func() {
 		g.It("disables the handler", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
 					c.RegisterAggregate(&AggregateMessageHandlerStub{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
-								dogma.HandlesCommand[MessageC](),
-								dogma.RecordsEvent[MessageE](),
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.RecordsEvent[EventStub[TypeA]](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -220,11 +219,11 @@ var _ = g.Describe("type Test", func() {
 
 			Begin(&testingmock.T{}, app).
 				DisableHandlers("<aggregate>").
-				Prepare(ExecuteCommand(MessageC1))
+				Prepare(ExecuteCommand(CommandA1))
 		})
 
 		g.It("panics if the handler is not recognized", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 				},
@@ -239,15 +238,15 @@ var _ = g.Describe("type Test", func() {
 
 	g.Describe("func DisableHandlersLike()", func() {
 		g.It("disables the handlers with matching names", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
 					c.RegisterAggregate(&AggregateMessageHandlerStub{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
-								dogma.HandlesCommand[MessageC](),
-								dogma.RecordsEvent[MessageE](),
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.RecordsEvent[EventStub[TypeA]](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -266,11 +265,11 @@ var _ = g.Describe("type Test", func() {
 
 			Begin(&testingmock.T{}, app).
 				DisableHandlersLike(`^\<agg`).
-				Prepare(ExecuteCommand(MessageC1))
+				Prepare(ExecuteCommand(CommandA1))
 		})
 
 		g.It("panics if there are no matching handlers", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
 				},
@@ -285,7 +284,7 @@ var _ = g.Describe("type Test", func() {
 
 	g.Describe("func Annotate()", func() {
 		g.It("includes annotations in diffs", func() {
-			app := &Application{
+			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "8ec6465c-d4e3-411c-a05b-898a4b608284")
 
@@ -293,8 +292,8 @@ var _ = g.Describe("type Test", func() {
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
 							c.Routes(
-								dogma.HandlesCommand[MessageC](),
-								dogma.RecordsEvent[MessageE](),
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.RecordsEvent[EventStub[TypeA]](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -305,7 +304,7 @@ var _ = g.Describe("type Test", func() {
 							s dogma.AggregateCommandScope,
 							m dogma.Command,
 						) {
-							s.RecordEvent(MessageE1)
+							s.RecordEvent(EventA1)
 						},
 					})
 				},
@@ -314,15 +313,15 @@ var _ = g.Describe("type Test", func() {
 			t := &testingmock.T{FailSilently: true}
 
 			Begin(t, app).
-				Annotate("E1", "anna's customer ID").
-				Annotate("E2", "bob's customer ID").
+				Annotate(TypeA("A1"), "anna's customer ID").
+				Annotate(TypeA("A2"), "bob's customer ID").
 				Expect(
-					ExecuteCommand(MessageC1),
-					ToRecordEvent(MessageE2),
+					ExecuteCommand(CommandA1),
+					ToRecordEvent(EventA2),
 				)
 
 			expectReport(
-				`✗ record a specific 'fixtures.MessageE' event`,
+				`✗ record a specific 'stubs.EventStub[TypeA]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a similar event was recorded by the '<aggregate>' aggregate message handler`,
@@ -331,8 +330,9 @@ var _ = g.Describe("type Test", func() {
 				`  |     • check the content of the message`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     fixtures.MessageE{`,
-				`  |         Value: "E[-2-]{+1+}" <<[-bob-]{+anna+}'s customer ID>>`,
+				`  |     stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA]{`,
+				`  |         Content:         "A[-2-]{+1+}" <<[-bob-]{+anna+}'s customer ID>>`,
+				`  |         ValidationError: ""`,
 				`  |     }`,
 			)(t)
 		})

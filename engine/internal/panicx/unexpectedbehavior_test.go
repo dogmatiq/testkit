@@ -3,7 +3,6 @@ package panicx_test
 import (
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
@@ -16,7 +15,7 @@ var _ = g.Describe("type UnexpectedBehavior", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fce4f9f3-e8ee-45ce-924f-be8c3c0a9285")
 				c.Routes(
-					dogma.HandlesEvent[MessageE](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
 				)
 			},
 		},

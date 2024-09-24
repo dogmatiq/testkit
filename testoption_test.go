@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -22,7 +21,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<handler-name>", "ca76057c-9ad0-4a55-a9d9-7fbffe92e644")
 				c.Routes(
-					dogma.HandlesEvent[MessageA](),
+					dogma.HandlesEvent[EventStub[TypeA]](),
 				)
 			},
 			HandleEventFunc: func(
@@ -37,7 +36,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			},
 		}
 
-		app := &Application{
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "d61d15c0-0df7-466b-b0cc-749084399d73")
 				c.RegisterProjection(handler)
@@ -50,7 +49,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			StartTimeAt(now),
 		).
 			EnableHandlers("<handler-name>").
-			Prepare(RecordEvent(MessageA1))
+			Prepare(RecordEvent(EventA1))
 
 		Expect(called).To(BeTrue())
 	})
@@ -62,8 +61,8 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
 			HandleCommandFunc: func(
@@ -71,12 +70,12 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Command,
 			) error {
-				s.RecordEvent(MessageE1)
+				s.RecordEvent(EventA1)
 				return nil
 			},
 		}
 
-		app := &Application{
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "ad2a18d6-d87a-4b5c-a396-aa293ec64fdf")
 				c.RegisterIntegration(handler)
@@ -94,8 +93,8 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 		).
 			EnableHandlers("<handler-name>").
 			Expect(
-				ExecuteCommand(MessageC1),
-				ToRecordEvent(MessageE2), // this would fail without our custom comparator
+				ExecuteCommand(CommandA1),
+				ToRecordEvent(EventA2), // this would fail without our custom comparator
 			)
 	})
 })

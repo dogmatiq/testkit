@@ -7,7 +7,6 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/envelope"
@@ -29,7 +28,7 @@ var _ = g.Describe("type Controller", func() {
 	g.BeforeEach(func() {
 		command = envelope.NewCommand(
 			"1000",
-			MessageC1,
+			CommandA1,
 			time.Now(),
 		)
 
@@ -37,8 +36,8 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca")
 				c.Routes(
-					dogma.HandlesCommand[MessageC](),
-					dogma.RecordsEvent[MessageE](),
+					dogma.HandlesCommand[CommandStub[TypeA]](),
+					dogma.RecordsEvent[EventStub[TypeA]](),
 				)
 			},
 		}
@@ -91,7 +90,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Command,
 			) error {
 				called = true
-				Expect(m).To(Equal(MessageC1))
+				Expect(m).To(Equal(CommandA1))
 				return nil
 			}
 
@@ -112,8 +111,8 @@ var _ = g.Describe("type Controller", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Command,
 			) error {
-				s.RecordEvent(MessageE1)
-				s.RecordEvent(MessageE2)
+				s.RecordEvent(EventA1)
+				s.RecordEvent(EventA2)
 				return nil
 			}
 
@@ -129,7 +128,7 @@ var _ = g.Describe("type Controller", func() {
 			Expect(events).To(ConsistOf(
 				command.NewEvent(
 					"1",
-					MessageE1,
+					EventA1,
 					now,
 					envelope.Origin{
 						Handler:     config,
@@ -138,7 +137,7 @@ var _ = g.Describe("type Controller", func() {
 				),
 				command.NewEvent(
 					"2",
-					MessageE2,
+					EventA2,
 					now,
 					envelope.Origin{
 						Handler:     config,

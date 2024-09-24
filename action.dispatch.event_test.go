@@ -5,10 +5,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	. "github.com/dogmatiq/configkit/fixtures"
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -37,8 +35,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
 						c.Routes(
-							dogma.HandlesEvent[MessageE](),
-							dogma.ExecutesCommand[MessageC](),
+							dogma.HandlesEvent[EventStub[TypeA]](),
+							dogma.ExecutesCommand[CommandStub[TypeA]](),
 						)
 					},
 					RouteEventToInstanceFunc: func(
@@ -67,7 +65,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 
 	g.It("dispatches the message", func() {
 		test.Prepare(
-			RecordEvent(MessageE1),
+			RecordEvent(EventA1),
 		)
 
 		Expect(buf.Facts()).To(ContainElement(
@@ -76,8 +74,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 					MessageID:     "1",
 					CausationID:   "1",
 					CorrelationID: "1",
-					Message:       MessageE1,
-					Type:          MessageEType,
+					Message:       EventA1,
+					Type:          message.TypeOf(EventA1),
 					Role:          message.EventRole,
 					CreatedAt:     startTime,
 				},
@@ -97,12 +95,12 @@ var _ = g.Describe("func RecordEvent()", func() {
 		t.FailSilently = true
 
 		test.Prepare(
-			RecordEvent(MessageX1),
+			RecordEvent(EventX1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"cannot record event, fixtures.MessageX is a not a recognized message type",
+			"cannot record event, stubs.EventStub[TypeX] is a not a recognized message type",
 		))
 	})
 
@@ -110,12 +108,12 @@ var _ = g.Describe("func RecordEvent()", func() {
 		t.FailSilently = true
 
 		test.Prepare(
-			RecordEvent(MessageC1),
+			RecordEvent(CommandA1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
 		Expect(t.Logs).To(ContainElement(
-			"cannot record event, fixtures.MessageC is configured as a command",
+			"cannot record event, stubs.CommandStub[TypeA] is configured as a command",
 		))
 	})
 
@@ -123,8 +121,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 		t.FailSilently = true
 
 		test.Expect(
-			RecordEvent(MessageE1),
-			ToRecordEvent(MessageE1),
+			RecordEvent(EventA1),
+			ToRecordEvent(EventA1),
 		)
 
 		Expect(t.Failed()).To(BeTrue())
@@ -132,11 +130,11 @@ var _ = g.Describe("func RecordEvent()", func() {
 
 	g.It("produces the expected caption", func() {
 		test.Prepare(
-			RecordEvent(MessageE1),
+			RecordEvent(EventA1),
 		)
 
 		Expect(t.Logs).To(ContainElement(
-			"--- recording fixtures.MessageE event ---",
+			"--- recording stubs.EventStub[TypeA] event ---",
 		))
 	})
 
@@ -147,7 +145,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 	})
 
 	g.It("captures the location that the action was created", func() {
-		act := recordEvent(MessageE1)
+		act := recordEvent(EventA1)
 		Expect(act.Location()).To(MatchAllFields(
 			Fields{
 				"Func": Equal("github.com/dogmatiq/testkit_test.recordEvent"),

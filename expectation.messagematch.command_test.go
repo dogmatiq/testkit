@@ -3,9 +3,9 @@ package testkit_test
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -20,6 +20,17 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		app      dogma.Application
 	)
 
+	type (
+		EventThatIsIgnored        = EventStub[TypeX]
+		EventThatExecutesCommand  = EventStub[TypeC]
+		EventThatSchedulesTimeout = EventStub[TypeT]
+
+		CommandThatIsExecuted      = CommandStub[TypeC]
+		CommandThatIsNeverExecuted = CommandStub[TypeX]
+
+		TimeoutThatIsScheduled = TimeoutStub[TypeT]
+	)
+
 	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
@@ -29,35 +40,22 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "95d4b9b2-a0ec-4dfb-aa57-c7e5ef5b1f02")
 
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "0c7df570-4c3b-4d88-b6aa-68f8716bd93b")
-						c.Routes(
-							dogma.HandlesCommand[MessageR](), // R = record an event
-							dogma.RecordsEvent[MessageN](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						_ dogma.Command,
-					) {
-						s.RecordEvent(MessageN1)
-					},
-				})
-
+				// Register a process that will execute the commands about which
+				// we will make assertions using ToExecuteCommand().
 				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "d28572f4-ecce-48eb-92c5-d3968ab8636c")
+						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
 						c.Routes(
-							dogma.HandlesEvent[MessageE](),    // E = event
-							dogma.HandlesEvent[MessageN](),    // N = [do)]()thing
-							dogma.ExecutesCommand[MessageC](), // C = command
-							dogma.ExecutesCommand[MessageX](),
+							dogma.HandlesEvent[EventThatIsIgnored](),
+
+							dogma.HandlesEvent[EventThatExecutesCommand](),
+							dogma.ExecutesCommand[CommandThatIsExecuted](),
+							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
+
+							dogma.HandlesEvent[EventThatSchedulesTimeout](),
+							dogma.SchedulesTimeout[TimeoutThatIsScheduled](),
 						)
+
 					},
 					RouteEventToInstanceFunc: func(
 						context.Context,
@@ -71,13 +69,31 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 						s dogma.ProcessEventScope,
 						m dogma.Event,
 					) error {
-						if m, ok := m.(MessageE); ok {
-							s.ExecuteCommand(MessageC1)
+						switch m := m.(type) {
+						case EventThatExecutesCommand:
+							s.ExecuteCommand(
+								CommandThatIsExecuted{
+									Content: m.Content,
+								},
+							)
 
-							if m.Value == "<multiple>" {
-								s.ExecuteCommand(MessageC1)
+							if m.Content == "<multiple>" {
+								s.ExecuteCommand(
+									CommandThatIsExecuted{
+										Content: m.Content,
+									},
+								)
 							}
+
+						case EventThatSchedulesTimeout:
+							s.ScheduleTimeout(
+								TimeoutThatIsScheduled{
+									Content: m.Content,
+								},
+								time.Now().Add(1*time.Hour),
+							)
 						}
+
 						return nil
 					},
 				})
@@ -101,10 +117,10 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		},
 		g.Entry(
 			"matching command executed as expected",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
-					if m == MessageC1 {
+					if m == (CommandThatIsExecuted{}) {
 						return nil
 					}
 
@@ -113,15 +129,15 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:106`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:122`,
 			),
 		),
 		g.Entry(
-			"matching command executed as expected, using predicate with application-defined type parameter",
-			RecordEvent(MessageE1),
+			"matching command executed as expected, using predicate with a more specific type",
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
-				func(m MessageC) error {
-					if m == MessageC1 {
+				func(m CommandThatIsExecuted) error {
+					if m == (CommandThatIsExecuted{}) {
 						return nil
 					}
 
@@ -130,30 +146,26 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:123`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:139`,
 			),
 		),
 		g.Entry(
 			"no matching command executed",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
-					if m == MessageX1 {
-						return nil
-					}
-
 					return errors.New("<error>")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:140`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:156`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageC: <error>`,
+				`  |     • stubs.CommandStub[TypeC]: <error>`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -161,16 +173,16 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		),
 		g.Entry(
-			"no matching command executed, using predicate with application-defined type parameter",
-			RecordEvent(MessageE1),
+			"no matching command executed, using predicate with a more specific type",
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
-				func(m MessageX) error {
+				func(m CommandThatIsNeverExecuted) error {
 					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:167`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:179`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -181,7 +193,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"no messages produced at all",
-			RecordEvent(MessageN1),
+			RecordEvent(EventThatIsIgnored{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
 					panic("unexpected call")
@@ -189,7 +201,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:186`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:198`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -200,15 +212,15 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"no commands produced at all",
-			ExecuteCommand(MessageR1),
+			RecordEvent(EventThatSchedulesTimeout{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
-					return IgnoreMessage
+					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:205`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:217`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -219,19 +231,15 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
-			ExecuteCommand(MessageR1),
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
-					if m == MessageX1 {
-						return nil
-					}
-
 					return errors.New("<error>")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:224`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:236`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -245,7 +253,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"no matching command executed and commands were ignored",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
 					return IgnoreMessage
@@ -253,7 +261,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:250`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:258`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -265,8 +273,8 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"no matching command executed and error messages were repeated",
-			RecordEvent(MessageE{
-				Value: "<multiple>", // trigger multiple MessageC commands
+			RecordEvent(EventThatExecutesCommand{
+				Content: "<multiple>",
 			}),
 			ToExecuteCommandMatching(
 				func(m dogma.Command) error {
@@ -275,13 +283,13 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:272`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:280`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageC: <error> (repeated 2 times)`,
+				`  |     • stubs.CommandStub[TypeC]: <error> (repeated 2 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -290,23 +298,15 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 		),
 		g.Entry(
 			"does not include an explanation when negated and a sibling expectation passes",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			NoneOf(
 				ToExecuteCommandMatching(
 					func(m dogma.Command) error {
-						if m == MessageC1 {
-							return nil
-						}
-
-						return errors.New("<error>")
+						return nil
 					},
 				),
 				ToExecuteCommandMatching(
 					func(m dogma.Command) error {
-						if m == MessageX1 {
-							return nil
-						}
-
 						return errors.New("<error>")
 					},
 				),
@@ -314,8 +314,8 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:296`,
-				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:305`,
+				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:305`,
+				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:309`,
 			),
 		),
 	)

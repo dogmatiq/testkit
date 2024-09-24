@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/dogmatiq/dogma"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -20,6 +19,15 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		app      dogma.Application
 	)
 
+	type (
+		CommandThatIsIgnored    = CommandStub[TypeX]
+		CommandThatRecordsEvent = CommandStub[TypeE]
+
+		EventThatIsRecorded      = EventStub[TypeE]
+		EventThatIsNeverRecorded = EventStub[TypeX]
+		EventThatExecutesCommand = EventStub[TypeC]
+	)
+
 	g.BeforeEach(func() {
 		testingT = &testingmock.T{
 			FailSilently: true,
@@ -31,13 +39,13 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 
 				c.RegisterAggregate(&AggregateMessageHandlerStub{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "8305181b-b87f-4446-8f56-a3c38d5bd32f")
+						c.Identity("<aggregate>", "6a182af9-4659-49cf-8c44-85dfd47dbefc")
 						c.Routes(
-							dogma.HandlesCommand[MessageR](), // R = record an event
-							dogma.HandlesCommand[MessageN](), // N = do nothing
-							dogma.RecordsEvent[MessageE](),
-							dogma.RecordsEvent[*MessageE](), // pointer, used to test type similarity
-							dogma.RecordsEvent[MessageX](),
+							dogma.HandlesCommand[CommandThatIsIgnored](),
+
+							dogma.HandlesCommand[CommandThatRecordsEvent](),
+							dogma.RecordsEvent[EventThatIsRecorded](),
+							dogma.RecordsEvent[EventThatIsNeverRecorded](),
 						)
 					},
 					RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -48,11 +56,20 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 						s dogma.AggregateCommandScope,
 						m dogma.Command,
 					) {
-						if m, ok := m.(MessageR); ok {
-							s.RecordEvent(MessageE1)
+						switch m := m.(type) {
+						case CommandThatRecordsEvent:
+							s.RecordEvent(
+								EventThatIsRecorded{
+									Content: m.Content,
+								},
+							)
 
-							if m.Value == "<multiple>" {
-								s.RecordEvent(MessageE1)
+							if m.Content == "<multiple>" {
+								s.RecordEvent(
+									EventThatIsRecorded{
+										Content: m.Content,
+									},
+								)
 							}
 						}
 					},
@@ -60,11 +77,10 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 
 				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "0bd19cfa-c910-453f-a6cc-959fdce9c34f")
+						c.Identity("<process>", "7651ad19-1526-48c0-a53d-676286a34ca6")
 						c.Routes(
-							dogma.HandlesEvent[MessageE](), // E = execute a command
-							dogma.HandlesEvent[MessageO](), // O = only consumed, never produced
-							dogma.ExecutesCommand[MessageN](),
+							dogma.HandlesEvent[EventThatExecutesCommand](),
+							dogma.ExecutesCommand[CommandThatIsIgnored](),
 						)
 					},
 					RouteEventToInstanceFunc: func(
@@ -79,8 +95,9 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 						s dogma.ProcessEventScope,
 						m dogma.Event,
 					) error {
-						if _, ok := m.(MessageE); ok {
-							s.ExecuteCommand(MessageN1)
+						switch m.(type) {
+						case EventThatExecutesCommand:
+							s.ExecuteCommand(CommandThatIsIgnored{})
 						}
 						return nil
 					},
@@ -105,27 +122,10 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		},
 		g.Entry(
 			"matching event recorded as expected",
-			ExecuteCommand(MessageR1),
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
-					if m == MessageE1 {
-						return nil
-					}
-
-					return errors.New("<error>")
-				},
-			),
-			expectPass,
-			expectReport(
-				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:110`,
-			),
-		),
-		g.Entry(
-			"matching event recorded as expected, using predicate with application-defined type parameter",
-			ExecuteCommand(MessageR1),
-			ToRecordEventMatching(
-				func(m MessageE) error {
-					if m == MessageE1 {
+					if m == (EventThatIsRecorded{}) {
 						return nil
 					}
 
@@ -138,26 +138,39 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
-			"no matching event recorded",
-			ExecuteCommand(MessageR1),
+			"matching event recorded as expected, using predicate with a more specific type",
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			ToRecordEventMatching(
-				func(m dogma.Event) error {
-					if m == MessageX1 {
+				func(m EventThatIsRecorded) error {
+					if m == (EventThatIsRecorded{}) {
 						return nil
 					}
 
 					return errors.New("<error>")
 				},
 			),
+			expectPass,
+			expectReport(
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:144`,
+			),
+		),
+		g.Entry(
+			"no matching event recorded",
+			ExecuteCommand(CommandThatRecordsEvent{}),
+			ToRecordEventMatching(
+				func(m dogma.Event) error {
+					return errors.New("<error>")
+				},
+			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:144`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:161`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageE: <error>`,
+				`  |     • stubs.EventStub[TypeE]: <error>`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -166,16 +179,16 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 		),
 		g.Entry(
-			"no matching event recorded, using predicate with application-defined type parameter",
-			ExecuteCommand(MessageR1),
+			"no matching event recorded, using predicate with a more specific type",
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			ToRecordEventMatching(
-				func(m MessageX) error {
+				func(m EventThatIsNeverRecorded) error {
 					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:172`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:185`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -188,7 +201,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 		g.Entry(
 			"no messages produced at all",
-			ExecuteCommand(MessageN1),
+			ExecuteCommand(CommandThatIsIgnored{}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
 					panic("unexpected call")
@@ -196,7 +209,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:193`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:206`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -208,15 +221,15 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 		g.Entry(
 			"no events recorded at all",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommand{}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
-					return IgnoreMessage
+					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:213`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:226`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -228,7 +241,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 		g.Entry(
 			"no matching event recorded and all relevant handler types disabled",
-			ExecuteCommand(MessageR1),
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
 					panic("unexpected call")
@@ -236,7 +249,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:233`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:246`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -250,10 +263,9 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 				engine.EnableIntegrations(false),
 			),
 		),
-
 		g.Entry(
 			"no matching event recorded and events were ignored",
-			ExecuteCommand(MessageR1),
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
 					return IgnoreMessage
@@ -261,7 +273,7 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:258`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:270`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -274,8 +286,8 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 		g.Entry(
 			"no matching event recorded and error messages were repeated",
-			ExecuteCommand(MessageR{
-				Value: "<multiple>", // trigger multiple MessageE events
+			ExecuteCommand(CommandThatRecordsEvent{
+				Content: "<multiple>",
 			}),
 			ToRecordEventMatching(
 				func(m dogma.Event) error {
@@ -284,13 +296,13 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:281`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:293`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageE: <error> (repeated 2 times)`,
+				`  |     • stubs.EventStub[TypeE]: <error> (repeated 2 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -300,23 +312,15 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 		g.Entry(
 			"does not include an explanation when negated and a sibling expectation passes",
-			ExecuteCommand(MessageR1),
+			ExecuteCommand(CommandThatRecordsEvent{}),
 			NoneOf(
 				ToRecordEventMatching(
 					func(m dogma.Event) error {
-						if m == MessageE1 {
-							return nil
-						}
-
-						return errors.New("<error>")
+						return nil
 					},
 				),
 				ToRecordEventMatching(
 					func(m dogma.Event) error {
-						if m == MessageX1 {
-							return nil
-						}
-
 						return errors.New("<error>")
 					},
 				),
@@ -324,8 +328,8 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:306`,
-				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:315`,
+				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:319`,
+				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:323`,
 			),
 		),
 	)
