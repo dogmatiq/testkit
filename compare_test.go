@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
-	"github.com/dogmatiq/testkit/internal/fixtures"
+	. "github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -29,14 +29,14 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 			),
 			g.Entry(
 				"protocol buffers",
-				&fixtures.ProtoMessage{Value: "<value>"},
-				&fixtures.ProtoMessage{Value: "<value>"},
+				&ProtoMessage{Value: "<value>"},
+				&ProtoMessage{Value: "<value>"},
 			),
 		)
 
 		g.It("ignores unexported fields when comparing protocol buffers messages", func() {
-			a := &fixtures.ProtoMessage{Value: "<value>"}
-			b := &fixtures.ProtoMessage{Value: "<value>"}
+			a := &ProtoMessage{Value: "<value>"}
+			b := &ProtoMessage{Value: "<value>"}
 
 			g.By("initializing the unexported fields within one of the messages")
 			_ = a.String()
@@ -69,8 +69,8 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 			),
 			g.Entry(
 				"protocol buffers",
-				&fixtures.ProtoMessage{Value: "<value-a>"},
-				&fixtures.ProtoMessage{Value: "<value-b>"},
+				&ProtoMessage{Value: "<value-a>"},
+				&ProtoMessage{Value: "<value-b>"},
 			),
 		)
 	})
