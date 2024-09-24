@@ -3,7 +3,6 @@ package testkit
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
@@ -199,7 +198,7 @@ func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
 	if m, ok := env.Message.(T); ok {
 		err = p.pred(m)
 	} else if p.exhaustive {
-		err = fmt.Errorf("predicate function expected %s", reflect.TypeFor[T]())
+		err = fmt.Errorf("predicate function expected %s", message.TypeFor[T]())
 	} else {
 		err = IgnoreMessage
 	}

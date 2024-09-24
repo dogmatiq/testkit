@@ -5,8 +5,6 @@ import (
 	"errors"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/dogma/fixtures"
-	. "github.com/dogmatiq/dogma/fixtures"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
@@ -18,6 +16,11 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 	var (
 		testingT *testingmock.T
 		app      dogma.Application
+	)
+
+	type (
+		EventThatExecutesCommands = EventStub[TypeC]
+		CommandThatIsExecuted     = CommandStub[TypeC]
 	)
 
 	g.BeforeEach(func() {
@@ -33,8 +36,8 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
 						c.Routes(
-							dogma.HandlesEvent[MessageE](),    // E = event
-							dogma.ExecutesCommand[MessageC](), // C = command
+							dogma.HandlesEvent[EventThatExecutesCommands](),
+							dogma.ExecutesCommand[CommandThatIsExecuted](),
 						)
 					},
 					RouteEventToInstanceFunc: func(
@@ -49,9 +52,9 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 						s dogma.ProcessEventScope,
 						m dogma.Event,
 					) error {
-						s.ExecuteCommand(MessageC1)
-						s.ExecuteCommand(MessageC2)
-						s.ExecuteCommand(MessageC3)
+						s.ExecuteCommand(CommandC1)
+						s.ExecuteCommand(CommandC2)
+						s.ExecuteCommand(CommandC3)
 						return nil
 					},
 				})
@@ -75,7 +78,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		},
 		g.Entry(
 			"all executed commands match",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
 				func(m dogma.Command) error {
 					return nil
@@ -83,20 +86,20 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:81`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:84`,
 			),
 		),
 		g.Entry(
 			"all executed commands match, using predicate with a more specific type",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
-				func(m MessageC) error {
+				func(m CommandThatIsExecuted) error {
 					return nil
 				},
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:94`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:97`,
 			),
 		),
 		g.Entry(
@@ -109,12 +112,12 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:106`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:109`,
 			),
 		),
 		g.Entry(
 			"none of the executed commands match",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
 				func(m dogma.Command) error {
 					return errors.New("<error>")
@@ -122,13 +125,13 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:119`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:122`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageC: <error> (repeated 3 times)`,
+				`  |     • stubs.CommandStub[TypeC]: <error> (repeated 3 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -137,13 +140,13 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		),
 		g.Entry(
 			"some matching commands executed",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
 				func(m dogma.Command) error {
 					switch m {
-					case fixtures.MessageC1:
+					case CommandC1:
 						return errors.New("<error>")
-					case fixtures.MessageC2:
+					case CommandC2:
 						return IgnoreMessage
 					default:
 						return nil
@@ -152,13 +155,13 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:142`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:145`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageC: <error>`,
+				`  |     • stubs.CommandStub[TypeC]: <error>`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function, it ignored 1 command`,
@@ -167,21 +170,21 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		),
 		g.Entry(
 			"no executed commands match, using predicate with a more specific type",
-			RecordEvent(MessageE1),
+			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
-				func(m MessageX) error {
+				func(m CommandStub[TypeX]) error {
 					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:172`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:175`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • fixtures.MessageC: predicate function expected fixtures.MessageX (repeated 3 times)`,
+				`  |     • stubs.CommandStub[TypeC]: predicate function expected stubs.CommandStub[TypeX] (repeated 3 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
