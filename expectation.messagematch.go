@@ -3,6 +3,7 @@ package testkit
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
@@ -152,6 +153,13 @@ func (e *messageMatchExpectation[T]) Caption() string {
 }
 
 func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, error) {
+	t := message.TypeFor[T]()
+	if t.ReflectType().Kind() != reflect.Interface {
+		if err := validateRole(s, t, e.expectedRole); err != nil {
+			return nil, err
+		}
+	}
+
 	return &messageMatchPredicate[T]{
 		pred:         e.pred,
 		expectedRole: e.expectedRole,

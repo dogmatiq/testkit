@@ -334,6 +334,57 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 		),
 	)
 
+	g.It("fails the test if the message type is unrecognized", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToRecordEventMatching(
+				func(EventStub[TypeU]) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"an event of type stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
+		))
+	})
+
+	g.It("fails the test if the message type is not an event", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToRecordEventMatching(
+				func(CommandThatRecordsEvent) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"stubs.CommandStub[TypeE] is a command, it can never be recorded as an event",
+		))
+	})
+
+	g.It("fails the test if the message type is not produced by any handlers", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToRecordEventMatching(
+				func(EventThatExecutesCommand) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"no handlers record events of type stubs.EventStub[TypeC], it is only ever consumed",
+		))
+	})
+
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
 			var fn func(dogma.Event) error

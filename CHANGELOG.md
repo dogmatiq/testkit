@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - Fixed issue that caused an empty `SUGGESTIONS` section to be printed on test
   reports in some circumstances.
+- `ToExecuteCommandMatching()`, `ToOnlyExecuteCommandsMatching()`,
+  `ToRecordEventMatching()` and `ToOnlyRecordEventsMatching()` now properly
+  report impossible assertions when the predicate's argument type is not a
+  recognized message.
 
 ## [0.17.0] - 2024-08-21
 

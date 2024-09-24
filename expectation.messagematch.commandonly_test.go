@@ -20,7 +20,10 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 
 	type (
 		EventThatExecutesCommands = EventStub[TypeC]
-		CommandThatIsExecuted     = CommandStub[TypeC]
+
+		CommandThatIsExecuted      = CommandStub[TypeC]
+		CommandThatIsNeverExecuted = CommandStub[TypeX]
+		CommandThatIsOnlyConsumed  = CommandStub[TypeO]
 	)
 
 	g.BeforeEach(func() {
@@ -38,6 +41,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 						c.Routes(
 							dogma.HandlesEvent[EventThatExecutesCommands](),
 							dogma.ExecutesCommand[CommandThatIsExecuted](),
+							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
 						)
 					},
 					RouteEventToInstanceFunc: func(
@@ -56,6 +60,15 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 						s.ExecuteCommand(CommandC2)
 						s.ExecuteCommand(CommandC3)
 						return nil
+					},
+				})
+
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "20bf2831-1887-4148-9539-eb7c294e80b6")
+						c.Routes(
+							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
+						)
 					},
 				})
 			},
@@ -86,7 +99,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:84`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:97`,
 			),
 		),
 		g.Entry(
@@ -99,7 +112,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:97`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:110`,
 			),
 		),
 		g.Entry(
@@ -112,7 +125,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:109`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:122`,
 			),
 		),
 		g.Entry(
@@ -125,7 +138,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:122`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:135`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -155,7 +168,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:145`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:158`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -172,13 +185,13 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			"no executed commands match, using predicate with a more specific type",
 			RecordEvent(EventThatExecutesCommands{}),
 			ToOnlyExecuteCommandsMatching(
-				func(m CommandStub[TypeX]) error {
+				func(m CommandThatIsNeverExecuted) error {
 					panic("unexpected call")
 				},
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:175`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:188`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -192,6 +205,57 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 		),
 	)
+
+	g.It("fails the test if the message type is unrecognized", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToOnlyExecuteCommandsMatching(
+				func(CommandStub[TypeU]) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"a command of type stubs.CommandStub[TypeU] can never be executed, the application does not use this message type",
+		))
+	})
+
+	g.It("fails the test if the message type is not a command", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToOnlyExecuteCommandsMatching(
+				func(EventThatExecutesCommands) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"stubs.EventStub[TypeC] is an event, it can never be executed as a command",
+		))
+	})
+
+	g.It("fails the test if the message type is not produced by any handlers", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToOnlyExecuteCommandsMatching(
+				func(CommandThatIsOnlyConsumed) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"no handlers execute commands of type stubs.CommandStub[TypeO], it is only ever consumed",
+		))
+	})
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {

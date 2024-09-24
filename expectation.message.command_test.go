@@ -40,8 +40,6 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "ce773269-4ad7-4c7f-a0ff-cda2e5899743")
 
-				// Register a process that will execute the commands about which
-				// we will make assertions using ToExecuteCommand().
 				c.RegisterProcess(&ProcessMessageHandlerStub{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
@@ -90,9 +88,6 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 					},
 				})
 
-				// Register an integration so that we can test what happens when
-				// we expect execution of a command that is never executed by
-				// any handler (only consumed).
 				c.RegisterIntegration(&IntegrationMessageHandlerStub{
 					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 						c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")

@@ -27,6 +27,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 
 		CommandThatIsExecuted      = CommandStub[TypeC]
 		CommandThatIsNeverExecuted = CommandStub[TypeX]
+		CommandThatIsOnlyConsumed  = CommandStub[TypeO]
 
 		TimeoutThatIsScheduled = TimeoutStub[TypeT]
 	)
@@ -97,6 +98,15 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 						return nil
 					},
 				})
+
+				c.RegisterIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "7cf5a7fe-9f69-46be-8c59-cc12c4825aaf")
+						c.Routes(
+							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
+						)
+					},
+				})
 			},
 		}
 	})
@@ -129,7 +139,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:122`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:132`,
 			),
 		),
 		g.Entry(
@@ -146,7 +156,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:139`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:149`,
 			),
 		),
 		g.Entry(
@@ -159,7 +169,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:156`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:166`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -182,7 +192,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:179`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:189`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -201,7 +211,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:198`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:208`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -220,7 +230,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:217`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:227`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -239,7 +249,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:236`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:246`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -261,7 +271,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:258`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:268`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -283,7 +293,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:280`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:290`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -314,11 +324,62 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:305`,
-				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:309`,
+				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:315`,
+				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:319`,
 			),
 		),
 	)
+
+	g.It("fails the test if the message type is unrecognized", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandMatching(
+				func(CommandStub[TypeU]) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"a command of type stubs.CommandStub[TypeU] can never be executed, the application does not use this message type",
+		))
+	})
+
+	g.It("fails the test if the message type is not a command", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandMatching(
+				func(EventThatExecutesCommand) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"stubs.EventStub[TypeC] is an event, it can never be executed as a command",
+		))
+	})
+
+	g.It("fails the test if the message type is not produced by any handlers", func() {
+		test := Begin(testingT, app)
+		test.Expect(
+			noop,
+			ToExecuteCommandMatching(
+				func(CommandThatIsOnlyConsumed) error {
+					return nil
+				},
+			),
+		)
+
+		Expect(testingT.Failed()).To(BeTrue())
+		Expect(testingT.Logs).To(ContainElement(
+			"no handlers execute commands of type stubs.CommandStub[TypeO], it is only ever consumed",
+		))
+	})
 
 	g.It("panics if the function is nil", func() {
 		Expect(func() {
