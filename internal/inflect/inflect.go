@@ -9,8 +9,8 @@ import (
 	"github.com/dogmatiq/configkit/message"
 )
 
-var substitutions = map[message.Role]map[string]string{
-	message.CommandRole: {
+var substitutions = map[message.Kind]map[string]string{
+	message.CommandKind: {
 		"<message>":    "command",
 		"<messages>":   "commands",
 		"<produce>":    "execute",
@@ -18,7 +18,7 @@ var substitutions = map[message.Role]map[string]string{
 		"<producing>":  "executing",
 		"<dispatcher>": "dogma.CommandExecutor",
 	},
-	message.EventRole: {
+	message.EventKind: {
 		"<message>":    "event",
 		"<messages>":   "events",
 		"<produce>":    "record",
@@ -26,7 +26,7 @@ var substitutions = map[message.Role]map[string]string{
 		"<producing>":  "recording",
 		"<dispatcher>": "dogma.EventRecorder",
 	},
-	message.TimeoutRole: {
+	message.TimeoutKind: {
 		"<message>":   "timeout",
 		"<messages>":  "timeouts",
 		"<produce>":   "schedule",
@@ -45,8 +45,8 @@ var corrections = map[string]string{
 }
 
 // Sprint formats a string, inflecting words in s match the message role r.
-func Sprint(r message.Role, s string) string {
-	for k, v := range substitutions[r] {
+func Sprint(k message.Kind, s string) string {
+	for k, v := range substitutions[k] {
 		s = strings.ReplaceAll(s, k, v)
 		s = strings.ReplaceAll(s, strings.ToUpper(k), strings.ToUpper(v))
 	}
@@ -60,21 +60,21 @@ func Sprint(r message.Role, s string) string {
 }
 
 // Sprintf formats a string, inflecting words in f match the message role r.
-func Sprintf(r message.Role, f string, v ...any) string {
+func Sprintf(k message.Kind, f string, v ...any) string {
 	return Sprint(
-		r,
+		k,
 		fmt.Sprintf(f, v...),
 	)
 }
 
 // Error returns a new error, inflecting words in s to match the message role r.
-func Error(r message.Role, s string) error {
-	return errors.New(Sprint(r, s))
+func Error(k message.Kind, s string) error {
+	return errors.New(Sprint(k, s))
 }
 
 // Errorf returns a new error, inflecting words in f to match the message role r.
-func Errorf(r message.Role, f string, v ...any) error {
-	return errors.New(Sprintf(r, f, v...))
+func Errorf(k message.Kind, f string, v ...any) error {
+	return errors.New(Sprintf(k, f, v...))
 }
 
 // replaceAll replaces all instances of k with v, at word boundaries.
