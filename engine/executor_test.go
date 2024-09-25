@@ -66,16 +66,10 @@ var _ = g.Describe("type CommandExecutor", func() {
 			gm.Expect(called).To(gm.BeTrue())
 		})
 
-		g.It("panics if the message is not a command", func() {
-			gm.Expect(func() {
-				executor.ExecuteCommand(context.Background(), EventA1)
-			}).To(gm.PanicWith("cannot execute command, stubs.EventStub[TypeA] is configured as an event"))
-		})
-
 		g.It("panics if the message is unrecognized", func() {
 			gm.Expect(func() {
 				executor.ExecuteCommand(context.Background(), CommandX1)
-			}).To(gm.PanicWith("cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type"))
+			}).To(gm.PanicWith("the stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
 		})
 	})
 })

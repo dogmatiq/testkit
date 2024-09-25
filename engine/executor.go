@@ -3,7 +3,6 @@ package engine
 import (
 	"context"
 
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 )
 
@@ -25,5 +24,5 @@ func (e CommandExecutor) ExecuteCommand(
 	m dogma.Command,
 	_ ...dogma.ExecuteCommandOption,
 ) error {
-	return e.Engine.mustDispatch(ctx, message.CommandRole, m, e.Options...)
+	return e.Engine.Dispatch(ctx, m, e.Options...)
 }

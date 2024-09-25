@@ -17,8 +17,6 @@ type configurer struct {
 }
 
 func (c *configurer) VisitRichApplication(ctx context.Context, cfg configkit.RichApplication) error {
-	c.engine.roles = cfg.MessageTypes().All()
-
 	return cfg.RichHandlers().AcceptRichVisitor(ctx, c)
 }
 
@@ -76,11 +74,11 @@ func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichPr
 
 func (c *configurer) registerController(
 	ctrl controller,
-	types map[message.Type]message.Role,
+	consumed message.Set[message.Type],
 ) {
 	c.engine.controllers[ctrl.HandlerConfig().Identity().Name] = ctrl
 
-	for t := range types {
+	for t := range consumed.All() {
 		c.engine.routes[t] = append(c.engine.routes[t], ctrl)
 	}
 }

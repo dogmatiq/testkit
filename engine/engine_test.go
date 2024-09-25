@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/enginetest"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
@@ -164,8 +163,6 @@ var _ = g.Describe("type Engine", func() {
 						CausationID:   "1",
 						CorrelationID: "1",
 						Message:       AggregateCommand{},
-						Type:          message.TypeFor[AggregateCommand](),
-						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
 					Reason: fact.HandlerTypeDisabled,
@@ -202,8 +199,6 @@ var _ = g.Describe("type Engine", func() {
 						CausationID:   "1",
 						CorrelationID: "1",
 						Message:       AggregateCommand{},
-						Type:          message.TypeFor[AggregateCommand](),
-						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
 					Reason: fact.IndividualHandlerDisabled,

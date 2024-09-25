@@ -64,8 +64,10 @@ func (c *Controller) Handle(
 	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
-	if !c.Config.MessageTypes().Consumed.Has(env.Type) {
-		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), env.Type))
+	mt := message.TypeOf(env.Message)
+
+	if !c.Config.MessageTypes().Consumed.Has(mt) {
+		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
 	id, ok, err := c.route(ctx, obs, env)
@@ -112,18 +114,19 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		instanceID:   id,
-		config:       c.Config,
-		handleMethod: "HandleEvent",
-		messageIDs:   c.MessageIDs,
-		observer:     obs,
-		now:          now,
-		root:         r,
-		env:          env,
-	}
-
-	if s.env.Role == message.TimeoutRole {
-		s.handleMethod = "HandleTimeout"
+		instanceID: id,
+		config:     c.Config,
+		handleMethod: message.Map(
+			env.Message,
+			func(dogma.Command) string { panic("unexpected message kind") },
+			func(dogma.Event) string { return "HandleEvent" },
+			func(dogma.Timeout) string { return "HandleTimeout" },
+		),
+		messageIDs: c.MessageIDs,
+		observer:   obs,
+		now:        now,
+		root:       r,
+		env:        env,
 	}
 
 	if err := c.handle(ctx, s); err != nil {
@@ -154,18 +157,21 @@ func (c *Controller) route(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
-) (string, bool, error) {
-	if env.Role == message.EventRole {
-		return c.routeEvent(ctx, obs, env)
-	}
-
-	return c.routeTimeout(ctx, obs, env)
+) (id string, ok bool, err error) {
+	message.Switch(
+		env.Message,
+		func(m dogma.Command) { panic("unexpected message kind") },
+		func(m dogma.Event) { id, ok, err = c.routeEvent(ctx, obs, env, m) },
+		func(m dogma.Timeout) { id, ok, err = c.routeTimeout(ctx, obs, env) },
+	)
+	return id, ok, err
 }
 
 func (c *Controller) routeEvent(
 	ctx context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
+	m dogma.Event,
 ) (string, bool, error) {
 	handler := c.Config.Handler()
 
@@ -179,9 +185,9 @@ func (c *Controller) routeEvent(
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
 		handler,
-		env.Message,
+		m,
 		func() {
-			id, ok, err = handler.RouteEventToInstance(ctx, env.Message)
+			id, ok, err = handler.RouteEventToInstance(ctx, m)
 		},
 	)
 
@@ -196,8 +202,8 @@ func (c *Controller) routeEvent(
 				Interface:      "ProcessMessageHandler",
 				Method:         "RouteEventToInstance",
 				Implementation: handler,
-				Message:        env.Message,
-				Description:    fmt.Sprintf("routed an event of type %s to an empty ID", env.Type),
+				Message:        m,
+				Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
 				Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
 			})
 		}
@@ -241,10 +247,11 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		c.Config.Handler(),
 		s.env.Message,
 		func() {
-			if s.env.Role == message.EventRole {
-				err = c.Config.Handler().HandleEvent(ctx, s.root, s, s.env.Message)
-			} else {
-				err = c.Config.Handler().HandleTimeout(ctx, s.root, s, s.env.Message)
+			switch m := s.env.Message.(type) {
+			case dogma.Event:
+				err = c.Config.Handler().HandleEvent(ctx, s.root, s, m)
+			case dogma.Timeout:
+				err = c.Config.Handler().HandleTimeout(ctx, s.root, s, m)
 			}
 		},
 	)
