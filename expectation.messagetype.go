@@ -15,7 +15,6 @@ import (
 func ToExecuteCommandType[T dogma.Command]() Expectation {
 	return &messageTypeExpectation{
 		expectedType: message.TypeFor[T](),
-		expectedRole: message.CommandRole,
 	}
 }
 
@@ -30,7 +29,6 @@ func ToExecuteCommandOfType(m dogma.Command) Expectation {
 
 	return &messageTypeExpectation{
 		expectedType: message.TypeOf(m),
-		expectedRole: message.CommandRole,
 	}
 }
 
@@ -39,7 +37,6 @@ func ToExecuteCommandOfType(m dogma.Command) Expectation {
 func ToRecordEventType[T dogma.Event]() Expectation {
 	return &messageTypeExpectation{
 		expectedType: message.TypeFor[T](),
-		expectedRole: message.EventRole,
 	}
 }
 
@@ -54,7 +51,6 @@ func ToRecordEventOfType(m dogma.Event) Expectation {
 
 	return &messageTypeExpectation{
 		expectedType: message.TypeOf(m),
-		expectedRole: message.EventRole,
 	}
 }
 
@@ -65,34 +61,35 @@ func ToRecordEventOfType(m dogma.Event) Expectation {
 // ToRecordEventOfType().
 type messageTypeExpectation struct {
 	expectedType message.Type
-	expectedRole message.Role
 }
 
 func (e *messageTypeExpectation) Caption() string {
 	return inflect.Sprintf(
-		e.expectedRole,
+		e.expectedType.Kind(),
 		"to <produce> a <message> of type %s",
 		e.expectedType,
 	)
 }
 
 func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) {
+	if err := guardAgainstExpectationOnImpossibleType(s, e.expectedType); err != nil {
+		return nil, err
+	}
+
 	return &messageTypePredicate{
 		expectedType:      e.expectedType,
-		expectedRole:      e.expectedRole,
 		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
-			role:    e.expectedRole,
+			kind:    e.expectedType.Kind(),
 			options: s.Options,
 		},
-	}, validateRole(s, e.expectedType, e.expectedRole)
+	}, nil
 }
 
 // messageTypePredicate is the Predicate implementation for
 // messageTypeExpectation.
 type messageTypePredicate struct {
 	expectedType      message.Type
-	expectedRole      message.Role
 	ok                bool
 	bestMatch         *envelope.Envelope
 	bestMatchDistance typecmp.Distance
@@ -112,9 +109,11 @@ func (p *messageTypePredicate) Notify(f fact.Fact) {
 // messageProduced updates the predicates's state to reflect the fact that a
 // message has been produced.
 func (p *messageTypePredicate) messageProduced(env *envelope.Envelope) {
+	producedType := message.TypeOf(env.Message)
+
 	dist := typecmp.MeasureDistance(
 		p.expectedType.ReflectType(),
-		env.Type.ReflectType(),
+		producedType.ReflectType(),
 	)
 
 	if dist < p.bestMatchDistance {
@@ -122,7 +121,7 @@ func (p *messageTypePredicate) messageProduced(env *envelope.Envelope) {
 		p.bestMatchDistance = dist
 	}
 
-	if dist == typecmp.Identical && p.expectedRole == env.Role {
+	if dist == typecmp.Identical {
 		p.ok = true
 	}
 }
@@ -139,7 +138,7 @@ func (p *messageTypePredicate) Report(ctx ReportGenerationContext) *Report {
 		TreeOk: ctx.TreeOk,
 		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
-			p.expectedRole,
+			p.expectedType.Kind(),
 			"<produce> any '%s' <message>",
 			p.expectedType,
 		),
@@ -158,12 +157,12 @@ func (p *messageTypePredicate) Report(ctx ReportGenerationContext) *Report {
 
 	if p.bestMatch.Origin == nil {
 		rep.Explanation = inflect.Sprint(
-			p.expectedRole,
+			p.expectedType.Kind(),
 			"a <message> of a similar type was <produced> via a <dispatcher>",
 		)
 	} else {
 		rep.Explanation = inflect.Sprintf(
-			p.expectedRole,
+			p.expectedType.Kind(),
 			"a <message> of a similar type was <produced> by the '%s' %s message handler",
 			p.bestMatch.Origin.Handler.Identity().Name,
 			p.bestMatch.Origin.Handler.HandlerType(),
@@ -184,6 +183,6 @@ func (p *messageTypePredicate) buildDiff(rep *Report) {
 	report.WriteDiff(
 		&rep.Section("Message Type Diff").Content,
 		p.expectedType.String(),
-		p.bestMatch.Type.String(),
+		message.TypeOf(p.bestMatch.Message).String(),
 	)
 }

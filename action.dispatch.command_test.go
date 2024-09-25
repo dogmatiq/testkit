@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
@@ -68,8 +67,6 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 					CausationID:   "1",
 					CorrelationID: "1",
 					Message:       CommandA1,
-					Type:          message.TypeOf(CommandA1),
-					Role:          message.CommandRole,
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,
@@ -94,19 +91,6 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		gm.Expect(t.Failed()).To(gm.BeTrue())
 		gm.Expect(t.Logs).To(gm.ContainElement(
 			"cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type",
-		))
-	})
-
-	g.It("fails the test if the message type is not a command", func() {
-		t.FailSilently = true
-
-		test.Prepare(
-			ExecuteCommand(EventA1),
-		)
-
-		gm.Expect(t.Failed()).To(gm.BeTrue())
-		gm.Expect(t.Logs).To(gm.ContainElement(
-			"cannot execute command, stubs.EventStub[TypeA] is configured as an event",
 		))
 	})
 

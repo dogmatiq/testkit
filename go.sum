@@ -1,20 +1,25 @@
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dogmatiq/configkit v0.14.0 h1:Gr79vNfmHzEwPn/6QbNSUjitvYk9jJRuLGZSmyXeIEk=
-github.com/dogmatiq/configkit v0.14.0/go.mod h1:BMGhQBVMJuTN7KYd99M0qWUEQcuStlTZ2jxykua+MEI=
+github.com/dogmatiq/configkit v0.13.9-0.20240925232509-f4838f33e657 h1:karWGZKGrSam2JBitE57CxREF4AqFP3uAwAX0+3xeJ8=
+github.com/dogmatiq/configkit v0.13.9-0.20240925232509-f4838f33e657/go.mod h1:yRpGriDLiSMPOUi7jfR+1e69bIAoa5Y1UD/lPdUTiv8=
 github.com/dogmatiq/cosyne v0.2.0 h1:tO957BpS4I9kqSw31ds6Ef4CXvV8zPAqWzbXKElsGWg=
 github.com/dogmatiq/cosyne v0.2.0/go.mod h1:dD8EZjbRX7FFw9t6P7l1nwoZbA7YxtOCfl9ZZAHPucU=
 github.com/dogmatiq/dapper v0.6.0 h1:hnWUsjnt3nUiC9hmkPvuxrnMd7fYNz1i+/GS3gOx0Xs=
 github.com/dogmatiq/dapper v0.6.0/go.mod h1:ubRHWzt73s0MsPpGhWvnfW/Z/1YPnrkCsQv6CUOZVEw=
+<<<<<<< HEAD
 github.com/dogmatiq/dogma v0.14.3 h1:qwZqU1yqp80toUJcJBdFxLlh6xvlFd7jb7rycmriRUo=
 github.com/dogmatiq/dogma v0.14.3/go.mod h1:9lyVA+6V2+E/exV0IrBOrkUiyFwIATEhv+b0vnB2umQ=
 github.com/dogmatiq/enginekit v0.15.1 h1:i5FhnfTNyIZwgqHlH9MNU/9kDoOXvnDLi40FtIkUhbo=
 github.com/dogmatiq/enginekit v0.15.1/go.mod h1:VYNGtuEGGYOnJqvSzi40QnkptFSfuSGeVk0jV83lzUA=
+=======
+github.com/dogmatiq/dogma v0.14.4-0.20240926234834-3c0cc27a2ca1 h1:SKhtRnDs7CC3ZNMux7lYCxCFz5ZhmeXjvo7/uMNISLo=
+github.com/dogmatiq/dogma v0.14.4-0.20240926234834-3c0cc27a2ca1/go.mod h1:9lyVA+6V2+E/exV0IrBOrkUiyFwIATEhv+b0vnB2umQ=
+github.com/dogmatiq/enginekit v0.13.1-0.20240929214803-d23339eac9a9 h1:CuQ1OBcfZVfnfAZ4zcqCadsOLVtnfCN4vRsprt/Nncw=
+github.com/dogmatiq/enginekit v0.13.1-0.20240929214803-d23339eac9a9/go.mod h1:XsY6KGPIC6zHx1duYDXbHTomqH9y+QOJX/tEiNZE2Qg=
+>>>>>>> 7f0d058 (Update expectation internals to use `message.Role`.)
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
 github.com/dogmatiq/iago v0.4.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
-github.com/dogmatiq/interopspec v0.5.4 h1:klyGPy16zUKJartJIJOBZ4JrQ4LxFiY3wgzFTTiNlDk=
-github.com/dogmatiq/interopspec v0.5.4/go.mod h1:JL0QFXBTRGH+RgQqExhEUdhtv5Vn802w43RxKQbk8Co=
 github.com/dogmatiq/jumble v0.1.0 h1:Cb3ExfxY+AoUP4G9/sOwoOdYX8o+kOLK8+dhXAry+QA=
 github.com/dogmatiq/jumble v0.1.0/go.mod h1:FCGV2ImXu8zvThxhd4QLstiEdu74vbIVw9bFJSBcKr4=
 github.com/dogmatiq/linger v1.1.0 h1:kGL9sL79qRa6Cr8PhadeJ/ptbum+b48pAaNWWlyVVKg=
@@ -46,9 +51,8 @@ github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpO
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
+github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
-github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
@@ -105,10 +109,13 @@ golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGm
 golang.org/x/tools v0.25.0 h1:oFU9pkj/iJgs+0DT+VMHrx+oBKs/LJMV+Uvg78sl+fE=
 golang.org/x/tools v0.25.0/go.mod h1:/vtpO8WL1N9cQC3FN5zPqb//fRXskFHbLKk4OW1Q7rg=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+<<<<<<< HEAD
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 h1:e7S5W7MGGLaSu8j3YjdezkZ+m1/Nm0uRVRMEMGk26Xs=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142/go.mod h1:UqMtugtsSgubUsoxbuAoiCXvqvErP7Gf0so0mK9tHxU=
 google.golang.org/grpc v1.67.1 h1:zWnc1Vrcno+lHZCOofnIMvycFcc0QRGIzm9dhnDX68E=
 google.golang.org/grpc v1.67.1/go.mod h1:1gLDyUQU7CTLJI90u3nXZ9ekeghjeM7pTDZlqFNg2AA=
+=======
+>>>>>>> 7f0d058 (Update expectation internals to use `message.Role`.)
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
 google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
@@ -130,3 +137,5 @@ gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+pgregory.net/rapid v1.1.0 h1:CMa0sjHSru3puNx+J0MIAuiiEV4N0qj8/cMWGBBCsjw=
+pgregory.net/rapid v1.1.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=

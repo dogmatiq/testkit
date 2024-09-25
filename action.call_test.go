@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
@@ -75,8 +74,6 @@ var _ = g.Describe("func Call()", func() {
 					CausationID:   "1",
 					CorrelationID: "1",
 					Message:       CommandA1,
-					Type:          message.TypeOf(CommandA1),
-					Role:          message.CommandRole,
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,

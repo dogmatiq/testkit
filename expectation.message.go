@@ -11,6 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/report"
 	"github.com/dogmatiq/testkit/internal/typecmp"
+	"github.com/dogmatiq/testkit/internal/validation"
 )
 
 // ToExecuteCommand returns an expectation that passes if a command is executed
@@ -22,14 +23,12 @@ func ToExecuteCommand(m dogma.Command) Expectation {
 
 	mt := message.TypeOf(m)
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.CommandValidationScope()); err != nil {
 		panic(fmt.Sprintf("ToExecuteCommand(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
 		expectedMessage: m,
-		expectedType:    mt,
-		expectedRole:    message.CommandRole,
 	}
 }
 
@@ -42,14 +41,12 @@ func ToRecordEvent(m dogma.Event) Expectation {
 
 	mt := message.TypeOf(m)
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.EventValidationScope()); err != nil {
 		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
 		expectedMessage: m,
-		expectedType:    mt,
-		expectedRole:    message.EventRole,
 	}
 }
 
@@ -59,38 +56,38 @@ func ToRecordEvent(m dogma.Event) Expectation {
 // It is the implementation used by ToExecuteCommand() and ToRecordEvent().
 type messageExpectation struct {
 	expectedMessage dogma.Message
-	expectedType    message.Type
-	expectedRole    message.Role
 }
 
 func (e *messageExpectation) Caption() string {
 	return inflect.Sprintf(
-		e.expectedRole,
+		message.KindOf(e.expectedMessage),
 		"to <produce> a specific '%s' <message>",
-		e.expectedType,
+		message.TypeOf(e.expectedMessage),
 	)
 }
 
 func (e *messageExpectation) Predicate(s PredicateScope) (Predicate, error) {
+	mt := message.TypeOf(e.expectedMessage)
+
+	if err := guardAgainstExpectationOnImpossibleType(s, mt); err != nil {
+		return nil, err
+	}
+
 	return &messagePredicate{
 		messageComparator: s.Options.MessageComparator,
 		expectedMessage:   e.expectedMessage,
-		expectedType:      e.expectedType,
-		expectedRole:      e.expectedRole,
 		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
-			role:    e.expectedRole,
+			kind:    mt.Kind(),
 			options: s.Options,
 		},
-	}, validateRole(s, e.expectedType, e.expectedRole)
+	}, nil
 }
 
 // messagePredicate is the Predicate implementation for messageExpectation.
 type messagePredicate struct {
 	messageComparator MessageComparator
 	expectedMessage   dogma.Message
-	expectedRole      message.Role
-	expectedType      message.Type
 	ok                bool
 	bestMatch         *envelope.Envelope
 	bestMatchDistance typecmp.Distance
@@ -123,10 +120,7 @@ func (p *messagePredicate) messageProduced(env *envelope.Envelope) {
 
 	p.bestMatch = env
 	p.bestMatchDistance = typecmp.Identical
-
-	if env.Role == p.expectedRole {
-		p.ok = true
-	}
+	p.ok = true
 }
 
 // updateBestMatch replaces p.bestMatch with env if it is a better match.
@@ -150,13 +144,15 @@ func (p *messagePredicate) Done() {
 }
 
 func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
+	mt := message.TypeOf(p.expectedMessage)
+
 	rep := &Report{
 		TreeOk: ctx.TreeOk,
 		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
-			p.expectedRole,
+			mt.Kind(),
 			"<produce> a specific '%s' <message>",
-			message.TypeOf(p.expectedMessage),
+			mt,
 		),
 	}
 
@@ -174,12 +170,12 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 	if p.bestMatchDistance == typecmp.Identical {
 		if p.bestMatch.Origin == nil {
 			rep.Explanation = inflect.Sprint(
-				p.expectedRole,
+				mt.Kind(),
 				"a similar <message> was <produced> via a <dispatcher>",
 			)
 		} else {
 			rep.Explanation = inflect.Sprintf(
-				p.expectedRole,
+				mt.Kind(),
 				"a similar <message> was <produced> by the '%s' %s message handler",
 				p.bestMatch.Origin.Handler.Identity().Name,
 				p.bestMatch.Origin.HandlerType,
@@ -190,12 +186,12 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 	} else {
 		if p.bestMatch.Origin == nil {
 			rep.Explanation = inflect.Sprint(
-				p.expectedRole,
+				mt.Kind(),
 				"a <message> of a similar type was <produced> via a <dispatcher>",
 			)
 		} else {
 			rep.Explanation = inflect.Sprintf(
-				p.expectedRole,
+				mt.Kind(),
 				"a <message> of a similar type was <produced> by the '%s' %s message handler",
 				p.bestMatch.Origin.Handler.Identity().Name,
 				p.bestMatch.Origin.HandlerType,

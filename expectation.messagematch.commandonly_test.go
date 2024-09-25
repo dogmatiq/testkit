@@ -223,23 +223,6 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 		))
 	})
 
-	g.It("fails the test if the message type is not a command", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToOnlyExecuteCommandsMatching(
-				func(EventThatExecutesCommands) error {
-					return nil
-				},
-			),
-		)
-
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"stubs.EventStub[TypeC] is an event, it can never be executed as a command",
-		))
-	})
-
 	g.It("fails the test if the message type is not produced by any handlers", func() {
 		test := Begin(testingT, app)
 		test.Expect(
