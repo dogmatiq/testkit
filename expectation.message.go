@@ -94,7 +94,6 @@ type messagePredicate struct {
 	ok                bool
 	bestMatch         *envelope.Envelope
 	bestMatchDistance typecmp.Distance
-	bestMatchIsEqual  bool
 	tracker           tracker
 }
 
@@ -124,7 +123,6 @@ func (p *messagePredicate) messageProduced(env *envelope.Envelope) {
 
 	p.bestMatch = env
 	p.bestMatchDistance = typecmp.Identical
-	p.bestMatchIsEqual = true
 
 	if env.Role == p.expectedRole {
 		p.ok = true
