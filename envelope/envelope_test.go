@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
@@ -28,8 +27,6 @@ var _ = g.Describe("type Envelope", func() {
 					CorrelationID: "100",
 					CausationID:   "100",
 					Message:       CommandA1,
-					Type:          message.TypeOf(CommandA1),
-					Role:          message.CommandRole,
 					CreatedAt:     now,
 				},
 			))
@@ -51,8 +48,6 @@ var _ = g.Describe("type Envelope", func() {
 					CorrelationID: "100",
 					CausationID:   "100",
 					Message:       EventA1,
-					Type:          message.TypeOf(EventA1),
-					Role:          message.EventRole,
 					CreatedAt:     now,
 				},
 			))
@@ -73,7 +68,7 @@ var _ = g.Describe("type Envelope", func() {
 		g.It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
-				CommandP1,
+				EventP1,
 				time.Now(),
 			)
 			origin := Origin{
@@ -95,8 +90,6 @@ var _ = g.Describe("type Envelope", func() {
 					CorrelationID: "100",
 					CausationID:   "100",
 					Message:       CommandA1,
-					Type:          message.TypeOf(CommandA1),
-					Role:          message.CommandRole,
 					CreatedAt:     now,
 					Origin:        &origin,
 				},
@@ -140,8 +133,6 @@ var _ = g.Describe("type Envelope", func() {
 					CorrelationID: "100",
 					CausationID:   "100",
 					Message:       EventA1,
-					Type:          message.TypeOf(EventA1),
-					Role:          message.EventRole,
 					CreatedAt:     now,
 					Origin:        &origin,
 				},
@@ -188,8 +179,6 @@ var _ = g.Describe("type Envelope", func() {
 					CorrelationID: "100",
 					CausationID:   "100",
 					Message:       TimeoutA1,
-					Type:          message.TypeOf(TimeoutA1),
-					Role:          message.TimeoutRole,
 					CreatedAt:     now,
 					ScheduledFor:  s,
 					Origin:        &origin,

@@ -3,7 +3,6 @@ package envelope
 import (
 	"time"
 
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 )
 
@@ -23,12 +22,6 @@ type Envelope struct {
 
 	// Message is the application-defined message that the envelope represents.
 	Message dogma.Message
-
-	// Type is the type of the message.
-	Type message.Type
-
-	// Role is the message's role.
-	Role message.Role
 
 	// CreatedAt is the time at which the message was created.
 	CreatedAt time.Time
@@ -50,7 +43,17 @@ func NewCommand(
 	m dogma.Command,
 	t time.Time,
 ) *Envelope {
-	return newEnvelope(id, m, message.CommandRole, t)
+	if id == "" {
+		panic("message ID must not be empty")
+	}
+
+	return &Envelope{
+		MessageID:     id,
+		CausationID:   id,
+		CorrelationID: id,
+		Message:       m,
+		CreatedAt:     t,
+	}
 }
 
 // NewEvent constructs a new envelope containing the given event message.
@@ -61,32 +64,15 @@ func NewEvent(
 	m dogma.Event,
 	t time.Time,
 ) *Envelope {
-	return newEnvelope(id, m, message.EventRole, t)
-}
-
-// newEnvelope constructs a newEnvelope envelope containing the given message.
-//
-// It panics if r is message.TimeoutRole, as a timeout cannot occur except as a
-// result of some other message.
-func newEnvelope(
-	id string,
-	m dogma.Message,
-	r message.Role,
-	t time.Time,
-) *Envelope {
 	if id == "" {
 		panic("message ID must not be empty")
 	}
-
-	r.MustNotBe(message.TimeoutRole)
 
 	return &Envelope{
 		MessageID:     id,
 		CausationID:   id,
 		CorrelationID: id,
 		Message:       m,
-		Type:          message.TypeOf(m),
-		Role:          r,
 		CreatedAt:     t,
 	}
 }
@@ -101,7 +87,14 @@ func (e *Envelope) NewCommand(
 	t time.Time,
 	o Origin,
 ) *Envelope {
-	return e.new(id, m, message.CommandRole, t, o)
+	return &Envelope{
+		MessageID:     id,
+		CausationID:   e.MessageID,
+		CorrelationID: e.CorrelationID,
+		Message:       m,
+		CreatedAt:     t,
+		Origin:        &o,
+	}
 }
 
 // NewEvent constructs a new envelope as a child of e, indicating that the event
@@ -114,7 +107,14 @@ func (e *Envelope) NewEvent(
 	t time.Time,
 	o Origin,
 ) *Envelope {
-	return e.new(id, m, message.EventRole, t, o)
+	return &Envelope{
+		MessageID:     id,
+		CausationID:   e.MessageID,
+		CorrelationID: e.CorrelationID,
+		Message:       m,
+		CreatedAt:     t,
+		Origin:        &o,
+	}
 }
 
 // NewTimeout constructs a new envelope as a child of e, indicating that the
@@ -129,27 +129,13 @@ func (e *Envelope) NewTimeout(
 	s time.Time,
 	o Origin,
 ) *Envelope {
-	env := e.new(id, m, message.TimeoutRole, t, o)
-	env.ScheduledFor = s
-	return env
-}
-
-// new constructs a new envelope as a child of e.
-func (e *Envelope) new(
-	id string,
-	m dogma.Message,
-	r message.Role,
-	t time.Time,
-	o Origin,
-) *Envelope {
 	return &Envelope{
 		MessageID:     id,
 		CausationID:   e.MessageID,
 		CorrelationID: e.CorrelationID,
 		Message:       m,
-		Type:          message.TypeOf(m),
-		Role:          r,
 		CreatedAt:     t,
+		ScheduledFor:  s,
 		Origin:        &o,
 	}
 }

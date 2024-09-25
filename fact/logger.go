@@ -101,6 +101,8 @@ func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
 
 // dispatchBegun returns the log message for f.
 func (l *Logger) dispatchBegun(f DispatchBegun) {
+	mt := message.TypeOf(f.Envelope.Message)
+
 	l.log(
 		f.Envelope,
 		[]logging.Icon{
@@ -108,7 +110,7 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 			logging.SystemIcon,
 			"",
 		},
-		message.TypeOf(f.Envelope.Message).String()+f.Envelope.Role.Marker(),
+		mt.String()+mt.Kind().Symbol(),
 		f.Envelope.Message.MessageDescription(),
 	)
 }
@@ -257,6 +259,8 @@ func (l *Logger) aggregateInstanceDestructionReverted(f AggregateInstanceDestruc
 
 // eventRecordedByAggregate returns the log message for f.
 func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
+	mt := message.TypeOf(f.EventEnvelope.Message)
+
 	l.log(
 		f.EventEnvelope,
 		[]logging.Icon{
@@ -266,7 +270,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 		},
 		f.Handler.Identity().Name+" "+f.InstanceID,
 		"recorded an event",
-		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
+		mt.String()+mt.Kind().Symbol(),
 		f.EventEnvelope.Message.MessageDescription(),
 	)
 }
@@ -385,6 +389,8 @@ func (l *Logger) processInstanceEndingReverted(f ProcessInstanceEndingReverted) 
 
 // commandExecutedByProcess returns the log message for f.
 func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
+	mt := message.TypeOf(f.CommandEnvelope.Message)
+
 	l.log(
 		f.CommandEnvelope,
 		[]logging.Icon{
@@ -394,13 +400,15 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 		},
 		f.Handler.Identity().Name+" "+f.InstanceID,
 		"executed a command",
-		f.CommandEnvelope.Type.String()+f.CommandEnvelope.Role.Marker(),
+		mt.String()+mt.Kind().Symbol(),
 		f.CommandEnvelope.Message.MessageDescription(),
 	)
 }
 
 // timeoutScheduledByProcess returns the log message for f.
 func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
+	mt := message.TypeOf(f.TimeoutEnvelope.Message)
+
 	l.log(
 		f.TimeoutEnvelope,
 		[]logging.Icon{
@@ -413,7 +421,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			"scheduled a timeout for %s",
 			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
 		),
-		f.TimeoutEnvelope.Type.String()+f.TimeoutEnvelope.Role.Marker(),
+		mt.String()+mt.Kind().Symbol(),
 		f.TimeoutEnvelope.Message.MessageDescription(),
 	)
 }
@@ -434,6 +442,8 @@ func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 
 // eventRecordedByIntegration returns the log message for f.
 func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
+	mt := message.TypeOf(f.EventEnvelope.Message)
+
 	l.log(
 		f.EventEnvelope,
 		[]logging.Icon{
@@ -443,7 +453,7 @@ func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 		},
 		f.Handler.Identity().Name,
 		"recorded an event",
-		f.EventEnvelope.Type.String()+f.EventEnvelope.Role.Marker(),
+		mt.String()+mt.Kind().Symbol(),
 		f.EventEnvelope.Message.MessageDescription(),
 	)
 }
