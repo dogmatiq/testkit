@@ -134,6 +134,46 @@ var _ = g.Describe("type Engine", func() {
 	})
 
 	g.Describe("func Dispatch()", func() {
+		g.It("allows dispatching commands", func() {
+			called := false
+			aggregate.HandleCommandFunc = func(
+				dogma.AggregateRoot,
+				dogma.AggregateCommandScope,
+				dogma.Command,
+			) {
+				called = true
+			}
+
+			err := engine.Dispatch(
+				context.Background(),
+				AggregateCommand{},
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+
+		g.It("allows dispatching events", func() {
+			called := false
+			projection.HandleEventFunc = func(
+				context.Context,
+				[]byte,
+				[]byte,
+				[]byte,
+				dogma.ProjectionEventScope,
+				dogma.Event,
+			) (bool, error) {
+				called = true
+				return true, nil
+			}
+
+			err := engine.Dispatch(
+				context.Background(),
+				ForeignEventForProjection{},
+			)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(called).To(BeTrue())
+		})
+
 		g.It("skips handlers that are disabled by type", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,

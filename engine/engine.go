@@ -193,20 +193,14 @@ func (e *Engine) Dispatch(
 	env, err := message.TryMap(
 		m,
 		func(m dogma.Command) (*envelope.Envelope, error) {
-			if err := m.Validate(validation.CommandValidationScope()); err != nil {
-				return nil, err
-			}
-			return envelope.NewCommand(id, m, oo.now), nil
+			return envelope.NewCommand(id, m, oo.now),
+				m.Validate(validation.CommandValidationScope())
 		},
 		func(m dogma.Event) (*envelope.Envelope, error) {
-			if err := m.Validate(validation.EventValidationScope()); err != nil {
-				return nil, err
-			}
-			return envelope.NewEvent(id, m, oo.now), nil
+			return envelope.NewEvent(id, m, oo.now),
+				m.Validate(validation.EventValidationScope())
 		},
-		func(t dogma.Timeout) (*envelope.Envelope, error) {
-			panic("cannot dispatch timeout messages")
-		},
+		nil,
 	)
 	if err != nil {
 		panic(fmt.Sprintf("cannot dispatch invalid %s message: %s", mt, err))

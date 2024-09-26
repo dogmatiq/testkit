@@ -118,7 +118,7 @@ func (c *Controller) Handle(
 		config:     c.Config,
 		handleMethod: message.Map(
 			env.Message,
-			func(dogma.Command) string { panic("unexpected message kind") },
+			nil,
 			func(dogma.Event) string { return "HandleEvent" },
 			func(dogma.Timeout) string { return "HandleTimeout" },
 		),
@@ -160,7 +160,7 @@ func (c *Controller) route(
 ) (id string, ok bool, err error) {
 	message.Switch(
 		env.Message,
-		func(m dogma.Command) { panic("unexpected message kind") },
+		nil,
 		func(m dogma.Event) { id, ok, err = c.routeEvent(ctx, obs, env, m) },
 		func(m dogma.Timeout) { id, ok, err = c.routeTimeout(ctx, obs, env) },
 	)
