@@ -3,7 +3,7 @@ module github.com/dogmatiq/testkit
 go 1.23
 
 require (
-	github.com/dogmatiq/configkit v0.13.9-0.20240926002042-bd25b536fc21
+	github.com/dogmatiq/configkit v0.14.1-0.20240929215230-3af80ab0c2e9
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.6.0
 	github.com/dogmatiq/dogma v0.14.4-0.20240926234834-3c0cc27a2ca1
