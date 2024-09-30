@@ -3,11 +3,11 @@ module github.com/dogmatiq/testkit
 go 1.23
 
 require (
-	github.com/dogmatiq/configkit v0.14.1-0.20240929215230-3af80ab0c2e9
+	github.com/dogmatiq/configkit v0.14.1-0.20240930030138-f9e71cc9ddcb
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.6.0
 	github.com/dogmatiq/dogma v0.14.4-0.20240926234834-3c0cc27a2ca1
-	github.com/dogmatiq/enginekit v0.13.1-0.20240929214803-d23339eac9a9
+	github.com/dogmatiq/enginekit v0.14.1-0.20240930025837-001cd27abe23
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo/v2 v2.20.2

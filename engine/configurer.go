@@ -5,6 +5,7 @@ import (
 
 	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/enginekit/collection"
 	"github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/engine/internal/process"
@@ -74,7 +75,7 @@ func (c *configurer) VisitRichProjection(_ context.Context, cfg configkit.RichPr
 
 func (c *configurer) registerController(
 	ctrl controller,
-	consumed message.Set[message.Type],
+	consumed collection.Set[message.Type],
 ) {
 	c.engine.controllers[ctrl.HandlerConfig().Identity().Name] = ctrl
 
