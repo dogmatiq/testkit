@@ -7,7 +7,7 @@ require (
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.6.0
 	github.com/dogmatiq/dogma v0.14.3
-	github.com/dogmatiq/enginekit v0.14.0
+	github.com/dogmatiq/enginekit v0.15.1
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo/v2 v2.20.2
@@ -30,6 +30,6 @@ require (
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/tools v0.25.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
-	google.golang.org/grpc v1.67.0 // indirect
+	google.golang.org/grpc v1.67.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
