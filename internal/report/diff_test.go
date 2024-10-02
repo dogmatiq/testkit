@@ -5,7 +5,7 @@ import (
 
 	. "github.com/dogmatiq/testkit/internal/report"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func WriteDiff()", func() {
@@ -18,8 +18,8 @@ var _ = g.Describe("func WriteDiff()", func() {
 			"foo qux baz",
 		)
 
-		Expect(w.String()).To(
-			Equal("foo [-bar-]{+qux+} baz"),
+		gm.Expect(w.String()).To(
+			gm.Equal("foo [-bar-]{+qux+} baz"),
 		)
 	})
 })

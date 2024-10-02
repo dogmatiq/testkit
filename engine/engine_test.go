@@ -15,7 +15,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 func TestEngine(t *testing.T) {
@@ -153,10 +153,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableAggregates(false),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.HandlingSkipped{
 					Handler: h,
 					Envelope: &envelope.Envelope{
@@ -191,10 +191,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableHandler("<aggregate>", false),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.HandlingSkipped{
 					Handler: h,
 					Envelope: &envelope.Envelope{
@@ -227,8 +227,8 @@ var _ = g.Describe("type Engine", func() {
 				EnableHandler("<aggregate>", false),
 				EnableHandler("<aggregate>", true),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("always returns context errors even if other errors occur", func() {
@@ -244,7 +244,7 @@ var _ = g.Describe("type Engine", func() {
 			}
 
 			err := engine.Dispatch(ctx, IntegrationCommand{})
-			Expect(err).To(Equal(context.Canceled))
+			gm.Expect(err).To(gm.Equal(context.Canceled))
 		})
 
 		g.It("adds handler details to controller errors", func() {
@@ -257,24 +257,24 @@ var _ = g.Describe("type Engine", func() {
 			}
 
 			err := engine.Dispatch(context.Background(), IntegrationCommand{})
-			Expect(err).To(MatchError("<integration> integration: <error>"))
+			gm.Expect(err).To(gm.MatchError("<integration> integration: <error>"))
 		})
 
 		g.It("panics if the message is invalid", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				engine.Dispatch(
 					context.Background(),
 					AggregateCommand{
 						ValidationError: "<invalid>",
 					},
 				)
-			}).To(PanicWith("cannot dispatch invalid stubs.CommandStub[TypeA] message: <invalid>"))
+			}).To(gm.PanicWith("cannot dispatch invalid stubs.CommandStub[TypeA] message: <invalid>"))
 		})
 
 		g.It("panics if the message type is unrecognized", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				engine.Dispatch(context.Background(), CommandX1)
-			}).To(PanicWith("the stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
+			}).To(gm.PanicWith("the stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
 		})
 	})
 
@@ -286,10 +286,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableAggregates(false),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
 					Reason:  fact.HandlerTypeDisabled,
@@ -304,10 +304,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableHandler("<aggregate>", false),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
 					Reason:  fact.IndividualHandlerDisabled,
@@ -323,10 +323,10 @@ var _ = g.Describe("type Engine", func() {
 				EnableHandler("<aggregate>", false),
 				EnableHandler("<aggregate>", true),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<aggregate>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickBegun{
 					Handler: h,
 				},
@@ -339,10 +339,10 @@ var _ = g.Describe("type Engine", func() {
 				context.Background(),
 				WithObserver(buf),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<disabled-projection>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
 					Reason:  fact.IndividualHandlerDisabledByConfiguration,
@@ -357,10 +357,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableProjections(true),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<disabled-projection>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
 					Reason:  fact.IndividualHandlerDisabledByConfiguration,
@@ -375,10 +375,10 @@ var _ = g.Describe("type Engine", func() {
 				WithObserver(buf),
 				EnableHandler("<disabled-projection>", true),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			h, _ := config.RichHandlers().ByName("<disabled-projection>")
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickBegun{
 					Handler: h,
 				},
@@ -397,7 +397,7 @@ var _ = g.Describe("type Engine", func() {
 			}
 
 			err := engine.Tick(ctx)
-			Expect(err).To(Equal(context.Canceled))
+			gm.Expect(err).To(gm.Equal(context.Canceled))
 		})
 
 		g.It("adds handler details to controller errors", func() {
@@ -409,7 +409,7 @@ var _ = g.Describe("type Engine", func() {
 			}
 
 			err := engine.Tick(context.Background())
-			Expect(err).To(MatchError("<projection> projection: <error>"))
+			gm.Expect(err).To(gm.MatchError("<projection> projection: <error>"))
 		})
 	})
 })

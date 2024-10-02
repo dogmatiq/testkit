@@ -10,7 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type Logger", func() {
@@ -93,8 +93,8 @@ var _ = g.Describe("type Logger", func() {
 
 				obs.Notify(f)
 
-				Expect(output).To(BeIdenticalTo(m))
-				Expect(called).To(Equal(m != ""))
+				gm.Expect(output).To(gm.BeIdenticalTo(m))
+				gm.Expect(called).To(gm.Equal(m != ""))
 			},
 
 			// dispatch ...

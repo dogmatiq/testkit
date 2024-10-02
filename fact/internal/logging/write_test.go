@@ -5,7 +5,7 @@ import (
 
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 func describeTable(
@@ -90,9 +90,9 @@ func describeTable(
 var _ = describeTable(
 	"func String()",
 	func(expected string, ids []IconWithLabel, icons []Icon, text []string) {
-		Expect(
+		gm.Expect(
 			String(ids, icons, text...),
-		).To(Equal(expected))
+		).To(gm.Equal(expected))
 	},
 )
 
@@ -102,9 +102,9 @@ var _ = describeTable(
 		w := &strings.Builder{}
 
 		n, err := Write(w, ids, icons, text...)
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(n).To(Equal(len(expected)))
+		gm.Expect(err).ShouldNot(gm.HaveOccurred())
+		gm.Expect(n).To(gm.Equal(len(expected)))
 
-		Expect(w.String()).To(Equal(expected))
+		gm.Expect(w.String()).To(gm.Equal(expected))
 	},
 )

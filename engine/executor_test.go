@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type CommandExecutor", func() {
@@ -58,24 +58,24 @@ var _ = g.Describe("type CommandExecutor", func() {
 				m dogma.Command,
 			) {
 				called = true
-				Expect(m).To(Equal(CommandA1))
+				gm.Expect(m).To(gm.Equal(CommandA1))
 			}
 
 			err := executor.ExecuteCommand(context.Background(), CommandA1)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("panics if the message is not a command", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				executor.ExecuteCommand(context.Background(), EventA1)
-			}).To(PanicWith("cannot execute command, stubs.EventStub[TypeA] is configured as an event"))
+			}).To(gm.PanicWith("cannot execute command, stubs.EventStub[TypeA] is configured as an event"))
 		})
 
 		g.It("panics if the message is unrecognized", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				executor.ExecuteCommand(context.Background(), CommandX1)
-			}).To(PanicWith("cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type"))
+			}).To(gm.PanicWith("cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type"))
 		})
 	})
 })

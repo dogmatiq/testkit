@@ -3,7 +3,7 @@ package location_test
 import (
 	. "github.com/dogmatiq/testkit/location"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -12,19 +12,19 @@ var _ = g.Describe("type Location", func() {
 		g.It("returns the expected location", func() {
 			loc := OfFunc(doNothing)
 
-			Expect(loc).To(MatchAllFields(
+			gm.Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/location_test.doNothing"),
-					"File": HaveSuffix("/location/linenumber_test.go"),
-					"Line": Equal(50),
+					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.doNothing"),
+					"File": gm.HaveSuffix("/location/linenumber_test.go"),
+					"Line": gm.Equal(50),
 				},
 			))
 		})
 
 		g.It("panics if the value is not a function", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				OfFunc("<not a function>")
-			}).To(PanicWith("fn must be a function"))
+			}).To(gm.PanicWith("fn must be a function"))
 		})
 	})
 
@@ -32,19 +32,19 @@ var _ = g.Describe("type Location", func() {
 		g.It("returns the expected location", func() {
 			loc := OfMethod(ofMethodT{}, "Method")
 
-			Expect(loc).To(MatchAllFields(
+			gm.Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/location_test.ofMethodT.Method"),
-					"File": HaveSuffix("/location/linenumber_test.go"),
-					"Line": Equal(57),
+					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.ofMethodT.Method"),
+					"File": gm.HaveSuffix("/location/linenumber_test.go"),
+					"Line": gm.Equal(57),
 				},
 			))
 		})
 
 		g.It("panics if the methods does not exist", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				OfMethod(ofMethodT{}, "DoesNotExist")
-			}).To(PanicWith("method does not exist"))
+			}).To(gm.PanicWith("method does not exist"))
 		})
 	})
 
@@ -52,11 +52,11 @@ var _ = g.Describe("type Location", func() {
 		g.It("returns the expected location", func() {
 			loc := ofCallLayer2()
 
-			Expect(loc).To(MatchAllFields(
+			gm.Expect(loc).To(MatchAllFields(
 				Fields{
-					"Func": Equal("github.com/dogmatiq/testkit/location_test.ofCallLayer2"),
-					"File": HaveSuffix("/location/linenumber_test.go"),
-					"Line": Equal(53),
+					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.ofCallLayer2"),
+					"File": gm.HaveSuffix("/location/linenumber_test.go"),
+					"Line": gm.Equal(53),
 				},
 			))
 		})
@@ -68,11 +68,11 @@ var _ = g.Describe("type Location", func() {
 				recover()
 				loc := OfPanic()
 
-				Expect(loc).To(MatchAllFields(
+				gm.Expect(loc).To(MatchAllFields(
 					Fields{
-						"Func": Equal("github.com/dogmatiq/testkit/location_test.doPanic"),
-						"File": HaveSuffix("/location/linenumber_test.go"),
-						"Line": Equal(51),
+						"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.doPanic"),
+						"File": gm.HaveSuffix("/location/linenumber_test.go"),
+						"Line": gm.Equal(51),
 					},
 				))
 			}()
@@ -85,7 +85,7 @@ var _ = g.Describe("type Location", func() {
 		g.DescribeTable(
 			"it returns the expected string",
 			func(s string, l Location) {
-				Expect(l.String()).To(Equal(s))
+				gm.Expect(l.String()).To(gm.Equal(s))
 			},
 			g.Entry("empty", "<unknown>", Location{}),
 			g.Entry("function name only", "<function>(...)", Location{Func: "<function>"}),

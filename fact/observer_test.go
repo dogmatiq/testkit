@@ -5,7 +5,7 @@ import (
 
 	. "github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type ObserverGroup", func() {
@@ -17,17 +17,17 @@ var _ = g.Describe("type ObserverGroup", func() {
 			g := ObserverGroup{
 				ObserverFunc(func(of Fact) {
 					n++
-					Expect(of).To(Equal(f))
+					gm.Expect(of).To(gm.Equal(f))
 				}),
 				ObserverFunc(func(of Fact) {
 					n++
-					Expect(of).To(Equal(f))
+					gm.Expect(of).To(gm.Equal(f))
 				}),
 			}
 
 			g.Notify(f)
 
-			Expect(n).To(Equal(2))
+			gm.Expect(n).To(gm.Equal(2))
 		})
 	})
 })
@@ -46,7 +46,7 @@ var _ = g.Describe("type Buffer", func() {
 			b.Notify(f1)
 			b.Notify(f2)
 
-			Expect(b.Facts()).To(Equal([]Fact{
+			gm.Expect(b.Facts()).To(gm.Equal([]Fact{
 				f1,
 				f2,
 			}))

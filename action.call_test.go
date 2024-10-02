@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -68,7 +68,7 @@ var _ = g.Describe("func Call()", func() {
 			}),
 		)
 
-		Expect(buf.Facts()).To(ContainElement(
+		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
 					MessageID:     "1",
@@ -110,24 +110,24 @@ var _ = g.Describe("func Call()", func() {
 			Call(func() {}),
 		)
 
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"--- calling user-defined function ---",
 		))
 	})
 
 	g.It("panics if the function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			Call(nil)
-		}).To(PanicWith("Call(<nil>): function must not be nil"))
+		}).To(gm.PanicWith("Call(<nil>): function must not be nil"))
 	})
 
 	g.It("captures the location that the action was created", func() {
 		act := call(func() {})
-		Expect(act.Location()).To(MatchAllFields(
+		gm.Expect(act.Location()).To(MatchAllFields(
 			Fields{
-				"Func": Equal("github.com/dogmatiq/testkit_test.call"),
-				"File": HaveSuffix("/action.linenumber_test.go"),
-				"Line": Equal(51),
+				"Func": gm.Equal("github.com/dogmatiq/testkit_test.call"),
+				"File": gm.HaveSuffix("/action.linenumber_test.go"),
+				"Line": gm.Equal(51),
 			},
 		))
 	})

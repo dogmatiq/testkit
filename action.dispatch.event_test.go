@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -68,7 +68,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 			RecordEvent(EventA1),
 		)
 
-		Expect(buf.Facts()).To(ContainElement(
+		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
 					MessageID:     "1",
@@ -98,8 +98,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 			RecordEvent(EventX1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Failed()).To(gm.BeTrue())
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"cannot record event, stubs.EventStub[TypeX] is a not a recognized message type",
 		))
 	})
@@ -111,8 +111,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 			RecordEvent(CommandA1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Failed()).To(gm.BeTrue())
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"cannot record event, stubs.CommandStub[TypeA] is configured as a command",
 		))
 	})
@@ -125,7 +125,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 			ToRecordEvent(EventA1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
+		gm.Expect(t.Failed()).To(gm.BeTrue())
 	})
 
 	g.It("produces the expected caption", func() {
@@ -133,24 +133,24 @@ var _ = g.Describe("func RecordEvent()", func() {
 			RecordEvent(EventA1),
 		)
 
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"--- recording stubs.EventStub[TypeA] event ---",
 		))
 	})
 
 	g.It("panics if the message is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			RecordEvent(nil)
-		}).To(PanicWith("RecordEvent(<nil>): message must not be nil"))
+		}).To(gm.PanicWith("RecordEvent(<nil>): message must not be nil"))
 	})
 
 	g.It("captures the location that the action was created", func() {
 		act := recordEvent(EventA1)
-		Expect(act.Location()).To(MatchAllFields(
+		gm.Expect(act.Location()).To(MatchAllFields(
 			Fields{
-				"Func": Equal("github.com/dogmatiq/testkit_test.recordEvent"),
-				"File": HaveSuffix("/action.linenumber_test.go"),
-				"Line": Equal(53),
+				"Func": gm.Equal("github.com/dogmatiq/testkit_test.recordEvent"),
+				"File": gm.HaveSuffix("/action.linenumber_test.go"),
+				"Line": gm.Equal(53),
 			},
 		))
 	})

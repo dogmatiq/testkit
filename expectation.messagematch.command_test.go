@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToExecuteCommandMatching()", func() {
@@ -123,7 +123,7 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			test := Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"matching command executed as expected",
@@ -341,8 +341,8 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"a command of type stubs.CommandStub[TypeU] can never be executed, the application does not use this message type",
 		))
 	})
@@ -358,8 +358,8 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"stubs.EventStub[TypeC] is an event, it can never be executed as a command",
 		))
 	})
@@ -375,16 +375,16 @@ var _ = g.Describe("func ToExecuteCommandMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"no handlers execute commands of type stubs.CommandStub[TypeO], it is only ever consumed",
 		))
 	})
 
 	g.It("panics if the function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			var fn func(dogma.Command) error
 			ToExecuteCommandMatching(fn)
-		}).To(PanicWith("ToExecuteCommandMatching(<nil>): function must not be nil"))
+		}).To(gm.PanicWith("ToExecuteCommandMatching(<nil>): function must not be nil"))
 	})
 })

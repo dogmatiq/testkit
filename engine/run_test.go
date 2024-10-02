@@ -10,7 +10,7 @@ import (
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func Run()", func() {
@@ -49,11 +49,11 @@ var _ = g.Describe("func Run()", func() {
 		)
 
 		facts := buf.Facts()
-		Expect(len(facts)).To(BeNumerically(">=", 6))
+		gm.Expect(len(facts)).To(gm.BeNumerically(">=", 6))
 
 		for i := 0; i < 6; i += 2 {
-			Expect(facts[i]).To(BeAssignableToTypeOf(fact.TickCycleBegun{}))
-			Expect(facts[i+1]).To(BeAssignableToTypeOf(fact.TickCycleCompleted{}))
+			gm.Expect(facts[i]).To(gm.BeAssignableToTypeOf(fact.TickCycleBegun{}))
+			gm.Expect(facts[i+1]).To(gm.BeAssignableToTypeOf(fact.TickCycleCompleted{}))
 		}
 	})
 
@@ -62,7 +62,7 @@ var _ = g.Describe("func Run()", func() {
 		cancel()
 
 		err := Run(ctx, engine, 0)
-		Expect(err).To(Equal(context.Canceled))
+		gm.Expect(err).To(gm.Equal(context.Canceled))
 	})
 
 	g.It("returns an error if the context is canceled between ticks", func() {
@@ -74,7 +74,7 @@ var _ = g.Describe("func Run()", func() {
 		}()
 
 		err := Run(ctx, engine, 0)
-		Expect(err).To(Equal(context.Canceled))
+		gm.Expect(err).To(gm.Equal(context.Canceled))
 	})
 })
 
@@ -119,18 +119,18 @@ var _ = g.Describe("func RunTimeScaled()", func() {
 		)
 
 		facts := buf.Facts()
-		Expect(len(facts)).To(BeNumerically(">=", 6))
+		gm.Expect(len(facts)).To(gm.BeNumerically(">=", 6))
 
 		t := facts[0].(fact.TickCycleBegun).EngineTime
-		Expect(t).To(BeTemporally(">=", epoch))
-		Expect(t).To(BeTemporally("<", epoch.Add(5*time.Millisecond)))
+		gm.Expect(t).To(gm.BeTemporally(">=", epoch))
+		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(5*time.Millisecond)))
 
 		t = facts[2].(fact.TickCycleBegun).EngineTime
-		Expect(t).To(BeTemporally(">=", epoch.Add(5*time.Millisecond)))
-		Expect(t).To(BeTemporally("<", epoch.Add(10*time.Millisecond)))
+		gm.Expect(t).To(gm.BeTemporally(">=", epoch.Add(5*time.Millisecond)))
+		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(10*time.Millisecond)))
 
 		t = facts[4].(fact.TickCycleBegun).EngineTime
-		Expect(t).To(BeTemporally(">=", epoch.Add(10*time.Millisecond)))
-		Expect(t).To(BeTemporally("<", epoch.Add(15*time.Millisecond)))
+		gm.Expect(t).To(gm.BeTemporally(">=", epoch.Add(10*time.Millisecond)))
+		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(15*time.Millisecond)))
 	})
 })

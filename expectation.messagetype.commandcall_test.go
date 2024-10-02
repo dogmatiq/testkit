@@ -9,7 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() action)", func() {
@@ -97,7 +97,7 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 	executeCommandViaExecutor := func(m dogma.Command) Action {
 		return Call(func() {
 			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	}
 
@@ -113,7 +113,7 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 			test = Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"command type executed as expected",

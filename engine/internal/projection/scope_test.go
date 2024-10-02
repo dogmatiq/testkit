@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type scope", func() {
@@ -53,8 +53,8 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
 			) (bool, error) {
-				Expect(s.RecordedAt()).To(
-					BeTemporally("==", event.CreatedAt),
+				gm.Expect(s.RecordedAt()).To(
+					gm.BeTemporally("==", event.CreatedAt),
 				)
 				return true, nil
 			}
@@ -65,7 +65,7 @@ var _ = g.Describe("type scope", func() {
 				time.Now(),
 				event,
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	})
 
@@ -77,7 +77,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
 			) (bool, error) {
-				Expect(s.IsPrimaryDelivery()).To(BeTrue())
+				gm.Expect(s.IsPrimaryDelivery()).To(gm.BeTrue())
 				return true, nil
 			}
 
@@ -87,7 +87,7 @@ var _ = g.Describe("type scope", func() {
 				time.Now(),
 				event,
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	})
 
@@ -113,8 +113,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByProjection{
 					Handler:   config,
 					Envelope:  event,
@@ -136,7 +136,7 @@ var _ = g.Describe("type scope", func() {
 				_ context.Context,
 				s dogma.ProjectionCompactScope,
 			) error {
-				Expect(s.Now()).To(Equal(now))
+				gm.Expect(s.Now()).To(gm.Equal(now))
 				return nil
 			}
 
@@ -146,7 +146,7 @@ var _ = g.Describe("type scope", func() {
 				now,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	})
 })

@@ -9,7 +9,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToRecordEventType()", func() {
@@ -110,7 +110,7 @@ var _ = g.Describe("func ToRecordEventType()", func() {
 			test := Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"event type recorded as expected",
@@ -250,8 +250,8 @@ var _ = g.Describe("func ToRecordEventType()", func() {
 			ToRecordEventType[EventStub[TypeU]](),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"an event of type stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
 		))
 	})
@@ -263,8 +263,8 @@ var _ = g.Describe("func ToRecordEventType()", func() {
 			ToRecordEventType[CommandThatRecordsEvent](),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"stubs.CommandStub[TypeE] is a command, it can never be recorded as an event",
 		))
 	})
@@ -276,8 +276,8 @@ var _ = g.Describe("func ToRecordEventType()", func() {
 			ToRecordEventType[EventThatIsOnlyConsumed](),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"no handlers record events of type stubs.EventStub[TypeO], it is only ever consumed",
 		))
 	})

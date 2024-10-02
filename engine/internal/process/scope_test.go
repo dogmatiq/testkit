@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -73,7 +73,7 @@ var _ = g.Describe("type scope", func() {
 				_ dogma.Event,
 			) error {
 				called = true
-				Expect(s.InstanceID()).To(Equal("<instance>"))
+				gm.Expect(s.InstanceID()).To(gm.Equal("<instance>"))
 				return nil
 			}
 
@@ -84,8 +84,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 	})
 
@@ -109,8 +109,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.ProcessInstanceEnded{
 					Handler:    config,
 					InstanceID: "<instance>",
@@ -141,8 +141,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(HaveLen(3)) // not found, instance begun, instance ended (once)
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.HaveLen(3)) // not found, instance begun, instance ended (once)
 		})
 	})
 
@@ -167,8 +167,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.CommandExecutedByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",
@@ -199,27 +199,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("ProcessMessageHandler"),
-						"Method":         Equal("HandleEvent"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(event.Message),
-						"Description":    Equal("executed a command of type stubs.CommandStub[TypeX], which is not produced by this handler"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -240,27 +240,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("ProcessMessageHandler"),
-						"Method":         Equal("HandleEvent"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(event.Message),
-						"Description":    Equal("executed an invalid stubs.CommandStub[TypeA] command: <invalid>"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("executed an invalid stubs.CommandStub[TypeA] command: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -288,8 +288,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.ProcessInstanceEndingReverted{
 					Handler:    config,
 					InstanceID: "<instance>",
@@ -323,8 +323,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TimeoutScheduledByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",
@@ -356,27 +356,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("ProcessMessageHandler"),
-						"Method":         Equal("HandleEvent"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(event.Message),
-						"Description":    Equal("scheduled a timeout of type stubs.TimeoutStub[TypeX], which is not produced by this handler"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -400,27 +400,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("ProcessMessageHandler"),
-						"Method":         Equal("HandleEvent"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(event.Message),
-						"Description":    Equal("scheduled an invalid stubs.TimeoutStub[TypeA] timeout: <invalid>"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("scheduled an invalid stubs.TimeoutStub[TypeA] timeout: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -448,8 +448,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.ProcessInstanceEndingReverted{
 					Handler:    config,
 					InstanceID: "<instance>",
@@ -487,7 +487,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessTimeoutScope,
 				_ dogma.Timeout,
 			) error {
-				Expect(s.ScheduledFor()).To(BeTemporally("==", timeout.ScheduledFor))
+				gm.Expect(s.ScheduledFor()).To(gm.BeTemporally("==", timeout.ScheduledFor))
 				return nil
 			}
 
@@ -498,7 +498,7 @@ var _ = g.Describe("type scope", func() {
 				timeout,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	})
 
@@ -524,8 +524,8 @@ var _ = g.Describe("type scope", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByProcess{
 					Handler:    config,
 					InstanceID: "<instance>",

@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", func() {
@@ -69,7 +69,7 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 	executeCommandViaExecutor := func(m dogma.Command) Action {
 		return Call(func() {
 			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	}
 
@@ -85,7 +85,7 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 			test = Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"event recorded as expected",

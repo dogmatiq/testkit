@@ -6,28 +6,28 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/internal/typecmp"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func MeasureDistance()", func() {
 	g.It("returns Identical when given two identical types", func() {
-		Expect(
+		gm.Expect(
 			MeasureDistance(
 				reflect.TypeOf(CommandA1),
 				reflect.TypeOf(CommandA1),
 			),
-		).To(Equal(
+		).To(gm.Equal(
 			Identical,
 		))
 	})
 
 	g.It("returns Unrelated when given two unrelated types", func() {
-		Expect(
+		gm.Expect(
 			MeasureDistance(
 				reflect.TypeOf(CommandA1),
 				reflect.TypeOf(EventA1),
 			),
-		).To(Equal(
+		).To(gm.Equal(
 			Unrelated,
 		))
 	})
@@ -38,17 +38,17 @@ var _ = g.Describe("func MeasureDistance()", func() {
 
 		dist := MeasureDistance(a, b)
 
-		Expect(dist).NotTo(Equal(Identical))
-		Expect(dist).NotTo(Equal(Unrelated))
+		gm.Expect(dist).NotTo(gm.Equal(Identical))
+		gm.Expect(dist).NotTo(gm.Equal(Unrelated))
 	})
 
 	g.It("returns the same value regardless of parameter order", func() {
 		a := reflect.PointerTo(reflect.TypeOf(CommandA1))
 		b := reflect.TypeOf(CommandA1)
 
-		Expect(
+		gm.Expect(
 			MeasureDistance(a, b),
-		).To(Equal(
+		).To(gm.Equal(
 			MeasureDistance(b, a),
 		))
 	})
@@ -61,6 +61,6 @@ var _ = g.Describe("func MeasureDistance()", func() {
 		distA := MeasureDistance(a, b)
 		distB := MeasureDistance(a, c)
 
-		Expect(distA).To(BeNumerically("<", distB))
+		gm.Expect(distA).To(gm.BeNumerically("<", distB))
 	})
 })

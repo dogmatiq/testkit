@@ -13,7 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -61,7 +61,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(CommandA1),
 		)
 
-		Expect(buf.Facts()).To(ContainElement(
+		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
 					MessageID:     "1",
@@ -91,8 +91,8 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(CommandX1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Failed()).To(gm.BeTrue())
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type",
 		))
 	})
@@ -104,8 +104,8 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(EventA1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Failed()).To(gm.BeTrue())
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"cannot execute command, stubs.EventStub[TypeA] is configured as an event",
 		))
 	})
@@ -118,7 +118,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 			ToExecuteCommand(CommandA1),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
+		gm.Expect(t.Failed()).To(gm.BeTrue())
 	})
 
 	g.It("produces the expected caption", func() {
@@ -126,24 +126,24 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 			ExecuteCommand(CommandA1),
 		)
 
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			"--- executing stubs.CommandStub[TypeA] command ---",
 		))
 	})
 
 	g.It("panics if the message is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ExecuteCommand(nil)
-		}).To(PanicWith("ExecuteCommand(<nil>): message must not be nil"))
+		}).To(gm.PanicWith("ExecuteCommand(<nil>): message must not be nil"))
 	})
 
 	g.It("captures the location that the action was created", func() {
 		act := executeCommand(CommandA1)
-		Expect(act.Location()).To(MatchAllFields(
+		gm.Expect(act.Location()).To(MatchAllFields(
 			Fields{
-				"Func": Equal("github.com/dogmatiq/testkit_test.executeCommand"),
-				"File": HaveSuffix("/action.linenumber_test.go"),
-				"Line": Equal(52),
+				"Func": gm.Equal("github.com/dogmatiq/testkit_test.executeCommand"),
+				"File": gm.HaveSuffix("/action.linenumber_test.go"),
+				"Line": gm.Equal(52),
 			},
 		))
 	})

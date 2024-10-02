@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -65,7 +65,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
 		})
 	})
 
@@ -76,8 +76,8 @@ var _ = g.Describe("type Controller", func() {
 				fact.Ignore,
 				time.Now(),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(envelopes).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(envelopes).To(gm.BeEmpty())
 		})
 
 		g.It("does not record any facts", func() {
@@ -87,8 +87,8 @@ var _ = g.Describe("type Controller", func() {
 				buf,
 				time.Now(),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.BeEmpty())
 		})
 	})
 
@@ -101,7 +101,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Command,
 			) {
 				called = true
-				Expect(m).To(Equal(CommandA1))
+				gm.Expect(m).To(gm.Equal(CommandA1))
 			}
 
 			_, err := ctrl.Handle(
@@ -111,8 +111,8 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("returns the recorded events", func() {
@@ -133,8 +133,8 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(events).To(ConsistOf(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(events).To(gm.ConsistOf(
 				command.NewEvent(
 					"1",
 					EventA1,
@@ -163,27 +163,27 @@ var _ = g.Describe("type Controller", func() {
 				return ""
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("AggregateMessageHandler"),
-						"Method":         Equal("RouteCommandToInstance"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(command.Message),
-						"Description":    Equal("routed a command of type stubs.CommandStub[TypeA] to an empty ID"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("AggregateMessageHandler"),
+						"Method":         gm.Equal("RouteCommandToInstance"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(command.Message),
+						"Description":    gm.Equal("routed a command of type stubs.CommandStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -201,8 +201,8 @@ var _ = g.Describe("type Controller", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceNotFound{
 						Handler:    config,
 						InstanceID: "<instance-A1>",
@@ -217,7 +217,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					Expect(r).To(Equal(&AggregateRootStub{}))
+					gm.Expect(r).To(gm.Equal(&AggregateRootStub{}))
 				}
 
 				_, err := ctrl.Handle(
@@ -227,7 +227,7 @@ var _ = g.Describe("type Controller", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			})
 
 			g.It("panics if New() returns nil", func() {
@@ -235,27 +235,27 @@ var _ = g.Describe("type Controller", func() {
 					return nil
 				}
 
-				Expect(func() {
+				gm.Expect(func() {
 					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith(
+				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        Equal(config),
-							"Interface":      Equal("AggregateMessageHandler"),
-							"Method":         Equal("New"),
-							"Implementation": Equal(config.Handler()),
-							"Message":        Equal(command.Message),
-							"Description":    Equal("returned a nil AggregateRoot"),
+							"Handler":        gm.Equal(config),
+							"Interface":      gm.Equal("AggregateMessageHandler"),
+							"Method":         gm.Equal("New"),
+							"Implementation": gm.Equal(config.Handler()),
+							"Message":        gm.Equal(command.Message),
+							"Description":    gm.Equal("returned a nil AggregateRoot"),
 							"Location": MatchAllFields(
 								Fields{
-									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
-									"Line": Not(BeZero()),
+									"Func": gm.Not(gm.BeEmpty()),
+									"File": gm.HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
+									"Line": gm.Not(gm.BeZero()),
 								},
 							),
 						},
@@ -281,7 +281,7 @@ var _ = g.Describe("type Controller", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 				handler.HandleCommandFunc = nil
 			})
@@ -295,8 +295,8 @@ var _ = g.Describe("type Controller", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceLoaded{
 						Handler:    config,
 						InstanceID: "<instance-A1>",
@@ -316,7 +316,7 @@ var _ = g.Describe("type Controller", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					Expect(r).To(Equal(
+					gm.Expect(r).To(gm.Equal(
 						&AggregateRootStub{
 							AppliedEvents: []dogma.Event{
 								EventA1,
@@ -332,7 +332,7 @@ var _ = g.Describe("type Controller", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			})
 		})
 
@@ -341,21 +341,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("AggregateMessageHandler"),
-						"Method":    Equal("RouteCommandToInstance"),
-						"Message":   Equal(command.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("AggregateMessageHandler"),
+						"Method":    gm.Equal("RouteCommandToInstance"),
+						"Message":   gm.Equal(command.Message),
 					},
 				),
 			))
@@ -370,21 +370,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("AggregateMessageHandler"),
-						"Method":    Equal("HandleCommand"),
-						"Message":   Equal(command.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("AggregateMessageHandler"),
+						"Method":    gm.Equal("HandleCommand"),
+						"Message":   gm.Equal(command.Message),
 					},
 				),
 			))
@@ -407,21 +407,21 @@ var _ = g.Describe("type Controller", func() {
 				}
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("AggregateRoot"),
-						"Method":    Equal("ApplyEvent"),
-						"Message":   Equal(EventA1),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("AggregateRoot"),
+						"Method":    gm.Equal("ApplyEvent"),
+						"Message":   gm.Equal(EventA1),
 					},
 				),
 			))
@@ -452,21 +452,21 @@ var _ = g.Describe("type Controller", func() {
 				}
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("AggregateRoot"),
-						"Method":    Equal("ApplyEvent"),
-						"Message":   Equal(EventA1),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("AggregateRoot"),
+						"Method":    gm.Equal("ApplyEvent"),
+						"Message":   gm.Equal(EventA1),
 					},
 				),
 			))
@@ -490,7 +490,7 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
 		g.It("removes all instances", func() {
@@ -504,9 +504,9 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).NotTo(ContainElement(
-				BeAssignableToTypeOf(fact.AggregateInstanceLoaded{}),
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+				gm.BeAssignableToTypeOf(fact.AggregateInstanceLoaded{}),
 			))
 		})
 	})
