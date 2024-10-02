@@ -148,8 +148,8 @@ var _ = g.Describe("type Engine", func() {
 				context.Background(),
 				AggregateCommand{},
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("allows dispatching events", func() {
@@ -170,8 +170,8 @@ var _ = g.Describe("type Engine", func() {
 				context.Background(),
 				ForeignEventForProjection{},
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("skips handlers that are disabled by type", func() {

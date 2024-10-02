@@ -53,7 +53,7 @@ func (s *scope) End() {
 func (s *scope) ExecuteCommand(m dogma.Command) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes().Produced.Has(mt) {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -117,7 +117,7 @@ func (s *scope) RecordedAt() time.Time {
 func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes().Produced.Has(mt) {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",

@@ -82,17 +82,20 @@ func guardAgainstExpectationOnImpossibleType(
 	// report, not just returning an error.
 	//
 	// See https://github.com/dogmatiq/testkit/issues/162
-	if !s.App.MessageTypes().Has(t) {
+	em, ok := s.App.MessageTypes()[t]
+	if !ok {
 		return inflect.Errorf(
 			t.Kind(),
 			"a <message> of type %s can never be <produced>, the application does not use this message type",
 			t,
 		)
-	} else if !s.Options.MatchDispatchCycleStartedFacts {
+	}
+
+	if !s.Options.MatchDispatchCycleStartedFacts {
 		// If we're NOT matching messages from DispatchCycleStarted facts that
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
-		if !s.App.MessageTypes().Produced.Has(t) {
+		if !em.IsProduced {
 			return inflect.Errorf(
 				t.Kind(),
 				"no handlers <produce> <messages> of type %s, it is only ever consumed",

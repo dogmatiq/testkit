@@ -52,7 +52,7 @@ func (s *scope) Destroy() {
 func (s *scope) RecordEvent(m dogma.Event) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes().Produced.Has(mt) {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",

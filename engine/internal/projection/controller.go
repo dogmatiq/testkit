@@ -76,7 +76,7 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes().Consumed.Has(mt) {
+	if !c.Config.MessageTypes()[mt].IsConsumed {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 

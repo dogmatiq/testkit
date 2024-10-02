@@ -77,7 +77,7 @@ func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	// report, not just returning an error.
 	//
 	// See https://github.com/dogmatiq/testkit/issues/162
-	if !s.App.MessageTypes().Has(mt) {
+	if _, ok := s.App.MessageTypes()[mt]; !ok {
 		return inflect.Errorf(
 			mt.Kind(),
 			"cannot <produce> <message>, %s is a not a recognized message type",
