@@ -9,7 +9,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func StartTimeAt()", func() {
@@ -30,7 +30,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
 			) (bool, error) {
-				Expect(s.RecordedAt()).To(BeTemporally("==", now))
+				gm.Expect(s.RecordedAt()).To(gm.BeTemporally("==", now))
 				called = true
 				return true, nil
 			},
@@ -51,7 +51,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			EnableHandlers("<handler-name>").
 			Prepare(RecordEvent(EventA1))
 
-		Expect(called).To(BeTrue())
+		gm.Expect(called).To(gm.BeTrue())
 	})
 })
 

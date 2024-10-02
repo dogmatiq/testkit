@@ -9,7 +9,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type Envelope", func() {
@@ -22,7 +22,7 @@ var _ = g.Describe("type Envelope", func() {
 				now,
 			)
 
-			Expect(env).To(Equal(
+			gm.Expect(env).To(gm.Equal(
 				&Envelope{
 					MessageID:     "100",
 					CorrelationID: "100",
@@ -45,7 +45,7 @@ var _ = g.Describe("type Envelope", func() {
 				now,
 			)
 
-			Expect(env).To(Equal(
+			gm.Expect(env).To(gm.Equal(
 				&Envelope{
 					MessageID:     "100",
 					CorrelationID: "100",
@@ -89,7 +89,7 @@ var _ = g.Describe("type Envelope", func() {
 				origin,
 			)
 
-			Expect(child).To(Equal(
+			gm.Expect(child).To(gm.Equal(
 				&Envelope{
 					MessageID:     "200",
 					CorrelationID: "100",
@@ -134,7 +134,7 @@ var _ = g.Describe("type Envelope", func() {
 				origin,
 			)
 
-			Expect(child).To(Equal(
+			gm.Expect(child).To(gm.Equal(
 				&Envelope{
 					MessageID:     "200",
 					CorrelationID: "100",
@@ -182,7 +182,7 @@ var _ = g.Describe("type Envelope", func() {
 				origin,
 			)
 
-			Expect(child).To(Equal(
+			gm.Expect(child).To(gm.Equal(
 				&Envelope{
 					MessageID:     "200",
 					CorrelationID: "100",

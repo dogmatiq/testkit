@@ -6,7 +6,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type UnexpectedBehavior", func() {
@@ -31,7 +31,7 @@ var _ = g.Describe("type UnexpectedBehavior", func() {
 				Description:    "<description>",
 			}
 
-			Expect(x.String()).To(Equal(
+			gm.Expect(x.String()).To(gm.Equal(
 				"the '<name>' projection message handler behaved unexpectedly in *stubs.ProjectionMessageHandlerStub.<method>(): <description>",
 			))
 		})

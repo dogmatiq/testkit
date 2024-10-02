@@ -2,7 +2,7 @@ package testkit_test
 
 import (
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 // reportMatcher validates that some action produced a particular test report.
@@ -22,14 +22,13 @@ func expectReport(expected ...string) reportMatcher {
 		for i, l := range t.Logs {
 			if l == "--- TEST REPORT ---" {
 				remainder := t.Logs[i+1:]
-				ExpectWithOffset(1, remainder).To(Equal(expected))
+				gm.ExpectWithOffset(1, remainder).To(gm.Equal(expected))
 				return
 			}
 		}
 
 		// If we didn't find the test report at all just compare all of the logs
 		// to the expectation so at least we know what *was* printed.
-		ExpectWithOffset(1, t.Logs).To(Equal(expected))
-
+		gm.ExpectWithOffset(1, t.Logs).To(gm.Equal(expected))
 	}
 }

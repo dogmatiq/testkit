@@ -4,15 +4,15 @@ import (
 	"github.com/dogmatiq/configkit"
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type Icon", func() {
 	g.Describe("func String()", func() {
 		g.It("returns the icon string", func() {
-			Expect(
+			gm.Expect(
 				TransactionIDIcon.String(),
-			).To(Equal("⨀"))
+			).To(gm.Equal("⨀"))
 		})
 	})
 })
@@ -20,30 +20,30 @@ var _ = g.Describe("type Icon", func() {
 var _ = g.Describe("type IconWithLabel", func() {
 	g.Describe("func IconWithLabel()", func() {
 		g.It("returns the icon and label", func() {
-			Expect(
+			gm.Expect(
 				TransactionIDIcon.WithLabel("<foo>").String(),
-			).To(Equal("⨀ <foo>"))
+			).To(gm.Equal("⨀ <foo>"))
 		})
 	})
 })
 
 var _ = g.Describe("func DirectionIcon()", func() {
 	g.It("returns the expected icon", func() {
-		Expect(DirectionIcon(true, false)).To(Equal(InboundIcon))
-		Expect(DirectionIcon(false, false)).To(Equal(OutboundIcon))
+		gm.Expect(DirectionIcon(true, false)).To(gm.Equal(InboundIcon))
+		gm.Expect(DirectionIcon(false, false)).To(gm.Equal(OutboundIcon))
 	})
 
 	g.It("returns the expected error icon", func() {
-		Expect(DirectionIcon(true, true)).To(Equal(InboundErrorIcon))
-		Expect(DirectionIcon(false, true)).To(Equal(OutboundErrorIcon))
+		gm.Expect(DirectionIcon(true, true)).To(gm.Equal(InboundErrorIcon))
+		gm.Expect(DirectionIcon(false, true)).To(gm.Equal(OutboundErrorIcon))
 	})
 })
 
 var _ = g.Describe("func HandlerTypeIcon()", func() {
 	g.It("returns the expected icon", func() {
-		Expect(HandlerTypeIcon(configkit.AggregateHandlerType)).To(Equal(AggregateIcon))
-		Expect(HandlerTypeIcon(configkit.ProcessHandlerType)).To(Equal(ProcessIcon))
-		Expect(HandlerTypeIcon(configkit.IntegrationHandlerType)).To(Equal(IntegrationIcon))
-		Expect(HandlerTypeIcon(configkit.ProjectionHandlerType)).To(Equal(ProjectionIcon))
+		gm.Expect(HandlerTypeIcon(configkit.AggregateHandlerType)).To(gm.Equal(AggregateIcon))
+		gm.Expect(HandlerTypeIcon(configkit.ProcessHandlerType)).To(gm.Equal(ProcessIcon))
+		gm.Expect(HandlerTypeIcon(configkit.IntegrationHandlerType)).To(gm.Equal(IntegrationIcon))
+		gm.Expect(HandlerTypeIcon(configkit.ProjectionHandlerType)).To(gm.Equal(ProjectionIcon))
 	})
 })

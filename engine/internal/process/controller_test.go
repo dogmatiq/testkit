@@ -13,7 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -86,7 +86,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
 		})
 	})
 
@@ -125,7 +125,7 @@ var _ = g.Describe("type Controller", func() {
 				createdTime,
 				event,
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
@@ -137,8 +137,8 @@ var _ = g.Describe("type Controller", func() {
 				t2Time, // advance time
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(timeouts).To(ConsistOf(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(timeouts).To(gm.ConsistOf(
 				event.NewTimeout(
 					"3",
 					TimeoutA1,
@@ -171,8 +171,8 @@ var _ = g.Describe("type Controller", func() {
 				t2Time, // advance time
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(timeouts).To(HaveLen(2))
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(timeouts).To(gm.HaveLen(2))
 
 			timeouts, err = ctrl.Tick(
 				context.Background(),
@@ -180,8 +180,8 @@ var _ = g.Describe("type Controller", func() {
 				t2Time, // advance time
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(timeouts).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(timeouts).To(gm.BeEmpty())
 		})
 
 		g.It("does not return timeouts for instances that have been ended", func() {
@@ -197,7 +197,7 @@ var _ = g.Describe("type Controller", func() {
 				createdTime,
 				secondInstanceEvent,
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			// end our original instance
 			handler.HandleEventFunc = func(
@@ -216,7 +216,7 @@ var _ = g.Describe("type Controller", func() {
 				time.Now(),
 				event,
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			// expect only the timeout from the E2 instance.
 			timeouts, err := ctrl.Tick(
@@ -225,8 +225,8 @@ var _ = g.Describe("type Controller", func() {
 				t2Time,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(timeouts).To(ConsistOf(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(timeouts).To(gm.ConsistOf(
 				secondInstanceEvent.NewTimeout(
 					"3",
 					TimeoutA1,
@@ -264,7 +264,7 @@ var _ = g.Describe("type Controller", func() {
 					m dogma.Event,
 				) error {
 					called = true
-					Expect(m).To(Equal(EventA1))
+					gm.Expect(m).To(gm.Equal(EventA1))
 					return nil
 				}
 
@@ -275,8 +275,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(called).To(BeTrue())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(called).To(gm.BeTrue())
 			})
 
 			g.It("propagates handler errors", func() {
@@ -298,7 +298,7 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).To(Equal(expected))
+				gm.Expect(err).To(gm.Equal(expected))
 			})
 
 			g.It("returns both commands and timeouts", func() {
@@ -322,8 +322,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(ConsistOf(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.ConsistOf(
 					event.NewCommand(
 						"1",
 						CommandA1,
@@ -368,8 +368,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(HaveLen(1))
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.HaveLen(1))
 			})
 
 			g.It("does not return timeouts scheduled in the future", func() {
@@ -392,8 +392,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(BeEmpty())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.BeEmpty())
 			})
 
 			g.When("the event is not routed to an instance", func() {
@@ -424,7 +424,7 @@ var _ = g.Describe("type Controller", func() {
 						event,
 					)
 
-					Expect(err).ShouldNot(HaveOccurred())
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				})
 
 				g.It("records a fact", func() {
@@ -436,8 +436,8 @@ var _ = g.Describe("type Controller", func() {
 						event,
 					)
 
-					Expect(err).ShouldNot(HaveOccurred())
-					Expect(buf.Facts()).To(ContainElement(
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
+					gm.Expect(buf.Facts()).To(gm.ContainElement(
 						fact.ProcessEventIgnored{
 							Handler:  config,
 							Envelope: event,
@@ -464,7 +464,7 @@ var _ = g.Describe("type Controller", func() {
 					time.Now(),
 					event,
 				)
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 				messageIDs.Reset() // reset after setup for a predictable ID.
 			})
@@ -477,7 +477,7 @@ var _ = g.Describe("type Controller", func() {
 					timeout,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			})
 
 			g.It("propagates handler errors", func() {
@@ -499,7 +499,7 @@ var _ = g.Describe("type Controller", func() {
 					timeout,
 				)
 
-				Expect(err).To(Equal(expected))
+				gm.Expect(err).To(gm.Equal(expected))
 			})
 
 			g.It("returns both commands and timeouts", func() {
@@ -523,8 +523,8 @@ var _ = g.Describe("type Controller", func() {
 					timeout,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(ConsistOf(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.ConsistOf(
 					timeout.NewCommand(
 						"1",
 						CommandA1,
@@ -569,8 +569,8 @@ var _ = g.Describe("type Controller", func() {
 					timeout,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(HaveLen(1))
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.HaveLen(1))
 			})
 
 			g.It("does not return timeouts scheduled in the future", func() {
@@ -593,8 +593,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(envelopes).To(BeEmpty())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(envelopes).To(gm.BeEmpty())
 			})
 
 			g.When("the instance that created the timeout does not exist", func() {
@@ -615,7 +615,7 @@ var _ = g.Describe("type Controller", func() {
 						time.Now(),
 						event,
 					)
-					Expect(err).ShouldNot(HaveOccurred())
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 					messageIDs.Reset() // reset after setup for a predictable ID.
 				})
@@ -638,7 +638,7 @@ var _ = g.Describe("type Controller", func() {
 						timeout,
 					)
 
-					Expect(err).ShouldNot(HaveOccurred())
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				})
 
 				g.It("records a fact", func() {
@@ -650,8 +650,8 @@ var _ = g.Describe("type Controller", func() {
 						timeout,
 					)
 
-					Expect(err).ShouldNot(HaveOccurred())
-					Expect(buf.Facts()).To(ContainElement(
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
+					gm.Expect(buf.Facts()).To(gm.ContainElement(
 						fact.ProcessTimeoutIgnored{
 							Handler:    config,
 							InstanceID: "<instance-A1>",
@@ -681,7 +681,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).To(Equal(expected))
+			gm.Expect(err).To(gm.Equal(expected))
 		})
 
 		g.It("panics when the handler routes to an empty instance ID", func() {
@@ -692,27 +692,27 @@ var _ = g.Describe("type Controller", func() {
 				return "", true, nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("ProcessMessageHandler"),
-						"Method":         Equal("RouteEventToInstance"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(event.Message),
-						"Description":    Equal("routed an event of type stubs.EventStub[TypeA] to an empty ID"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("RouteEventToInstance"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("routed an event of type stubs.EventStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -730,15 +730,15 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceNotFound{
 						Handler:    config,
 						InstanceID: "<instance-A1>",
 						Envelope:   event,
 					},
 				))
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceBegun{
 						Handler:    config,
 						InstanceID: "<instance-A1>",
@@ -753,27 +753,27 @@ var _ = g.Describe("type Controller", func() {
 					return nil
 				}
 
-				Expect(func() {
+				gm.Expect(func() {
 					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
 						event,
 					)
-				}).To(PanicWith(
+				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        Equal(config),
-							"Interface":      Equal("ProcessMessageHandler"),
-							"Method":         Equal("New"),
-							"Implementation": Equal(config.Handler()),
-							"Message":        Equal(event.Message),
-							"Description":    Equal("returned a nil ProcessRoot"),
+							"Handler":        gm.Equal(config),
+							"Interface":      gm.Equal("ProcessMessageHandler"),
+							"Method":         gm.Equal("New"),
+							"Implementation": gm.Equal(config.Handler()),
+							"Message":        gm.Equal(event.Message),
+							"Description":    gm.Equal("returned a nil ProcessRoot"),
 							"Location": MatchAllFields(
 								Fields{
-									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
-									"Line": Not(BeZero()),
+									"Func": gm.Not(gm.BeEmpty()),
+									"File": gm.HaveSuffix("/stubs/process.go"), // from dogmatiq/enginekit module
+									"Line": gm.Not(gm.BeZero()),
 								},
 							),
 						},
@@ -800,7 +800,7 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 				messageIDs.Reset() // reset after setup for a predictable ID.
 			})
@@ -814,8 +814,8 @@ var _ = g.Describe("type Controller", func() {
 					event,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceLoaded{
 						Handler:    config,
 						InstanceID: "<instance-A1>",
@@ -848,21 +848,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("ProcessMessageHandler"),
-						"Method":    Equal("RouteEventToInstance"),
-						"Message":   Equal(event.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("ProcessMessageHandler"),
+						"Method":    gm.Equal("RouteEventToInstance"),
+						"Message":   gm.Equal(event.Message),
 					},
 				),
 			))
@@ -878,21 +878,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("ProcessMessageHandler"),
-						"Method":    Equal("HandleEvent"),
-						"Message":   Equal(event.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("ProcessMessageHandler"),
+						"Method":    gm.Equal("HandleEvent"),
+						"Message":   gm.Equal(event.Message),
 					},
 				),
 			))
@@ -924,21 +924,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					timeout,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("ProcessMessageHandler"),
-						"Method":    Equal("HandleTimeout"),
-						"Message":   Equal(timeout.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("ProcessMessageHandler"),
+						"Method":    gm.Equal("HandleTimeout"),
+						"Message":   gm.Equal(timeout.Message),
 					},
 				),
 			))
@@ -963,7 +963,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
@@ -979,9 +979,9 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).NotTo(ContainElement(
-				BeAssignableToTypeOf(fact.ProcessInstanceLoaded{}),
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+				gm.BeAssignableToTypeOf(fact.ProcessInstanceLoaded{}),
 			))
 		})
 	})

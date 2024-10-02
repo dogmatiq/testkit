@@ -3,7 +3,7 @@ package envelope_test
 import (
 	. "github.com/dogmatiq/testkit/envelope"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type MessageIDGenerator", func() {
@@ -15,9 +15,9 @@ var _ = g.Describe("type MessageIDGenerator", func() {
 
 	g.Describe("func Next()", func() {
 		g.It("returns the next ID in the sequence", func() {
-			Expect(generator.Next()).To(Equal("1"))
-			Expect(generator.Next()).To(Equal("2"))
-			Expect(generator.Next()).To(Equal("3"))
+			gm.Expect(generator.Next()).To(gm.Equal("1"))
+			gm.Expect(generator.Next()).To(gm.Equal("2"))
+			gm.Expect(generator.Next()).To(gm.Equal("3"))
 		})
 	})
 
@@ -27,7 +27,7 @@ var _ = g.Describe("type MessageIDGenerator", func() {
 			generator.Next()
 			generator.Next()
 			generator.Reset()
-			Expect(generator.Next()).To(Equal("1"))
+			gm.Expect(generator.Next()).To(gm.Equal("1"))
 		})
 	})
 })

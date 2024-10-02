@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -73,8 +73,8 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.EventRecordedByIntegration{
 					Handler:  config,
 					Envelope: command,
@@ -101,27 +101,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("IntegrationMessageHandler"),
-						"Method":         Equal("HandleCommand"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(command.Message),
-						"Description":    Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("IntegrationMessageHandler"),
+						"Method":         gm.Equal("HandleCommand"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(command.Message),
+						"Description":    gm.Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/integration/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/integration/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -141,27 +141,27 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        Equal(config),
-						"Interface":      Equal("IntegrationMessageHandler"),
-						"Method":         Equal("HandleCommand"),
-						"Implementation": Equal(config.Handler()),
-						"Message":        Equal(command.Message),
-						"Description":    Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("IntegrationMessageHandler"),
+						"Method":         gm.Equal("HandleCommand"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(command.Message),
+						"Description":    gm.Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
-								"Func": Not(BeEmpty()),
-								"File": HaveSuffix("/engine/internal/integration/scope_test.go"),
-								"Line": Not(BeZero()),
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/integration/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
 							},
 						),
 					},
@@ -191,8 +191,8 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByIntegration{
 					Handler:   config,
 					Envelope:  command,

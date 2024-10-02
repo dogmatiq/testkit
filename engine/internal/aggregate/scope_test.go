@@ -11,7 +11,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -78,9 +78,9 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).NotTo(ContainElement(
-					BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+					gm.BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
 				))
 			})
 		})
@@ -104,8 +104,8 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceCreated{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -117,7 +117,7 @@ var _ = g.Describe("type scope", func() {
 						Envelope: command,
 					},
 				))
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -164,7 +164,7 @@ var _ = g.Describe("type scope", func() {
 				),
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
 		})
@@ -187,8 +187,8 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceDestroyed{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -222,8 +222,8 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -257,9 +257,9 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).NotTo(ContainElement(
-					BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+					gm.BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
 				))
 			})
 
@@ -282,8 +282,8 @@ var _ = g.Describe("type scope", func() {
 					command,
 				)
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceDestructionReverted{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -295,7 +295,7 @@ var _ = g.Describe("type scope", func() {
 						Envelope: command,
 					},
 				))
-				Expect(buf.Facts()).To(ContainElement(
+				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
 						Handler:    config,
 						InstanceID: "<instance>",
@@ -328,27 +328,27 @@ var _ = g.Describe("type scope", func() {
 					s.RecordEvent(EventX1)
 				}
 
-				Expect(func() {
+				gm.Expect(func() {
 					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith(
+				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        Equal(config),
-							"Interface":      Equal("AggregateMessageHandler"),
-							"Method":         Equal("HandleCommand"),
-							"Implementation": Equal(config.Handler()),
-							"Message":        Equal(command.Message),
-							"Description":    Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
+							"Handler":        gm.Equal(config),
+							"Interface":      gm.Equal("AggregateMessageHandler"),
+							"Method":         gm.Equal("HandleCommand"),
+							"Implementation": gm.Equal(config.Handler()),
+							"Message":        gm.Equal(command.Message),
+							"Description":    gm.Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
 							"Location": MatchAllFields(
 								Fields{
-									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/engine/internal/aggregate/scope_test.go"),
-									"Line": Not(BeZero()),
+									"Func": gm.Not(gm.BeEmpty()),
+									"File": gm.HaveSuffix("/engine/internal/aggregate/scope_test.go"),
+									"Line": gm.Not(gm.BeZero()),
 								},
 							),
 						},
@@ -367,27 +367,27 @@ var _ = g.Describe("type scope", func() {
 					})
 				}
 
-				Expect(func() {
+				gm.Expect(func() {
 					ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
 						command,
 					)
-				}).To(PanicWith(
+				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        Equal(config),
-							"Interface":      Equal("AggregateMessageHandler"),
-							"Method":         Equal("HandleCommand"),
-							"Implementation": Equal(config.Handler()),
-							"Message":        Equal(command.Message),
-							"Description":    Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
+							"Handler":        gm.Equal(config),
+							"Interface":      gm.Equal("AggregateMessageHandler"),
+							"Method":         gm.Equal("HandleCommand"),
+							"Implementation": gm.Equal(config.Handler()),
+							"Message":        gm.Equal(command.Message),
+							"Description":    gm.Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
 							"Location": MatchAllFields(
 								Fields{
-									"Func": Not(BeEmpty()),
-									"File": HaveSuffix("/engine/internal/aggregate/scope_test.go"),
-									"Line": Not(BeZero()),
+									"Func": gm.Not(gm.BeEmpty()),
+									"File": gm.HaveSuffix("/engine/internal/aggregate/scope_test.go"),
+									"Line": gm.Not(gm.BeZero()),
 								},
 							),
 						},
@@ -406,7 +406,7 @@ var _ = g.Describe("type scope", func() {
 				_ dogma.Command,
 			) {
 				called = true
-				Expect(s.InstanceID()).To(Equal("<instance>"))
+				gm.Expect(s.InstanceID()).To(gm.Equal("<instance>"))
 			}
 
 			_, err := ctrl.Handle(
@@ -416,8 +416,8 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 	})
 
@@ -441,8 +441,8 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByAggregate{
 					Handler:    config,
 					InstanceID: "<instance>",

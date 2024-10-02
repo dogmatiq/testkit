@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -52,7 +52,7 @@ var _ = g.Describe("func AdvanceTime()", func() {
 			AdvanceTime(ByDuration(1*time.Second)),
 		)
 
-		Expect(buf.Facts()).To(ContainElement(
+		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.TickCycleBegun{
 				EngineTime: startTime.Add(2 * time.Second),
 				EnabledHandlerTypes: map[configkit.HandlerType]bool{
@@ -77,8 +77,8 @@ var _ = g.Describe("func AdvanceTime()", func() {
 			),
 		)
 
-		Expect(t.Failed()).To(BeTrue())
-		Expect(t.Logs).To(ContainElement(
+		gm.Expect(t.Failed()).To(gm.BeTrue())
+		gm.Expect(t.Logs).To(gm.ContainElement(
 			fmt.Sprintf(
 				"adjusting the clock to %s would reverse time",
 				target.Format(time.RFC3339),
@@ -87,18 +87,18 @@ var _ = g.Describe("func AdvanceTime()", func() {
 	})
 
 	g.It("panics if the adjustment is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			AdvanceTime(nil)
-		}).To(PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
+		}).To(gm.PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
 	})
 
 	g.It("captures the location that the action was created", func() {
 		act := advanceTime(ByDuration(10 * time.Second))
-		Expect(act.Location()).To(MatchAllFields(
+		gm.Expect(act.Location()).To(MatchAllFields(
 			Fields{
-				"Func": Equal("github.com/dogmatiq/testkit_test.advanceTime"),
-				"File": HaveSuffix("/action.linenumber_test.go"),
-				"Line": Equal(50),
+				"Func": gm.Equal("github.com/dogmatiq/testkit_test.advanceTime"),
+				"File": gm.HaveSuffix("/action.linenumber_test.go"),
+				"Line": gm.Equal(50),
 			},
 		))
 	})
@@ -111,7 +111,7 @@ var _ = g.Describe("func AdvanceTime()", func() {
 				AdvanceTime(ToTime(targetTime)),
 			)
 
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: targetTime,
 					EnabledHandlerTypes: map[configkit.HandlerType]bool{
@@ -130,7 +130,7 @@ var _ = g.Describe("func AdvanceTime()", func() {
 				AdvanceTime(ToTime(targetTime)),
 			)
 
-			Expect(t.Logs).To(ContainElement(
+			gm.Expect(t.Logs).To(gm.ContainElement(
 				"--- advancing time to 2100-01-02T03:04:05Z ---",
 			))
 		})
@@ -142,7 +142,7 @@ var _ = g.Describe("func AdvanceTime()", func() {
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)
 
-			Expect(buf.Facts()).To(ContainElement(
+			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: startTime.Add(3 * time.Second),
 					EnabledHandlerTypes: map[configkit.HandlerType]bool{
@@ -161,15 +161,15 @@ var _ = g.Describe("func AdvanceTime()", func() {
 				AdvanceTime(ByDuration(3 * time.Second)),
 			)
 
-			Expect(t.Logs).To(ContainElement(
+			gm.Expect(t.Logs).To(gm.ContainElement(
 				"--- advancing time by 3s ---",
 			))
 		})
 
 		g.It("panics if the duration is negative", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				ByDuration(-1 * time.Second)
-			}).To(PanicWith("ByDuration(-1s): duration must not be negative"))
+			}).To(gm.PanicWith("ByDuration(-1s): duration must not be negative"))
 		})
 	})
 })

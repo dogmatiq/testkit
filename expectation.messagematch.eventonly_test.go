@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
@@ -81,7 +81,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			test := Begin(testingT, app, options...)
 			test.Expect(a, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"all recorded events match",
@@ -214,8 +214,8 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"an event of type stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
 		))
 	})
@@ -231,8 +231,8 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"stubs.CommandStub[TypeE] is a command, it can never be recorded as an event",
 		))
 	})
@@ -248,16 +248,16 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		)
 
-		Expect(testingT.Failed()).To(BeTrue())
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"no handlers record events of type stubs.EventStub[TypeO], it is only ever consumed",
 		))
 	})
 
 	g.It("panics if the function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			var fn func(dogma.Event) error
 			ToOnlyRecordEventsMatching(fn)
-		}).To(PanicWith("ToOnlyRecordEventsMatching(<nil>): function must not be nil"))
+		}).To(gm.PanicWith("ToOnlyRecordEventsMatching(<nil>): function must not be nil"))
 	})
 })

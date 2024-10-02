@@ -7,7 +7,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToSatisfy()", func() {
@@ -44,7 +44,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			)
 
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"it passes when the expectation does nothing",
@@ -240,7 +240,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 		)
 
 		rm(testingT)
-		Expect(testingT.Failed()).To(BeTrue())
+		gm.Expect(testingT.Failed()).To(gm.BeTrue())
 	})
 
 	g.It("produces the expected caption", func() {
@@ -252,21 +252,21 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			),
 		)
 
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"--- expect [no-op] to <description> ---",
 		))
 	})
 
 	g.It("panics if the description is empty", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToSatisfy("", func(*SatisfyT) {})
-		}).To(PanicWith(`ToSatisfy("", <func>): description must not be empty`))
+		}).To(gm.PanicWith(`ToSatisfy("", <func>): description must not be empty`))
 	})
 
 	g.It("panics if the function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToSatisfy("<description>", nil)
-		}).To(PanicWith(`ToSatisfy("<description>", <nil>): function must not be nil`))
+		}).To(gm.PanicWith(`ToSatisfy("<description>", <nil>): function must not be nil`))
 	})
 
 	g.Describe("type SatisfyT", func() {
@@ -294,7 +294,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					})
 				})
 
-				Expect(order).To(Equal(
+				gm.Expect(order).To(gm.Equal(
 					[]int{2, 1},
 				))
 			})
@@ -304,7 +304,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Error()
-					Expect(t.Failed()).To(BeTrue())
+					gm.Expect(t.Failed()).To(gm.BeTrue())
 				})
 			})
 
@@ -315,7 +315,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					completed = true
 				})
 
-				Expect(completed).To(BeTrue())
+				gm.Expect(completed).To(gm.BeTrue())
 			})
 		})
 
@@ -323,7 +323,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Errorf("<format>")
-					Expect(t.Failed()).To(BeTrue())
+					gm.Expect(t.Failed()).To(gm.BeTrue())
 				})
 			})
 
@@ -334,7 +334,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					completed = true
 				})
 
-				Expect(completed).To(BeTrue())
+				gm.Expect(completed).To(gm.BeTrue())
 			})
 		})
 
@@ -342,7 +342,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					t.Fail()
-					Expect(t.Failed()).To(BeTrue())
+					gm.Expect(t.Failed()).To(gm.BeTrue())
 				})
 			})
 
@@ -353,7 +353,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					completed = true
 				})
 
-				Expect(completed).To(BeTrue())
+				gm.Expect(completed).To(gm.BeTrue())
 			})
 		})
 
@@ -361,7 +361,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Failed()).To(BeTrue())
+						gm.Expect(t.Failed()).To(gm.BeTrue())
 					}()
 
 					t.FailNow()
@@ -380,7 +380,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Failed()).To(BeTrue())
+						gm.Expect(t.Failed()).To(gm.BeTrue())
 					}()
 
 					t.Fatal()
@@ -399,7 +399,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as failed", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Failed()).To(BeTrue())
+						gm.Expect(t.Failed()).To(gm.BeTrue())
 					}()
 
 					t.Fatalf("<format>")
@@ -417,9 +417,9 @@ var _ = g.Describe("func ToSatisfy()", func() {
 		g.Describe("func Parallel()", func() {
 			g.It("does not panic", func() {
 				run(func(t *SatisfyT) {
-					Expect(func() {
+					gm.Expect(func() {
 						t.Parallel()
-					}).NotTo(Panic())
+					}).NotTo(gm.Panic())
 				})
 			})
 		})
@@ -427,7 +427,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 		g.Describe("func Name()", func() {
 			g.It("returns the description", func() {
 				run(func(t *SatisfyT) {
-					Expect(t.Name()).To(Equal("<description>"))
+					gm.Expect(t.Name()).To(gm.Equal("<description>"))
 				})
 			})
 		})
@@ -436,7 +436,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Skipped()).To(BeTrue())
+						gm.Expect(t.Skipped()).To(gm.BeTrue())
 					}()
 
 					t.Skip()
@@ -449,7 +449,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					t.Skip()
 				})
 
-				Expect(testingT.Failed()).To(BeFalse())
+				gm.Expect(testingT.Failed()).To(gm.BeFalse())
 			})
 
 			g.It("aborts execution", func() {
@@ -464,7 +464,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Skipped()).To(BeTrue())
+						gm.Expect(t.Skipped()).To(gm.BeTrue())
 					}()
 
 					t.SkipNow()
@@ -477,7 +477,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					t.SkipNow()
 				})
 
-				Expect(testingT.Failed()).To(BeFalse())
+				gm.Expect(testingT.Failed()).To(gm.BeFalse())
 			})
 
 			g.It("aborts execution", func() {
@@ -492,7 +492,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 			g.It("marks the test as skipped", func() {
 				run(func(t *SatisfyT) {
 					defer func() {
-						Expect(t.Skipped()).To(BeTrue())
+						gm.Expect(t.Skipped()).To(gm.BeTrue())
 					}()
 
 					t.Skipf("<format>")
@@ -505,7 +505,7 @@ var _ = g.Describe("func ToSatisfy()", func() {
 					t.Skipf("<format>")
 				})
 
-				Expect(testingT.Failed()).To(BeFalse())
+				gm.Expect(testingT.Failed()).To(gm.BeFalse())
 			})
 
 			g.It("aborts execution", func() {

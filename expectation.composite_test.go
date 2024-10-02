@@ -7,7 +7,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Context("composite expectations", func() {
@@ -38,7 +38,7 @@ var _ = g.Context("composite expectations", func() {
 	) {
 		test.Expect(noop, e)
 		rm(testingT)
-		Expect(testingT.Failed()).To(Equal(!ok))
+		gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 	}
 
 	g.Describe("func AllOf()", func() {
@@ -91,7 +91,7 @@ var _ = g.Context("composite expectations", func() {
 				AllOf(pass, fail),
 			)
 
-			Expect(testingT.Logs).To(ContainElement(
+			gm.Expect(testingT.Logs).To(gm.ContainElement(
 				"--- expect [no-op] to meet 2 expectations ---",
 			))
 		})
@@ -102,14 +102,14 @@ var _ = g.Context("composite expectations", func() {
 				AllOf(pass, failBeforeAction),
 			)
 
-			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
-			Expect(testingT.Failed()).To(BeTrue())
+			gm.Expect(testingT.Logs).To(gm.ContainElement("<always fail before action>"))
+			gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		})
 
 		g.It("panics if no children are provided", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				AllOf()
-			}).To(PanicWith("AllOf(): at least one child expectation must be provided"))
+			}).To(gm.PanicWith("AllOf(): at least one child expectation must be provided"))
 		})
 	})
 
@@ -163,7 +163,7 @@ var _ = g.Context("composite expectations", func() {
 				AnyOf(pass, fail),
 			)
 
-			Expect(testingT.Logs).To(ContainElement(
+			gm.Expect(testingT.Logs).To(gm.ContainElement(
 				"--- expect [no-op] to meet at least one of 2 expectations ---",
 			))
 		})
@@ -174,14 +174,14 @@ var _ = g.Context("composite expectations", func() {
 				AnyOf(pass, failBeforeAction),
 			)
 
-			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
-			Expect(testingT.Failed()).To(BeTrue())
+			gm.Expect(testingT.Logs).To(gm.ContainElement("<always fail before action>"))
+			gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		})
 
 		g.It("panics if no children are provided", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				AnyOf()
-			}).To(PanicWith("AnyOf(): at least one child expectation must be provided"))
+			}).To(gm.PanicWith("AnyOf(): at least one child expectation must be provided"))
 		})
 	})
 
@@ -236,7 +236,7 @@ var _ = g.Context("composite expectations", func() {
 				NoneOf(pass, fail),
 			)
 
-			Expect(testingT.Logs).To(ContainElement(
+			gm.Expect(testingT.Logs).To(gm.ContainElement(
 				"--- expect [no-op] not to meet any of 2 expectations ---",
 			))
 		})
@@ -247,7 +247,7 @@ var _ = g.Context("composite expectations", func() {
 				NoneOf(pass),
 			)
 
-			Expect(testingT.Logs).To(ContainElement(
+			gm.Expect(testingT.Logs).To(gm.ContainElement(
 				"--- expect [no-op] not to [always pass] ---",
 			))
 		})
@@ -258,14 +258,14 @@ var _ = g.Context("composite expectations", func() {
 				NoneOf(pass, failBeforeAction),
 			)
 
-			Expect(testingT.Logs).To(ContainElement("<always fail before action>"))
-			Expect(testingT.Failed()).To(BeTrue())
+			gm.Expect(testingT.Logs).To(gm.ContainElement("<always fail before action>"))
+			gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		})
 
 		g.It("panics if no children are provided", func() {
-			Expect(func() {
+			gm.Expect(func() {
 				NoneOf()
-			}).To(PanicWith("NoneOf(): at least one child expectation must be provided"))
+			}).To(gm.PanicWith("NoneOf(): at least one child expectation must be provided"))
 		})
 	})
 })

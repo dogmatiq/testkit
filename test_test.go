@@ -9,7 +9,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("type Test", func() {
@@ -28,7 +28,7 @@ var _ = g.Describe("type Test", func() {
 					noopAction{errors.New("<error>")},
 				)
 
-			Expect(t.Failed()).To(BeTrue())
+			gm.Expect(t.Failed()).To(gm.BeTrue())
 		})
 	})
 
@@ -48,7 +48,7 @@ var _ = g.Describe("type Test", func() {
 					pass,
 				)
 
-			Expect(t.Failed()).To(BeTrue())
+			gm.Expect(t.Failed()).To(gm.BeTrue())
 		})
 	})
 
@@ -82,7 +82,7 @@ var _ = g.Describe("type Test", func() {
 				EnableHandlers("<projection>").
 				Prepare(RecordEvent(EventA1))
 
-			Expect(called).To(BeTrue())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("panics if the handler is not recognized", func() {
@@ -92,10 +92,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					EnableHandlers("<projection>")
-			}).To(PanicWith(`the "<app>" application does not have a handler named "<projection>"`))
+			}).To(gm.PanicWith(`the "<app>" application does not have a handler named "<projection>"`))
 		})
 
 		g.It("panics if the handler is disabled by its own configuration", func() {
@@ -114,10 +114,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					EnableHandlers("<projection>")
-			}).To(PanicWith(`cannot enable the "<projection>" handler, it has been disabled by a call to ProjectionConfigurer.Disable()`))
+			}).To(gm.PanicWith(`cannot enable the "<projection>" handler, it has been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
 
@@ -151,7 +151,7 @@ var _ = g.Describe("type Test", func() {
 				EnableHandlersLike(`^\<proj`).
 				Prepare(RecordEvent(EventA1))
 
-			Expect(called).To(BeTrue())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("panics if there are no matching handlers", func() {
@@ -161,10 +161,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					EnableHandlersLike(`^\<proj`)
-			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
+			}).To(gm.PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 
 		g.It("does not enable handlers that are disabled by their own configuration", func() {
@@ -183,10 +183,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					EnableHandlersLike(`^\<proj`)
-			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
+			}).To(gm.PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
 
@@ -229,10 +229,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					DisableHandlers("<projection>")
-			}).To(PanicWith(`the "<app>" application does not have a handler named "<projection>"`))
+			}).To(gm.PanicWith(`the "<app>" application does not have a handler named "<projection>"`))
 		})
 	})
 
@@ -275,10 +275,10 @@ var _ = g.Describe("type Test", func() {
 				},
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				Begin(&testingmock.T{}, app).
 					DisableHandlersLike(`^\<proj`)
-			}).To(PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
+			}).To(gm.PanicWith(`the "<app>" application does not have any handlers with names that match the regular expression (^\<proj), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()`))
 		})
 	})
 

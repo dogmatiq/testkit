@@ -9,7 +9,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func InterceptCommandExecutor()", func() {
@@ -60,19 +60,19 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 			m dogma.Command,
 			e dogma.CommandExecutor,
 		) error {
-			Expect(m).To(Equal(CommandA1))
+			gm.Expect(m).To(gm.Equal(CommandA1))
 
 			err := e.ExecuteCommand(ctx, m)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			return errors.New("<error>")
 		}
 	})
 
 	g.It("panics if the interceptor function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			InterceptCommandExecutor(nil)
-		}).To(PanicWith("InterceptCommandExecutor(<nil>): function must not be nil"))
+		}).To(gm.PanicWith("InterceptCommandExecutor(<nil>): function must not be nil"))
 	})
 
 	g.When("used as a TestOption", func() {
@@ -91,7 +91,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 						context.Background(),
 						CommandA1,
 					)
-					Expect(err).To(MatchError("<error>"))
+					gm.Expect(err).To(gm.MatchError("<error>"))
 				}),
 				ToRecordEvent(EventA1),
 			)
@@ -114,7 +114,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 							context.Background(),
 							CommandA1,
 						)
-						Expect(err).To(MatchError("<error>"))
+						gm.Expect(err).To(gm.MatchError("<error>"))
 					},
 					InterceptCommandExecutor(executeCommandAndReturnError),
 				),
@@ -135,7 +135,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 							context.Background(),
 							CommandA1,
 						)
-						Expect(err).To(MatchError("<error>"))
+						gm.Expect(err).To(gm.MatchError("<error>"))
 					},
 					InterceptCommandExecutor(executeCommandAndReturnError),
 				),
@@ -145,7 +145,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 							context.Background(),
 							CommandA1,
 						)
-						Expect(err).ShouldNot(HaveOccurred())
+						gm.Expect(err).ShouldNot(gm.HaveOccurred())
 					},
 				),
 			)
@@ -165,7 +165,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 							context.Background(),
 							CommandA1,
 						)
-						Expect(err).ShouldNot(HaveOccurred())
+						gm.Expect(err).ShouldNot(gm.HaveOccurred())
 					},
 					InterceptCommandExecutor(doNothing),
 				),
@@ -175,7 +175,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 							context.Background(),
 							CommandA1,
 						)
-						Expect(err).To(MatchError("<error>"))
+						gm.Expect(err).To(gm.MatchError("<error>"))
 					},
 				),
 			)

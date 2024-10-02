@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -54,7 +54,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
 		})
 	})
 
@@ -65,8 +65,8 @@ var _ = g.Describe("type Controller", func() {
 				fact.Ignore,
 				time.Now(),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(envelopes).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(envelopes).To(gm.BeEmpty())
 		})
 
 		g.It("does not record any facts", func() {
@@ -76,8 +76,8 @@ var _ = g.Describe("type Controller", func() {
 				buf,
 				time.Now(),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buf.Facts()).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(buf.Facts()).To(gm.BeEmpty())
 		})
 	})
 
@@ -90,7 +90,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Command,
 			) error {
 				called = true
-				Expect(m).To(Equal(CommandA1))
+				gm.Expect(m).To(gm.Equal(CommandA1))
 				return nil
 			}
 
@@ -101,8 +101,8 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("returns the recorded events", func() {
@@ -124,8 +124,8 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(events).To(ConsistOf(
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(events).To(gm.ConsistOf(
 				command.NewEvent(
 					"1",
 					EventA1,
@@ -165,7 +165,7 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			Expect(err).To(Equal(expected))
+			gm.Expect(err).To(gm.Equal(expected))
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
@@ -177,21 +177,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					command,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("IntegrationMessageHandler"),
-						"Method":    Equal("HandleCommand"),
-						"Message":   Equal(command.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("IntegrationMessageHandler"),
+						"Method":    gm.Equal("HandleCommand"),
+						"Message":   gm.Equal(command.Message),
 					},
 				),
 			))

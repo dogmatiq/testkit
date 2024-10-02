@@ -7,7 +7,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func ToRepeatedly()", func() {
@@ -40,7 +40,7 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 		) {
 			test.Expect(noop, e)
 			rm(testingT)
-			Expect(testingT.Failed()).To(Equal(!ok))
+			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
 		},
 		g.Entry(
 			"it passes when all of the repeated expectations pass",
@@ -121,32 +121,32 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 			),
 		)
 
-		Expect(testingT.Logs).To(ContainElement(
+		gm.Expect(testingT.Logs).To(gm.ContainElement(
 			"--- expect [no-op] to <description> ---",
 		))
 	})
 
 	g.It("panics if the description is empty", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToRepeatedly("", 1, func(i int) Expectation { return nil })
-		}).To(PanicWith(`ToRepeatedly("", 1, <func>): description must not be empty`))
+		}).To(gm.PanicWith(`ToRepeatedly("", 1, <func>): description must not be empty`))
 	})
 
 	g.It("panics if the count is zero", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToRepeatedly("<description>", 0, func(i int) Expectation { return nil })
-		}).To(PanicWith(`ToRepeatedly("<description>", 0, <func>): n must be 1 or greater`))
+		}).To(gm.PanicWith(`ToRepeatedly("<description>", 0, <func>): n must be 1 or greater`))
 	})
 
 	g.It("panics if the count is negative", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToRepeatedly("<description>", -1, func(i int) Expectation { return nil })
-		}).To(PanicWith(`ToRepeatedly("<description>", -1, <func>): n must be 1 or greater`))
+		}).To(gm.PanicWith(`ToRepeatedly("<description>", -1, <func>): n must be 1 or greater`))
 	})
 
 	g.It("panics if the function is nil", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			ToRepeatedly("<description>", 1, nil)
-		}).To(PanicWith(`ToRepeatedly("<description>", 1, <nil>): function must not be nil`))
+		}).To(gm.PanicWith(`ToRepeatedly("<description>", 1, <nil>): function must not be nil`))
 	})
 })

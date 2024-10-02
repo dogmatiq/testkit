@@ -6,7 +6,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -26,10 +26,10 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 		g.It("returns a description of the panic", func() {
 			defer func() {
 				r := recover()
-				Expect(r).To(BeAssignableToTypeOf(UnexpectedMessage{}))
+				gm.Expect(r).To(gm.BeAssignableToTypeOf(UnexpectedMessage{}))
 
 				x := r.(UnexpectedMessage)
-				Expect(x.String()).To(Equal(
+				gm.Expect(x.String()).To(gm.Equal(
 					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type stubs.EventStub[TypeX]",
 				))
 			}()
@@ -74,11 +74,11 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			},
 		)
 
-		Expect(called).To(BeTrue())
+		gm.Expect(called).To(gm.BeTrue())
 	})
 
 	g.It("propagates panic values", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			EnrichUnexpectedMessage(
 				config,
 				"<interface>",
@@ -89,11 +89,11 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 					panic("<panic>")
 				},
 			)
-		}).To(PanicWith("<panic>"))
+		}).To(gm.PanicWith("<panic>"))
 	})
 
 	g.It("converts UnexpectedMessage values", func() {
-		Expect(func() {
+		gm.Expect(func() {
 			EnrichUnexpectedMessage(
 				config,
 				"<interface>",
@@ -102,19 +102,19 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 				EventX1,
 				doPanic,
 			)
-		}).To(PanicWith(
+		}).To(gm.PanicWith(
 			MatchAllFields(
 				Fields{
-					"Handler":        Equal(config),
-					"Interface":      Equal("<interface>"),
-					"Method":         Equal("<method>"),
-					"Implementation": Equal(config.Handler()),
-					"Message":        Equal(EventX1),
+					"Handler":        gm.Equal(config),
+					"Interface":      gm.Equal("<interface>"),
+					"Method":         gm.Equal("<method>"),
+					"Implementation": gm.Equal(config.Handler()),
+					"Message":        gm.Equal(EventX1),
 					"PanicLocation": MatchAllFields(
 						Fields{
-							"Func": Equal("github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic"),
-							"File": HaveSuffix("/engine/internal/panicx/linenumber_test.go"),
-							"Line": Equal(50),
+							"Func": gm.Equal("github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic"),
+							"File": gm.HaveSuffix("/engine/internal/panicx/linenumber_test.go"),
+							"Line": gm.Equal(50),
 						},
 					),
 				},

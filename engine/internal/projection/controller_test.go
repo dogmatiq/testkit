@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
@@ -49,7 +49,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			Expect(ctrl.HandlerConfig()).To(BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
 		})
 	})
 
@@ -60,8 +60,8 @@ var _ = g.Describe("type Controller", func() {
 				fact.Ignore,
 				time.Now(),
 			)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(envelopes).To(BeEmpty())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(envelopes).To(gm.BeEmpty())
 		})
 
 		g.It("performs projection compaction", func() {
@@ -80,8 +80,8 @@ var _ = g.Describe("type Controller", func() {
 				buf,
 				time.Now(),
 			)
-			Expect(err).To(Equal(expect))
-			Expect(buf.Facts()).To(Equal(
+			gm.Expect(err).To(gm.Equal(expect))
+			gm.Expect(buf.Facts()).To(gm.Equal(
 				[]fact.Fact{
 					fact.ProjectionCompactionBegun{
 						Handler: config,
@@ -108,21 +108,21 @@ var _ = g.Describe("type Controller", func() {
 				fact.Ignore,
 				start,
 			)
-			Expect(err).To(MatchError("<called>"))
+			gm.Expect(err).To(gm.MatchError("<called>"))
 
 			_, err = ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				start.Add(CompactInterval-1), // should not trigger compaction
 			)
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			_, err = ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				start.Add(CompactInterval), // should trigger compaction
 			)
-			Expect(err).To(MatchError("<called>"))
+			gm.Expect(err).To(gm.MatchError("<called>"))
 		})
 	})
 
@@ -136,7 +136,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Event,
 			) (bool, error) {
 				called = true
-				Expect(m).To(Equal(EventA1))
+				gm.Expect(m).To(gm.Equal(EventA1))
 				return true, nil
 			}
 
@@ -147,8 +147,8 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("propagates handler errors", func() {
@@ -170,7 +170,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).To(Equal(expected))
+			gm.Expect(err).To(gm.Equal(expected))
 		})
 
 		g.It("propagates errors when loading the resource version", func() {
@@ -190,7 +190,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).To(Equal(expected))
+			gm.Expect(err).To(gm.Equal(expected))
 		})
 
 		g.It("passes the correct OCC values", func() {
@@ -200,9 +200,9 @@ var _ = g.Describe("type Controller", func() {
 				_ dogma.ProjectionEventScope,
 				_ dogma.Event,
 			) (bool, error) {
-				Expect(r).To(Equal([]byte(event.MessageID)))
-				Expect(c).To(BeEmpty())
-				Expect(n).NotTo(BeEmpty())
+				gm.Expect(r).To(gm.Equal([]byte(event.MessageID)))
+				gm.Expect(c).To(gm.BeEmpty())
+				gm.Expect(n).NotTo(gm.BeEmpty())
 				return false, nil
 			}
 
@@ -213,7 +213,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
 		g.It("does not handle events that have already been applied", func() {
@@ -241,7 +241,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
 		g.It("closes the resource if the event is applied", func() {
@@ -251,7 +251,7 @@ var _ = g.Describe("type Controller", func() {
 				r []byte,
 			) error {
 				called = true
-				Expect(r).To(Equal([]byte(event.MessageID)))
+				gm.Expect(r).To(gm.Equal([]byte(event.MessageID)))
 				return nil
 			}
 
@@ -262,8 +262,8 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(called).To(BeTrue())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 
 		g.It("does not close the resource if the event is not applied", func() {
@@ -291,7 +291,7 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			Expect(err).ShouldNot(HaveOccurred())
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
@@ -304,21 +304,21 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			Expect(func() {
+			gm.Expect(func() {
 				ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
 					event,
 				)
-			}).To(PanicWith(
+			}).To(gm.PanicWith(
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   Equal(config),
-						"Interface": Equal("ProjectionMessageHandler"),
-						"Method":    Equal("HandleEvent"),
-						"Message":   Equal(event.Message),
+						"Handler":   gm.Equal(config),
+						"Interface": gm.Equal("ProjectionMessageHandler"),
+						"Method":    gm.Equal("HandleEvent"),
+						"Message":   gm.Equal(event.Message),
 					},
 				),
 			))
@@ -340,13 +340,13 @@ var _ = g.Describe("type Controller", func() {
 					time.Now(),
 					event,
 				)
-				Expect(err).ShouldNot(HaveOccurred())
+				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-				Expect(buf.Facts()).NotTo(ContainElement(
-					BeAssignableToTypeOf(fact.ProjectionCompactionBegun{}),
+				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+					gm.BeAssignableToTypeOf(fact.ProjectionCompactionBegun{}),
 				))
-				Expect(buf.Facts()).NotTo(ContainElement(
-					BeAssignableToTypeOf(fact.ProjectionCompactionCompleted{}),
+				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
+					gm.BeAssignableToTypeOf(fact.ProjectionCompactionCompleted{}),
 				))
 			})
 		})
@@ -373,8 +373,8 @@ var _ = g.Describe("type Controller", func() {
 					time.Now(),
 					event,
 				)
-				Expect(err).To(Equal(expect))
-				Expect(buf.Facts()).To(Equal(
+				gm.Expect(err).To(gm.Equal(expect))
+				gm.Expect(buf.Facts()).To(gm.Equal(
 					[]fact.Fact{
 						fact.ProjectionCompactionBegun{
 							Handler: config,

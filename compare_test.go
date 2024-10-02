@@ -10,7 +10,7 @@ import (
 	. "github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/testingmock"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func DefaultMessageComparator()", func() {
@@ -18,9 +18,9 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 		g.DescribeTable(
 			"it returns true",
 			func(a, b dogma.Message) {
-				Expect(
+				gm.Expect(
 					DefaultMessageComparator(a, b),
-				).To(BeTrue())
+				).To(gm.BeTrue())
 			},
 			g.Entry(
 				"plain struct",
@@ -41,16 +41,16 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 			g.By("initializing the unexported fields within one of the messages")
 			_ = a.String()
 
-			Expect(
+			gm.Expect(
 				reflect.DeepEqual(a, b),
 			).To(
-				BeFalse(),
+				gm.BeFalse(),
 				"unexported fields do not differ",
 			)
 
-			Expect(
+			gm.Expect(
 				DefaultMessageComparator(a, b),
-			).To(BeTrue())
+			).To(gm.BeTrue())
 		})
 	})
 
@@ -58,9 +58,9 @@ var _ = g.Describe("func DefaultMessageComparator()", func() {
 		g.DescribeTable(
 			"it returns false",
 			func(a, b dogma.Message) {
-				Expect(
+				gm.Expect(
 					DefaultMessageComparator(a, b),
-				).To(BeFalse())
+				).To(gm.BeFalse())
 			},
 			g.Entry(
 				"different types",

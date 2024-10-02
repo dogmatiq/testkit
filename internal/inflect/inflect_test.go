@@ -7,7 +7,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/internal/inflect"
 	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gm "github.com/onsi/gomega"
 )
 
 var _ = g.Describe("func Sprint()", func() {
@@ -23,11 +23,11 @@ var _ = g.Describe("func Sprint()", func() {
 	g.DescribeTable(
 		"returns a properly inflected string",
 		func(r message.Role, in, out string) {
-			Expect(Sprint(r, in)).To(Equal(out))
+			gm.Expect(Sprint(r, in)).To(gm.Equal(out))
 
 			in = strings.ToUpper(in)
 			out = strings.ToUpper(out)
-			Expect(Sprint(r, in)).To(Equal(out))
+			gm.Expect(Sprint(r, in)).To(gm.Equal(out))
 		},
 		entry(message.CommandRole, "a <message>", "a command"),
 		entry(message.EventRole, "a <message>", "an event"),
@@ -72,35 +72,35 @@ var _ = g.Describe("func Sprint()", func() {
 
 var _ = g.Describe("func Sprintf()", func() {
 	g.It("returns the inflected and substituted string", func() {
-		Expect(
+		gm.Expect(
 			Sprintf(
 				message.CommandRole,
 				"the %T <message>",
 				CommandA1,
 			),
-		).To(Equal("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+		).To(gm.Equal("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })
 
 var _ = g.Describe("func Error()", func() {
 	g.It("returns an error with the inflected message", func() {
-		Expect(
+		gm.Expect(
 			Error(
 				message.CommandRole,
 				"the <message>",
 			),
-		).To(MatchError("the command"))
+		).To(gm.MatchError("the command"))
 	})
 })
 
 var _ = g.Describe("func Errorf()", func() {
 	g.It("returns an error with the inflected and substituted message", func() {
-		Expect(
+		gm.Expect(
 			Errorf(
 				message.CommandRole,
 				"the %T <message>",
 				CommandA1,
 			),
-		).To(MatchError("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+		).To(gm.MatchError("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })
