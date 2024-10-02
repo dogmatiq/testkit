@@ -15,8 +15,6 @@ func Not(expectation Expectation) Expectation {
 }
 
 // notExpectation is an [Expectation] that inverts another expectation.
-//
-// It uses a predicate function to determine whether the not expectation is met.
 type notExpectation struct {
 	caption     string
 	expectation Expectation
