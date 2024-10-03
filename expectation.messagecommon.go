@@ -122,7 +122,7 @@ type tracker struct {
 	// total is the total number of messages that were produced.
 	total int
 
-	// produced is the number of messages of the expected role that were
+	// produced is the number of messages of the expected kind that were
 	// produced.
 	produced int
 

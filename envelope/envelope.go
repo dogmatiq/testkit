@@ -27,7 +27,7 @@ type Envelope struct {
 	CreatedAt time.Time
 
 	// ScheduledFor holds the time at which a timeout message is scheduled to
-	// occur. Its value is undefined unless Role is message.TimeoutRole.
+	// occur. Its value is undefined for commands and events.
 	ScheduledFor time.Time
 
 	// Origin describes the message handler that produced this message.

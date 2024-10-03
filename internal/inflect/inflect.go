@@ -44,7 +44,7 @@ var corrections = map[string]string{
 	"1 timeouts": "1 timeout",
 }
 
-// Sprint formats a string, inflecting words in s match the message role r.
+// Sprint formats a string, inflecting words in s match the message kind k.
 func Sprint(k message.Kind, s string) string {
 	for k, v := range substitutions[k] {
 		s = strings.ReplaceAll(s, k, v)
@@ -59,7 +59,7 @@ func Sprint(k message.Kind, s string) string {
 	return s
 }
 
-// Sprintf formats a string, inflecting words in f match the message role r.
+// Sprintf formats a string, inflecting words in f match the message kind k.
 func Sprintf(k message.Kind, f string, v ...any) string {
 	return Sprint(
 		k,
@@ -67,12 +67,12 @@ func Sprintf(k message.Kind, f string, v ...any) string {
 	)
 }
 
-// Error returns a new error, inflecting words in s to match the message role r.
+// Error returns a new error, inflecting words in s to match the message kind k.
 func Error(k message.Kind, s string) error {
 	return errors.New(Sprint(k, s))
 }
 
-// Errorf returns a new error, inflecting words in f to match the message role r.
+// Errorf returns a new error, inflecting words in f to match the message kind k.
 func Errorf(k message.Kind, f string, v ...any) error {
 	return errors.New(Sprintf(k, f, v...))
 }

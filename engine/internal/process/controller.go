@@ -237,7 +237,7 @@ func (c *Controller) routeTimeout(
 	return "", false, nil
 }
 
-// handle calls the appropriate method on the handler based on the message role.
+// handle calls the appropriate method on the handler based on the message kind.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
 	var err error
 	panicx.EnrichUnexpectedMessage(

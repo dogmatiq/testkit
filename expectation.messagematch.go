@@ -189,7 +189,7 @@ func (p *messageMatchPredicate[T]) Notify(f fact.Fact) {
 }
 
 // messageProduced updates the predicate's state to reflect the fact that a
-// message of the expected role has been produced.
+// message of the expected kind has been produced.
 func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
 	expectedType := message.TypeFor[T]()
 	producedType := message.TypeOf(env.Message)
