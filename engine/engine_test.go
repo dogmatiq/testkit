@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/enginetest"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
@@ -135,6 +134,46 @@ var _ = g.Describe("type Engine", func() {
 	})
 
 	g.Describe("func Dispatch()", func() {
+		g.It("allows dispatching commands", func() {
+			called := false
+			aggregate.HandleCommandFunc = func(
+				dogma.AggregateRoot,
+				dogma.AggregateCommandScope,
+				dogma.Command,
+			) {
+				called = true
+			}
+
+			err := engine.Dispatch(
+				context.Background(),
+				AggregateCommand{},
+			)
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
+		})
+
+		g.It("allows dispatching events", func() {
+			called := false
+			projection.HandleEventFunc = func(
+				context.Context,
+				[]byte,
+				[]byte,
+				[]byte,
+				dogma.ProjectionEventScope,
+				dogma.Event,
+			) (bool, error) {
+				called = true
+				return true, nil
+			}
+
+			err := engine.Dispatch(
+				context.Background(),
+				ForeignEventForProjection{},
+			)
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
+		})
+
 		g.It("skips handlers that are disabled by type", func() {
 			aggregate.HandleCommandFunc = func(
 				dogma.AggregateRoot,
@@ -164,8 +203,6 @@ var _ = g.Describe("type Engine", func() {
 						CausationID:   "1",
 						CorrelationID: "1",
 						Message:       AggregateCommand{},
-						Type:          message.TypeFor[AggregateCommand](),
-						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
 					Reason: fact.HandlerTypeDisabled,
@@ -202,8 +239,6 @@ var _ = g.Describe("type Engine", func() {
 						CausationID:   "1",
 						CorrelationID: "1",
 						Message:       AggregateCommand{},
-						Type:          message.TypeFor[AggregateCommand](),
-						Role:          message.CommandRole,
 						CreatedAt:     now,
 					},
 					Reason: fact.IndividualHandlerDisabled,

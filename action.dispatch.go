@@ -7,6 +7,7 @@ import (
 	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -18,12 +19,11 @@ func ExecuteCommand(m dogma.Command) Action {
 
 	mt := message.TypeOf(m)
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.CommandValidationScope()); err != nil {
 		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
 	}
 
 	return dispatchAction{
-		message.CommandRole,
 		m,
 		location.OfCall(),
 	}
@@ -37,12 +37,11 @@ func RecordEvent(m dogma.Event) Action {
 
 	mt := message.TypeOf(m)
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.EventValidationScope()); err != nil {
 		panic(fmt.Sprintf("RecordEvent(%s): %s", mt, err))
 	}
 
 	return dispatchAction{
-		message.EventRole,
 		m,
 		location.OfCall(),
 	}
@@ -51,16 +50,16 @@ func RecordEvent(m dogma.Event) Action {
 // dispatchAction is an implementation of Action that dispatches a message to
 // the engine.
 type dispatchAction struct {
-	r   message.Role
 	m   dogma.Message
 	loc location.Location
 }
 
 func (a dispatchAction) Caption() string {
+	mt := message.TypeOf(a.m)
 	return inflect.Sprintf(
-		a.r,
+		mt.Kind(),
 		"<producing> %s <message>",
-		message.TypeOf(a.m),
+		mt,
 	)
 }
 
@@ -73,27 +72,16 @@ func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
 
 func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
-	r, ok := s.App.MessageTypes().RoleOf(mt)
 
 	// TODO: These checks should result in information being added to the
 	// report, not just returning an error.
 	//
 	// See https://github.com/dogmatiq/testkit/issues/162
-	if !ok {
+	if _, ok := s.App.MessageTypes()[mt]; !ok {
 		return inflect.Errorf(
-			a.r,
+			mt.Kind(),
 			"cannot <produce> <message>, %s is a not a recognized message type",
 			mt,
-		)
-	} else if r != a.r {
-		return inflect.Errorf(
-			a.r,
-			"cannot <produce> <message>, %s",
-			inflect.Sprintf(
-				r,
-				"%s is configured as a <message>",
-				mt,
-			),
 		)
 	}
 

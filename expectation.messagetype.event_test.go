@@ -256,19 +256,6 @@ var _ = g.Describe("func ToRecordEventType()", func() {
 		))
 	})
 
-	g.It("fails the test if the message type is not an event", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToRecordEventType[CommandThatRecordsEvent](),
-		)
-
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"stubs.CommandStub[TypeE] is a command, it can never be recorded as an event",
-		))
-	})
-
 	g.It("fails the test if the message type is not produced by any handlers", func() {
 		test := Begin(testingT, app)
 		test.Expect(

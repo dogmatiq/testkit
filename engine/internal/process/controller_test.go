@@ -55,8 +55,6 @@ var _ = g.Describe("type Controller", func() {
 					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
 				)
 			},
-			// setup routes for "E" (event) messages to an instance ID based on the
-			// message's content
 			RouteEventToInstanceFunc: func(
 				_ context.Context,
 				m dogma.Event,

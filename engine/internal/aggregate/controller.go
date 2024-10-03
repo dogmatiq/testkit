@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -43,8 +45,10 @@ func (c *Controller) Handle(
 	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
-	if !c.Config.MessageTypes().Consumed.Has(env.Type) {
-		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), env.Type))
+	mt := message.TypeOf(env.Message)
+
+	if !c.Config.MessageTypes()[mt].IsConsumed {
+		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
 	var id string
@@ -55,7 +59,9 @@ func (c *Controller) Handle(
 		c.Config.Handler(),
 		env.Message,
 		func() {
-			id = c.Config.Handler().RouteCommandToInstance(env.Message)
+			id = c.Config.Handler().RouteCommandToInstance(
+				env.Message.(dogma.Command),
+			)
 		},
 	)
 
@@ -66,7 +72,7 @@ func (c *Controller) Handle(
 			Method:         "RouteCommandToInstance",
 			Implementation: c.Config.Handler(),
 			Message:        env.Message,
-			Description:    fmt.Sprintf("routed a command of type %s to an empty ID", env.Type),
+			Description:    fmt.Sprintf("routed a command of type %s to an empty ID", mt),
 			Location:       location.OfMethod(c.Config.Handler(), "RouteCommandToInstance"),
 		})
 	}
@@ -94,7 +100,9 @@ func (c *Controller) Handle(
 				r,
 				env.Message,
 				func() {
-					r.ApplyEvent(env.Message)
+					r.ApplyEvent(
+						env.Message.(dogma.Event),
+					)
 				},
 			)
 		}
@@ -131,7 +139,11 @@ func (c *Controller) Handle(
 		c.Config.Handler(),
 		env.Message,
 		func() {
-			c.Config.Handler().HandleCommand(r, s, env.Message)
+			c.Config.Handler().HandleCommand(
+				r,
+				s,
+				env.Message.(dogma.Command),
+			)
 		},
 	)
 

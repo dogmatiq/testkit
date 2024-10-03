@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 - Added `Not()` expectation, which negates a single expectation. `Not()` is
   functionally equivalent to using `NoneOf()` with a single argument, but
   produces more intuitive test reports.
+- Added `CommandValidationScope()`, `EventValidationScope()`, and
+  `TimeoutValidationScope()` to help when testing message validation logic.
 
 ## [0.17.2] - 2024-09-25
 

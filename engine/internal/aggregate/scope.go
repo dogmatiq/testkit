@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -51,7 +52,7 @@ func (s *scope) Destroy() {
 func (s *scope) RecordEvent(m dogma.Event) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes().Produced.Has(mt) {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",
@@ -63,7 +64,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 		})
 	}
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.EventValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",

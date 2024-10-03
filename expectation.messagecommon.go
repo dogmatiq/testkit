@@ -23,7 +23,7 @@ func reportNoMatch(rep *Report, t *tracker) {
 		for _, ht := range configkit.HandlerTypes {
 			e := t.enabled[ht]
 
-			if ht.IsProducerOf(t.role) {
+			if ht.IsProducerOf(t.kind) {
 				relevant = append(relevant, ht.String())
 
 				if e {
@@ -56,11 +56,11 @@ func reportNoMatch(rep *Report, t *tracker) {
 	if t.total == 0 {
 		rep.Explanation = "no messages were produced at all"
 	} else if t.produced == 0 {
-		rep.Explanation = inflect.Sprint(t.role, "no <messages> were <produced> at all")
+		rep.Explanation = inflect.Sprint(t.kind, "no <messages> were <produced> at all")
 	} else if t.options.MatchDispatchCycleStartedFacts {
-		rep.Explanation = inflect.Sprint(t.role, "nothing <produced> a matching <message>")
+		rep.Explanation = inflect.Sprint(t.kind, "nothing <produced> a matching <message>")
 	} else {
-		rep.Explanation = inflect.Sprint(t.role, "none of the engaged handlers <produced> a matching <message>")
+		rep.Explanation = inflect.Sprint(t.kind, "none of the engaged handlers <produced> a matching <message>")
 	}
 
 	for _, n := range t.engagedOrder {
@@ -68,43 +68,36 @@ func reportNoMatch(rep *Report, t *tracker) {
 	}
 
 	if t.options.MatchDispatchCycleStartedFacts {
-		s.AppendListItem(inflect.Sprint(t.role, "verify the logic within the code that uses the <dispatcher>"))
+		s.AppendListItem(inflect.Sprint(t.kind, "verify the logic within the code that uses the <dispatcher>"))
 	}
 }
 
-// validateRole returns an error if the message type t does not have a role of r
-// within the application.
-func validateRole(
+// guardAgainstExpectationOnImpossibleType returns an error if the predicate
+// with scope s cannot possible match a message of type t.
+func guardAgainstExpectationOnImpossibleType(
 	s PredicateScope,
 	t message.Type,
-	r message.Role,
 ) error {
-	actual, ok := s.App.MessageTypes().RoleOf(t)
-
 	// TODO: These checks should result in information being added to the
 	// report, not just returning an error.
 	//
 	// See https://github.com/dogmatiq/testkit/issues/162
+	em, ok := s.App.MessageTypes()[t]
 	if !ok {
 		return inflect.Errorf(
-			r,
+			t.Kind(),
 			"a <message> of type %s can never be <produced>, the application does not use this message type",
 			t,
 		)
-	} else if actual != r {
-		return inflect.Errorf(
-			r,
-			"%s is a %s, it can never be <produced> as a <message>",
-			t,
-			actual,
-		)
-	} else if !s.Options.MatchDispatchCycleStartedFacts {
+	}
+
+	if !s.Options.MatchDispatchCycleStartedFacts {
 		// If we're NOT matching messages from DispatchCycleStarted facts that
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
-		if _, ok := s.App.MessageTypes().Produced[t]; !ok {
+		if !em.IsProduced {
 			return inflect.Errorf(
-				r,
+				t.Kind(),
 				"no handlers <produce> <messages> of type %s, it is only ever consumed",
 				t,
 			)
@@ -117,8 +110,8 @@ func validateRole(
 // tracker is a fact.Observer used by expectations that need to keep track of
 // information about handlers and the messages they produce.
 type tracker struct {
-	// role is the role that the message is expecting to find.
-	role message.Role
+	// kind is the kind of message the tracker is expecting to find.
+	kind message.Kind
 
 	// options is the set of options passed to the predicate.
 	options PredicateOptions
@@ -129,7 +122,7 @@ type tracker struct {
 	// total is the total number of messages that were produced.
 	total int
 
-	// produced is the number of messages of the expected role that were
+	// produced is the number of messages of the expected kind that were
 	// produced.
 	produced int
 
@@ -151,7 +144,7 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 		t.cycleBegun = true
 		t.enabled = x.EnabledHandlerTypes
 		if t.options.MatchDispatchCycleStartedFacts {
-			t.messageProduced(x.Envelope.Role)
+			t.messageProduced(x.Envelope)
 			return x.Envelope, true
 		}
 	case fact.HandlingBegun:
@@ -160,16 +153,16 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 			x.Handler.HandlerType(),
 		)
 	case fact.EventRecordedByAggregate:
-		t.messageProduced(x.EventEnvelope.Role)
+		t.messageProduced(x.EventEnvelope)
 		return x.EventEnvelope, true
 	case fact.EventRecordedByIntegration:
-		t.messageProduced(x.EventEnvelope.Role)
+		t.messageProduced(x.EventEnvelope)
 		return x.EventEnvelope, true
 	case fact.CommandExecutedByProcess:
-		t.messageProduced(x.CommandEnvelope.Role)
+		t.messageProduced(x.CommandEnvelope)
 		return x.CommandEnvelope, true
 	case fact.TimeoutScheduledByProcess:
-		t.messageProduced(x.TimeoutEnvelope.Role)
+		t.messageProduced(x.TimeoutEnvelope)
 		return x.TimeoutEnvelope, true
 	}
 
@@ -177,7 +170,7 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 }
 
 func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
-	if ht.IsProducerOf(t.role) {
+	if ht.IsProducerOf(t.kind) {
 		if t.engagedType == nil {
 			t.engagedType = map[string]configkit.HandlerType{}
 		}
@@ -189,10 +182,10 @@ func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
 	}
 }
 
-func (t *tracker) messageProduced(r message.Role) {
+func (t *tracker) messageProduced(env *envelope.Envelope) {
 	t.total++
 
-	if r == t.role {
+	if message.KindOf(env.Message) == t.kind {
 		t.produced++
 	}
 }

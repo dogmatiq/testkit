@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -52,7 +53,7 @@ func (s *scope) End() {
 func (s *scope) ExecuteCommand(m dogma.Command) {
 	mt := message.TypeOf(m)
 
-	if s.config.MessageTypes().Produced[mt] != message.CommandRole {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -64,7 +65,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 		})
 	}
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.CommandValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -116,7 +117,7 @@ func (s *scope) RecordedAt() time.Time {
 func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 	mt := message.TypeOf(m)
 
-	if s.config.MessageTypes().Produced[mt] != message.TimeoutRole {
+	if !s.config.MessageTypes()[mt].IsProduced {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -128,7 +129,7 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 		})
 	}
 
-	if err := m.Validate(); err != nil {
+	if err := m.Validate(validation.TimeoutValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",

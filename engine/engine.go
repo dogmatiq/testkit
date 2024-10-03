@@ -10,14 +10,13 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/inflect"
+	"github.com/dogmatiq/testkit/internal/validation"
 	"go.uber.org/multierr"
 )
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
 	messageIDs envelope.MessageIDGenerator
-	roles      map[message.Type]message.Role
 
 	// m protects the controllers, routes and resetters collections. The
 	// collections themselves are static and hence may be read without acquiring
@@ -34,7 +33,6 @@ func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error
 	eo := newEngineOptions(options)
 
 	e := &Engine{
-		roles:       map[message.Type]message.Role{},
 		controllers: map[string]controller{},
 		routes:      map[message.Type][]controller{},
 		resetters:   eo.resetters,
@@ -180,45 +178,36 @@ func (e *Engine) tick(
 	)
 }
 
-// Dispatch processes a message.
+// Dispatch processes a [dogma.Command] or [dogma.Event].
 //
-// It is not an error to process a message that is not routed to any handlers.
-//
-// It panics if the message is invalid.
+// It panics if the message is a [dogma.Timeout], or is otherwise invalid.
 func (e *Engine) Dispatch(
 	ctx context.Context,
 	m dogma.Message,
 	options ...OperationOption,
 ) error {
-	t := message.TypeOf(m)
-
-	if err := m.Validate(); err != nil {
-		panic(fmt.Sprintf(
-			"cannot dispatch invalid %s message: %s",
-			t,
-			err,
-		))
-	}
-
+	mt := message.TypeOf(m)
+	id := e.messageIDs.Next()
 	oo := newOperationOptions(e, options)
 
-	if _, ok := e.routes[t]; !ok {
-		panic(fmt.Sprintf(
-			"the %s message type is not consumed by any handlers",
-			t,
-		))
+	env, err := message.TryMap(
+		m,
+		func(m dogma.Command) (*envelope.Envelope, error) {
+			return envelope.NewCommand(id, m, oo.now),
+				m.Validate(validation.CommandValidationScope())
+		},
+		func(m dogma.Event) (*envelope.Envelope, error) {
+			return envelope.NewEvent(id, m, oo.now),
+				m.Validate(validation.EventValidationScope())
+		},
+		nil,
+	)
+	if err != nil {
+		panic(fmt.Sprintf("cannot dispatch invalid %s message: %s", mt, err))
 	}
 
-	r := e.roles[t]
-	r.MustBe(message.CommandRole, message.EventRole)
-
-	var env *envelope.Envelope
-	id := e.messageIDs.Next()
-
-	if r == message.CommandRole {
-		env = envelope.NewCommand(id, m, oo.now)
-	} else {
-		env = envelope.NewEvent(id, m, oo.now)
+	if _, ok := e.routes[mt]; !ok {
+		panic(fmt.Sprintf("the %s message type is not consumed by any handlers", mt))
 	}
 
 	oo.observers.Notify(
@@ -230,7 +219,7 @@ func (e *Engine) Dispatch(
 		},
 	)
 
-	err := e.m.Lock(ctx)
+	err = e.m.Lock(ctx)
 	if err == nil {
 		defer e.m.Unlock()
 		err = e.dispatch(ctx, oo, env)
@@ -248,39 +237,6 @@ func (e *Engine) Dispatch(
 	return err
 }
 
-// mustDispatch is a variant of Dispatch() that panics if m is does not
-// have the expected role.
-func (e *Engine) mustDispatch(
-	ctx context.Context,
-	expected message.Role,
-	m dogma.Message,
-	options ...OperationOption,
-) error {
-	t := message.TypeOf(m)
-
-	if r, ok := e.roles[t]; ok {
-		if r.Is(expected) {
-			return e.Dispatch(ctx, m, options...)
-		}
-
-		panic(inflect.Sprintf(
-			expected,
-			"cannot <produce> <message>, %s",
-			inflect.Sprintf(
-				r,
-				"%s is configured as a <message>",
-				t,
-			),
-		))
-	}
-
-	panic(inflect.Sprintf(
-		expected,
-		"cannot <produce> <message>, %s is a not a recognized message type",
-		t,
-	))
-}
-
 func (e *Engine) dispatch(
 	ctx context.Context,
 	oo *operationOptions,
@@ -294,22 +250,15 @@ func (e *Engine) dispatch(
 
 		var controllers []controller
 
-		if env.Role == message.TimeoutRole {
+		mt := message.TypeOf(env.Message)
+
+		if mt.Kind() == message.TimeoutKind {
 			// always dispatch timeouts back to their origin handler
 			controllers = []controller{
 				e.controllers[env.Origin.Handler.Identity().Name],
 			}
 		} else {
-			// for all other message types check to see the role matches the
-			// expected role from the configuration, and if so dispatch it to
-			// all of the handlers associated with that type
-			r, ok := e.roles[env.Type]
-			if !ok {
-				continue
-			}
-
-			env.Role.MustBe(r)
-			controllers = e.routes[env.Type]
+			controllers = e.routes[mt]
 		}
 
 		oo.observers.Notify(

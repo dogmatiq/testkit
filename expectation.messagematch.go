@@ -33,9 +33,8 @@ func ToExecuteCommandMatching[T dogma.Command](
 	}
 
 	return &messageMatchExpectation[T]{
-		pred:         pred,
-		expectedRole: message.CommandRole,
-		exhaustive:   false,
+		pred:       pred,
+		exhaustive: false,
 	}
 }
 
@@ -60,9 +59,8 @@ func ToOnlyExecuteCommandsMatching[T dogma.Command](
 	}
 
 	return &messageMatchExpectation[T]{
-		pred:         pred,
-		expectedRole: message.CommandRole,
-		exhaustive:   true,
+		pred:       pred,
+		exhaustive: true,
 	}
 }
 
@@ -86,9 +84,8 @@ func ToRecordEventMatching[T dogma.Event](
 	}
 
 	return &messageMatchExpectation[T]{
-		pred:         pred,
-		expectedRole: message.EventRole,
-		exhaustive:   false,
+		pred:       pred,
+		exhaustive: false,
 	}
 }
 
@@ -113,9 +110,8 @@ func ToOnlyRecordEventsMatching[T dogma.Event](
 	}
 
 	return &messageMatchExpectation[T]{
-		pred:         pred,
-		expectedRole: message.EventRole,
-		exhaustive:   true,
+		pred:       pred,
+		exhaustive: true,
 	}
 }
 
@@ -131,22 +127,21 @@ var IgnoreMessage = errors.New("this message does not need to be inspected by th
 // [ToRecordEventMatching], [ToOnlyExecuteCommandsMatching], and
 // [ToOnlyRecordEventsMatching].
 type messageMatchExpectation[T dogma.Message] struct {
-	pred         func(T) error
-	expectedRole message.Role
-	exhaustive   bool
+	pred       func(T) error
+	exhaustive bool
 }
 
 func (e *messageMatchExpectation[T]) Caption() string {
 	if e.exhaustive {
 		return inflect.Sprintf(
-			e.expectedRole,
+			message.KindFor[T](),
 			"to only <produce> <messages> that match the predicate near %s",
 			location.OfFunc(e.pred),
 		)
 	}
 
 	return inflect.Sprintf(
-		e.expectedRole,
+		message.KindFor[T](),
 		"to <produce> a <message> that matches the predicate near %s",
 		location.OfFunc(e.pred),
 	)
@@ -155,17 +150,16 @@ func (e *messageMatchExpectation[T]) Caption() string {
 func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, error) {
 	t := message.TypeFor[T]()
 	if t.ReflectType().Kind() != reflect.Interface {
-		if err := validateRole(s, t, e.expectedRole); err != nil {
+		if err := guardAgainstExpectationOnImpossibleType(s, t); err != nil {
 			return nil, err
 		}
 	}
 
 	return &messageMatchPredicate[T]{
-		pred:         e.pred,
-		expectedRole: e.expectedRole,
-		exhaustive:   e.exhaustive,
+		pred:       e.pred,
+		exhaustive: e.exhaustive,
 		tracker: tracker{
-			role:    e.expectedRole,
+			kind:    message.KindFor[T](),
 			options: s.Options,
 		},
 	}, nil
@@ -174,14 +168,13 @@ func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, err
 // messageMatchPredicate is the [Predicate] implementation for
 // [messageMatchExpectation].
 type messageMatchPredicate[T dogma.Message] struct {
-	pred         func(T) error
-	expectedRole message.Role
-	exhaustive   bool
-	failures     []*failedMatch
-	matched      int
-	ignored      int
-	ok           bool
-	tracker      tracker
+	pred       func(T) error
+	exhaustive bool
+	failures   []*failedMatch
+	matched    int
+	ignored    int
+	ok         bool
+	tracker    tracker
 }
 
 // Notify updates the expectation's state in response to a new fact.
@@ -196,9 +189,12 @@ func (p *messageMatchPredicate[T]) Notify(f fact.Fact) {
 }
 
 // messageProduced updates the predicate's state to reflect the fact that a
-// message of the expected role has been produced.
+// message of the expected kind has been produced.
 func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
-	if env.Role != p.expectedRole {
+	expectedType := message.TypeFor[T]()
+	producedType := message.TypeOf(env.Message)
+
+	if producedType.Kind() != expectedType.Kind() {
 		return
 	}
 
@@ -206,7 +202,7 @@ func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
 	if m, ok := env.Message.(T); ok {
 		err = p.pred(m)
 	} else if p.exhaustive {
-		err = fmt.Errorf("predicate function expected %s", message.TypeFor[T]())
+		err = fmt.Errorf("predicate function expected %s", expectedType)
 	} else {
 		err = IgnoreMessage
 	}
@@ -230,7 +226,7 @@ func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
 	}
 
 	for _, f := range p.failures {
-		if f.MessageType == env.Type && f.Error == err.Error() {
+		if f.MessageType == producedType && f.Error == err.Error() {
 			f.Count++
 			return
 		}
@@ -239,7 +235,7 @@ func (p *messageMatchPredicate[T]) messageProduced(env *envelope.Envelope) {
 	p.failures = append(
 		p.failures,
 		&failedMatch{
-			MessageType: env.Type,
+			MessageType: producedType,
 			Error:       err.Error(),
 			Count:       1,
 		},
@@ -257,11 +253,13 @@ func (p *messageMatchPredicate[T]) Done() {
 }
 
 func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
+	k := message.KindFor[T]()
+
 	rep := &Report{
 		TreeOk: ctx.TreeOk,
 		Ok:     p.ok,
 		Criteria: inflect.Sprintf(
-			p.expectedRole,
+			k,
 			"<produce> a <message> that matches the predicate near %s",
 			location.OfFunc(p.pred),
 		),
@@ -269,7 +267,7 @@ func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 
 	if p.exhaustive {
 		rep.Criteria = inflect.Sprintf(
-			p.expectedRole,
+			k,
 			"only <produce> <messages> that match the predicate near %s",
 			location.OfFunc(p.pred),
 		)
@@ -305,7 +303,7 @@ func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 	if p.ignored > 0 {
 		suggestions.AppendListItem(
 			"verify the logic within the predicate function, it ignored %s",
-			inflect.Sprintf(p.expectedRole, "%d <messages>", p.ignored),
+			inflect.Sprintf(k, "%d <messages>", p.ignored),
 		)
 	} else if len(p.failures) > 0 {
 		suggestions.AppendListItem("verify the logic within the predicate function")
@@ -320,7 +318,7 @@ func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 		}
 
 		rep.Explanation = inflect.Sprintf(
-			p.expectedRole,
+			k,
 			"%s relevant <messages> matched the predicate",
 			matched,
 		)

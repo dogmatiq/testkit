@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -72,8 +74,10 @@ func (c *Controller) Handle(
 	now time.Time,
 	env *envelope.Envelope,
 ) ([]*envelope.Envelope, error) {
-	if !c.Config.MessageTypes().Consumed.Has(env.Type) {
-		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), env.Type))
+	mt := message.TypeOf(env.Message)
+
+	if !c.Config.MessageTypes()[mt].IsConsumed {
+		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
 	handler := c.Config.Handler()
@@ -145,7 +149,7 @@ func (c *Controller) Handle(
 				nil,       // current version
 				[]byte{1}, // next version
 				s,
-				env.Message,
+				env.Message.(dogma.Event),
 			)
 		},
 	)
