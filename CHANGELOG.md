@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Added
+
+- Added `Not()` expectation, which negates a single expectation. `Not()` is
+  functionally equivalent to using `NoneOf()` with a single argument, but
+  produces more intuitive test reports.
+
 ## [0.17.2] - 2024-09-25
 
 ### Fixed
