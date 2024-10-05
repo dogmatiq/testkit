@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"

@@ -2,15 +2,13 @@ package testkit
 
 import (
 	"fmt"
-	"reflect"
 
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/report"
-	"github.com/dogmatiq/testkit/internal/typecmp"
 	"github.com/dogmatiq/testkit/internal/validation"
 )
 
@@ -76,7 +74,6 @@ func (e *messageExpectation) Predicate(s PredicateScope) (Predicate, error) {
 	return &messagePredicate{
 		messageComparator: s.Options.MessageComparator,
 		expectedMessage:   e.expectedMessage,
-		bestMatchDistance: typecmp.Unrelated,
 		tracker: tracker{
 			kind:    mt.Kind(),
 			options: s.Options,
@@ -90,7 +87,6 @@ type messagePredicate struct {
 	expectedMessage   dogma.Message
 	ok                bool
 	bestMatch         *envelope.Envelope
-	bestMatchDistance typecmp.Distance
 	tracker           tracker
 }
 
@@ -100,40 +96,22 @@ func (p *messagePredicate) Notify(f fact.Fact) {
 		return
 	}
 
-	if env, ok := p.tracker.Notify(f); ok {
-		p.messageProduced(env)
+	env, ok := p.tracker.Notify(f)
+	if !ok {
+		return
 	}
-}
 
-// messageProduced updates the predicate's state to reflect the fact that a
-// message has been produced.
-func (p *messagePredicate) messageProduced(env *envelope.Envelope) {
+	if message.TypeOf(env.Message) != message.TypeOf(p.expectedMessage) {
+		return
+	}
+
 	isEqual := p.messageComparator
 	if isEqual == nil {
 		isEqual = DefaultMessageComparator
 	}
 
-	if !isEqual(env.Message, p.expectedMessage) {
-		p.updateBestMatch(env)
-		return
-	}
-
 	p.bestMatch = env
-	p.bestMatchDistance = typecmp.Identical
-	p.ok = true
-}
-
-// updateBestMatch replaces p.bestMatch with env if it is a better match.
-func (p *messagePredicate) updateBestMatch(env *envelope.Envelope) {
-	dist := typecmp.MeasureDistance(
-		reflect.TypeOf(p.expectedMessage),
-		reflect.TypeOf(env.Message),
-	)
-
-	if dist < p.bestMatchDistance {
-		p.bestMatch = env
-		p.bestMatchDistance = dist
-	}
+	p.ok = isEqual(env.Message, p.expectedMessage)
 }
 
 func (p *messagePredicate) Ok() bool {
@@ -167,43 +145,21 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 
 	s := rep.Section(suggestionsSection)
 
-	if p.bestMatchDistance == typecmp.Identical {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				mt.Kind(),
-				"a similar <message> was <produced> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				mt.Kind(),
-				"a similar <message> was <produced> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.HandlerType,
-			)
-		}
-
-		s.AppendListItem("check the content of the message")
+	if p.bestMatch.Origin == nil {
+		rep.Explanation = inflect.Sprint(
+			mt.Kind(),
+			"a similar <message> was <produced> via a <dispatcher>",
+		)
 	} else {
-		if p.bestMatch.Origin == nil {
-			rep.Explanation = inflect.Sprint(
-				mt.Kind(),
-				"a <message> of a similar type was <produced> via a <dispatcher>",
-			)
-		} else {
-			rep.Explanation = inflect.Sprintf(
-				mt.Kind(),
-				"a <message> of a similar type was <produced> by the '%s' %s message handler",
-				p.bestMatch.Origin.Handler.Identity().Name,
-				p.bestMatch.Origin.HandlerType,
-			)
-		}
-
-		// note this language here is deliberately vague, it doesn't imply
-		// whether it currently is or isn't a pointer, just questions if it
-		// should be.
-		s.AppendListItem("check the message type, should it be a pointer?")
+		rep.Explanation = inflect.Sprintf(
+			mt.Kind(),
+			"a similar <message> was <produced> by the '%s' %s message handler",
+			p.bestMatch.Origin.Handler.Identity().Name,
+			p.bestMatch.Origin.HandlerType,
+		)
 	}
 
+	s.AppendListItem("check the content of the message")
 	p.buildDiff(ctx, rep)
 
 	return rep

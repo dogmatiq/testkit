@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/validation"
@@ -190,7 +190,7 @@ func (e *Engine) Dispatch(
 	id := e.messageIDs.Next()
 	oo := newOperationOptions(e, options)
 
-	env, err := message.TryMap(
+	env, err := message.MapByKindOfWithErr(
 		m,
 		func(m dogma.Command) (*envelope.Envelope, error) {
 			return envelope.NewCommand(id, m, oo.now),

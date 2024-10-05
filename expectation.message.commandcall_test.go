@@ -41,7 +41,6 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 						c.Identity("<integration>", "b4f6e091-6171-4c61-bf3b-9952aea28547")
 						c.Routes(
 							dogma.HandlesCommand[CommandThatIsIgnored](),
-							dogma.HandlesCommand[*CommandThatIsIgnored](), // pointer, used to test type similarity
 							dogma.HandlesCommand[CommandThatRecordsEvent](),
 						)
 					},
@@ -158,24 +157,6 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 			),
 			WithUnsafeOperationOptions(
 				engine.EnableProcesses(false),
-			),
-		),
-		g.Entry(
-			"similar command executed with a different type",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToExecuteCommand(&CommandThatIsIgnored{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute a specific '*stubs.CommandStub[TypeX]' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a command of a similar type was executed via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeX]{<zero>}`,
 			),
 		),
 		g.Entry(

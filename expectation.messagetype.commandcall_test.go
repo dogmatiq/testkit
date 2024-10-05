@@ -41,7 +41,6 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 						c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
 						c.Routes(
 							dogma.HandlesCommand[CommandThatIsIgnored](),
-							dogma.HandlesCommand[*CommandThatIsIgnored](), // pointer, used to test type similarity
 							dogma.HandlesCommand[CommandThatRecordsEvent](),
 						)
 					},
@@ -158,24 +157,6 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 			),
 			WithUnsafeOperationOptions(
 				engine.EnableProcesses(false),
-			),
-		),
-		g.Entry(
-			"command of a similar type executed",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToExecuteCommandType[*CommandThatIsIgnored](), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute any '*stubs.CommandStub[TypeX]' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a command of a similar type was executed via a dogma.CommandExecutor`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE TYPE DIFF`,
-				`  |     [-*-]stubs.CommandStub[TypeX]`,
 			),
 		),
 	)

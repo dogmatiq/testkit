@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dogmatiq/configkit/message"
+	"github.com/dogmatiq/enginekit/message"
 )
 
 var substitutions = map[message.Kind]map[string]string{

@@ -3,8 +3,8 @@ package inflect_test
 import (
 	"strings"
 
-	"github.com/dogmatiq/configkit/message"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
+	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/internal/inflect"
 	g "github.com/onsi/ginkgo/v2"
 	gm "github.com/onsi/gomega"

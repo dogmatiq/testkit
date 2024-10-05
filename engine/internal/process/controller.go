@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/dogmatiq/configkit"
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -116,7 +116,7 @@ func (c *Controller) Handle(
 	s := &scope{
 		instanceID: id,
 		config:     c.Config,
-		handleMethod: message.Map(
+		handleMethod: message.MapByKindOf(
 			env.Message,
 			nil,
 			func(dogma.Event) string { return "HandleEvent" },
@@ -158,7 +158,7 @@ func (c *Controller) route(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (id string, ok bool, err error) {
-	message.Switch(
+	message.SwitchByKindOf(
 		env.Message,
 		nil,
 		func(m dogma.Event) { id, ok, err = c.routeEvent(ctx, obs, env, m) },

@@ -45,7 +45,6 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 
 							dogma.HandlesCommand[CommandThatRecordsEvent](),
 							dogma.RecordsEvent[EventThatIsRecorded](),
-							dogma.RecordsEvent[*EventThatIsRecorded](), // pointer, used to test type similarity
 							dogma.RecordsEvent[EventThatIsNeverRecorded](),
 						)
 					},
@@ -207,24 +206,6 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  | SUGGESTIONS`,
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
-			),
-		),
-		g.Entry(
-			"similar event recorded with a different type",
-			ExecuteCommand(CommandThatRecordsEvent{}),
-			ToRecordEvent(&EventThatIsRecorded{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
-				``,
-				`  | EXPLANATION`,
-				`  |     an event of a similar type was recorded by the '<aggregate>' aggregate message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeE]{<zero>}`,
 			),
 		),
 		g.Entry(

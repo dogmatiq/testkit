@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dogmatiq/configkit/message"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"

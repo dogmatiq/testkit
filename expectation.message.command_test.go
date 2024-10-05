@@ -48,7 +48,6 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 
 							dogma.HandlesEvent[EventThatExecutesCommand](),
 							dogma.ExecutesCommand[CommandThatIsExecuted](),
-							dogma.ExecutesCommand[*CommandThatIsExecuted](), // pointer, used to test type similarity
 							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
 
 							dogma.HandlesEvent[EventThatSchedulesTimeout](),
@@ -184,24 +183,6 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 			),
 			WithUnsafeOperationOptions(
 				engine.EnableProcesses(false),
-			),
-		),
-		g.Entry(
-			"similar command executed with a different type",
-			RecordEvent(EventThatExecutesCommand{}),
-			ToExecuteCommand(&CommandThatIsExecuted{}), // note: message type is pointer
-			expectFail,
-			expectReport(
-				`✗ execute a specific '*stubs.CommandStub[TypeC]' command`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a command of a similar type was executed by the '<process>' process message handler`,
-				`  | `,
-				`  | SUGGESTIONS`,
-				`  |     • check the message type, should it be a pointer?`,
-				`  | `,
-				`  | MESSAGE DIFF`,
-				`  |     [-*-]stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeC]{<zero>}`,
 			),
 		),
 		g.Entry(
