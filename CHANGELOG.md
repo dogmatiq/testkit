@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.18.1] - 2024-10-05
+
+### Changed
+
+- Use `enginekit/message` instead of `configkit/message`.
+- It is no longer possible to (mis-)use a single message type as both a pointer
+  and a non-pointer. If a type implements `dogma.Command`, `dogma.Event`, or
+  `dogma.Timeout` using pointer receivers then a pointer type must be used;
+  otherwise, a non-pointer type must be used.
+
 ## [0.18.0] - 2024-10-03
 
 ### Added
@@ -482,7 +492,8 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.17.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.0
 [0.17.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.1
 [0.17.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.2
-[0.18.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.18.2
+[0.18.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.18.0
+[0.18.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.18.1
 
 <!-- contributors -->
 
