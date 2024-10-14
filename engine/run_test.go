@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
@@ -27,7 +27,7 @@ var _ = g.Describe("func Run()", func() {
 		}
 
 		engine = MustNew(
-			configkit.FromApplication(app),
+			runtimeconfig.FromApplication(app),
 		)
 	})
 
@@ -92,7 +92,7 @@ var _ = g.Describe("func RunTimeScaled()", func() {
 		}
 
 		engine = MustNew(
-			configkit.FromApplication(app),
+			runtimeconfig.FromApplication(app),
 		)
 	})
 

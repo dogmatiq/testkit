@@ -3,8 +3,8 @@ package testkit_test
 import (
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -70,11 +70,11 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 					CreatedAt:     startTime,
 				},
 				EngineTime: startTime,
-				EnabledHandlerTypes: map[configkit.HandlerType]bool{
-					configkit.AggregateHandlerType:   true,
-					configkit.IntegrationHandlerType: false,
-					configkit.ProcessHandlerType:     true,
-					configkit.ProjectionHandlerType:  false,
+				EnabledHandlerTypes: map[config.HandlerType]bool{
+					config.AggregateHandlerType:   true,
+					config.IntegrationHandlerType: false,
+					config.ProcessHandlerType:     true,
+					config.ProjectionHandlerType:  false,
 				},
 				EnabledHandlers: map[string]bool{},
 			},

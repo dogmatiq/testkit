@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/engine/internal/aggregate"
+	"github.com/dogmatiq/testkit/engine/internal/integration"
+	"github.com/dogmatiq/testkit/engine/internal/process"
+	"github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/validation"
@@ -29,7 +33,9 @@ type Engine struct {
 }
 
 // New returns a new engine that uses the given app configuration.
-func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error) {
+func New(app *config.Application, options ...Option) (_ *Engine, err error) {
+	app = config.MustNormalize(app, config.WithImplementations())
+
 	eo := newEngineOptions(options)
 
 	e := &Engine{
@@ -38,15 +44,34 @@ func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error
 		resetters:   eo.resetters,
 	}
 
-	cfgr := &configurer{
-		options: eo,
-		engine:  e,
-	}
-
-	ctx := context.Background()
-
-	if err := app.AcceptRichVisitor(ctx, cfgr); err != nil {
-		return nil, err
+	for _, h := range app.Handlers() {
+		config.SwitchByHandlerTypeOf(
+			h,
+			func(h *config.Aggregate) {
+				e.registerController(&aggregate.Controller{
+					Config:     h,
+					MessageIDs: &e.messageIDs,
+				})
+			},
+			func(h *config.Process) {
+				e.registerController(&process.Controller{
+					Config:     h,
+					MessageIDs: &e.messageIDs,
+				})
+			},
+			func(h *config.Integration) {
+				e.registerController(&integration.Controller{
+					Config:     h,
+					MessageIDs: &e.messageIDs,
+				})
+			},
+			func(h *config.Projection) {
+				e.registerController(&projection.Controller{
+					Config:                h,
+					CompactDuringHandling: eo.compactDuringHandling,
+				})
+			},
+		)
 	}
 
 	return e, nil
@@ -54,7 +79,7 @@ func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error
 
 // MustNew returns a new engine that uses the given app configuration, or panics
 // if unable to do so.
-func MustNew(app configkit.RichApplication, options ...Option) *Engine {
+func MustNew(app *config.Application, options ...Option) *Engine {
 	e, err := New(app, options...)
 	if err != nil {
 		panic(err)
@@ -343,7 +368,7 @@ func (e *Engine) handle(
 // skipHandler returns true if a specific handler should be skipped during a
 // call to Dispatch() or Tick().
 func (e *Engine) skipHandler(
-	h configkit.Handler,
+	h config.Handler,
 	oo *operationOptions,
 ) (bool, fact.HandlerSkipReason) {
 	if en, ok := oo.enabledHandlers[h.Identity().Name]; ok {
@@ -356,4 +381,17 @@ func (e *Engine) skipHandler(
 
 	en := oo.enabledHandlerTypes[h.HandlerType()]
 	return !en, fact.HandlerTypeDisabled
+}
+
+func (e *Engine) registerController(c controller) {
+	cfg := c.HandlerConfig()
+
+	e.controllers[cfg.Identity().Name] = c
+
+	for mt := range cfg.
+		RouteSet().
+		Filter(config.FilterByRouteDirection(config.InboundDirection)).
+		MessageTypes() {
+		e.routes[mt] = append(e.routes[mt], c)
+	}
 }

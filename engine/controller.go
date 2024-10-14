@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 )
@@ -14,7 +14,7 @@ import (
 type controller interface {
 	// HandlerConfig returns the config of the handler that is managed by this
 	// controller.
-	HandlerConfig() configkit.RichHandler
+	HandlerConfig() config.Handler
 
 	// Tick instructs the controller to perform an implementation-defined
 	// "tick".

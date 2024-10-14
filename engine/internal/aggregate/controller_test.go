@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
@@ -20,7 +21,7 @@ var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandlerStub
-		config     configkit.RichAggregate
+		cfg        *config.Aggregate
 		ctrl       *Controller
 		command    *envelope.Envelope
 	)
@@ -53,10 +54,10 @@ var _ = g.Describe("type Controller", func() {
 			},
 		}
 
-		config = configkit.FromAggregate(handler)
+		cfg = runtimeconfig.FromAggregate(handler)
 
 		ctrl = &Controller{
-			Config:     config,
+			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
@@ -65,7 +66,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
 		})
 	})
 
@@ -140,9 +141,8 @@ var _ = g.Describe("type Controller", func() {
 					EventA1,
 					now,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.AggregateHandlerType,
-						InstanceID:  "<instance-A1>",
+						Handler:    cfg,
+						InstanceID: "<instance-A1>",
 					},
 				),
 				command.NewEvent(
@@ -150,9 +150,8 @@ var _ = g.Describe("type Controller", func() {
 					EventA2,
 					now,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.AggregateHandlerType,
-						InstanceID:  "<instance-A1>",
+						Handler:    cfg,
+						InstanceID: "<instance-A1>",
 					},
 				),
 			))
@@ -173,10 +172,10 @@ var _ = g.Describe("type Controller", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("AggregateMessageHandler"),
 						"Method":         gm.Equal("RouteCommandToInstance"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Interface()),
 						"Message":        gm.Equal(command.Message),
 						"Description":    gm.Equal("routed a command of type stubs.CommandStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
@@ -204,7 +203,7 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceNotFound{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance-A1>",
 						Envelope:   command,
 					},
@@ -245,10 +244,10 @@ var _ = g.Describe("type Controller", func() {
 				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        gm.Equal(config),
+							"Handler":        gm.Equal(cfg),
 							"Interface":      gm.Equal("AggregateMessageHandler"),
 							"Method":         gm.Equal("New"),
-							"Implementation": gm.Equal(config.Handler()),
+							"Implementation": gm.Equal(cfg.Interface()),
 							"Message":        gm.Equal(command.Message),
 							"Description":    gm.Equal("returned a nil AggregateRoot"),
 							"Location": MatchAllFields(
@@ -298,7 +297,7 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceLoaded{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance-A1>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -352,7 +351,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("AggregateMessageHandler"),
 						"Method":    gm.Equal("RouteCommandToInstance"),
 						"Message":   gm.Equal(command.Message),
@@ -381,7 +380,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("AggregateMessageHandler"),
 						"Method":    gm.Equal("HandleCommand"),
 						"Message":   gm.Equal(command.Message),
@@ -418,7 +417,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("AggregateRoot"),
 						"Method":    gm.Equal("ApplyEvent"),
 						"Message":   gm.Equal(EventA1),
@@ -463,7 +462,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("AggregateRoot"),
 						"Method":    gm.Equal("ApplyEvent"),
 						"Message":   gm.Equal(EventA1),

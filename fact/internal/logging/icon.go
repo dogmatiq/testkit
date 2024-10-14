@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/iago/must"
 )
 
@@ -167,17 +167,17 @@ func DirectionIcon(inbound bool, isError bool) Icon {
 }
 
 // HandlerTypeIcon returns the icon to use for the given handler type.
-func HandlerTypeIcon(t configkit.HandlerType) Icon {
-	t.MustValidate()
-
+func HandlerTypeIcon(t config.HandlerType) Icon {
 	switch t {
-	case configkit.AggregateHandlerType:
+	case config.AggregateHandlerType:
 		return AggregateIcon
-	case configkit.ProcessHandlerType:
+	case config.ProcessHandlerType:
 		return ProcessIcon
-	case configkit.IntegrationHandlerType:
+	case config.IntegrationHandlerType:
 		return IntegrationIcon
-	default: // configkit.ProjectionHandlerType:
+	case config.ProjectionHandlerType:
 		return ProjectionIcon
+	default:
+		panic("unrecognized handler type")
 	}
 }

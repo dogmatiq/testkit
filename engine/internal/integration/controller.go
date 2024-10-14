@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -16,13 +16,13 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.IntegrationMessageHandler implementations.
 type Controller struct {
-	Config     configkit.RichIntegration
+	Config     *config.Integration
 	MessageIDs *envelope.MessageIDGenerator
 }
 
 // HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) HandlerConfig() configkit.RichHandler {
+func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
@@ -44,7 +44,7 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes()[mt].IsConsumed {
+	if !c.Config.RouteSet().DirectionOf(mt).Has(config.InboundDirection) {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
@@ -56,15 +56,17 @@ func (c *Controller) Handle(
 		command:    env,
 	}
 
+	h := c.Config.Interface()
+
 	var err error
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"IntegrationMessageHandler",
 		"HandleCommand",
-		c.Config.Handler(),
+		h,
 		env.Message,
 		func() {
-			err = c.Config.Handler().HandleCommand(
+			err = h.HandleCommand(
 				ctx,
 				s,
 				env.Message.(dogma.Command),

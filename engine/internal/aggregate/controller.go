@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -17,7 +17,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
-	Config     configkit.RichAggregate
+	Config     *config.Aggregate
 	MessageIDs *envelope.MessageIDGenerator
 
 	history map[string][]*envelope.Envelope
@@ -25,7 +25,7 @@ type Controller struct {
 
 // HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) HandlerConfig() configkit.RichHandler {
+func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
@@ -47,19 +47,21 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes()[mt].IsConsumed {
+	if !c.Config.RouteSet().DirectionOf(mt).Has(config.InboundDirection) {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
+
+	h := c.Config.Interface()
 
 	var id string
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"AggregateMessageHandler",
 		"RouteCommandToInstance",
-		c.Config.Handler(),
+		h,
 		env.Message,
 		func() {
-			id = c.Config.Handler().RouteCommandToInstance(
+			id = c.Config.Interface().RouteCommandToInstance(
 				env.Message.(dogma.Command),
 			)
 		},
@@ -70,24 +72,24 @@ func (c *Controller) Handle(
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "RouteCommandToInstance",
-			Implementation: c.Config.Handler(),
+			Implementation: h,
 			Message:        env.Message,
 			Description:    fmt.Sprintf("routed a command of type %s to an empty ID", mt),
-			Location:       location.OfMethod(c.Config.Handler(), "RouteCommandToInstance"),
+			Location:       location.OfMethod(h, "RouteCommandToInstance"),
 		})
 	}
 
 	history, exists := c.history[id]
-	r := c.Config.Handler().New()
+	r := h.New()
 	if r == nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "New",
-			Implementation: c.Config.Handler(),
+			Implementation: h,
 			Message:        env.Message,
 			Description:    "returned a nil AggregateRoot",
-			Location:       location.OfMethod(c.Config.Handler(), "New"),
+			Location:       location.OfMethod(h, "New"),
 		})
 	}
 
@@ -136,10 +138,10 @@ func (c *Controller) Handle(
 		c.Config,
 		"AggregateMessageHandler",
 		"HandleCommand",
-		c.Config.Handler(),
+		h,
 		env.Message,
 		func() {
-			c.Config.Handler().HandleCommand(
+			h.HandleCommand(
 				r,
 				s,
 				env.Message.(dogma.Command),

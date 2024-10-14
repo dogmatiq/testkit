@@ -5,7 +5,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact/internal/logging"
@@ -560,20 +560,20 @@ func formatEngineTime(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
 
-var handlerTypePlurals = map[configkit.HandlerType]string{
-	configkit.AggregateHandlerType:   "aggregates",
-	configkit.ProcessHandlerType:     "processes",
-	configkit.IntegrationHandlerType: "integrations",
-	configkit.ProjectionHandlerType:  "projections",
+var handlerTypePlurals = map[config.HandlerType]string{
+	config.AggregateHandlerType:   "aggregates",
+	config.ProcessHandlerType:     "processes",
+	config.IntegrationHandlerType: "integrations",
+	config.ProjectionHandlerType:  "projections",
 }
 
 func formatEnabledHandlers(
-	byType map[configkit.HandlerType]bool,
+	byType map[config.HandlerType]bool,
 	byName map[string]bool,
 ) string {
 	var s string
 
-	for _, t := range configkit.HandlerTypes {
+	for _, t := range config.HandlerTypes() {
 		if byType[t] {
 			s += " +" + handlerTypePlurals[t]
 		}

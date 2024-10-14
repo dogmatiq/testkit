@@ -1,15 +1,15 @@
 package fact
 
 import (
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/envelope"
 )
 
 // ProcessInstanceLoaded indicates that a process message handler has loaded an
 // existing instance in order to handle an event or timeout.
 type ProcessInstanceLoaded struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Root       dogma.ProcessRoot
 	Envelope   *envelope.Envelope
@@ -18,14 +18,14 @@ type ProcessInstanceLoaded struct {
 // ProcessEventIgnored indicates that a process message handler chose not to
 // route an event to any instance.
 type ProcessEventIgnored struct {
-	Handler  configkit.RichProcess
+	Handler  *config.Process
 	Envelope *envelope.Envelope
 }
 
 // ProcessTimeoutIgnored indicates that a process message handler ignored a
 // timeout message because its instance no longer exists.
 type ProcessTimeoutIgnored struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Envelope   *envelope.Envelope
 }
@@ -33,7 +33,7 @@ type ProcessTimeoutIgnored struct {
 // ProcessInstanceNotFound indicates that a process message handler was unable
 // to load an existing instance while handling an event or timeout.
 type ProcessInstanceNotFound struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Envelope   *envelope.Envelope
 }
@@ -41,7 +41,7 @@ type ProcessInstanceNotFound struct {
 // ProcessInstanceBegun indicates that a process message handler began a process
 // instance while handling an event.
 type ProcessInstanceBegun struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Root       dogma.ProcessRoot
 	Envelope   *envelope.Envelope
@@ -50,7 +50,7 @@ type ProcessInstanceBegun struct {
 // ProcessInstanceEnded indicates that a process message handler destroyed a
 // process instance while handling an event or timeout.
 type ProcessInstanceEnded struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Root       dogma.ProcessRoot
 	Envelope   *envelope.Envelope
@@ -60,7 +60,7 @@ type ProcessInstanceEnded struct {
 // "reverted" ending a process instance by executing a new command or scheduling
 // a new timeout.
 type ProcessInstanceEndingReverted struct {
-	Handler    configkit.RichProcess
+	Handler    *config.Process
 	InstanceID string
 	Root       dogma.ProcessRoot
 	Envelope   *envelope.Envelope
@@ -69,7 +69,7 @@ type ProcessInstanceEndingReverted struct {
 // CommandExecutedByProcess indicates that a process executed a command while
 // handling an event or timeout.
 type CommandExecutedByProcess struct {
-	Handler         configkit.RichProcess
+	Handler         *config.Process
 	InstanceID      string
 	Root            dogma.ProcessRoot
 	Envelope        *envelope.Envelope
@@ -79,7 +79,7 @@ type CommandExecutedByProcess struct {
 // TimeoutScheduledByProcess indicates that a process scheduled a timeout while
 // handling an event or timeout.
 type TimeoutScheduledByProcess struct {
-	Handler         configkit.RichProcess
+	Handler         *config.Process
 	InstanceID      string
 	Root            dogma.ProcessRoot
 	Envelope        *envelope.Envelope
@@ -89,7 +89,7 @@ type TimeoutScheduledByProcess struct {
 // MessageLoggedByProcess indicates that a process wrote a log message while
 // handling an event or timeout.
 type MessageLoggedByProcess struct {
-	Handler      configkit.RichProcess
+	Handler      *config.Process
 	InstanceID   string
 	Root         dogma.ProcessRoot
 	Envelope     *envelope.Envelope

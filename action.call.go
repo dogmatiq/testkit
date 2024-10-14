@@ -63,7 +63,7 @@ func (a callAction) Location() location.Location {
 }
 
 func (a callAction) ConfigurePredicate(o *PredicateOptions) {
-	o.MatchDispatchCycleStartedFacts = true
+	o.MatchDispatchCycleBegun = true
 }
 
 func (a callAction) Do(_ context.Context, s ActionScope) error {

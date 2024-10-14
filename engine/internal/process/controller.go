@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -18,7 +18,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	Config     configkit.RichProcess
+	Config     *config.Process
 	MessageIDs *envelope.MessageIDGenerator
 
 	instances map[string]dogma.ProcessRoot
@@ -27,7 +27,7 @@ type Controller struct {
 
 // HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) HandlerConfig() configkit.RichHandler {
+func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
@@ -66,7 +66,7 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes()[mt].IsConsumed {
+	if !c.Config.RouteSet().DirectionOf(mt).Has(config.InboundDirection) {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
@@ -91,7 +91,8 @@ func (c *Controller) Handle(
 			Envelope:   env,
 		})
 
-		r = c.Config.Handler().New()
+		h := c.Config.Interface()
+		r = h.New()
 
 		obs.Notify(fact.ProcessInstanceBegun{
 			Handler:    c.Config,
@@ -105,10 +106,10 @@ func (c *Controller) Handle(
 				Handler:        c.Config,
 				Interface:      "ProcessMessageHandler",
 				Method:         "New",
-				Implementation: c.Config.Handler(),
+				Implementation: h,
 				Message:        env.Message,
 				Description:    "returned a nil ProcessRoot",
-				Location:       location.OfMethod(c.Config.Handler(), "New"),
+				Location:       location.OfMethod(h, "New"),
 			})
 		}
 	}
@@ -173,7 +174,7 @@ func (c *Controller) routeEvent(
 	env *envelope.Envelope,
 	m dogma.Event,
 ) (string, bool, error) {
-	handler := c.Config.Handler()
+	h := c.Config.Interface()
 
 	var (
 		id  string
@@ -184,10 +185,10 @@ func (c *Controller) routeEvent(
 		c.Config,
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
-		handler,
+		h,
 		m,
 		func() {
-			id, ok, err = handler.RouteEventToInstance(ctx, m)
+			id, ok, err = h.RouteEventToInstance(ctx, m)
 		},
 	)
 
@@ -201,10 +202,10 @@ func (c *Controller) routeEvent(
 				Handler:        c.Config,
 				Interface:      "ProcessMessageHandler",
 				Method:         "RouteEventToInstance",
-				Implementation: handler,
+				Implementation: h,
 				Message:        m,
 				Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
-				Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
+				Location:       location.OfMethod(h, "RouteEventToInstance"),
 			})
 		}
 
@@ -239,19 +240,21 @@ func (c *Controller) routeTimeout(
 
 // handle calls the appropriate method on the handler based on the message kind.
 func (c *Controller) handle(ctx context.Context, s *scope) error {
+	h := c.Config.Interface()
+
 	var err error
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProcessMessageHandler",
 		s.handleMethod,
-		c.Config.Handler(),
+		h,
 		s.env.Message,
 		func() {
 			switch m := s.env.Message.(type) {
 			case dogma.Event:
-				err = c.Config.Handler().HandleEvent(ctx, s.root, s, m)
+				err = h.HandleEvent(ctx, s.root, s, m)
 			case dogma.Timeout:
-				err = c.Config.Handler().HandleTimeout(ctx, s.root, s, m)
+				err = h.HandleTimeout(ctx, s.root, s, m)
 			}
 		},
 	)

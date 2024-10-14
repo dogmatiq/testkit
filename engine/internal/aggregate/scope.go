@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -17,7 +17,7 @@ import (
 // scope is an implementation of dogma.AggregateCommandScope.
 type scope struct {
 	instanceID string
-	config     configkit.RichAggregate
+	config     *config.Aggregate
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	root       dogma.AggregateRoot
@@ -37,7 +37,7 @@ func (s *scope) Destroy() {
 		return
 	}
 
-	s.root = s.config.Handler().New()
+	s.root = s.config.Interface().New()
 	s.exists = false
 	s.destroyed = true
 
@@ -52,12 +52,12 @@ func (s *scope) Destroy() {
 func (s *scope) RecordEvent(m dogma.Event) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes()[mt].IsProduced {
+	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "HandleCommand",
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an event of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
@@ -69,7 +69,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 			Handler:        s.config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "HandleCommand",
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an invalid %s event: %s", mt, err),
 			Location:       location.OfCall(),
@@ -113,9 +113,8 @@ func (s *scope) RecordEvent(m dogma.Event) {
 		m,
 		s.now,
 		envelope.Origin{
-			Handler:     s.config,
-			HandlerType: configkit.AggregateHandlerType,
-			InstanceID:  s.instanceID,
+			Handler:    s.config,
+			InstanceID: s.instanceID,
 		},
 	)
 

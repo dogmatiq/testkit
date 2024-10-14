@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -18,7 +18,7 @@ import (
 // dogma.ProcessTimeoutScope.
 type scope struct {
 	instanceID   string
-	config       configkit.RichProcess
+	config       *config.Process
 	handleMethod string
 	messageIDs   *envelope.MessageIDGenerator
 	observer     fact.Observer
@@ -53,12 +53,12 @@ func (s *scope) End() {
 func (s *scope) ExecuteCommand(m dogma.Command) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes()[mt].IsProduced {
+	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Message:        s.env.Message,
 			Description:    fmt.Sprintf("executed a command of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
@@ -71,7 +71,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
 			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Description:    fmt.Sprintf("executed an invalid %s command: %s", mt, err),
 			Location:       location.OfCall(),
 		})
@@ -93,9 +93,8 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 		m,
 		s.now,
 		envelope.Origin{
-			Handler:     s.config,
-			HandlerType: configkit.ProcessHandlerType,
-			InstanceID:  s.instanceID,
+			Handler:    s.config,
+			InstanceID: s.instanceID,
 		},
 	)
 
@@ -117,12 +116,12 @@ func (s *scope) RecordedAt() time.Time {
 func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes()[mt].IsProduced {
+	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Message:        s.env.Message,
 			Description:    fmt.Sprintf("scheduled a timeout of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
@@ -135,7 +134,7 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
 			Message:        s.env.Message,
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Interface(),
 			Description:    fmt.Sprintf("scheduled an invalid %s timeout: %s", mt, err),
 			Location:       location.OfCall(),
 		})
@@ -158,9 +157,8 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 		s.now,
 		t,
 		envelope.Origin{
-			Handler:     s.config,
-			HandlerType: configkit.ProcessHandlerType,
-			InstanceID:  s.instanceID,
+			Handler:    s.config,
+			InstanceID: s.instanceID,
 		},
 	)
 

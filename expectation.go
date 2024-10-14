@@ -1,7 +1,7 @@
 package testkit
 
 import (
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/fact"
 )
 
@@ -47,7 +47,7 @@ type Predicate interface {
 // inspected by Predicate implementations.
 type PredicateScope struct {
 	// App is the application being tested.
-	App configkit.RichApplication
+	App *config.Application
 
 	// Options contains values that dictate how the predicate should behave.
 	// The options are provided by the Test and the Action being performed.
@@ -60,11 +60,11 @@ type PredicateOptions struct {
 	// equality.
 	MessageComparator MessageComparator
 
-	// MatchDispatchCycleStartedFacts controls whether predicates that look for
+	// MatchDispatchCycleBegun controls whether predicates that look for
 	// specific messages should consider messages from DispatchCycleStarted
 	// facts.
 	//
 	// If it is false, the predicate must only match against messages produced
 	// by handlers.
-	MatchDispatchCycleStartedFacts bool
+	MatchDispatchCycleBegun bool
 }

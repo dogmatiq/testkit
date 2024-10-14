@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
@@ -21,7 +22,7 @@ var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandlerStub
-		config     configkit.RichProcess
+		cfg        *config.Process
 		ctrl       *Controller
 		event      *envelope.Envelope
 		timeout    *envelope.Envelope
@@ -40,9 +41,8 @@ var _ = g.Describe("type Controller", func() {
 			time.Now(),
 			time.Now().Add(10*time.Second),
 			envelope.Origin{
-				Handler:     config,
-				HandlerType: configkit.ProcessHandlerType,
-				InstanceID:  "<instance-A1>",
+				Handler:    cfg,
+				InstanceID: "<instance-A1>",
 			},
 		)
 
@@ -72,10 +72,10 @@ var _ = g.Describe("type Controller", func() {
 			},
 		}
 
-		config = configkit.FromProcess(handler)
+		cfg = runtimeconfig.FromProcess(handler)
 
 		ctrl = &Controller{
-			Config:     config,
+			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
@@ -84,7 +84,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
 		})
 	})
 
@@ -143,9 +143,8 @@ var _ = g.Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-A1>",
+						Handler:    cfg,
+						InstanceID: "<instance-A1>",
 					},
 				),
 				event.NewTimeout(
@@ -154,9 +153,8 @@ var _ = g.Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-A1>",
+						Handler:    cfg,
+						InstanceID: "<instance-A1>",
 					},
 				),
 			))
@@ -231,9 +229,8 @@ var _ = g.Describe("type Controller", func() {
 					createdTime,
 					t1Time,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-A2>", // A2, not A1!
+						Handler:    cfg,
+						InstanceID: "<instance-A2>", // A2, not A1!
 					},
 				),
 				secondInstanceEvent.NewTimeout(
@@ -242,9 +239,8 @@ var _ = g.Describe("type Controller", func() {
 					createdTime,
 					t2Time,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.ProcessHandlerType,
-						InstanceID:  "<instance-A2>", // A2, not A1!
+						Handler:    cfg,
+						InstanceID: "<instance-A2>", // A2, not A1!
 					},
 				),
 			))
@@ -327,9 +323,8 @@ var _ = g.Describe("type Controller", func() {
 						CommandA1,
 						now,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-A1>",
+							Handler:    cfg,
+							InstanceID: "<instance-A1>",
 						},
 					),
 					event.NewTimeout(
@@ -338,9 +333,8 @@ var _ = g.Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-A1>",
+							Handler:    cfg,
+							InstanceID: "<instance-A1>",
 						},
 					),
 				))
@@ -437,7 +431,7 @@ var _ = g.Describe("type Controller", func() {
 					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 					gm.Expect(buf.Facts()).To(gm.ContainElement(
 						fact.ProcessEventIgnored{
-							Handler:  config,
+							Handler:  cfg,
 							Envelope: event,
 						},
 					))
@@ -528,9 +522,8 @@ var _ = g.Describe("type Controller", func() {
 						CommandA1,
 						now,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-A1>",
+							Handler:    cfg,
+							InstanceID: "<instance-A1>",
 						},
 					),
 					timeout.NewTimeout(
@@ -539,9 +532,8 @@ var _ = g.Describe("type Controller", func() {
 						now,
 						now,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance-A1>",
+							Handler:    cfg,
+							InstanceID: "<instance-A1>",
 						},
 					),
 				))
@@ -651,7 +643,7 @@ var _ = g.Describe("type Controller", func() {
 					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 					gm.Expect(buf.Facts()).To(gm.ContainElement(
 						fact.ProcessTimeoutIgnored{
-							Handler:    config,
+							Handler:    cfg,
 							InstanceID: "<instance-A1>",
 							Envelope:   timeout,
 						},
@@ -700,10 +692,10 @@ var _ = g.Describe("type Controller", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("RouteEventToInstance"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Interface()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("routed an event of type stubs.EventStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
@@ -731,14 +723,14 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceNotFound{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance-A1>",
 						Envelope:   event,
 					},
 				))
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceBegun{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance-A1>",
 						Root:       &ProcessRootStub{},
 						Envelope:   event,
@@ -761,10 +753,10 @@ var _ = g.Describe("type Controller", func() {
 				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        gm.Equal(config),
+							"Handler":        gm.Equal(cfg),
 							"Interface":      gm.Equal("ProcessMessageHandler"),
 							"Method":         gm.Equal("New"),
-							"Implementation": gm.Equal(config.Handler()),
+							"Implementation": gm.Equal(cfg.Interface()),
 							"Message":        gm.Equal(event.Message),
 							"Description":    gm.Equal("returned a nil ProcessRoot"),
 							"Location": MatchAllFields(
@@ -815,7 +807,7 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.ProcessInstanceLoaded{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance-A1>",
 						Root:       &ProcessRootStub{},
 						Envelope:   event,
@@ -857,7 +849,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("ProcessMessageHandler"),
 						"Method":    gm.Equal("RouteEventToInstance"),
 						"Message":   gm.Equal(event.Message),
@@ -887,7 +879,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("ProcessMessageHandler"),
 						"Method":    gm.Equal("HandleEvent"),
 						"Message":   gm.Equal(event.Message),
@@ -933,7 +925,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("ProcessMessageHandler"),
 						"Method":    gm.Equal("HandleTimeout"),
 						"Message":   gm.Equal(timeout.Message),

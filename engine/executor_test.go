@@ -3,8 +3,8 @@ package engine_test
 import (
 	"context"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	g "github.com/onsi/ginkgo/v2"
@@ -41,7 +41,7 @@ var _ = g.Describe("type CommandExecutor", func() {
 		}
 
 		engine = MustNew(
-			configkit.FromApplication(app),
+			runtimeconfig.FromApplication(app),
 		)
 
 		executor = &CommandExecutor{
