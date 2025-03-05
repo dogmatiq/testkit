@@ -1,7 +1,6 @@
 module github.com/dogmatiq/testkit
 
 go 1.23
-
 require (
 	github.com/dogmatiq/configkit v0.16.0
 	github.com/dogmatiq/cosyne v0.2.0
@@ -14,7 +13,7 @@ require (
 	github.com/onsi/gomega v1.36.2
 	github.com/sergi/go-diff v1.3.1
 	go.uber.org/multierr v1.11.0
-	golang.org/x/text v0.22.0
+	golang.org/x/text v0.23.0
 	google.golang.org/protobuf v1.36.5
 )
 
