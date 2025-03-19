@@ -1,6 +1,8 @@
 module github.com/dogmatiq/testkit
 
 go 1.23
+toolchain go1.24.1
+
 require (
 	github.com/dogmatiq/configkit v0.16.0
 	github.com/dogmatiq/cosyne v0.2.0
@@ -9,7 +11,7 @@ require (
 	github.com/dogmatiq/enginekit v0.16.1
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
-	github.com/onsi/ginkgo/v2 v2.23.0
+	github.com/onsi/ginkgo/v2 v2.23.1
 	github.com/onsi/gomega v1.36.2
 	github.com/sergi/go-diff v1.3.1
 	go.uber.org/multierr v1.11.0
