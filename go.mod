@@ -16,7 +16,7 @@ require (
 	github.com/onsi/gomega v1.37.0
 	github.com/sergi/go-diff v1.3.1
 	go.uber.org/multierr v1.11.0
-	golang.org/x/text v0.24.0
+	golang.org/x/text v0.25.0
 	google.golang.org/protobuf v1.36.6
 )
 
