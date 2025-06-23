@@ -32,6 +32,15 @@ func TestEngine(t *testing.T) {
 				},
 				Executor: &CommandExecutor{
 					Engine: e,
+					Options: []OperationOption{
+						WithObserver(
+							fact.NewLogger(
+								func(s string) {
+									t.Log(s)
+								},
+							),
+						),
+					},
 				},
 			}
 		},
