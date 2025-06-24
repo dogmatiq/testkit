@@ -57,8 +57,10 @@ func (l *Logger) Notify(f Fact) {
 		l.processInstanceLoaded(x)
 	case ProcessEventIgnored:
 		l.processEventIgnored(x)
-	case ProcessTimeoutIgnored:
-		l.processTimeoutIgnored(x)
+	case ProcessEventRoutedToEndedInstance:
+		l.processEventRoutedToEndedInstance(x)
+	case ProcessTimeoutRoutedToEndedInstance:
+		l.processTimeoutRoutedToEndedInstance(x)
 	case ProcessInstanceNotFound:
 		l.processInstanceNotFound(x)
 	case ProcessInstanceBegun:
@@ -317,8 +319,8 @@ func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
 	)
 }
 
-// processTimeoutIgnored returns the log message for f.
-func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
+// processEventRoutedToEndedInstance returns the log message for f.
+func (l *Logger) processEventRoutedToEndedInstance(f ProcessEventRoutedToEndedInstance) {
 	l.log(
 		f.Envelope,
 		[]logging.Icon{
@@ -327,7 +329,21 @@ func (l *Logger) processTimeoutIgnored(f ProcessTimeoutIgnored) {
 			"",
 		},
 		f.Handler.Identity().Name+" "+f.InstanceID,
-		"timeout ignored because the target instance no longer exists",
+		"event ignored because the target instance has ended",
+	)
+}
+
+// processTimeoutRoutedToEndedInstance returns the log message for f.
+func (l *Logger) processTimeoutRoutedToEndedInstance(f ProcessTimeoutRoutedToEndedInstance) {
+	l.log(
+		f.Envelope,
+		[]logging.Icon{
+			logging.InboundIcon,
+			logging.ProcessIcon,
+			"",
+		},
+		f.Handler.Identity().Name+" "+f.InstanceID,
+		"timeout ignored because the target instance has ended",
 	)
 }
 

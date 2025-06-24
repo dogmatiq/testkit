@@ -22,9 +22,18 @@ type ProcessEventIgnored struct {
 	Envelope *envelope.Envelope
 }
 
-// ProcessTimeoutIgnored indicates that a process message handler ignored a
-// timeout message because its instance no longer exists.
-type ProcessTimeoutIgnored struct {
+// ProcessEventRoutedToEndedInstance indicates that a process message handler
+// ignored an event message because it was routed to an instance that no longer
+// exists.
+type ProcessEventRoutedToEndedInstance struct {
+	Handler    configkit.RichProcess
+	InstanceID string
+	Envelope   *envelope.Envelope
+}
+
+// ProcessTimeoutRoutedToEndedInstance indicates that a process message handler
+// ignored a timeout message because its instance no longer exists.
+type ProcessTimeoutRoutedToEndedInstance struct {
 	Handler    configkit.RichProcess
 	InstanceID string
 	Envelope   *envelope.Envelope

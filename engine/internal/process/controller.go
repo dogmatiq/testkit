@@ -3,6 +3,7 @@ package process
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"time"
 
@@ -15,13 +16,18 @@ import (
 	"github.com/dogmatiq/testkit/location"
 )
 
+type instance struct {
+	root  dogma.ProcessRoot
+	ended bool
+}
+
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
 	Config     configkit.RichProcess
 	MessageIDs *envelope.MessageIDGenerator
 
-	instances map[string]dogma.ProcessRoot
+	instances map[string]*instance
 	timeouts  []*envelope.Envelope
 }
 
@@ -75,46 +81,11 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	r, exists := c.instances[id]
-
-	if exists {
-		obs.Notify(fact.ProcessInstanceLoaded{
-			Handler:    c.Config,
-			InstanceID: id,
-			Root:       r,
-			Envelope:   env,
-		})
-	} else {
-		obs.Notify(fact.ProcessInstanceNotFound{
-			Handler:    c.Config,
-			InstanceID: id,
-			Envelope:   env,
-		})
-
-		r = c.Config.Handler().New()
-
-		obs.Notify(fact.ProcessInstanceBegun{
-			Handler:    c.Config,
-			InstanceID: id,
-			Root:       r,
-			Envelope:   env,
-		})
-
-		if r == nil {
-			panic(panicx.UnexpectedBehavior{
-				Handler:        c.Config,
-				Interface:      "ProcessMessageHandler",
-				Method:         "New",
-				Implementation: c.Config.Handler(),
-				Message:        env.Message,
-				Description:    "returned a nil ProcessRoot",
-				Location:       location.OfMethod(c.Config.Handler(), "New"),
-			})
-		}
-	}
+	inst := c.instanceByID(obs, env, id)
 
 	s := &scope{
 		instanceID: id,
+		instance:   inst,
 		config:     c.Config,
 		handleMethod: message.MapByKindOf(
 			env.Message,
@@ -125,7 +96,6 @@ func (c *Controller) Handle(
 		messageIDs: c.MessageIDs,
 		observer:   obs,
 		now:        now,
-		root:       r,
 		env:        env,
 	}
 
@@ -133,17 +103,65 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	if s.ended {
-		if exists {
-			c.delete(id)
-		}
-
+	if inst.ended {
+		c.cancelTimeouts(id)
 		return s.commands, nil
 	}
 
-	c.update(s)
-
+	c.scheduleTimeouts(s)
 	return append(s.commands, s.ready...), nil
+}
+
+func (c *Controller) instanceByID(
+	obs fact.Observer,
+	env *envelope.Envelope,
+	id string,
+) *instance {
+	if inst, ok := c.instances[id]; ok {
+		obs.Notify(fact.ProcessInstanceLoaded{
+			Handler:    c.Config,
+			InstanceID: id,
+			Root:       inst.root,
+			Envelope:   env,
+		})
+		return inst
+	}
+
+	obs.Notify(fact.ProcessInstanceNotFound{
+		Handler:    c.Config,
+		InstanceID: id,
+		Envelope:   env,
+	})
+
+	if c.instances == nil {
+		c.instances = map[string]*instance{}
+	}
+
+	inst := &instance{
+		root: c.Config.Handler().New(),
+	}
+	c.instances[id] = inst
+
+	obs.Notify(fact.ProcessInstanceBegun{
+		Handler:    c.Config,
+		InstanceID: id,
+		Root:       inst.root,
+		Envelope:   env,
+	})
+
+	if inst.root == nil {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "ProcessMessageHandler",
+			Method:         "New",
+			Implementation: c.Config.Handler(),
+			Message:        env.Message,
+			Description:    "returned a nil ProcessRoot",
+			Location:       location.OfMethod(c.Config.Handler(), "New"),
+		})
+	}
+
+	return inst
 }
 
 // Reset clears the state of the controller.
@@ -162,7 +180,7 @@ func (c *Controller) route(
 		env.Message,
 		nil,
 		func(m dogma.Event) { id, ok, err = c.routeEvent(ctx, obs, env, m) },
-		func(m dogma.Timeout) { id, ok, err = c.routeTimeout(ctx, obs, env) },
+		func(_ dogma.Timeout) { id, ok, err = c.routeTimeout(ctx, obs, env) },
 	)
 	return id, ok, err
 }
@@ -195,28 +213,38 @@ func (c *Controller) routeEvent(
 		return "", false, err
 	}
 
-	if ok {
-		if id == "" {
-			panic(panicx.UnexpectedBehavior{
-				Handler:        c.Config,
-				Interface:      "ProcessMessageHandler",
-				Method:         "RouteEventToInstance",
-				Implementation: handler,
-				Message:        m,
-				Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
-				Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
-			})
-		}
+	if !ok {
+		obs.Notify(fact.ProcessEventIgnored{
+			Handler:  c.Config,
+			Envelope: env,
+		})
 
-		return id, true, nil
+		return "", false, nil
 	}
 
-	obs.Notify(fact.ProcessEventIgnored{
-		Handler:  c.Config,
-		Envelope: env,
-	})
+	if id == "" {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "ProcessMessageHandler",
+			Method:         "RouteEventToInstance",
+			Implementation: handler,
+			Message:        m,
+			Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
+			Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
+		})
+	}
 
-	return "", false, nil
+	if inst, ok := c.instances[id]; ok && inst.ended {
+		obs.Notify(fact.ProcessEventRoutedToEndedInstance{
+			Handler:    c.Config,
+			InstanceID: id,
+			Envelope:   env,
+		})
+
+		return "", false, nil
+	}
+
+	return id, true, nil
 }
 
 func (c *Controller) routeTimeout(
@@ -224,11 +252,13 @@ func (c *Controller) routeTimeout(
 	obs fact.Observer,
 	env *envelope.Envelope,
 ) (string, bool, error) {
-	if _, ok := c.instances[env.Origin.InstanceID]; ok {
-		return env.Origin.InstanceID, true, nil
+	if inst, ok := c.instances[env.Origin.InstanceID]; ok {
+		if !inst.ended {
+			return env.Origin.InstanceID, true, nil
+		}
 	}
 
-	obs.Notify(fact.ProcessTimeoutIgnored{
+	obs.Notify(fact.ProcessTimeoutRoutedToEndedInstance{
 		Handler:    c.Config,
 		InstanceID: env.Origin.InstanceID,
 		Envelope:   env,
@@ -249,9 +279,19 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		func() {
 			switch m := s.env.Message.(type) {
 			case dogma.Event:
-				err = c.Config.Handler().HandleEvent(ctx, s.root, s, m)
+				err = c.Config.Handler().HandleEvent(
+					ctx,
+					s.instance.root,
+					s,
+					m,
+				)
 			case dogma.Timeout:
-				err = c.Config.Handler().HandleTimeout(ctx, s.root, s, m)
+				err = c.Config.Handler().HandleTimeout(
+					ctx,
+					s.instance.root,
+					s,
+					m,
+				)
 			}
 		},
 	)
@@ -259,13 +299,8 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 	return err
 }
 
-// update stores the process root and its pending timeouts.
-func (c *Controller) update(s *scope) {
-	if c.instances == nil {
-		c.instances = map[string]dogma.ProcessRoot{}
-	}
-
-	c.instances[s.instanceID] = s.root
+// scheduleTimeouts enqueues pending timeouts from the given scope.
+func (c *Controller) scheduleTimeouts(s *scope) {
 	c.timeouts = append(c.timeouts, s.pending...)
 
 	sort.Slice(
@@ -278,18 +313,12 @@ func (c *Controller) update(s *scope) {
 	)
 }
 
-// delete removes an instance and its pending timeouts from the store.
-func (c *Controller) delete(id string) {
-	delete(c.instances, id)
-
-	timeouts := make([]*envelope.Envelope, 0, len(c.timeouts))
-
-	// filter out any existing timeouts that belong to the deleted instance
-	for _, env := range c.timeouts {
-		if env.Origin.InstanceID != id {
-			timeouts = append(timeouts, env)
-		}
-	}
-
-	c.timeouts = timeouts
+// cancelTimeouts removes an instance's timeouts.
+func (c *Controller) cancelTimeouts(id string) {
+	c.timeouts = slices.DeleteFunc(
+		c.timeouts,
+		func(env *envelope.Envelope) bool {
+			return env.Origin.InstanceID == id
+		},
+	)
 }
