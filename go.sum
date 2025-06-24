@@ -11,12 +11,16 @@ github.com/dogmatiq/dogma v0.15.0 h1:aXOTd2K4wLvlwHc1D9OsFREp0BusNJ9o9KssxURftmg
 github.com/dogmatiq/dogma v0.15.0/go.mod h1:TF6xisRxQ2RE3JQwFr6MCI4nWLKQQp7KRWXVHOq9K0k=
 github.com/dogmatiq/enginekit v0.16.1 h1:SAXc4ikrROho5nL11AowfqHpzvw+JAEomErG7sTbeLA=
 github.com/dogmatiq/enginekit v0.16.1/go.mod h1:nODdKEljyHQHDRlwQrKD3NCJ/4y1jFFKYDwJ0yeHcVo=
+github.com/dogmatiq/enginekit v0.16.2 h1:vgA2PwbcSrV8nyph4Mt/QJfLEAGC2NwuFs2FrhJEm2Y=
+github.com/dogmatiq/enginekit v0.16.2/go.mod h1:eWlE9axfTriKtMTd6eb5N5hFRSgoCwkkc6ZIGzi/Wyw=
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
 github.com/dogmatiq/iago v0.4.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
 github.com/dogmatiq/jumble v0.1.0 h1:Cb3ExfxY+AoUP4G9/sOwoOdYX8o+kOLK8+dhXAry+QA=
 github.com/dogmatiq/jumble v0.1.0/go.mod h1:FCGV2ImXu8zvThxhd4QLstiEdu74vbIVw9bFJSBcKr4=
 github.com/dogmatiq/linger v1.1.0 h1:kGL9sL79qRa6Cr8PhadeJ/ptbum+b48pAaNWWlyVVKg=
 github.com/dogmatiq/linger v1.1.0/go.mod h1:OOWJUwTxNkFolhuVdaTYjO4FmFLjZHZ8EMc5H5qOJ7Q=
+github.com/dogmatiq/primo v0.3.1 h1:JSqiCh1ma9CbIVzPf8k1vhzQ2Zn/d/WupzElDoiYZw0=
+github.com/dogmatiq/primo v0.3.1/go.mod h1:z2DfWNz0YmwIKhUEwgJY4xyeWOw0He+9veRRMGQ21UI=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=

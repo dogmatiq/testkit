@@ -443,6 +443,70 @@ var _ = g.Describe("type Controller", func() {
 					))
 				})
 			})
+
+			g.When("the instance has ended", func() {
+				g.BeforeEach(func() {
+					handler.HandleEventFunc = func(
+						_ context.Context,
+						_ dogma.ProcessRoot,
+						s dogma.ProcessEventScope,
+						_ dogma.Event,
+					) error {
+						s.End()
+						return nil
+					}
+
+					_, err := ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						event,
+					)
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
+
+					messageIDs.Reset() // reset after setup for a predictable ID.
+				})
+
+				g.It("does not forward the message to the handler", func() {
+					handler.HandleEventFunc = func(
+						context.Context,
+						dogma.ProcessRoot,
+						dogma.ProcessEventScope,
+						dogma.Event,
+					) error {
+						g.Fail("unexpected call to HandleEvent()")
+						return nil
+					}
+
+					_, err := ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						event,
+					)
+
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
+				})
+
+				g.It("records a fact", func() {
+					buf := &fact.Buffer{}
+					_, err := ctrl.Handle(
+						context.Background(),
+						buf,
+						time.Now(),
+						event,
+					)
+
+					gm.Expect(err).ShouldNot(gm.HaveOccurred())
+					gm.Expect(buf.Facts()).To(gm.ContainElement(
+						fact.ProcessEventRoutedToEndedInstance{
+							Handler:    config,
+							InstanceID: "<instance-A1>",
+							Envelope:   event,
+						},
+					))
+				})
+			})
 		})
 
 		g.When("handling a timeout", func() {
@@ -595,7 +659,7 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(envelopes).To(gm.BeEmpty())
 			})
 
-			g.When("the instance that created the timeout does not exist", func() {
+			g.When("the instance that created the timeout has ended", func() {
 				g.BeforeEach(func() {
 					handler.HandleEventFunc = func(
 						_ context.Context,
@@ -625,7 +689,7 @@ var _ = g.Describe("type Controller", func() {
 						dogma.ProcessTimeoutScope,
 						dogma.Timeout,
 					) error {
-						g.Fail("unexpected call to HandleEvent()")
+						g.Fail("unexpected call to HandleTimeout()")
 						return nil
 					}
 
@@ -650,7 +714,7 @@ var _ = g.Describe("type Controller", func() {
 
 					gm.Expect(err).ShouldNot(gm.HaveOccurred())
 					gm.Expect(buf.Facts()).To(gm.ContainElement(
-						fact.ProcessTimeoutIgnored{
+						fact.ProcessTimeoutRoutedToEndedInstance{
 							Handler:    config,
 							InstanceID: "<instance-A1>",
 							Envelope:   timeout,

@@ -268,7 +268,7 @@ var _ = g.Describe("type scope", func() {
 			))
 		})
 
-		g.It("reverts a prior call to End()", func() {
+		g.It("panics if the process has ended", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -280,22 +280,31 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
-				context.Background(),
-				buf,
-				time.Now(),
-				event,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.ProcessInstanceEndingReverted{
-					Handler:    config,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
-					Envelope:   event,
-				},
+			gm.Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(gm.PanicWith(
+				MatchAllFields(
+					Fields{
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeA] on an ended process"),
+						"Location": MatchAllFields(
+							Fields{
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
+							},
+						),
+					},
+				),
 			))
 		})
 	})
@@ -428,7 +437,9 @@ var _ = g.Describe("type scope", func() {
 			))
 		})
 
-		g.It("reverts a prior call to End()", func() {
+		g.It("panics if the process has ended", func() {
+			t := time.Now().Add(10 * time.Second)
+
 			handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
@@ -436,26 +447,35 @@ var _ = g.Describe("type scope", func() {
 				_ dogma.Event,
 			) error {
 				s.End()
-				s.ScheduleTimeout(TimeoutA1, time.Now())
+				s.ScheduleTimeout(TimeoutA1, t)
 				return nil
 			}
 
-			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
-				context.Background(),
-				buf,
-				time.Now(),
-				event,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.ProcessInstanceEndingReverted{
-					Handler:    config,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
-					Envelope:   event,
-				},
+			gm.Expect(func() {
+				ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					event,
+				)
+			}).To(gm.PanicWith(
+				MatchAllFields(
+					Fields{
+						"Handler":        gm.Equal(config),
+						"Interface":      gm.Equal("ProcessMessageHandler"),
+						"Method":         gm.Equal("HandleEvent"),
+						"Implementation": gm.Equal(config.Handler()),
+						"Message":        gm.Equal(event.Message),
+						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeA] on an ended process"),
+						"Location": MatchAllFields(
+							Fields{
+								"Func": gm.Not(gm.BeEmpty()),
+								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
+								"Line": gm.Not(gm.BeZero()),
+							},
+						),
+					},
+				),
 			))
 		})
 	})

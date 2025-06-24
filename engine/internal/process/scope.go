@@ -18,13 +18,12 @@ import (
 // dogma.ProcessTimeoutScope.
 type scope struct {
 	instanceID   string
+	instance     *instance
 	config       configkit.RichProcess
 	handleMethod string
 	messageIDs   *envelope.MessageIDGenerator
 	observer     fact.Observer
 	now          time.Time
-	root         dogma.ProcessRoot
-	ended        bool
 	env          *envelope.Envelope // event or timeout
 	commands     []*envelope.Envelope
 	ready        []*envelope.Envelope // timeouts <= now
@@ -36,16 +35,16 @@ func (s *scope) InstanceID() string {
 }
 
 func (s *scope) End() {
-	if s.ended {
+	if s.instance.ended {
 		return
 	}
 
-	s.ended = true
+	s.instance.ended = true
 
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		Handler:    s.config,
 		InstanceID: s.instanceID,
-		Root:       s.root,
+		Root:       s.instance.root,
 		Envelope:   s.env,
 	})
 }
@@ -65,6 +64,18 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 		})
 	}
 
+	if s.instance.ended {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Handler(),
+			Message:        s.env.Message,
+			Description:    fmt.Sprintf("executed a command of type %s on an ended process", mt),
+			Location:       location.OfCall(),
+		})
+	}
+
 	if err := m.Validate(validation.CommandValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
@@ -75,17 +86,6 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 			Description:    fmt.Sprintf("executed an invalid %s command: %s", mt, err),
 			Location:       location.OfCall(),
 		})
-	}
-
-	if s.ended {
-		s.observer.Notify(fact.ProcessInstanceEndingReverted{
-			Handler:    s.config,
-			InstanceID: s.instanceID,
-			Root:       s.root,
-			Envelope:   s.env,
-		})
-
-		s.ended = false
 	}
 
 	env := s.env.NewCommand(
@@ -104,7 +104,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 	s.observer.Notify(fact.CommandExecutedByProcess{
 		Handler:         s.config,
 		InstanceID:      s.instanceID,
-		Root:            s.root,
+		Root:            s.instance.root,
 		Envelope:        s.env,
 		CommandEnvelope: env,
 	})
@@ -129,6 +129,18 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 		})
 	}
 
+	if s.instance.ended {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Handler(),
+			Message:        s.env.Message,
+			Description:    fmt.Sprintf("scheduled a timeout of type %s on an ended process", mt),
+			Location:       location.OfCall(),
+		})
+	}
+
 	if err := m.Validate(validation.TimeoutValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
@@ -139,17 +151,6 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 			Description:    fmt.Sprintf("scheduled an invalid %s timeout: %s", mt, err),
 			Location:       location.OfCall(),
 		})
-	}
-
-	if s.ended {
-		s.observer.Notify(fact.ProcessInstanceEndingReverted{
-			Handler:    s.config,
-			InstanceID: s.instanceID,
-			Root:       s.root,
-			Envelope:   s.env,
-		})
-
-		s.ended = false
 	}
 
 	env := s.env.NewTimeout(
@@ -173,7 +174,7 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 	s.observer.Notify(fact.TimeoutScheduledByProcess{
 		Handler:         s.config,
 		InstanceID:      s.instanceID,
-		Root:            s.root,
+		Root:            s.instance.root,
 		Envelope:        s.env,
 		TimeoutEnvelope: env,
 	})
@@ -187,7 +188,7 @@ func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		Handler:      s.config,
 		InstanceID:   s.instanceID,
-		Root:         s.root,
+		Root:         s.instance.root,
 		Envelope:     s.env,
 		LogFormat:    f,
 		LogArguments: v,

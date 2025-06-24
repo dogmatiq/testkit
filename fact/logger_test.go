@@ -20,18 +20,6 @@ var _ = g.Describe("type Logger", func() {
 			panic(err)
 		}
 
-		command := envelope.NewCommand(
-			"10",
-			CommandA1,
-			time.Now(),
-		)
-
-		event := envelope.NewEvent(
-			"10",
-			EventA1,
-			time.Now(),
-		)
-
 		aggregate := configkit.FromAggregate(&AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
@@ -70,6 +58,30 @@ var _ = g.Describe("type Logger", func() {
 				)
 			},
 		})
+
+		command := envelope.NewCommand(
+			"10",
+			CommandA1,
+			time.Now(),
+		)
+
+		event := envelope.NewEvent(
+			"10",
+			EventA1,
+			time.Now(),
+		)
+
+		timeout := event.NewTimeout(
+			"20",
+			TimeoutA1,
+			time.Now(),
+			now,
+			envelope.Origin{
+				Handler:     process,
+				HandlerType: configkit.ProcessHandlerType,
+				InstanceID:  "<instance>",
+			},
+		)
 
 		g.DescribeTable(
 			"logs the expected message",
@@ -344,12 +356,21 @@ var _ = g.Describe("type Logger", func() {
 				},
 			),
 			g.Entry(
-				"ProcessTimeoutIgnored",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance no longer exists",
-				ProcessTimeoutIgnored{
+				"ProcessEventRoutedToEndedInstance",
+				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● event ignored because the target instance has ended",
+				ProcessEventRoutedToEndedInstance{
 					Handler:    process,
 					InstanceID: "<instance>",
 					Envelope:   event,
+				},
+			),
+			g.Entry(
+				"ProcessTimeoutRoutedToEndedInstance",
+				"= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance has ended",
+				ProcessTimeoutRoutedToEndedInstance{
+					Handler:    process,
+					InstanceID: "<instance>",
+					Envelope:   timeout,
 				},
 			),
 			g.Entry(
@@ -407,19 +428,9 @@ var _ = g.Describe("type Logger", func() {
 				"TimeoutScheduledByProcess",
 				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
 				TimeoutScheduledByProcess{
-					Handler:    process,
-					InstanceID: "<instance>",
-					TimeoutEnvelope: event.NewTimeout(
-						"20",
-						TimeoutA1,
-						time.Now(),
-						now,
-						envelope.Origin{
-							Handler:     process,
-							HandlerType: configkit.ProcessHandlerType,
-							InstanceID:  "<instance>",
-						},
-					),
+					Handler:         process,
+					InstanceID:      "<instance>",
+					TimeoutEnvelope: timeout,
 				},
 			),
 			g.Entry(
