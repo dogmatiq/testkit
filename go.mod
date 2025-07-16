@@ -5,8 +5,8 @@ go 1.24.0
 require (
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.6.0
-	github.com/dogmatiq/dogma v0.15.0
-	github.com/dogmatiq/enginekit v0.16.2
+	github.com/dogmatiq/dogma v0.15.1-0.20250715071844-9254b198118c
+	github.com/dogmatiq/enginekit v0.16.3-0.20250715212802-aeeb4d6c2f75
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo/v2 v2.25.3

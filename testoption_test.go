@@ -39,7 +39,9 @@ var _ = g.Describe("func StartTimeAt()", func() {
 		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "d61d15c0-0df7-466b-b0cc-749084399d73")
-				c.RegisterProjection(handler)
+				c.Routes(
+					dogma.ViaProjection(handler),
+				)
 			},
 		}
 
@@ -78,7 +80,9 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "ad2a18d6-d87a-4b5c-a396-aa293ec64fdf")
-				c.RegisterIntegration(handler)
+				c.Routes(
+					dogma.ViaIntegration(handler),
+				)
 			},
 		}
 

@@ -36,59 +36,61 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "f38c3003-bbd0-4b4a-b1f8-6922e9545acd")
 
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsIgnored](),
-							dogma.HandlesCommand[CommandThatRecordsEvent](),
-						)
-					},
-					HandleCommandFunc: func(
-						_ context.Context,
-						s dogma.IntegrationCommandScope,
-						m dogma.Command,
-					) error {
-						switch m := m.(type) {
-						case CommandThatRecordsEvent:
-							s.RecordEvent(m.Content)
-						}
-						return nil
-					},
-				})
-
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
-						c.Routes(
-							dogma.HandlesEvent[EventThatExecutesCommand](),
-							dogma.ExecutesCommand[CommandThatIsExecutedByProcess](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						switch m := m.(type) {
-						case EventThatExecutesCommand:
-							s.ExecuteCommand(
-								CommandThatIsExecutedByProcess{
-									Content: m.Content,
-								},
+				c.Routes(
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsIgnored](),
+								dogma.HandlesCommand[CommandThatRecordsEvent](),
 							)
-						}
+						},
+						HandleCommandFunc: func(
+							_ context.Context,
+							s dogma.IntegrationCommandScope,
+							m dogma.Command,
+						) error {
+							switch m := m.(type) {
+							case CommandThatRecordsEvent:
+								s.RecordEvent(m.Content)
+							}
+							return nil
+						},
+					}),
 
-						return nil
-					},
-				})
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
+							c.Routes(
+								dogma.HandlesEvent[EventThatExecutesCommand](),
+								dogma.ExecutesCommand[CommandThatIsExecutedByProcess](),
+							)
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_ dogma.ProcessRoot,
+							s dogma.ProcessEventScope,
+							m dogma.Event,
+						) error {
+							switch m := m.(type) {
+							case EventThatExecutesCommand:
+								s.ExecuteCommand(
+									CommandThatIsExecutedByProcess{
+										Content: m.Content,
+									},
+								)
+							}
+
+							return nil
+						},
+					}),
+				)
 			},
 		}
 	})
