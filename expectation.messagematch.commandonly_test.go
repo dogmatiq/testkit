@@ -35,42 +35,44 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "386480e5-4b83-4d3b-9b87-51e6d56e41e7")
 
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
-						c.Routes(
-							dogma.HandlesEvent[EventThatExecutesCommands](),
-							dogma.ExecutesCommand[CommandThatIsExecuted](),
-							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						s.ExecuteCommand(CommandC1)
-						s.ExecuteCommand(CommandC2)
-						s.ExecuteCommand(CommandC3)
-						return nil
-					},
-				})
+				c.Routes(
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
+							c.Routes(
+								dogma.HandlesEvent[EventThatExecutesCommands](),
+								dogma.ExecutesCommand[CommandThatIsExecuted](),
+								dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
+							)
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_ dogma.ProcessRoot,
+							s dogma.ProcessEventScope,
+							m dogma.Event,
+						) error {
+							s.ExecuteCommand(CommandC1)
+							s.ExecuteCommand(CommandC2)
+							s.ExecuteCommand(CommandC3)
+							return nil
+						},
+					}),
 
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "20bf2831-1887-4148-9539-eb7c294e80b6")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
-						)
-					},
-				})
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "20bf2831-1887-4148-9539-eb7c294e80b6")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
+							)
+						},
+					}),
+				)
 			},
 		}
 	})

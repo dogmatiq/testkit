@@ -34,37 +34,39 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
 
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatRecordsEvent](),
-							dogma.RecordsEvent[EventThatIsRecorded](),
-							dogma.RecordsEvent[EventThatIsNeverRecorded](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						m dogma.Command,
-					) {
-						s.RecordEvent(EventE1)
-						s.RecordEvent(EventE2)
-						s.RecordEvent(EventE3)
-					},
-				})
+				c.Routes(
+					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatRecordsEvent](),
+								dogma.RecordsEvent[EventThatIsRecorded](),
+								dogma.RecordsEvent[EventThatIsNeverRecorded](),
+							)
+						},
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
+							return "<instance>"
+						},
+						HandleCommandFunc: func(
+							_ dogma.AggregateRoot,
+							s dogma.AggregateCommandScope,
+							m dogma.Command,
+						) {
+							s.RecordEvent(EventE1)
+							s.RecordEvent(EventE2)
+							s.RecordEvent(EventE3)
+						},
+					}),
 
-				c.RegisterProjection(&ProjectionMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-						c.Identity("<projection>", "de708f1d-3651-437e-91ae-275a423ecd15")
-						c.Routes(
-							dogma.HandlesEvent[EventThatIsOnlyConsumed](),
-						)
-					},
-				})
+					dogma.ViaProjection(&ProjectionMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+							c.Identity("<projection>", "de708f1d-3651-437e-91ae-275a423ecd15")
+							c.Routes(
+								dogma.HandlesEvent[EventThatIsOnlyConsumed](),
+							)
+						},
+					}),
+				)
 			},
 		}
 	})

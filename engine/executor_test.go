@@ -36,7 +36,9 @@ var _ = g.Describe("type CommandExecutor", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "d905114d-b026-4f1a-9bc6-3abd86058e2d")
-				c.RegisterAggregate(aggregate)
+				c.Routes(
+					dogma.ViaAggregate(aggregate),
+				)
 			},
 		}
 
