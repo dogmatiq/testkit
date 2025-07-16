@@ -35,33 +35,35 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "58067ffe-c1d6-4097-8acb-c55a7936cb4b")
 
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsIgnored](),
+				c.Routes(
+					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsIgnored](),
 
-							dogma.HandlesCommand[CommandThatRecordsEvent](),
-							dogma.RecordsEvent[EventThatIsRecorded](),
-							dogma.RecordsEvent[EventThatIsNeverRecorded](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						m dogma.Command,
-					) {
-						switch m := m.(type) {
-						case CommandThatRecordsEvent:
-							s.RecordEvent(EventThatIsRecorded{
-								Content: m.Content,
-							})
-						}
-					},
-				})
+								dogma.HandlesCommand[CommandThatRecordsEvent](),
+								dogma.RecordsEvent[EventThatIsRecorded](),
+								dogma.RecordsEvent[EventThatIsNeverRecorded](),
+							)
+						},
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
+							return "<instance>"
+						},
+						HandleCommandFunc: func(
+							_ dogma.AggregateRoot,
+							s dogma.AggregateCommandScope,
+							m dogma.Command,
+						) {
+							switch m := m.(type) {
+							case CommandThatRecordsEvent:
+								s.RecordEvent(EventThatIsRecorded{
+									Content: m.Content,
+								})
+							}
+						},
+					}),
+				)
 			},
 		}
 	})

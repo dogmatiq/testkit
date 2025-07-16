@@ -37,71 +37,73 @@ var _ = g.Describe("func ToRecordEventMatching()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "43962b88-b25c-4a59-938e-64540c473a7c")
 
-				c.RegisterAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "6a182af9-4659-49cf-8c44-85dfd47dbefc")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsIgnored](),
+				c.Routes(
+					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+						ConfigureFunc: func(c dogma.AggregateConfigurer) {
+							c.Identity("<aggregate>", "6a182af9-4659-49cf-8c44-85dfd47dbefc")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsIgnored](),
 
-							dogma.HandlesCommand[CommandThatRecordsEvent](),
-							dogma.RecordsEvent[EventThatIsRecorded](),
-							dogma.RecordsEvent[EventThatIsNeverRecorded](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						m dogma.Command,
-					) {
-						switch m := m.(type) {
-						case CommandThatRecordsEvent:
-							s.RecordEvent(
-								EventThatIsRecorded{
-									Content: m.Content,
-								},
+								dogma.HandlesCommand[CommandThatRecordsEvent](),
+								dogma.RecordsEvent[EventThatIsRecorded](),
+								dogma.RecordsEvent[EventThatIsNeverRecorded](),
 							)
-
-							if m.Content == "<multiple>" {
+						},
+						RouteCommandToInstanceFunc: func(dogma.Command) string {
+							return "<instance>"
+						},
+						HandleCommandFunc: func(
+							_ dogma.AggregateRoot,
+							s dogma.AggregateCommandScope,
+							m dogma.Command,
+						) {
+							switch m := m.(type) {
+							case CommandThatRecordsEvent:
 								s.RecordEvent(
 									EventThatIsRecorded{
 										Content: m.Content,
 									},
 								)
-							}
-						}
-					},
-				})
 
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "7651ad19-1526-48c0-a53d-676286a34ca6")
-						c.Routes(
-							dogma.HandlesEvent[EventThatExecutesCommand](),
-							dogma.ExecutesCommand[CommandThatIsIgnored](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						switch m.(type) {
-						case EventThatExecutesCommand:
-							s.ExecuteCommand(CommandThatIsIgnored{})
-						}
-						return nil
-					},
-				})
+								if m.Content == "<multiple>" {
+									s.RecordEvent(
+										EventThatIsRecorded{
+											Content: m.Content,
+										},
+									)
+								}
+							}
+						},
+					}),
+
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "7651ad19-1526-48c0-a53d-676286a34ca6")
+							c.Routes(
+								dogma.HandlesEvent[EventThatExecutesCommand](),
+								dogma.ExecutesCommand[CommandThatIsIgnored](),
+							)
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_ dogma.ProcessRoot,
+							s dogma.ProcessEventScope,
+							m dogma.Event,
+						) error {
+							switch m.(type) {
+							case EventThatExecutesCommand:
+								s.ExecuteCommand(CommandThatIsIgnored{})
+							}
+							return nil
+						},
+					}),
+				)
 			},
 		}
 	})
