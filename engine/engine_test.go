@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	"github.com/dogmatiq/enginekit/enginetest"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
@@ -21,7 +22,7 @@ func TestEngine(t *testing.T) {
 	enginetest.RunTests(
 		t,
 		func(p enginetest.SetupParams) enginetest.SetupResult {
-			e, err := New(configkit.FromApplication(p.App))
+			e, err := New(runtimeconfig.FromApplication(p.App))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -54,7 +55,7 @@ var _ = g.Describe("type Engine", func() {
 		integration          *IntegrationMessageHandlerStub
 		projection, disabled *ProjectionMessageHandlerStub
 		app                  *ApplicationStub
-		config               configkit.RichApplication
+		cfg                  *config.Application
 		engine               *Engine
 	)
 
@@ -138,8 +139,8 @@ var _ = g.Describe("type Engine", func() {
 			},
 		}
 
-		config = configkit.FromApplication(app)
-		engine = MustNew(config)
+		cfg = runtimeconfig.FromApplication(app)
+		engine = MustNew(cfg)
 	})
 
 	g.Describe("func Dispatch()", func() {
@@ -203,7 +204,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<aggregate>")
+			h, _ := cfg.HandlerByName("<aggregate>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.HandlingSkipped{
 					Handler: h,
@@ -239,7 +240,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<aggregate>")
+			h, _ := cfg.HandlerByName("<aggregate>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.HandlingSkipped{
 					Handler: h,
@@ -332,7 +333,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<aggregate>")
+			h, _ := cfg.HandlerByName("<aggregate>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
@@ -350,7 +351,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<aggregate>")
+			h, _ := cfg.HandlerByName("<aggregate>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
@@ -369,7 +370,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<aggregate>")
+			h, _ := cfg.HandlerByName("<aggregate>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickBegun{
 					Handler: h,
@@ -385,7 +386,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<disabled-projection>")
+			h, _ := cfg.HandlerByName("<disabled-projection>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
@@ -403,7 +404,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<disabled-projection>")
+			h, _ := cfg.HandlerByName("<disabled-projection>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickSkipped{
 					Handler: h,
@@ -421,7 +422,7 @@ var _ = g.Describe("type Engine", func() {
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
-			h, _ := config.RichHandlers().ByName("<disabled-projection>")
+			h, _ := cfg.HandlerByName("<disabled-projection>")
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickBegun{
 					Handler: h,

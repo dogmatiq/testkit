@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -55,11 +55,11 @@ var _ = g.Describe("func AdvanceTime()", func() {
 		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.TickCycleBegun{
 				EngineTime: startTime.Add(2 * time.Second),
-				EnabledHandlerTypes: map[configkit.HandlerType]bool{
-					configkit.AggregateHandlerType:   true,
-					configkit.IntegrationHandlerType: false,
-					configkit.ProcessHandlerType:     true,
-					configkit.ProjectionHandlerType:  false,
+				EnabledHandlerTypes: map[config.HandlerType]bool{
+					config.AggregateHandlerType:   true,
+					config.IntegrationHandlerType: false,
+					config.ProcessHandlerType:     true,
+					config.ProjectionHandlerType:  false,
 				},
 				EnabledHandlers: map[string]bool{},
 			},
@@ -114,11 +114,11 @@ var _ = g.Describe("func AdvanceTime()", func() {
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: targetTime,
-					EnabledHandlerTypes: map[configkit.HandlerType]bool{
-						configkit.AggregateHandlerType:   true,
-						configkit.IntegrationHandlerType: false,
-						configkit.ProcessHandlerType:     true,
-						configkit.ProjectionHandlerType:  false,
+					EnabledHandlerTypes: map[config.HandlerType]bool{
+						config.AggregateHandlerType:   true,
+						config.IntegrationHandlerType: false,
+						config.ProcessHandlerType:     true,
+						config.ProjectionHandlerType:  false,
 					},
 					EnabledHandlers: map[string]bool{},
 				},
@@ -145,11 +145,11 @@ var _ = g.Describe("func AdvanceTime()", func() {
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TickCycleBegun{
 					EngineTime: startTime.Add(3 * time.Second),
-					EnabledHandlerTypes: map[configkit.HandlerType]bool{
-						configkit.AggregateHandlerType:   true,
-						configkit.IntegrationHandlerType: false,
-						configkit.ProcessHandlerType:     true,
-						configkit.ProjectionHandlerType:  false,
+					EnabledHandlerTypes: map[config.HandlerType]bool{
+						config.AggregateHandlerType:   true,
+						config.IntegrationHandlerType: false,
+						config.ProcessHandlerType:     true,
+						config.ProjectionHandlerType:  false,
 					},
 					EnabledHandlers: map[string]bool{},
 				},

@@ -5,8 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
 	"github.com/dogmatiq/testkit/envelope"
@@ -20,7 +21,7 @@ var _ = g.Describe("type Controller", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *IntegrationMessageHandlerStub
-		config     configkit.RichIntegration
+		cfg        *config.Integration
 		ctrl       *Controller
 		command    *envelope.Envelope
 	)
@@ -42,10 +43,10 @@ var _ = g.Describe("type Controller", func() {
 			},
 		}
 
-		config = configkit.FromIntegration(handler)
+		cfg = runtimeconfig.FromIntegration(handler)
 
 		ctrl = &Controller{
-			Config:     config,
+			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
@@ -54,7 +55,7 @@ var _ = g.Describe("type Controller", func() {
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
 		})
 	})
 
@@ -131,8 +132,8 @@ var _ = g.Describe("type Controller", func() {
 					EventA1,
 					now,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.IntegrationHandlerType,
+						Handler:     cfg,
+						HandlerType: config.IntegrationHandlerType,
 					},
 				),
 				command.NewEvent(
@@ -140,8 +141,8 @@ var _ = g.Describe("type Controller", func() {
 					EventA2,
 					now,
 					envelope.Origin{
-						Handler:     config,
-						HandlerType: configkit.IntegrationHandlerType,
+						Handler:     cfg,
+						HandlerType: config.IntegrationHandlerType,
 					},
 				),
 			))
@@ -188,7 +189,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("IntegrationMessageHandler"),
 						"Method":    gm.Equal("HandleCommand"),
 						"Message":   gm.Equal(command.Message),

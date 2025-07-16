@@ -1,7 +1,7 @@
 package testkit
 
 import (
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/fact"
 )
 
@@ -47,7 +47,7 @@ type Predicate interface {
 // inspected by Predicate implementations.
 type PredicateScope struct {
 	// App is the application being tested.
-	App configkit.RichApplication
+	App *config.Application
 
 	// Options contains values that dictate how the predicate should behave.
 	// The options are provided by the Test and the Action being performed.

@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
@@ -17,7 +18,7 @@ import (
 var _ = g.Describe("type scope", func() {
 	var (
 		handler *ProjectionMessageHandlerStub
-		config  configkit.RichProjection
+		cfg     *config.Projection
 		ctrl    *Controller
 		event   *envelope.Envelope
 	)
@@ -38,10 +39,10 @@ var _ = g.Describe("type scope", func() {
 			},
 		}
 
-		config = configkit.FromProjection(handler)
+		cfg = runtimeconfig.FromProjection(handler)
 
 		ctrl = &Controller{
-			Config: config,
+			Config: cfg,
 		}
 	})
 
@@ -116,7 +117,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByProjection{
-					Handler:   config,
+					Handler:   cfg,
 					Envelope:  event,
 					LogFormat: "<format>",
 					LogArguments: []any{

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
@@ -20,7 +21,7 @@ var _ = g.Describe("type Logger", func() {
 			panic(err)
 		}
 
-		aggregate := configkit.FromAggregate(&AggregateMessageHandlerStub{
+		aggregate := runtimeconfig.FromAggregate(&AggregateMessageHandlerStub{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
 				c.Routes(
@@ -30,7 +31,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		integration := configkit.FromIntegration(&IntegrationMessageHandlerStub{
+		integration := runtimeconfig.FromIntegration(&IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "2425a151-ba72-42ec-970a-8b3b4133b22f")
 				c.Routes(
@@ -40,7 +41,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		process := configkit.FromProcess(&ProcessMessageHandlerStub{
+		process := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "570684db-0144-4628-a58f-ae815c55dea3")
 				c.Routes(
@@ -50,7 +51,7 @@ var _ = g.Describe("type Logger", func() {
 			},
 		})
 
-		projection := configkit.FromProjection(&ProjectionMessageHandlerStub{
+		projection := runtimeconfig.FromProjection(&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "36f29880-6b87-42c5-848c-f515c9f1c74b")
 				c.Routes(
@@ -78,7 +79,7 @@ var _ = g.Describe("type Logger", func() {
 			now,
 			envelope.Origin{
 				Handler:     process,
-				HandlerType: configkit.ProcessHandlerType,
+				HandlerType: config.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			},
 		)
@@ -117,9 +118,9 @@ var _ = g.Describe("type Logger", func() {
 				DispatchCycleBegun{
 					Envelope:   command,
 					EngineTime: now,
-					EnabledHandlerTypes: map[configkit.HandlerType]bool{
-						configkit.AggregateHandlerType: true,
-						configkit.ProcessHandlerType:   true,
+					EnabledHandlerTypes: map[config.HandlerType]bool{
+						config.AggregateHandlerType: true,
+						config.ProcessHandlerType:   true,
 					},
 					EnabledHandlers: map[string]bool{
 						"<enabled>":  true,
@@ -220,9 +221,9 @@ var _ = g.Describe("type Logger", func() {
 				"= --  ∵ --  ⋲ --    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 				TickCycleBegun{
 					EngineTime: now,
-					EnabledHandlerTypes: map[configkit.HandlerType]bool{
-						configkit.AggregateHandlerType: true,
-						configkit.ProcessHandlerType:   true,
+					EnabledHandlerTypes: map[config.HandlerType]bool{
+						config.AggregateHandlerType: true,
+						config.ProcessHandlerType:   true,
 					},
 					EnabledHandlers: map[string]bool{
 						"<enabled>":  true,

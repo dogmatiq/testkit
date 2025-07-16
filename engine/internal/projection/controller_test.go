@@ -5,8 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
@@ -19,7 +20,7 @@ import (
 var _ = g.Describe("type Controller", func() {
 	var (
 		handler *ProjectionMessageHandlerStub
-		config  configkit.RichProjection
+		cfg     *config.Projection
 		ctrl    *Controller
 		event   *envelope.Envelope
 	)
@@ -40,16 +41,16 @@ var _ = g.Describe("type Controller", func() {
 			},
 		}
 
-		config = configkit.FromProjection(handler)
+		cfg = runtimeconfig.FromProjection(handler)
 
 		ctrl = &Controller{
-			Config: config,
+			Config: cfg,
 		}
 	})
 
 	g.Describe("func HandlerConfig()", func() {
 		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(config))
+			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
 		})
 	})
 
@@ -84,10 +85,10 @@ var _ = g.Describe("type Controller", func() {
 			gm.Expect(buf.Facts()).To(gm.Equal(
 				[]fact.Fact{
 					fact.ProjectionCompactionBegun{
-						Handler: config,
+						Handler: cfg,
 					},
 					fact.ProjectionCompactionCompleted{
-						Handler: config,
+						Handler: cfg,
 						Error:   expect,
 					},
 				},
@@ -315,7 +316,7 @@ var _ = g.Describe("type Controller", func() {
 				MatchFields(
 					IgnoreExtras,
 					Fields{
-						"Handler":   gm.Equal(config),
+						"Handler":   gm.Equal(cfg),
 						"Interface": gm.Equal("ProjectionMessageHandler"),
 						"Method":    gm.Equal("HandleEvent"),
 						"Message":   gm.Equal(event.Message),
@@ -377,10 +378,10 @@ var _ = g.Describe("type Controller", func() {
 				gm.Expect(buf.Facts()).To(gm.Equal(
 					[]fact.Fact{
 						fact.ProjectionCompactionBegun{
-							Handler: config,
+							Handler: cfg,
 						},
 						fact.ProjectionCompactionCompleted{
-							Handler: config,
+							Handler: cfg,
 							Error:   expect,
 						},
 					},

@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dapper"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
@@ -22,7 +23,7 @@ import (
 type Test struct {
 	ctx              context.Context
 	testingT         TestingT
-	app              configkit.RichApplication
+	app              *config.Application
 	virtualClock     time.Time
 	engine           *engine.Engine
 	executor         CommandExecutor
@@ -52,7 +53,7 @@ func BeginContext(
 	app dogma.Application,
 	options ...TestOption,
 ) *Test {
-	cfg := configkit.FromApplication(app)
+	cfg := runtimeconfig.FromApplication(app)
 
 	test := &Test{
 		ctx:          ctx,
@@ -236,7 +237,7 @@ func (t *Test) DisableHandlersLike(patterns ...string) *Test {
 
 func (t *Test) enableHandlers(names []string, enable bool) *Test {
 	for _, n := range names {
-		h, ok := t.app.Handlers().ByName(n)
+		h, ok := t.app.HandlerByName(n)
 		if !ok {
 			panic(fmt.Sprintf(
 				"the %q application does not have a handler named %q",
@@ -273,9 +274,10 @@ func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
 		re := regexp.MustCompile(p)
 		matched := false
 
-		for ident, h := range t.app.Handlers() {
-			if !h.IsDisabled() && re.MatchString(ident.Name) {
-				names[ident.Name] = struct{}{}
+		for _, h := range t.app.Handlers() {
+			name := h.Identity().Name
+			if !h.IsDisabled() && re.MatchString(name) {
+				names[name] = struct{}{}
 				matched = true
 			}
 		}

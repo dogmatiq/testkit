@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
@@ -19,7 +20,7 @@ var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *AggregateMessageHandlerStub
-		config     configkit.RichAggregate
+		cfg        *config.Aggregate
 		ctrl       *Controller
 		command    *envelope.Envelope
 	)
@@ -49,10 +50,10 @@ var _ = g.Describe("type scope", func() {
 			},
 		}
 
-		config = configkit.FromAggregate(handler)
+		cfg = runtimeconfig.FromAggregate(handler)
 
 		ctrl = &Controller{
-			Config:     config,
+			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
@@ -107,7 +108,7 @@ var _ = g.Describe("type scope", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceCreated{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -119,7 +120,7 @@ var _ = g.Describe("type scope", func() {
 				))
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -132,8 +133,8 @@ var _ = g.Describe("type scope", func() {
 							EventA1,
 							now,
 							envelope.Origin{
-								Handler:     config,
-								HandlerType: configkit.AggregateHandlerType,
+								Handler:     cfg,
+								HandlerType: config.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -190,7 +191,7 @@ var _ = g.Describe("type scope", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceDestroyed{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root:       &AggregateRootStub{},
 						Envelope:   command,
@@ -225,7 +226,7 @@ var _ = g.Describe("type scope", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -239,8 +240,8 @@ var _ = g.Describe("type scope", func() {
 							EventA1,
 							now,
 							envelope.Origin{
-								Handler:     config,
-								HandlerType: configkit.AggregateHandlerType,
+								Handler:     cfg,
+								HandlerType: config.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -285,7 +286,7 @@ var _ = g.Describe("type scope", func() {
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.AggregateInstanceDestructionReverted{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -297,7 +298,7 @@ var _ = g.Describe("type scope", func() {
 				))
 				gm.Expect(buf.Facts()).To(gm.ContainElement(
 					fact.EventRecordedByAggregate{
-						Handler:    config,
+						Handler:    cfg,
 						InstanceID: "<instance>",
 						Root: &AggregateRootStub{
 							AppliedEvents: []dogma.Event{
@@ -310,8 +311,8 @@ var _ = g.Describe("type scope", func() {
 							EventA1,
 							now,
 							envelope.Origin{
-								Handler:     config,
-								HandlerType: configkit.AggregateHandlerType,
+								Handler:     cfg,
+								HandlerType: config.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
 						),
@@ -338,10 +339,10 @@ var _ = g.Describe("type scope", func() {
 				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        gm.Equal(config),
+							"Handler":        gm.Equal(cfg),
 							"Interface":      gm.Equal("AggregateMessageHandler"),
 							"Method":         gm.Equal("HandleCommand"),
-							"Implementation": gm.Equal(config.Handler()),
+							"Implementation": gm.Equal(cfg.Source.Get()),
 							"Message":        gm.Equal(command.Message),
 							"Description":    gm.Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
 							"Location": MatchAllFields(
@@ -377,10 +378,10 @@ var _ = g.Describe("type scope", func() {
 				}).To(gm.PanicWith(
 					MatchAllFields(
 						Fields{
-							"Handler":        gm.Equal(config),
+							"Handler":        gm.Equal(cfg),
 							"Interface":      gm.Equal("AggregateMessageHandler"),
 							"Method":         gm.Equal("HandleCommand"),
-							"Implementation": gm.Equal(config.Handler()),
+							"Implementation": gm.Equal(cfg.Source.Get()),
 							"Message":        gm.Equal(command.Message),
 							"Description":    gm.Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
 							"Location": MatchAllFields(
@@ -444,7 +445,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByAggregate{
-					Handler:    config,
+					Handler:    cfg,
 					InstanceID: "<instance>",
 					Root:       &AggregateRootStub{},
 					Envelope:   command,

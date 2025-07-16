@@ -4,7 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/testkit/engine/internal/aggregate"
+	"github.com/dogmatiq/testkit/engine/internal/integration"
+	"github.com/dogmatiq/testkit/engine/internal/process"
+	"github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 )
@@ -14,7 +18,7 @@ import (
 type controller interface {
 	// HandlerConfig returns the config of the handler that is managed by this
 	// controller.
-	HandlerConfig() configkit.RichHandler
+	HandlerConfig() config.Handler
 
 	// Tick instructs the controller to perform an implementation-defined
 	// "tick".
@@ -46,4 +50,70 @@ type controller interface {
 
 	// Reset clears the state of the controller.
 	Reset()
+}
+
+func registerControllers(
+	e *Engine,
+	opts *engineOptions,
+	app *config.Application,
+) {
+	for _, h := range app.Handlers() {
+		config.SwitchByHandlerTypeOf(
+			h,
+			func(h *config.Aggregate) {
+				registerController(
+					e,
+					&aggregate.Controller{
+						Config:     h,
+						MessageIDs: &e.messageIDs,
+					},
+				)
+			},
+			func(h *config.Process) {
+				registerController(
+					e,
+					&process.Controller{
+						Config:     h,
+						MessageIDs: &e.messageIDs,
+					},
+				)
+			},
+			func(h *config.Integration) {
+				registerController(
+					e,
+					&integration.Controller{
+						Config:     h,
+						MessageIDs: &e.messageIDs,
+					},
+				)
+			},
+			func(h *config.Projection) {
+				registerController(
+					e,
+					&projection.Controller{
+						Config:                h,
+						CompactDuringHandling: opts.compactDuringHandling,
+					},
+				)
+			},
+		)
+	}
+}
+
+func registerController(
+	e *Engine,
+	ctrl controller,
+) {
+	cfg := ctrl.HandlerConfig()
+
+	e.controllers[cfg.Identity().Name] = ctrl
+
+	types := cfg.
+		RouteSet().
+		Filter(config.FilterByMessageDirection(config.InboundDirection)).
+		MessageTypes()
+
+	for t := range types {
+		e.routes[t] = append(e.routes[t], ctrl)
+	}
 }
