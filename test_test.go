@@ -58,23 +58,25 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
-							c.Routes(
-								dogma.HandlesEvent[EventStub[TypeA]](),
-							)
-						},
-						HandleEventFunc: func(
-							_ context.Context,
-							_, _, _ []byte,
-							_ dogma.ProjectionEventScope,
-							_ dogma.Event,
-						) (bool, error) {
-							called = true
-							return true, nil
-						},
-					})
+					c.Routes(
+						dogma.ViaProjection(&ProjectionMessageHandlerStub{
+							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+								c.Routes(
+									dogma.HandlesEvent[EventStub[TypeA]](),
+								)
+							},
+							HandleEventFunc: func(
+								_ context.Context,
+								_, _, _ []byte,
+								_ dogma.ProjectionEventScope,
+								_ dogma.Event,
+							) (bool, error) {
+								called = true
+								return true, nil
+							},
+						}),
+					)
 				},
 			}
 
@@ -102,15 +104,17 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
-							c.Routes(
-								dogma.HandlesEvent[EventStub[TypeA]](),
-							)
-							c.Disable()
-						},
-					})
+					c.Routes(
+						dogma.ViaProjection(&ProjectionMessageHandlerStub{
+							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+								c.Routes(
+									dogma.HandlesEvent[EventStub[TypeA]](),
+								)
+								c.Disable()
+							},
+						}),
+					)
 				},
 			}
 
@@ -127,23 +131,25 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
-							c.Routes(
-								dogma.HandlesEvent[EventStub[TypeA]](),
-							)
-						},
-						HandleEventFunc: func(
-							_ context.Context,
-							_, _, _ []byte,
-							_ dogma.ProjectionEventScope,
-							_ dogma.Event,
-						) (bool, error) {
-							called = true
-							return true, nil
-						},
-					})
+					c.Routes(
+						dogma.ViaProjection(&ProjectionMessageHandlerStub{
+							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+								c.Routes(
+									dogma.HandlesEvent[EventStub[TypeA]](),
+								)
+							},
+							HandleEventFunc: func(
+								_ context.Context,
+								_, _, _ []byte,
+								_ dogma.ProjectionEventScope,
+								_ dogma.Event,
+							) (bool, error) {
+								called = true
+								return true, nil
+							},
+						}),
+					)
 				},
 			}
 
@@ -171,15 +177,17 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "7d5b218d-d69b-48d5-8831-2af77561ee62")
-					c.RegisterProjection(&ProjectionMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
-							c.Routes(
-								dogma.HandlesEvent[EventStub[TypeA]](),
-							)
-							c.Disable()
-						},
-					})
+					c.Routes(
+						dogma.ViaProjection(&ProjectionMessageHandlerStub{
+							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
+								c.Routes(
+									dogma.HandlesEvent[EventStub[TypeA]](),
+								)
+								c.Disable()
+							},
+						}),
+					)
 				},
 			}
 
@@ -195,25 +203,27 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
-					c.RegisterAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
-							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							dogma.AggregateRoot,
-							dogma.AggregateCommandScope,
-							dogma.Command,
-						) {
-							g.Fail("unexpected call")
-						},
-					})
+					c.Routes(
+						dogma.ViaAggregate(&AggregateMessageHandlerStub{
+							ConfigureFunc: func(c dogma.AggregateConfigurer) {
+								c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
+								c.Routes(
+									dogma.HandlesCommand[CommandStub[TypeA]](),
+									dogma.RecordsEvent[EventStub[TypeA]](),
+								)
+							},
+							RouteCommandToInstanceFunc: func(dogma.Command) string {
+								return "<instance>"
+							},
+							HandleCommandFunc: func(
+								dogma.AggregateRoot,
+								dogma.AggregateCommandScope,
+								dogma.Command,
+							) {
+								g.Fail("unexpected call")
+							},
+						}),
+					)
 				},
 			}
 
@@ -241,25 +251,27 @@ var _ = g.Describe("type Test", func() {
 			app := &ApplicationStub{
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
-					c.RegisterAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
-							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							dogma.AggregateRoot,
-							dogma.AggregateCommandScope,
-							dogma.Command,
-						) {
-							g.Fail("unexpected call")
-						},
-					})
+					c.Routes(
+						dogma.ViaAggregate(&AggregateMessageHandlerStub{
+							ConfigureFunc: func(c dogma.AggregateConfigurer) {
+								c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
+								c.Routes(
+									dogma.HandlesCommand[CommandStub[TypeA]](),
+									dogma.RecordsEvent[EventStub[TypeA]](),
+								)
+							},
+							RouteCommandToInstanceFunc: func(dogma.Command) string {
+								return "<instance>"
+							},
+							HandleCommandFunc: func(
+								dogma.AggregateRoot,
+								dogma.AggregateCommandScope,
+								dogma.Command,
+							) {
+								g.Fail("unexpected call")
+							},
+						}),
+					)
 				},
 			}
 
@@ -288,25 +300,27 @@ var _ = g.Describe("type Test", func() {
 				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 					c.Identity("<app>", "8ec6465c-d4e3-411c-a05b-898a4b608284")
 
-					c.RegisterAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
-							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							_ dogma.AggregateRoot,
-							s dogma.AggregateCommandScope,
-							m dogma.Command,
-						) {
-							s.RecordEvent(EventA1)
-						},
-					})
+					c.Routes(
+						dogma.ViaAggregate(&AggregateMessageHandlerStub{
+							ConfigureFunc: func(c dogma.AggregateConfigurer) {
+								c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
+								c.Routes(
+									dogma.HandlesCommand[CommandStub[TypeA]](),
+									dogma.RecordsEvent[EventStub[TypeA]](),
+								)
+							},
+							RouteCommandToInstanceFunc: func(dogma.Command) string {
+								return "<instance>"
+							},
+							HandleCommandFunc: func(
+								_ dogma.AggregateRoot,
+								s dogma.AggregateCommandScope,
+								m dogma.Command,
+							) {
+								s.RecordEvent(EventA1)
+							},
+						}),
+					)
 				},
 			}
 
