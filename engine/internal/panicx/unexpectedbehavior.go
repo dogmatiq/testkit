@@ -3,8 +3,8 @@ package panicx
 import (
 	"fmt"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -14,7 +14,7 @@ import (
 // Often this means it has violated the Dogma specification.
 type UnexpectedBehavior struct {
 	// Handler is the non-compliant handler.
-	Handler configkit.RichHandler
+	Handler config.Handler
 
 	// Interface is the name of the interface containing the method with the
 	// unexpected behavior.

@@ -7,8 +7,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -24,7 +24,7 @@ type instance struct {
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	Config     configkit.RichProcess
+	Config     *config.Process
 	MessageIDs *envelope.MessageIDGenerator
 
 	instances map[string]*instance
@@ -33,7 +33,7 @@ type Controller struct {
 
 // HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) HandlerConfig() configkit.RichHandler {
+func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
@@ -72,7 +72,7 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes()[mt].IsConsumed {
+	if !c.Config.RouteSet().DirectionOf(mt).Has(config.InboundDirection) {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
@@ -138,7 +138,7 @@ func (c *Controller) instanceByID(
 	}
 
 	inst := &instance{
-		root: c.Config.Handler().New(),
+		root: c.Config.Source.Get().New(),
 	}
 	c.instances[id] = inst
 
@@ -154,10 +154,10 @@ func (c *Controller) instanceByID(
 			Handler:        c.Config,
 			Interface:      "ProcessMessageHandler",
 			Method:         "New",
-			Implementation: c.Config.Handler(),
+			Implementation: c.Config.Source.Get(),
 			Message:        env.Message,
 			Description:    "returned a nil ProcessRoot",
-			Location:       location.OfMethod(c.Config.Handler(), "New"),
+			Location:       location.OfMethod(c.Config.Source.Get(), "New"),
 		})
 	}
 
@@ -191,7 +191,7 @@ func (c *Controller) routeEvent(
 	env *envelope.Envelope,
 	m dogma.Event,
 ) (string, bool, error) {
-	handler := c.Config.Handler()
+	handler := c.Config.Source.Get()
 
 	var (
 		id  string
@@ -230,7 +230,7 @@ func (c *Controller) routeEvent(
 			Implementation: handler,
 			Message:        m,
 			Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
-			Location:       location.OfMethod(c.Config.Handler(), "RouteEventToInstance"),
+			Location:       location.OfMethod(handler, "RouteEventToInstance"),
 		})
 	}
 
@@ -274,19 +274,19 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		c.Config,
 		"ProcessMessageHandler",
 		s.handleMethod,
-		c.Config.Handler(),
+		c.Config.Source.Get(),
 		s.env.Message,
 		func() {
 			switch m := s.env.Message.(type) {
 			case dogma.Event:
-				err = c.Config.Handler().HandleEvent(
+				err = c.Config.Source.Get().HandleEvent(
 					ctx,
 					s.instance.root,
 					s,
 					m,
 				)
 			case dogma.Timeout:
-				err = c.Config.Handler().HandleTimeout(
+				err = c.Config.Source.Get().HandleTimeout(
 					ctx,
 					s.instance.root,
 					s,

@@ -3,7 +3,7 @@ package projection
 import (
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 )
@@ -11,7 +11,7 @@ import (
 // scope is an implementation of dogma.ProjectionEventScope and
 // dogma.ProjectionCompactScope.
 type scope struct {
-	config   configkit.RichProjection
+	config   *config.Projection
 	observer fact.Observer
 	event    *envelope.Envelope // nil if compacting
 	now      time.Time

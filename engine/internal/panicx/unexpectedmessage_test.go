@@ -1,8 +1,8 @@
 package panicx_test
 
 import (
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
 	g "github.com/onsi/ginkgo/v2"
@@ -11,7 +11,7 @@ import (
 )
 
 var _ = g.Describe("type UnexpectedMessage", func() {
-	config := configkit.FromProjection(
+	config := runtimeconfig.FromProjection(
 		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "a0eab8dd-db22-467a-87c2-c38138c582e8")
@@ -38,7 +38,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 				config,
 				"<interface>",
 				"<method>",
-				config.Handler(),
+				config.Source.Get(),
 				EventX1,
 				func() {
 					panic(dogma.UnexpectedMessage)
@@ -49,7 +49,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 })
 
 var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
-	config := configkit.FromProjection(
+	config := runtimeconfig.FromProjection(
 		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "b665eca3-936e-41e3-b9ab-c618cfa95ec2")
@@ -67,7 +67,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			config,
 			"<interface>",
 			"<method>",
-			config.Handler(),
+			config.Source.Get(),
 			EventX1,
 			func() {
 				called = true
@@ -83,7 +83,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 				config,
 				"<interface>",
 				"<method>",
-				config.Handler(),
+				config.Source.Get(),
 				EventX1,
 				func() {
 					panic("<panic>")
@@ -98,7 +98,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 				config,
 				"<interface>",
 				"<method>",
-				config.Handler(),
+				config.Source.Get(),
 				EventX1,
 				doPanic,
 			)
@@ -108,7 +108,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 					"Handler":        gm.Equal(config),
 					"Interface":      gm.Equal("<interface>"),
 					"Method":         gm.Equal("<method>"),
-					"Implementation": gm.Equal(config.Handler()),
+					"Implementation": gm.Equal(config.Source.Get()),
 					"Message":        gm.Equal(EventX1),
 					"PanicLocation": MatchAllFields(
 						Fields{

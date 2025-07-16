@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -20,10 +20,10 @@ func reportNoMatch(rep *Report, t *tracker) {
 	var relevant []string
 
 	if t.cycleBegun {
-		for _, ht := range configkit.HandlerTypes {
+		for ht := range config.HandlerTypes() {
 			e := t.enabled[ht]
 
-			if ht.IsProducerOf(t.kind) {
+			if ht.RouteCapabilities().DirectionOf(t.kind).Has(config.OutboundDirection) {
 				relevant = append(relevant, ht.String())
 
 				if e {
@@ -82,8 +82,7 @@ func guardAgainstExpectationOnImpossibleType(
 	// report, not just returning an error.
 	//
 	// See https://github.com/dogmatiq/testkit/issues/162
-	em, ok := s.App.MessageTypes()[t]
-	if !ok {
+	if !s.App.RouteSet().HasMessageType(t) {
 		return inflect.Errorf(
 			t.Kind(),
 			"a <message> of type %s can never be <produced>, the application does not use this message type",
@@ -95,7 +94,7 @@ func guardAgainstExpectationOnImpossibleType(
 		// If we're NOT matching messages from DispatchCycleStarted facts that
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
-		if !em.IsProduced {
+		if !s.App.RouteSet().DirectionOf(t).Has(config.OutboundDirection) {
 			return inflect.Errorf(
 				t.Kind(),
 				"no handlers <produce> <messages> of type %s, it is only ever consumed",
@@ -129,10 +128,10 @@ type tracker struct {
 	// engagedOrder and engagedType track the set of handlers that *could* have
 	// produced the expected message.
 	engagedOrder []string
-	engagedType  map[string]configkit.HandlerType
+	engagedType  map[string]config.HandlerType
 
 	// enabled is the set of handler types that are enabled during the test.
-	enabled map[configkit.HandlerType]bool
+	enabled map[config.HandlerType]bool
 }
 
 // Notify updates the tracker's state in response to a new fact.
@@ -169,10 +168,10 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 	return nil, false
 }
 
-func (t *tracker) updateEngaged(n string, ht configkit.HandlerType) {
-	if ht.IsProducerOf(t.kind) {
+func (t *tracker) updateEngaged(n string, ht config.HandlerType) {
+	if ht.RouteCapabilities().DirectionOf(t.kind).Has(config.OutboundDirection) {
 		if t.engagedType == nil {
-			t.engagedType = map[string]configkit.HandlerType{}
+			t.engagedType = map[string]config.HandlerType{}
 		}
 
 		if _, ok := t.engagedType[n]; !ok {

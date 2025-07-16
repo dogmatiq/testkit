@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -29,32 +29,26 @@ type Engine struct {
 }
 
 // New returns a new engine that uses the given app configuration.
-func New(app configkit.RichApplication, options ...Option) (_ *Engine, err error) {
-	eo := newEngineOptions(options)
+func New(
+	app *config.Application,
+	options ...Option,
+) (_ *Engine, err error) {
+	opts := newEngineOptions(options)
 
 	e := &Engine{
 		controllers: map[string]controller{},
 		routes:      map[message.Type][]controller{},
-		resetters:   eo.resetters,
+		resetters:   opts.resetters,
 	}
 
-	cfgr := &configurer{
-		options: eo,
-		engine:  e,
-	}
-
-	ctx := context.Background()
-
-	if err := app.AcceptRichVisitor(ctx, cfgr); err != nil {
-		return nil, err
-	}
+	registerControllers(e, opts, app)
 
 	return e, nil
 }
 
 // MustNew returns a new engine that uses the given app configuration, or panics
 // if unable to do so.
-func MustNew(app configkit.RichApplication, options ...Option) *Engine {
+func MustNew(app *config.Application, options ...Option) *Engine {
 	e, err := New(app, options...)
 	if err != nil {
 		panic(err)
@@ -343,7 +337,7 @@ func (e *Engine) handle(
 // skipHandler returns true if a specific handler should be skipped during a
 // call to Dispatch() or Tick().
 func (e *Engine) skipHandler(
-	h configkit.Handler,
+	h config.Handler,
 	oo *operationOptions,
 ) (bool, fact.HandlerSkipReason) {
 	if en, ok := oo.enabledHandlers[h.Identity().Name]; ok {

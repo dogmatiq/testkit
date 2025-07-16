@@ -3,8 +3,8 @@ package panicx
 import (
 	"fmt"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -13,7 +13,7 @@ import (
 // panics with a dogma.UnexpectedMessage value.
 type UnexpectedMessage struct {
 	// Handler is the handler that panicked.
-	Handler configkit.RichHandler
+	Handler config.Handler
 
 	// Interface is the name of the interface containing the method that the
 	// controller called resulting in the panic.
@@ -48,7 +48,7 @@ func (x UnexpectedMessage) String() string {
 // values to an panicx.UnexpectedMessage value to provide more context about the
 // failure.
 func EnrichUnexpectedMessage(
-	h configkit.RichHandler,
+	h config.Handler,
 	iface string, method string,
 	impl any,
 	m dogma.Message,

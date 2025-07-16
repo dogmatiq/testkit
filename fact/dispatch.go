@@ -3,7 +3,7 @@ package fact
 import (
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/envelope"
 )
 
@@ -12,7 +12,7 @@ import (
 type DispatchCycleBegun struct {
 	Envelope            *envelope.Envelope
 	EngineTime          time.Time
-	EnabledHandlerTypes map[configkit.HandlerType]bool
+	EnabledHandlerTypes map[config.HandlerType]bool
 	EnabledHandlers     map[string]bool
 }
 
@@ -20,7 +20,7 @@ type DispatchCycleBegun struct {
 type DispatchCycleCompleted struct {
 	Envelope            *envelope.Envelope
 	Error               error
-	EnabledHandlerTypes map[configkit.HandlerType]bool
+	EnabledHandlerTypes map[config.HandlerType]bool
 	EnabledHandlers     map[string]bool
 }
 
@@ -39,14 +39,14 @@ type DispatchCompleted struct {
 // HandlingBegun indicates that a message is about to be handled by a specific
 // handler.
 type HandlingBegun struct {
-	Handler  configkit.RichHandler
+	Handler  config.Handler
 	Envelope *envelope.Envelope
 }
 
 // HandlingCompleted indicates that a message has been handled by a specific
 // handler, either successfully or unsuccessfully.
 type HandlingCompleted struct {
-	Handler  configkit.RichHandler
+	Handler  config.Handler
 	Envelope *envelope.Envelope
 	Error    error
 }
@@ -55,7 +55,7 @@ type HandlingCompleted struct {
 // specific handler, either because all handlers of that type are or the handler
 // itself is disabled.
 type HandlingSkipped struct {
-	Handler  configkit.RichHandler
+	Handler  config.Handler
 	Envelope *envelope.Envelope
 	Reason   HandlerSkipReason
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -16,7 +16,7 @@ import (
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	config     configkit.RichIntegration
+	config     *config.Integration
 	messageIDs *envelope.MessageIDGenerator
 	observer   fact.Observer
 	now        time.Time
@@ -27,12 +27,12 @@ type scope struct {
 func (s *scope) RecordEvent(m dogma.Event) {
 	mt := message.TypeOf(m)
 
-	if !s.config.MessageTypes()[mt].IsProduced {
+	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "IntegrationMessageHandler",
 			Method:         "HandleCommand",
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Source.Get(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an event of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
@@ -44,7 +44,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 			Handler:        s.config,
 			Interface:      "IntegrationMessageHandler",
 			Method:         "HandleCommand",
-			Implementation: s.config.Handler(),
+			Implementation: s.config.Source.Get(),
 			Message:        s.command.Message,
 			Description:    fmt.Sprintf("recorded an invalid %s event: %s", mt, err),
 			Location:       location.OfCall(),
@@ -57,7 +57,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 		s.now,
 		envelope.Origin{
 			Handler:     s.config,
-			HandlerType: configkit.IntegrationHandlerType,
+			HandlerType: config.IntegrationHandlerType,
 		},
 	)
 

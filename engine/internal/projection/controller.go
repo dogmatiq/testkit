@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -22,7 +22,7 @@ const CompactInterval = 1 * time.Hour
 // Controller is an implementation of engine.Controller for
 // dogma.ProjectionMessageHandler implementations.
 type Controller struct {
-	Config                configkit.RichProjection
+	Config                *config.Projection
 	CompactDuringHandling bool
 
 	lastCompact time.Time
@@ -30,7 +30,7 @@ type Controller struct {
 
 // HandlerConfig returns the config of the handler that is managed by this
 // controller.
-func (c *Controller) HandlerConfig() configkit.RichHandler {
+func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
@@ -47,7 +47,7 @@ func (c *Controller) Tick(
 			Handler: c.Config,
 		})
 
-		err := c.Config.Handler().Compact(
+		err := c.Config.Source.Get().Compact(
 			ctx,
 			&scope{
 				config:   c.Config,
@@ -76,11 +76,11 @@ func (c *Controller) Handle(
 ) ([]*envelope.Envelope, error) {
 	mt := message.TypeOf(env.Message)
 
-	if !c.Config.MessageTypes()[mt].IsConsumed {
+	if !c.Config.RouteSet().DirectionOf(mt).Has(config.InboundDirection) {
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
-	handler := c.Config.Handler()
+	handler := c.Config.Source.Get()
 
 	s := &scope{
 		config:   c.Config,
@@ -122,7 +122,7 @@ func (c *Controller) Handle(
 		// handling the message. This is intended to ensure the implementation
 		// can actually handle such parallelism, which is required by the spec.
 		go func() {
-			compactResult <- c.Config.Handler().Compact(
+			compactResult <- c.Config.Source.Get().Compact(
 				ctx,
 				&scope{
 					config:   c.Config,

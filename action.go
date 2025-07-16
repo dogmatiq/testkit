@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -35,7 +35,7 @@ type Action interface {
 // inspected and manipulated by Action implementations.
 type ActionScope struct {
 	// App is the application being tested.
-	App configkit.RichApplication
+	App *config.Application
 
 	// VirtualClock is the time that the Test uses as the engine time for the
 	// NEXT Action.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/configkit"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/fact"
 )
 
@@ -39,7 +39,7 @@ func WithObserver(o fact.Observer) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableAggregates(enabled bool) OperationOption {
-	return enableHandlerType(configkit.AggregateHandlerType, enabled)
+	return enableHandlerType(config.AggregateHandlerType, enabled)
 }
 
 // EnableProcesses returns an operation option that enables or disables process
@@ -47,7 +47,7 @@ func EnableAggregates(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableProcesses(enabled bool) OperationOption {
-	return enableHandlerType(configkit.ProcessHandlerType, enabled)
+	return enableHandlerType(config.ProcessHandlerType, enabled)
 }
 
 // EnableIntegrations returns an operation option that enables or disables
@@ -55,7 +55,7 @@ func EnableProcesses(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableIntegrations(enabled bool) OperationOption {
-	return enableHandlerType(configkit.IntegrationHandlerType, enabled)
+	return enableHandlerType(config.IntegrationHandlerType, enabled)
 }
 
 // EnableProjections returns an operation option that enables or disables
@@ -63,14 +63,12 @@ func EnableIntegrations(enabled bool) OperationOption {
 //
 // All handler types are enabled by default.
 func EnableProjections(enabled bool) OperationOption {
-	return enableHandlerType(configkit.ProjectionHandlerType, enabled)
+	return enableHandlerType(config.ProjectionHandlerType, enabled)
 }
 
 // enableHandlerType returns an operation option that enables or disables
 // handlers of the given type.
-func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
-	t.MustValidate()
-
+func enableHandlerType(t config.HandlerType, enabled bool) OperationOption {
 	return operationOptionFunc(func(_ *Engine, oo *operationOptions) {
 		oo.enabledHandlerTypes[t] = enabled
 	})
@@ -85,10 +83,6 @@ func enableHandlerType(t configkit.HandlerType, enabled bool) OperationOption {
 // It also takes precedence over the handler's own configuration, which may lead
 // to unexpected behavior.
 func EnableHandler(name string, enabled bool) OperationOption {
-	if err := configkit.ValidateIdentityName(name); err != nil {
-		panic(err)
-	}
-
 	return operationOptionFunc(func(e *Engine, oo *operationOptions) {
 		if _, ok := e.controllers[name]; !ok {
 			panic(fmt.Sprintf("the application does not have a handler named %q", name))
@@ -111,7 +105,7 @@ func WithCurrentTime(t time.Time) OperationOption {
 type operationOptions struct {
 	now                 time.Time
 	observers           fact.ObserverGroup
-	enabledHandlerTypes map[configkit.HandlerType]bool
+	enabledHandlerTypes map[config.HandlerType]bool
 	enabledHandlers     map[string]bool
 }
 
@@ -119,11 +113,11 @@ type operationOptions struct {
 func newOperationOptions(e *Engine, options []OperationOption) *operationOptions {
 	oo := &operationOptions{
 		now: time.Now(),
-		enabledHandlerTypes: map[configkit.HandlerType]bool{
-			configkit.AggregateHandlerType:   true,
-			configkit.ProcessHandlerType:     true,
-			configkit.IntegrationHandlerType: true,
-			configkit.ProjectionHandlerType:  true,
+		enabledHandlerTypes: map[config.HandlerType]bool{
+			config.AggregateHandlerType:   true,
+			config.ProcessHandlerType:     true,
+			config.IntegrationHandlerType: true,
+			config.ProjectionHandlerType:  true,
 		},
 		enabledHandlers: map[string]bool{},
 	}

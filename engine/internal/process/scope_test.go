@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/dogmatiq/configkit"
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
+	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
@@ -19,7 +20,7 @@ var _ = g.Describe("type scope", func() {
 	var (
 		messageIDs envelope.MessageIDGenerator
 		handler    *ProcessMessageHandlerStub
-		config     configkit.RichProcess
+		cfg        *config.Process
 		ctrl       *Controller
 		event      *envelope.Envelope
 	)
@@ -53,10 +54,10 @@ var _ = g.Describe("type scope", func() {
 			},
 		}
 
-		config = configkit.FromProcess(handler)
+		cfg = runtimeconfig.FromProcess(handler)
 
 		ctrl = &Controller{
-			Config:     config,
+			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
@@ -112,7 +113,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.ProcessInstanceEnded{
-					Handler:    config,
+					Handler:    cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
 					Envelope:   event,
@@ -170,7 +171,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.CommandExecutedByProcess{
-					Handler:    config,
+					Handler:    cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
 					Envelope:   event,
@@ -179,8 +180,8 @@ var _ = g.Describe("type scope", func() {
 						CommandA1,
 						now,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
+							Handler:     cfg,
+							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance>",
 						},
 					),
@@ -209,10 +210,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
@@ -250,10 +251,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("executed an invalid stubs.CommandStub[TypeA] command: <invalid>"),
 						"Location": MatchAllFields(
@@ -290,10 +291,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeA] on an ended process"),
 						"Location": MatchAllFields(
@@ -335,7 +336,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.TimeoutScheduledByProcess{
-					Handler:    config,
+					Handler:    cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
 					Envelope:   event,
@@ -345,8 +346,8 @@ var _ = g.Describe("type scope", func() {
 						now,
 						t,
 						envelope.Origin{
-							Handler:     config,
-							HandlerType: configkit.ProcessHandlerType,
+							Handler:     cfg,
+							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance>",
 						},
 					),
@@ -375,10 +376,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
@@ -419,10 +420,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("scheduled an invalid stubs.TimeoutStub[TypeA] timeout: <invalid>"),
 						"Location": MatchAllFields(
@@ -461,10 +462,10 @@ var _ = g.Describe("type scope", func() {
 			}).To(gm.PanicWith(
 				MatchAllFields(
 					Fields{
-						"Handler":        gm.Equal(config),
+						"Handler":        gm.Equal(cfg),
 						"Interface":      gm.Equal("ProcessMessageHandler"),
 						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(config.Handler()),
+						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
 						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeA] on an ended process"),
 						"Location": MatchAllFields(
@@ -495,8 +496,8 @@ var _ = g.Describe("type scope", func() {
 				time.Now(),
 				time.Now().Add(10*time.Second),
 				envelope.Origin{
-					Handler:     config,
-					HandlerType: configkit.ProcessHandlerType,
+					Handler:     cfg,
+					HandlerType: config.ProcessHandlerType,
 					InstanceID:  "<instance>",
 				},
 			)
@@ -547,7 +548,7 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(buf.Facts()).To(gm.ContainElement(
 				fact.MessageLoggedByProcess{
-					Handler:    config,
+					Handler:    cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
 					Envelope:   event,
