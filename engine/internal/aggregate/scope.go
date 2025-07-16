@@ -130,6 +130,10 @@ func (s *scope) RecordEvent(m dogma.Event) {
 	})
 }
 
+func (s *scope) Now() time.Time {
+	return s.now
+}
+
 func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByAggregate{
 		Handler:      s.config,
