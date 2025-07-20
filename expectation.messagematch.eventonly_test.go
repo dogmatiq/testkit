@@ -95,7 +95,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:91`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:93`,
 			),
 		),
 		g.Entry(
@@ -108,7 +108,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:104`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:106`,
 			),
 		),
 		g.Entry(
@@ -121,7 +121,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:116`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:118`,
 			),
 		),
 		g.Entry(
@@ -134,7 +134,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:129`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:131`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -165,7 +165,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:153`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:155`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -189,7 +189,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:184`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:186`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
