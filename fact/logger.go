@@ -45,10 +45,6 @@ func (l *Logger) Notify(f Fact) {
 		l.aggregateInstanceNotFound(x)
 	case AggregateInstanceCreated:
 		l.aggregateInstanceCreated(x)
-	case AggregateInstanceDestroyed:
-		l.aggregateInstanceDestroyed(x)
-	case AggregateInstanceDestructionReverted:
-		l.aggregateInstanceDestructionReverted(x)
 	case EventRecordedByAggregate:
 		l.eventRecordedByAggregate(x)
 	case MessageLoggedByAggregate:
@@ -228,34 +224,6 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 		},
 		f.Handler.Identity().Name+" "+f.InstanceID,
 		"instance created",
-	)
-}
-
-// aggregateInstanceDestroyed returns the log message for f.
-func (l *Logger) aggregateInstanceDestroyed(f AggregateInstanceDestroyed) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().Name+" "+f.InstanceID,
-		"instance destroyed",
-	)
-}
-
-// aggregateInstanceDestructionReverted returns the log message for f.
-func (l *Logger) aggregateInstanceDestructionReverted(f AggregateInstanceDestructionReverted) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().Name+" "+f.InstanceID,
-		"destruction of instance reverted",
 	)
 }
 

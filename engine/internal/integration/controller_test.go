@@ -135,6 +135,8 @@ var _ = g.Describe("type Controller", func() {
 						Handler:     cfg,
 						HandlerType: config.IntegrationHandlerType,
 					},
+					"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+					0,
 				),
 				command.NewEvent(
 					"2",
@@ -144,6 +146,8 @@ var _ = g.Describe("type Controller", func() {
 						Handler:     cfg,
 						HandlerType: config.IntegrationHandlerType,
 					},
+					"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+					1,
 				),
 			))
 		})
