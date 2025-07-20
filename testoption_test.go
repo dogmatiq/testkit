@@ -26,13 +26,12 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			},
 			HandleEventFunc: func(
 				_ context.Context,
-				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				gm.Expect(s.RecordedAt()).To(gm.BeTemporally("==", now))
 				called = true
-				return true, nil
+				return s.Offset() + 1, nil
 			},
 		}
 
