@@ -40,61 +40,63 @@ var _ = g.Describe("func ToExecuteCommand()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "ce773269-4ad7-4c7f-a0ff-cda2e5899743")
 
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
-						c.Routes(
-							dogma.HandlesEvent[EventThatIsIgnored](),
+				c.Routes(
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
+							c.Routes(
+								dogma.HandlesEvent[EventThatIsIgnored](),
 
-							dogma.HandlesEvent[EventThatExecutesCommand](),
-							dogma.ExecutesCommand[CommandThatIsExecuted](),
-							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
+								dogma.HandlesEvent[EventThatExecutesCommand](),
+								dogma.ExecutesCommand[CommandThatIsExecuted](),
+								dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
 
-							dogma.HandlesEvent[EventThatSchedulesTimeout](),
-							dogma.SchedulesTimeout[TimeoutThatIsScheduled](),
-						)
-
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						switch m := m.(type) {
-						case EventThatExecutesCommand:
-							s.ExecuteCommand(
-								CommandThatIsExecuted{
-									Content: m.Content,
-								},
+								dogma.HandlesEvent[EventThatSchedulesTimeout](),
+								dogma.SchedulesTimeout[TimeoutThatIsScheduled](),
 							)
-						case EventThatSchedulesTimeout:
-							s.ScheduleTimeout(
-								TimeoutThatIsScheduled{
-									Content: m.Content,
-								},
-								time.Now().Add(1*time.Hour),
+
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_ dogma.ProcessRoot,
+							s dogma.ProcessEventScope,
+							m dogma.Event,
+						) error {
+							switch m := m.(type) {
+							case EventThatExecutesCommand:
+								s.ExecuteCommand(
+									CommandThatIsExecuted{
+										Content: m.Content,
+									},
+								)
+							case EventThatSchedulesTimeout:
+								s.ScheduleTimeout(
+									TimeoutThatIsScheduled{
+										Content: m.Content,
+									},
+									time.Now().Add(1*time.Hour),
+								)
+							}
+
+							return nil
+						},
+					}),
+
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
 							)
-						}
-
-						return nil
-					},
-				})
-
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
-						)
-					},
-				})
+						},
+					}),
+				)
 			},
 		}
 	})

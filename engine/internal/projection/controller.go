@@ -26,6 +26,7 @@ type Controller struct {
 	CompactDuringHandling bool
 
 	lastCompact time.Time
+	checkpoints map[string]uint64
 }
 
 // HandlerConfig returns the config of the handler that is managed by this
@@ -82,31 +83,26 @@ func (c *Controller) Handle(
 
 	handler := c.Config.Source.Get()
 
-	s := &scope{
-		config:   c.Config,
-		observer: obs,
-		event:    env,
-	}
-
 	// This implementation attempts to use the full suite of OCC operations
-	// including ResourceVersion() and CloseResource() in order to more
-	// thoroughly test the projection handler. However, a "real" implementation
-	// would likely not need to call ResourceVersion() before every call to
-	// HandleEvent().
-
-	// The message ID is used as the resource identifier. When the message is
-	// handled, the resource version is updated to a non-empty value, indicating
-	// that the message has been processed.
-	res := []byte(env.MessageID)
-	cur, err := handler.ResourceVersion(ctx, res)
+	// including CheckpointOffset() to more thoroughly test the projection
+	// handler. However, a "real" implementation would likely not need to call
+	// CheckpointOffset() before every call to HandleEvent().
+	cp, err := handler.CheckpointOffset(ctx, env.EventStreamID)
 	if err != nil {
 		return nil, err
 	}
 
-	// If the version is non-empty, this message has already been processed.
-	// This would likely never occur as part of regular testing.
-	if len(cur) != 0 {
+	// If the checkpoint offset is greater than this event's offset, this
+	// message has already been processed.
+	if cp > env.EventStreamOffset {
 		return nil, nil
+	}
+
+	s := &scope{
+		config:     c.Config,
+		observer:   obs,
+		event:      env,
+		checkpoint: cp,
 	}
 
 	compactResult := make(chan error, 1)
@@ -135,7 +131,6 @@ func (c *Controller) Handle(
 		close(compactResult)
 	}
 
-	var ok bool
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
 		"ProjectionMessageHandler",
@@ -143,11 +138,8 @@ func (c *Controller) Handle(
 		handler,
 		env.Message,
 		func() {
-			ok, err = handler.HandleEvent(
+			cp, err = handler.HandleEvent(
 				ctx,
-				res,
-				nil,       // current version
-				[]byte{1}, // next version
 				s,
 				env.Message.(dogma.Event),
 			)
@@ -167,12 +159,14 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	// If this call to handle actually applied the event, close the resource as
-	// we'll never invoke the handler with this message again.
-	if ok {
-		if err := handler.CloseResource(ctx, res); err != nil {
-			return nil, err
-		}
+	if expect := env.EventStreamOffset + 1; cp != expect {
+		return nil, fmt.Errorf(
+			"optimistic concurrency conflict when handling event at offset %d of stream %s: expected checkpoint offset of %d, handler returned %d",
+			env.EventStreamOffset,
+			env.EventStreamID,
+			expect,
+			cp,
+		)
 	}
 
 	// Finally we return the compaction error only if there was no other more

@@ -99,7 +99,9 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "477a9515-8318-4229-8f9d-57d84f463cb7")
-				c.RegisterIntegration(handler)
+				c.Routes(
+					dogma.ViaIntegration(handler),
+				)
 			},
 		}
 

@@ -30,21 +30,23 @@ var _ = g.Describe("func RecordEvent()", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "38408e83-e8eb-4f82-abe1-7fa02cee0657")
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
-						c.Routes(
-							dogma.HandlesEvent[EventStub[TypeA]](),
-							dogma.ExecutesCommand[CommandStub[TypeA]](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-				})
+				c.Routes(
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
+							c.Routes(
+								dogma.HandlesEvent[EventStub[TypeA]](),
+								dogma.ExecutesCommand[CommandStub[TypeA]](),
+							)
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+					}),
+				)
 			},
 		}
 
@@ -70,11 +72,13 @@ var _ = g.Describe("func RecordEvent()", func() {
 		gm.Expect(buf.Facts()).To(gm.ContainElement(
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
-					MessageID:     "1",
-					CausationID:   "1",
-					CorrelationID: "1",
-					Message:       EventA1,
-					CreatedAt:     startTime,
+					MessageID:         "1",
+					CausationID:       "1",
+					CorrelationID:     "1",
+					Message:           EventA1,
+					CreatedAt:         startTime,
+					EventStreamID:     "ef0750de-15cd-5d0c-932e-adee5e8ebf47",
+					EventStreamOffset: 0,
 				},
 				EngineTime: startTime,
 				EnabledHandlerTypes: map[config.HandlerType]bool{
