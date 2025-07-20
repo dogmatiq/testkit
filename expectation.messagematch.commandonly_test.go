@@ -101,7 +101,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:97`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:99`,
 			),
 		),
 		g.Entry(
@@ -114,7 +114,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:110`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:112`,
 			),
 		),
 		g.Entry(
@@ -127,7 +127,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:122`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:124`,
 			),
 		),
 		g.Entry(
@@ -140,7 +140,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:135`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:137`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -170,7 +170,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:158`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:160`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -193,7 +193,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:188`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:190`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
