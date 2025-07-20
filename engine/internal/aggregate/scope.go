@@ -22,31 +22,14 @@ type scope struct {
 	observer   fact.Observer
 	root       dogma.AggregateRoot
 	now        time.Time
-	exists     bool
-	destroyed  bool
 	command    *envelope.Envelope
+	streamID   string
+	offset     uint64
 	events     []*envelope.Envelope
 }
 
 func (s *scope) InstanceID() string {
 	return s.instanceID
-}
-
-func (s *scope) Destroy() {
-	if !s.exists {
-		return
-	}
-
-	s.root = s.config.Source.Get().New()
-	s.exists = false
-	s.destroyed = true
-
-	s.observer.Notify(fact.AggregateInstanceDestroyed{
-		Handler:    s.config,
-		InstanceID: s.instanceID,
-		Root:       s.root,
-		Envelope:   s.command,
-	})
 }
 
 func (s *scope) RecordEvent(m dogma.Event) {
@@ -76,25 +59,13 @@ func (s *scope) RecordEvent(m dogma.Event) {
 		})
 	}
 
-	if !s.exists {
-		if s.destroyed {
-			s.observer.Notify(fact.AggregateInstanceDestructionReverted{
-				Handler:    s.config,
-				InstanceID: s.instanceID,
-				Root:       s.root,
-				Envelope:   s.command,
-			})
-		} else {
-			s.observer.Notify(fact.AggregateInstanceCreated{
-				Handler:    s.config,
-				InstanceID: s.instanceID,
-				Root:       s.root,
-				Envelope:   s.command,
-			})
-		}
-
-		s.exists = true
-		s.destroyed = false
+	if s.offset == 0 {
+		s.observer.Notify(fact.AggregateInstanceCreated{
+			Handler:    s.config,
+			InstanceID: s.instanceID,
+			Root:       s.root,
+			Envelope:   s.command,
+		})
 	}
 
 	panicx.EnrichUnexpectedMessage(
@@ -117,9 +88,12 @@ func (s *scope) RecordEvent(m dogma.Event) {
 			HandlerType: config.AggregateHandlerType,
 			InstanceID:  s.instanceID,
 		},
+		s.streamID,
+		s.offset,
 	)
 
 	s.events = append(s.events, env)
+	s.offset++
 
 	s.observer.Notify(fact.EventRecordedByAggregate{
 		Handler:       s.config,

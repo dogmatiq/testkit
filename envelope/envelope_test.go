@@ -45,11 +45,13 @@ var _ = g.Describe("type Envelope", func() {
 
 			gm.Expect(env).To(gm.Equal(
 				&Envelope{
-					MessageID:     "100",
-					CorrelationID: "100",
-					CausationID:   "100",
-					Message:       EventA1,
-					CreatedAt:     now,
+					MessageID:         "100",
+					CorrelationID:     "100",
+					CausationID:       "100",
+					Message:           EventA1,
+					CreatedAt:         now,
+					EventStreamID:     "87d0e883-8f15-5eaf-9601-fe3a7dd517a4",
+					EventStreamOffset: 0,
 				},
 			))
 		})
@@ -110,6 +112,9 @@ var _ = g.Describe("type Envelope", func() {
 		})
 
 		g.It("returns the expected envelope", func() {
+			const streamID = "10208426-7df8-4f47-ac2a-a83f55c3b1c0"
+			const offset = 42
+
 			parent := NewCommand(
 				"100",
 				CommandP1,
@@ -126,16 +131,20 @@ var _ = g.Describe("type Envelope", func() {
 				EventA1,
 				now,
 				origin,
+				streamID,
+				offset,
 			)
 
 			gm.Expect(child).To(gm.Equal(
 				&Envelope{
-					MessageID:     "200",
-					CorrelationID: "100",
-					CausationID:   "100",
-					Message:       EventA1,
-					CreatedAt:     now,
-					Origin:        &origin,
+					MessageID:         "200",
+					CorrelationID:     "100",
+					CausationID:       "100",
+					Message:           EventA1,
+					CreatedAt:         now,
+					Origin:            &origin,
+					EventStreamID:     streamID,
+					EventStreamOffset: offset,
 				},
 			))
 		})

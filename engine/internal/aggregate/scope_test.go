@@ -61,31 +61,6 @@ var _ = g.Describe("type scope", func() {
 	})
 
 	g.When("the instance does not exist", func() {
-		g.Describe("func Destroy()", func() {
-			g.It("does not record a fact", func() {
-				handler.HandleCommandFunc = func(
-					_ dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					s.Destroy()
-				}
-
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
-					gm.BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
-				))
-			})
-		})
-
 		g.Describe("func RecordEvent()", func() {
 			g.It("records facts about instance creation and the event", func() {
 				handler.HandleCommandFunc = func(
@@ -137,6 +112,8 @@ var _ = g.Describe("type scope", func() {
 								HandlerType: config.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
+							"aa9aa868-af3f-5dbb-a718-223782f4c77c",
+							0,
 						),
 					},
 				))
@@ -168,36 +145,6 @@ var _ = g.Describe("type scope", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			messageIDs.Reset() // reset after setup for a predictable ID.
-		})
-
-		g.Describe("func Destroy()", func() {
-			g.It("records a fact", func() {
-				handler.HandleCommandFunc = func(
-					_ dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					s.Destroy()
-				}
-
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-				gm.Expect(buf.Facts()).To(gm.ContainElement(
-					fact.AggregateInstanceDestroyed{
-						Handler:    cfg,
-						InstanceID: "<instance>",
-						Root:       &AggregateRootStub{},
-						Envelope:   command,
-					},
-				))
-			})
 		})
 
 		g.Describe("func RecordEvent()", func() {
@@ -244,6 +191,8 @@ var _ = g.Describe("type scope", func() {
 								HandlerType: config.AggregateHandlerType,
 								InstanceID:  "<instance>",
 							},
+							"aa9aa868-af3f-5dbb-a718-223782f4c77c",
+							1,
 						),
 					},
 				))
@@ -260,63 +209,7 @@ var _ = g.Describe("type scope", func() {
 
 				gm.Expect(err).ShouldNot(gm.HaveOccurred())
 				gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
-					gm.BeAssignableToTypeOf(fact.AggregateInstanceDestroyed{}),
-				))
-			})
-
-			g.It("records facts about reverting destruction and the event if called after Destroy()", func() {
-				handler.HandleCommandFunc = func(
-					_ dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					s.Destroy()
-					s.RecordEvent(EventA1)
-				}
-
-				now := time.Now()
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					now,
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-				gm.Expect(buf.Facts()).To(gm.ContainElement(
-					fact.AggregateInstanceDestructionReverted{
-						Handler:    cfg,
-						InstanceID: "<instance>",
-						Root: &AggregateRootStub{
-							AppliedEvents: []dogma.Event{
-								EventA1,
-							},
-						},
-						Envelope: command,
-					},
-				))
-				gm.Expect(buf.Facts()).To(gm.ContainElement(
-					fact.EventRecordedByAggregate{
-						Handler:    cfg,
-						InstanceID: "<instance>",
-						Root: &AggregateRootStub{
-							AppliedEvents: []dogma.Event{
-								EventA1,
-							},
-						},
-						Envelope: command,
-						EventEnvelope: command.NewEvent(
-							"1",
-							EventA1,
-							now,
-							envelope.Origin{
-								Handler:     cfg,
-								HandlerType: config.AggregateHandlerType,
-								InstanceID:  "<instance>",
-							},
-						),
-					},
+					gm.BeAssignableToTypeOf(fact.AggregateInstanceCreated{}),
 				))
 			})
 

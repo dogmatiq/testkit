@@ -87,6 +87,8 @@ var _ = g.Describe("type scope", func() {
 							Handler:     cfg,
 							HandlerType: config.IntegrationHandlerType,
 						},
+						"24ec3839-5d51-4904-9b45-34b5282e7f24",
+						0,
 					),
 				},
 			))
