@@ -132,13 +132,12 @@ var _ = g.Describe("type Controller", func() {
 			called := false
 			handler.HandleEventFunc = func(
 				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
+				s dogma.ProjectionEventScope,
 				m dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				called = true
 				gm.Expect(m).To(gm.Equal(EventA1))
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 
 			_, err := ctrl.Handle(
@@ -156,12 +155,11 @@ var _ = g.Describe("type Controller", func() {
 			expected := errors.New("<error>")
 
 			handler.HandleEventFunc = func(
-				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (bool, error) {
-				return false, expected
+				context.Context,
+				dogma.ProjectionEventScope,
+				dogma.Event,
+			) (uint64, error) {
+				return 0, expected
 			}
 
 			_, err := ctrl.Handle(
@@ -174,14 +172,14 @@ var _ = g.Describe("type Controller", func() {
 			gm.Expect(err).To(gm.Equal(expected))
 		})
 
-		g.It("propagates errors when loading the resource version", func() {
+		g.It("propagates errors when loading the checkpoint offset", func() {
 			expected := errors.New("<error>")
 
-			handler.ResourceVersionFunc = func(
+			handler.CheckpointOffsetFunc = func(
 				context.Context,
-				[]byte,
-			) ([]byte, error) {
-				return nil, expected
+				string,
+			) (uint64, error) {
+				return 0, expected
 			}
 
 			_, err := ctrl.Handle(

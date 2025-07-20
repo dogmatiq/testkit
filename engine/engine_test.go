@@ -167,15 +167,12 @@ var _ = g.Describe("type Engine", func() {
 		g.It("allows dispatching events", func() {
 			called := false
 			projection.HandleEventFunc = func(
-				context.Context,
-				[]byte,
-				[]byte,
-				[]byte,
-				dogma.ProjectionEventScope,
-				dogma.Event,
-			) (bool, error) {
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Event,
+			) (uint64, error) {
 				called = true
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 
 			err := engine.Dispatch(

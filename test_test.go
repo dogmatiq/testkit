@@ -68,12 +68,11 @@ var _ = g.Describe("type Test", func() {
 							},
 							HandleEventFunc: func(
 								_ context.Context,
-								_, _, _ []byte,
-								_ dogma.ProjectionEventScope,
+								s dogma.ProjectionEventScope,
 								_ dogma.Event,
-							) (bool, error) {
+							) (uint64, error) {
 								called = true
-								return true, nil
+								return s.Offset() + 1, nil
 							},
 						}),
 					)
@@ -141,12 +140,11 @@ var _ = g.Describe("type Test", func() {
 							},
 							HandleEventFunc: func(
 								_ context.Context,
-								_, _, _ []byte,
-								_ dogma.ProjectionEventScope,
+								s dogma.ProjectionEventScope,
 								_ dogma.Event,
-							) (bool, error) {
+							) (uint64, error) {
 								called = true
-								return true, nil
+								return s.Offset() + 1, nil
 							},
 						}),
 					)
