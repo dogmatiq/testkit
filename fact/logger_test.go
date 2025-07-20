@@ -293,24 +293,6 @@ var _ = g.Describe("type Logger", func() {
 				},
 			),
 			g.Entry(
-				"AggregateInstanceDestroyed",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance destroyed",
-				AggregateInstanceDestroyed{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
-				},
-			),
-			g.Entry(
-				"AggregateInstanceDestructionReverted",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● destruction of instance reverted",
-				AggregateInstanceDestructionReverted{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
-				},
-			),
-			g.Entry(
 				"EventRecordedByAggregate",
 				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 				EventRecordedByAggregate{
@@ -322,6 +304,8 @@ var _ = g.Describe("type Logger", func() {
 						EventA1,
 						time.Now(),
 						envelope.Origin{},
+						"a4dea2c6-6499-441c-94ad-686334880c1c",
+						42,
 					),
 				},
 			),
@@ -459,6 +443,8 @@ var _ = g.Describe("type Logger", func() {
 						EventA1,
 						time.Now(),
 						envelope.Origin{},
+						"1494ce69-b98c-41b4-9617-7fa45aa1ed21",
+						42,
 					),
 				},
 			),

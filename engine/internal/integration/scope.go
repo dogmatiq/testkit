@@ -21,6 +21,8 @@ type scope struct {
 	observer   fact.Observer
 	now        time.Time
 	command    *envelope.Envelope
+	streamID   string
+	offset     uint64
 	events     []*envelope.Envelope
 }
 
@@ -59,9 +61,12 @@ func (s *scope) RecordEvent(m dogma.Event) {
 			Handler:     s.config,
 			HandlerType: config.IntegrationHandlerType,
 		},
+		s.streamID,
+		s.offset,
 	)
 
 	s.events = append(s.events, env)
+	s.offset++
 
 	s.observer.Notify(fact.EventRecordedByIntegration{
 		Handler:       s.config,

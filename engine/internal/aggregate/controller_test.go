@@ -145,6 +145,8 @@ var _ = g.Describe("type Controller", func() {
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
+					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
+					0,
 				),
 				command.NewEvent(
 					"2",
@@ -155,6 +157,8 @@ var _ = g.Describe("type Controller", func() {
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
+					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
+					1,
 				),
 			))
 		})
