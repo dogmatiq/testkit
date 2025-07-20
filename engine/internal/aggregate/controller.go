@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/enginekit/protobuf/uuidpb"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -128,8 +129,9 @@ func (c *Controller) Handle(
 		observer:   obs,
 		now:        now,
 		root:       r,
-		exists:     exists,
 		command:    env,
+		streamID:   uuidpb.Derive(c.Config.Identity().Key, id).AsString(),
+		offset:     uint64(len(history)),
 	}
 
 	panicx.EnrichUnexpectedMessage(
@@ -147,13 +149,11 @@ func (c *Controller) Handle(
 		},
 	)
 
-	if s.exists {
+	if len(s.events) != 0 {
 		if c.history == nil {
 			c.history = map[string][]*envelope.Envelope{}
 		}
 		c.history[id] = append(c.history[id], s.events...)
-	} else {
-		delete(c.history, id)
 	}
 
 	return s.events, nil

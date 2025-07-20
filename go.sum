@@ -1,5 +1,7 @@
 github.com/chzyer/readline v1.5.1 h1:upd/6fQk4src78LMRzh5vItIt361/o4uq553V8B5sGI=
 github.com/chzyer/readline v1.5.1/go.mod h1:Eh+b79XXUwfKfcPLepksvw2tcLE/Ct21YObkaSkeBlk=
+github.com/dave/jennifer v1.7.0 h1:uRbSBH9UTS64yXbh4FrMHfgfY762RD+C7bUPKODpSJE=
+github.com/dave/jennifer v1.7.0/go.mod h1:nXbxhEmQfOZhWml3D1cDK5M1FLnMSozpbFN/m3RmGZc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -11,6 +13,12 @@ github.com/dogmatiq/dogma v0.15.1-0.20250715071844-9254b198118c h1:5KZEBEB1jAKH7
 github.com/dogmatiq/dogma v0.15.1-0.20250715071844-9254b198118c/go.mod h1:TF6xisRxQ2RE3JQwFr6MCI4nWLKQQp7KRWXVHOq9K0k=
 github.com/dogmatiq/enginekit v0.16.3-0.20250715212802-aeeb4d6c2f75 h1:bKp8d0kyjOrTm+cPIaX4kjGaX7wLLnsVeZYMPQ32rDQ=
 github.com/dogmatiq/enginekit v0.16.3-0.20250715212802-aeeb4d6c2f75/go.mod h1:y4/GIkSnL4gktsm9v+TbAR2wH6L/E4lpMqJC+LoYL94=
+github.com/dogmatiq/enginekit v0.16.3-0.20250716212705-1a011e7f58fb h1:wC/88k7fi3TvXK8GX68wNDHv4rh8r+O3Hk9GDfIRFzw=
+github.com/dogmatiq/enginekit v0.16.3-0.20250716212705-1a011e7f58fb/go.mod h1:y4/GIkSnL4gktsm9v+TbAR2wH6L/E4lpMqJC+LoYL94=
+github.com/dogmatiq/enginekit v0.16.3-0.20250716222354-1d0f5e2d749e h1:WKdBnhnLvtkJZtE/CNRUX4xmbEOFACEWFzHeO2mxRSs=
+github.com/dogmatiq/enginekit v0.16.3-0.20250716222354-1d0f5e2d749e/go.mod h1:y4/GIkSnL4gktsm9v+TbAR2wH6L/E4lpMqJC+LoYL94=
+github.com/dogmatiq/enginekit v0.16.3-0.20250717171659-3292483fcfcd h1:XNkvH3L12hc8lFp/Nkm0vrQU7YsOLCnbb/qzaItrSg8=
+github.com/dogmatiq/enginekit v0.16.3-0.20250717171659-3292483fcfcd/go.mod h1:7eiHyAsWVtNRC53hJx5cfau6xjq2X/Q4oJiLATSwJHM=
 github.com/dogmatiq/iago v0.4.0 h1:57nZqVT34IZxtCZEW/RFif7DNUEjMXgevfr/Mmd0N8I=
 github.com/dogmatiq/iago v0.4.0/go.mod h1:fishMWBtzYcjgis6d873VTv9kFm/wHYLOzOyO9ECBDc=
 github.com/dogmatiq/jumble v0.1.0 h1:Cb3ExfxY+AoUP4G9/sOwoOdYX8o+kOLK8+dhXAry+QA=
@@ -129,8 +137,12 @@ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IV
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 h1:e0AIkUUhxyBKh6ssZNrAMeqhA7RKUj42346d1y02i2g=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a h1:v2PbRU4K3llS09c7zodFpNePeamkAwG3mPrAery9VeE=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
 google.golang.org/grpc v1.73.0 h1:VIWSmpI2MegBtTuFt5/JWy2oXxtjJ/e89Z70ImfD2ok=
 google.golang.org/grpc v1.73.0/go.mod h1:50sbHOUqWoCQGI8V2HQLJM0B+LMlIUjNSZmow7EVBQc=
+google.golang.org/grpc v1.74.0 h1:sxRSkyLxlceWQiqDofxDot3d4u7DyoHPc7SBXMj8gGY=
+google.golang.org/grpc v1.74.0/go.mod h1:NZUaK8dAMUfzhK6uxZ+9511LtOrk73UGWOFoNvz7z+s=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
 google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
