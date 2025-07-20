@@ -21,7 +21,7 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 
 	type (
 		CommandThatIsIgnored           = CommandStub[TypeX]
-		CommandThatRecordsEvent        = CommandStub[dogma.Event]
+		CommandThatRecordsEvent        = CommandStub[TypeE]
 		CommandThatIsExecutedByProcess = CommandStub[TypeP]
 
 		EventThatExecutesCommand = EventStub[TypeP]
@@ -50,9 +50,9 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 							s dogma.IntegrationCommandScope,
 							m dogma.Command,
 						) error {
-							switch m := m.(type) {
+							switch m.(type) {
 							case CommandThatRecordsEvent:
-								s.RecordEvent(m.Content)
+								s.RecordEvent(EventThatExecutesCommand{})
 							}
 							return nil
 						},
@@ -142,9 +142,7 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 		),
 		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
-			executeCommandViaExecutor(CommandThatRecordsEvent{
-				Content: EventThatExecutesCommand{},
-			}),
+			executeCommandViaExecutor(CommandThatRecordsEvent{}),
 			ToExecuteCommand(CommandThatIsExecutedByProcess{}),
 			expectFail,
 			expectReport(

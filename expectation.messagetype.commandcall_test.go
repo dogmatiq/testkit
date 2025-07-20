@@ -21,7 +21,6 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 
 	type (
 		CommandThatIsIgnored           = CommandStub[TypeX]
-		CommandThatRecordsEvent        = CommandStub[dogma.Event]
 		CommandThatIsExecutedByProcess = CommandStub[TypeP]
 
 		EventThatExecutesCommand = EventStub[TypeP]
@@ -42,19 +41,7 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 							c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
 							c.Routes(
 								dogma.HandlesCommand[CommandThatIsIgnored](),
-								dogma.HandlesCommand[CommandThatRecordsEvent](),
 							)
-						},
-						HandleCommandFunc: func(
-							_ context.Context,
-							s dogma.IntegrationCommandScope,
-							m dogma.Command,
-						) error {
-							switch m := m.(type) {
-							case CommandThatRecordsEvent:
-								s.RecordEvent(m.Content)
-							}
-							return nil
 						},
 					}),
 
@@ -142,9 +129,7 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 		),
 		g.Entry(
 			"no matching command type executed and all relevant handler types disabled",
-			executeCommandViaExecutor(CommandThatRecordsEvent{
-				Content: EventThatExecutesCommand{},
-			}),
+			executeCommandViaExecutor(CommandThatIsIgnored{}),
 			ToExecuteCommandType[CommandThatIsExecutedByProcess](),
 			expectFail,
 			expectReport(
