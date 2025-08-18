@@ -50,36 +50,13 @@ var _ = g.Describe("type scope", func() {
 		g.It("returns event creation time", func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
-				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				gm.Expect(s.RecordedAt()).To(
 					gm.BeTemporally("==", event.CreatedAt),
 				)
-				return true, nil
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-		})
-	})
-
-	g.Describe("func IsPrimaryDelivery()", func() {
-		g.It("returns true", func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				_, _, _ []byte,
-				s dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (bool, error) {
-				gm.Expect(s.IsPrimaryDelivery()).To(gm.BeTrue())
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 
 			_, err := ctrl.Handle(
@@ -96,12 +73,11 @@ var _ = g.Describe("type scope", func() {
 		g.BeforeEach(func() {
 			handler.HandleEventFunc = func(
 				_ context.Context,
-				_, _, _ []byte,
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 		})
 
