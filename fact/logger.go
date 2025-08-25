@@ -550,12 +550,15 @@ func (l *Logger) log(
 	l.Log(logging.String(
 		[]logging.IconWithLabel{
 			logging.MessageIDIcon.WithLabel(
+				"%s",
 				formatMessageID(messageID),
 			),
 			logging.CausationIDIcon.WithLabel(
+				"%s",
 				formatMessageID(causationID),
 			),
 			logging.CorrelationIDIcon.WithLabel(
+				"%s",
 				formatMessageID(correlationID),
 			),
 		},
