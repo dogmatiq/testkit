@@ -18,6 +18,8 @@ import (
 type Controller struct {
 	Config     *config.Integration
 	MessageIDs *envelope.MessageIDGenerator
+
+	offset uint64
 }
 
 // HandlerConfig returns the config of the handler that is managed by this
@@ -54,6 +56,8 @@ func (c *Controller) Handle(
 		observer:   obs,
 		now:        now,
 		command:    env,
+		streamID:   c.Config.Identity().Key.AsString(),
+		offset:     c.offset,
 	}
 
 	var err error
@@ -71,6 +75,10 @@ func (c *Controller) Handle(
 			)
 		},
 	)
+
+	if err == nil {
+		c.offset = s.offset
+	}
 
 	return s.events, err
 }

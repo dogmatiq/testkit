@@ -30,14 +30,16 @@ var _ = g.Describe("func Call()", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "b51cde16-aaec-4d75-ae14-06282e3a72c8")
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
-						c.Routes(
-							dogma.HandlesCommand[CommandStub[TypeA]](),
-						)
-					},
-				})
+				c.Routes(
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
+							c.Routes(
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+							)
+						},
+					}),
+				)
 			},
 		}
 

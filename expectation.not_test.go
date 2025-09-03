@@ -26,23 +26,25 @@ var _ = g.Context("not expectation", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "00df8612-2fd4-4ae3-9acf-afc2b4daf272")
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "12dfb90b-e47b-4d49-b834-294b01992ad0")
-						c.Routes(
-							dogma.HandlesCommand[CommandStub[TypeA]](),
-							dogma.RecordsEvent[EventStub[TypeA]](),
-						)
-					},
-					HandleCommandFunc: func(
-						_ context.Context,
-						s dogma.IntegrationCommandScope,
-						_ dogma.Command,
-					) error {
-						s.RecordEvent(EventA1)
-						return nil
-					},
-				})
+				c.Routes(
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "12dfb90b-e47b-4d49-b834-294b01992ad0")
+							c.Routes(
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.RecordsEvent[EventStub[TypeA]](),
+							)
+						},
+						HandleCommandFunc: func(
+							_ context.Context,
+							s dogma.IntegrationCommandScope,
+							_ dogma.Command,
+						) error {
+							s.RecordEvent(EventA1)
+							return nil
+						},
+					}),
+				)
 			},
 		}
 

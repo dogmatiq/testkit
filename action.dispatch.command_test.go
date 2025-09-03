@@ -29,15 +29,17 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "a84b2620-4675-4024-b55b-cd5dbeb6e293")
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
-						c.Routes(
-							dogma.HandlesCommand[CommandStub[TypeA]](),
-							dogma.RecordsEvent[EventStub[TypeA]](),
-						)
-					},
-				})
+				c.Routes(
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
+							c.Routes(
+								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.RecordsEvent[EventStub[TypeA]](),
+							)
+						},
+					}),
+				)
 			},
 		}
 
