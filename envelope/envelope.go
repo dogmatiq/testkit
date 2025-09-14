@@ -83,7 +83,7 @@ func NewEvent(
 		Message:       m,
 		CreatedAt:     t,
 
-		// Events that don't originate in a handler appears on their own event
+		// Events that don't originate from a handler appear on their own event
 		// stream.
 		EventStreamID:     uuidpb.Derive(eventStreamNamespace, id).AsString(),
 		EventStreamOffset: 0,

@@ -9,11 +9,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
+[bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
-## [Unreleased]
+## [0.19.0] - 2025-09-14
 
 ### Changed
 
+- **[BC]** Bumped Dogma to v0.16.0.
 - Use `enginekit/config` instead of `configkit`.
 
 ## [0.18.1] - 2024-10-05
@@ -500,6 +502,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.17.2]: https://github.com/dogmatiq/testkit/releases/tag/v0.17.2
 [0.18.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.18.0
 [0.18.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.18.1
+[0.19.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.19.0
 
 <!-- contributors -->
 
