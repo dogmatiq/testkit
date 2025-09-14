@@ -35,42 +35,44 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "386480e5-4b83-4d3b-9b87-51e6d56e41e7")
 
-				c.RegisterProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
-						c.Routes(
-							dogma.HandlesEvent[EventThatExecutesCommands](),
-							dogma.ExecutesCommand[CommandThatIsExecuted](),
-							dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						s.ExecuteCommand(CommandC1)
-						s.ExecuteCommand(CommandC2)
-						s.ExecuteCommand(CommandC3)
-						return nil
-					},
-				})
+				c.Routes(
+					dogma.ViaProcess(&ProcessMessageHandlerStub{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
+							c.Routes(
+								dogma.HandlesEvent[EventThatExecutesCommands](),
+								dogma.ExecutesCommand[CommandThatIsExecuted](),
+								dogma.ExecutesCommand[CommandThatIsNeverExecuted](),
+							)
+						},
+						RouteEventToInstanceFunc: func(
+							context.Context,
+							dogma.Event,
+						) (string, bool, error) {
+							return "<instance>", true, nil
+						},
+						HandleEventFunc: func(
+							_ context.Context,
+							_ dogma.ProcessRoot,
+							s dogma.ProcessEventScope,
+							m dogma.Event,
+						) error {
+							s.ExecuteCommand(CommandC1)
+							s.ExecuteCommand(CommandC2)
+							s.ExecuteCommand(CommandC3)
+							return nil
+						},
+					}),
 
-				c.RegisterIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "20bf2831-1887-4148-9539-eb7c294e80b6")
-						c.Routes(
-							dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
-						)
-					},
-				})
+					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+							c.Identity("<integration>", "20bf2831-1887-4148-9539-eb7c294e80b6")
+							c.Routes(
+								dogma.HandlesCommand[CommandThatIsOnlyConsumed](),
+							)
+						},
+					}),
+				)
 			},
 		}
 	})
@@ -99,7 +101,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:97`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:99`,
 			),
 		),
 		g.Entry(
@@ -112,7 +114,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:110`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:112`,
 			),
 		),
 		g.Entry(
@@ -125,7 +127,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:122`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:124`,
 			),
 		),
 		g.Entry(
@@ -138,7 +140,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:135`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:137`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -168,7 +170,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:158`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:160`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -191,7 +193,7 @@ var _ = g.Describe("func ToOnlyExecuteCommandsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:188`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:190`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,

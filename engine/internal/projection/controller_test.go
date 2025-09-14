@@ -132,13 +132,12 @@ var _ = g.Describe("type Controller", func() {
 			called := false
 			handler.HandleEventFunc = func(
 				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
+				s dogma.ProjectionEventScope,
 				m dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				called = true
 				gm.Expect(m).To(gm.Equal(EventA1))
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 
 			_, err := ctrl.Handle(
@@ -156,12 +155,11 @@ var _ = g.Describe("type Controller", func() {
 			expected := errors.New("<error>")
 
 			handler.HandleEventFunc = func(
-				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (bool, error) {
-				return false, expected
+				context.Context,
+				dogma.ProjectionEventScope,
+				dogma.Event,
+			) (uint64, error) {
+				return 0, expected
 			}
 
 			_, err := ctrl.Handle(
@@ -174,14 +172,14 @@ var _ = g.Describe("type Controller", func() {
 			gm.Expect(err).To(gm.Equal(expected))
 		})
 
-		g.It("propagates errors when loading the resource version", func() {
+		g.It("propagates errors when loading the checkpoint offset", func() {
 			expected := errors.New("<error>")
 
-			handler.ResourceVersionFunc = func(
+			handler.CheckpointOffsetFunc = func(
 				context.Context,
-				[]byte,
-			) ([]byte, error) {
-				return nil, expected
+				string,
+			) (uint64, error) {
+				return 0, expected
 			}
 
 			_, err := ctrl.Handle(
@@ -194,20 +192,41 @@ var _ = g.Describe("type Controller", func() {
 			gm.Expect(err).To(gm.Equal(expected))
 		})
 
-		g.It("passes the correct OCC values", func() {
+		g.It("passes the correct stream offsets", func() {
+			var checkpoint uint64
+
+			handler.CheckpointOffsetFunc = func(
+				_ context.Context,
+				streamID string,
+			) (uint64, error) {
+				gm.Expect(streamID).To(gm.Equal(event.EventStreamID))
+				return checkpoint, nil
+			}
+
 			handler.HandleEventFunc = func(
-				ctx context.Context,
-				r, c, n []byte,
-				_ dogma.ProjectionEventScope,
+				_ context.Context,
+				s dogma.ProjectionEventScope,
 				_ dogma.Event,
-			) (bool, error) {
-				gm.Expect(r).To(gm.Equal([]byte(event.MessageID)))
-				gm.Expect(c).To(gm.BeEmpty())
-				gm.Expect(n).NotTo(gm.BeEmpty())
-				return false, nil
+			) (uint64, error) {
+				gm.Expect(s.StreamID()).To(gm.Equal(event.EventStreamID))
+				gm.Expect(s.Offset()).To(gm.Equal(event.EventStreamOffset))
+				gm.Expect(s.CheckpointOffset()).To(gm.Equal(checkpoint))
+				checkpoint = s.Offset() + 1
+				return checkpoint, nil
 			}
 
 			_, err := ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				event,
+			)
+
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+
+			event.EventStreamOffset++
+
+			_, err = ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
@@ -218,21 +237,20 @@ var _ = g.Describe("type Controller", func() {
 		})
 
 		g.It("does not handle events that have already been applied", func() {
-			handler.ResourceVersionFunc = func(
-				context.Context,
-				[]byte,
-			) ([]byte, error) {
-				return []byte("<not empty>"), nil
+			handler.CheckpointOffsetFunc = func(
+				_ context.Context,
+				streamID string,
+			) (uint64, error) {
+				return 1, nil
 			}
 
 			handler.HandleEventFunc = func(
 				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
+				s dogma.ProjectionEventScope,
 				_ dogma.Event,
-			) (bool, error) {
+			) (uint64, error) {
 				g.Fail("unexpected call")
-				return false, nil
+				return 0, nil
 			}
 
 			_, err := ctrl.Handle(
@@ -245,44 +263,13 @@ var _ = g.Describe("type Controller", func() {
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
-		g.It("closes the resource if the event is applied", func() {
-			called := false
-			handler.CloseResourceFunc = func(
-				_ context.Context,
-				r []byte,
-			) error {
-				called = true
-				gm.Expect(r).To(gm.Equal([]byte(event.MessageID)))
-				return nil
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(called).To(gm.BeTrue())
-		})
-
-		g.It("does not close the resource if the event is not applied", func() {
+		g.It("returns an error if there is an optimistic concurrency conflict", func() {
 			handler.HandleEventFunc = func(
-				ctx context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (bool, error) {
-				return false, nil
-			}
-
-			handler.CloseResourceFunc = func(
 				_ context.Context,
-				r []byte,
-			) error {
-				g.Fail("unexpected call")
-				return nil
+				s dogma.ProjectionEventScope,
+				_ dogma.Event,
+			) (uint64, error) {
+				return 123, nil // anything other than s.Offset()+1
 			}
 
 			_, err := ctrl.Handle(
@@ -292,16 +279,17 @@ var _ = g.Describe("type Controller", func() {
 				event,
 			)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(err).To(gm.MatchError(
+				"optimistic concurrency conflict when handling event at offset 0 of stream ea2763d3-11d4-5f81-aa9f-e666d13bff4f: expected checkpoint offset of 1, handler returned 123",
+			))
 		})
 
 		g.It("provides more context to UnexpectedMessage panics from HandleEvent()", func() {
 			handler.HandleEventFunc = func(
-				_ context.Context,
-				_, _, _ []byte,
-				_ dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (bool, error) {
+				context.Context,
+				dogma.ProjectionEventScope,
+				dogma.Event,
+			) (uint64, error) {
 				panic(dogma.UnexpectedMessage)
 			}
 

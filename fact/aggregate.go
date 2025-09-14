@@ -32,25 +32,6 @@ type AggregateInstanceCreated struct {
 	Envelope   *envelope.Envelope
 }
 
-// AggregateInstanceDestroyed indicates that an aggregate message handler
-// destroyed an aggregate instance while handling a command.
-type AggregateInstanceDestroyed struct {
-	Handler    *config.Aggregate
-	InstanceID string
-	Root       dogma.AggregateRoot
-	Envelope   *envelope.Envelope
-}
-
-// AggregateInstanceDestructionReverted indicates that an aggregate message
-// handler "reverted" destruction of an aggregate instance by recording a new
-// event.
-type AggregateInstanceDestructionReverted struct {
-	Handler    *config.Aggregate
-	InstanceID string
-	Root       dogma.AggregateRoot
-	Envelope   *envelope.Envelope
-}
-
 // EventRecordedByAggregate indicates that an aggregate recorded an event while
 // handling a command.
 type EventRecordedByAggregate struct {

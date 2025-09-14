@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/protobuf/uuidpb"
 )
 
 // Envelope is a container for a message that is handled by the test engine.
@@ -33,6 +34,13 @@ type Envelope struct {
 	// Origin describes the message handler that produced this message.
 	// It is nil if the message was not produced by a handler.
 	Origin *Origin
+
+	// EventStreamID is the ID of the event stream to which this message
+	// belongs, if it is a [dogma.Event].
+	EventStreamID string
+
+	// EventStreamOffset is the offset of the message within its event stream.
+	EventStreamOffset uint64
 }
 
 // NewCommand constructs a new envelope containing the given command message.
@@ -74,8 +82,15 @@ func NewEvent(
 		CorrelationID: id,
 		Message:       m,
 		CreatedAt:     t,
+
+		// Events that don't originate in a handler appears on their own event
+		// stream.
+		EventStreamID:     uuidpb.Derive(eventStreamNamespace, id).AsString(),
+		EventStreamOffset: 0,
 	}
 }
+
+var eventStreamNamespace = uuidpb.MustParse("8c1f42ee-d693-4e21-837e-54662b1c9ba3")
 
 // NewCommand constructs a new envelope as a child of e, indicating that the
 // command message m is caused by e.Message.
@@ -106,14 +121,18 @@ func (e *Envelope) NewEvent(
 	m dogma.Event,
 	t time.Time,
 	o Origin,
+	streamID string,
+	offset uint64,
 ) *Envelope {
 	return &Envelope{
-		MessageID:     id,
-		CausationID:   e.MessageID,
-		CorrelationID: e.CorrelationID,
-		Message:       m,
-		CreatedAt:     t,
-		Origin:        &o,
+		MessageID:         id,
+		CausationID:       e.MessageID,
+		CorrelationID:     e.CorrelationID,
+		Message:           m,
+		CreatedAt:         t,
+		Origin:            &o,
+		EventStreamID:     streamID,
+		EventStreamOffset: offset,
 	}
 }
 

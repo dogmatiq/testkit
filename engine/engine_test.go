@@ -131,11 +131,13 @@ var _ = g.Describe("type Engine", func() {
 		app = &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9bc07eeb-5821-4649-941a-d931c8c88cb9")
-				c.RegisterAggregate(aggregate)
-				c.RegisterProcess(process)
-				c.RegisterIntegration(integration)
-				c.RegisterProjection(projection)
-				c.RegisterProjection(disabled)
+				c.Routes(
+					dogma.ViaAggregate(aggregate),
+					dogma.ViaProcess(process),
+					dogma.ViaIntegration(integration),
+					dogma.ViaProjection(projection),
+					dogma.ViaProjection(disabled),
+				)
 			},
 		}
 
@@ -165,15 +167,12 @@ var _ = g.Describe("type Engine", func() {
 		g.It("allows dispatching events", func() {
 			called := false
 			projection.HandleEventFunc = func(
-				context.Context,
-				[]byte,
-				[]byte,
-				[]byte,
-				dogma.ProjectionEventScope,
-				dogma.Event,
-			) (bool, error) {
+				_ context.Context,
+				s dogma.ProjectionEventScope,
+				_ dogma.Event,
+			) (uint64, error) {
 				called = true
-				return true, nil
+				return s.Offset() + 1, nil
 			}
 
 			err := engine.Dispatch(
