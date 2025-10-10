@@ -36,9 +36,9 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
-					dogma.ExecutesCommand[CommandStub[TypeA]](),
-					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
+					dogma.ExecutesCommand[*CommandStub[TypeA]](),
+					dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
 				)
 			},
 			RouteEventToInstanceFunc: func(
@@ -46,7 +46,7 @@ var _ = g.Describe("type scope", func() {
 				m dogma.Event,
 			) (string, bool, error) {
 				switch m.(type) {
-				case EventStub[TypeA]:
+				case *EventStub[TypeA]:
 					return "<instance>", true, nil
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -215,7 +215,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeX], which is not produced by this handler"),
+						"Description":    gm.Equal("executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -235,7 +235,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ExecuteCommand(CommandStub[TypeA]{
+				s.ExecuteCommand(&CommandStub[TypeA]{
 					ValidationError: "<invalid>",
 				})
 				return nil
@@ -256,7 +256,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed an invalid stubs.CommandStub[TypeA] command: <invalid>"),
+						"Description":    gm.Equal("executed an invalid *stubs.CommandStub[TypeA] command: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -296,7 +296,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed a command of type stubs.CommandStub[TypeA] on an ended process"),
+						"Description":    gm.Equal("executed a command of type *stubs.CommandStub[TypeA] on an ended process"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -381,7 +381,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeX], which is not produced by this handler"),
+						"Description":    gm.Equal("scheduled a timeout of type *stubs.TimeoutStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -402,7 +402,7 @@ var _ = g.Describe("type scope", func() {
 				m dogma.Event,
 			) error {
 				s.ScheduleTimeout(
-					TimeoutStub[TypeA]{
+					&TimeoutStub[TypeA]{
 						ValidationError: "<invalid>",
 					},
 					time.Now(),
@@ -425,7 +425,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled an invalid stubs.TimeoutStub[TypeA] timeout: <invalid>"),
+						"Description":    gm.Equal("scheduled an invalid *stubs.TimeoutStub[TypeA] timeout: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -467,7 +467,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleEvent"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled a timeout of type stubs.TimeoutStub[TypeA] on an ended process"),
+						"Description":    gm.Equal("scheduled a timeout of type *stubs.TimeoutStub[TypeA] on an ended process"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),

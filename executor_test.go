@@ -31,8 +31,8 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<handler-name>", "67c167a8-d09e-4827-beab-7c8c9817bb1a")
 							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
+								dogma.HandlesCommand[*CommandStub[TypeA]](),
+								dogma.RecordsEvent[*EventStub[TypeA]](),
 							)
 						},
 						HandleCommandFunc: func(

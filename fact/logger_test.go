@@ -25,8 +25,8 @@ var _ = g.Describe("type Logger", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 		})
@@ -35,8 +35,8 @@ var _ = g.Describe("type Logger", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "2425a151-ba72-42ec-970a-8b3b4133b22f")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 		})
@@ -45,8 +45,8 @@ var _ = g.Describe("type Logger", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "570684db-0144-4628-a58f-ae815c55dea3")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
-					dogma.ExecutesCommand[CommandStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
+					dogma.ExecutesCommand[*CommandStub[TypeA]](),
 				)
 			},
 		})
@@ -55,7 +55,7 @@ var _ = g.Describe("type Logger", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "36f29880-6b87-42c5-848c-f515c9f1c74b")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
 				)
 			},
 		})
@@ -146,7 +146,7 @@ var _ = g.Describe("type Logger", func() {
 
 			g.Entry(
 				"DispatchBegun",
-				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 				DispatchBegun{
 					Envelope: command,
 				},
@@ -294,7 +294,7 @@ var _ = g.Describe("type Logger", func() {
 			),
 			g.Entry(
 				"EventRecordedByAggregate",
-				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 				EventRecordedByAggregate{
 					Handler:    aggregate,
 					InstanceID: "<instance>",
@@ -396,7 +396,7 @@ var _ = g.Describe("type Logger", func() {
 			),
 			g.Entry(
 				"CommandExecutedByProcess",
-				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 				CommandExecutedByProcess{
 					Handler:    process,
 					InstanceID: "<instance>",
@@ -411,7 +411,7 @@ var _ = g.Describe("type Logger", func() {
 			),
 			g.Entry(
 				"TimeoutScheduledByProcess",
-				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
+				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
 				TimeoutScheduledByProcess{
 					Handler:         process,
 					InstanceID:      "<instance>",
@@ -434,7 +434,7 @@ var _ = g.Describe("type Logger", func() {
 
 			g.Entry(
 				"EventRecordedByIntegration",
-				"= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+				"= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 				EventRecordedByIntegration{
 					Handler:  integration,
 					Envelope: command,

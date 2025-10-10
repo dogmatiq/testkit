@@ -31,8 +31,8 @@ var _ = g.Context("not expectation", func() {
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<integration>", "12dfb90b-e47b-4d49-b834-294b01992ad0")
 							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
+								dogma.HandlesCommand[*CommandStub[TypeA]](),
+								dogma.RecordsEvent[*EventStub[TypeA]](),
 							)
 						},
 						HandleCommandFunc: func(
@@ -71,7 +71,7 @@ var _ = g.Context("not expectation", func() {
 				Not(ToRecordEvent(EventA1)),
 				expectFail,
 				expectReport(
-					`✗ do not record a specific 'stubs.EventStub[TypeA]' event`,
+					`✗ do not record a specific '*stubs.EventStub[TypeA]' event`,
 				),
 			),
 			g.Entry(
@@ -79,7 +79,7 @@ var _ = g.Context("not expectation", func() {
 				Not(ToRecordEvent(EventA2)),
 				expectPass,
 				expectReport(
-					`✓ do not record a specific 'stubs.EventStub[TypeA]' event`,
+					`✓ do not record a specific '*stubs.EventStub[TypeA]' event`,
 				),
 			),
 		)
@@ -91,7 +91,7 @@ var _ = g.Context("not expectation", func() {
 			)
 
 			gm.Expect(testingT.Logs).To(gm.ContainElement(
-				"--- expect [no-op] not to record a specific 'stubs.EventStub[TypeA]' event ---",
+				"--- expect [no-op] not to record a specific '*stubs.EventStub[TypeA]' event ---",
 			))
 		})
 

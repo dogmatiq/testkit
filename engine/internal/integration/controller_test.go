@@ -37,8 +37,8 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 		}

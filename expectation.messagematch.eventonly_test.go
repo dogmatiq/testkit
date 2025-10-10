@@ -39,9 +39,9 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
 							c.Routes(
-								dogma.HandlesCommand[CommandThatRecordsEvent](),
-								dogma.RecordsEvent[EventThatIsRecorded](),
-								dogma.RecordsEvent[EventThatIsNeverRecorded](),
+								dogma.HandlesCommand[*CommandThatRecordsEvent](),
+								dogma.RecordsEvent[*EventThatIsRecorded](),
+								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -62,7 +62,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 							c.Identity("<projection>", "de708f1d-3651-437e-91ae-275a423ecd15")
 							c.Routes(
-								dogma.HandlesEvent[EventThatIsOnlyConsumed](),
+								dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
 							)
 						},
 					}),
@@ -87,7 +87,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		},
 		g.Entry(
 			"all recorded events match",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					return nil
@@ -100,9 +100,9 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		),
 		g.Entry(
 			"all recorded events match, using predicate with a more specific type",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			ToOnlyRecordEventsMatching(
-				func(m EventThatIsRecorded) error {
+				func(*EventThatIsRecorded) error {
 					return nil
 				},
 			),
@@ -126,7 +126,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		),
 		g.Entry(
 			"none of the recorded events match",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					return errors.New("<error>")
@@ -140,7 +140,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     none of the 3 relevant events matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • stubs.EventStub[TypeE]: <error> (repeated 3 times)`,
+				`  |     • *stubs.EventStub[TypeE]: <error> (repeated 3 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -150,7 +150,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		),
 		g.Entry(
 			"some matching events recorded",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					switch m {
@@ -171,7 +171,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     only 1 of 2 relevant events matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • stubs.EventStub[TypeE]: <error>`,
+				`  |     • *stubs.EventStub[TypeE]: <error>`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function, it ignored 1 event`,
@@ -181,9 +181,9 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		),
 		g.Entry(
 			"no matching events recorded, using predicate with a more specific type",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			ToOnlyRecordEventsMatching(
-				func(m EventThatIsNeverRecorded) error {
+				func(*EventThatIsNeverRecorded) error {
 					panic("unexpected call")
 				},
 			),
@@ -195,7 +195,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     none of the 3 relevant events matched the predicate`,
 				`  | `,
 				`  | FAILED MATCHES`,
-				`  |     • stubs.EventStub[TypeE]: predicate function expected stubs.EventStub[TypeX] (repeated 3 times)`,
+				`  |     • *stubs.EventStub[TypeE]: predicate function expected *stubs.EventStub[TypeX] (repeated 3 times)`,
 				`  | `,
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
@@ -210,7 +210,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		test.Expect(
 			noop,
 			ToOnlyRecordEventsMatching(
-				func(EventStub[TypeU]) error {
+				func(*EventStub[TypeU]) error {
 					return nil
 				},
 			),
@@ -218,7 +218,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 
 		gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"an event of type stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
+			"an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
 		))
 	})
 
@@ -227,7 +227,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		test.Expect(
 			noop,
 			ToOnlyRecordEventsMatching(
-				func(EventThatIsOnlyConsumed) error {
+				func(*EventThatIsOnlyConsumed) error {
 					return nil
 				},
 			),
@@ -235,7 +235,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 
 		gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"no handlers record events of type stubs.EventStub[TypeO], it is only ever consumed",
+			"no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed",
 		))
 	})
 

@@ -35,8 +35,8 @@ var _ = g.Describe("func RecordEvent()", func() {
 						ConfigureFunc: func(c dogma.ProcessConfigurer) {
 							c.Identity("<process>", "1c0dd111-fe12-4dee-a8bc-64abea1dce8f")
 							c.Routes(
-								dogma.HandlesEvent[EventStub[TypeA]](),
-								dogma.ExecutesCommand[CommandStub[TypeA]](),
+								dogma.HandlesEvent[*EventStub[TypeA]](),
+								dogma.ExecutesCommand[*CommandStub[TypeA]](),
 							)
 						},
 						RouteEventToInstanceFunc: func(
@@ -101,7 +101,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 
 		gm.Expect(t.Failed()).To(gm.BeTrue())
 		gm.Expect(t.Logs).To(gm.ContainElement(
-			"cannot record event, stubs.EventStub[TypeX] is a not a recognized message type",
+			"cannot record event, *stubs.EventStub[TypeX] is a not a recognized message type",
 		))
 	})
 
@@ -122,7 +122,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 		)
 
 		gm.Expect(t.Logs).To(gm.ContainElement(
-			"--- recording stubs.EventStub[TypeA] event ---",
+			"--- recording *stubs.EventStub[TypeA] event ---",
 		))
 	})
 

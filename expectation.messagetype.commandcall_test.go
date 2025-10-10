@@ -40,7 +40,7 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
 							c.Routes(
-								dogma.HandlesCommand[CommandThatIsIgnored](),
+								dogma.HandlesCommand[*CommandThatIsIgnored](),
 							)
 						},
 					}),
@@ -49,8 +49,8 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 						ConfigureFunc: func(c dogma.ProcessConfigurer) {
 							c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
 							c.Routes(
-								dogma.HandlesEvent[EventThatExecutesCommand](),
-								dogma.ExecutesCommand[CommandThatIsExecutedByProcess](),
+								dogma.HandlesEvent[*EventThatExecutesCommand](),
+								dogma.ExecutesCommand[*CommandThatIsExecutedByProcess](),
 							)
 						},
 						RouteEventToInstanceFunc: func(
@@ -66,9 +66,9 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 							m dogma.Event,
 						) error {
 							switch m := m.(type) {
-							case EventThatExecutesCommand:
+							case *EventThatExecutesCommand:
 								s.ExecuteCommand(
-									CommandThatIsExecutedByProcess{
+									&CommandThatIsExecutedByProcess{
 										Content: m.Content,
 									},
 								)
@@ -105,20 +105,20 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 		},
 		g.Entry(
 			"command type executed as expected",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToExecuteCommandType[CommandThatIsIgnored](),
+			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			ToExecuteCommandType[*CommandThatIsIgnored](),
 			expectPass,
 			expectReport(
-				`✓ execute any 'stubs.CommandStub[TypeX]' command`,
+				`✓ execute any '*stubs.CommandStub[TypeX]' command`,
 			),
 		),
 		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
-			ToExecuteCommandType[CommandThatIsIgnored](),
+			ToExecuteCommandType[*CommandThatIsIgnored](),
 			expectFail,
 			expectReport(
-				`✗ execute any 'stubs.CommandStub[TypeX]' command`,
+				`✗ execute any '*stubs.CommandStub[TypeX]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -129,11 +129,11 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 		),
 		g.Entry(
 			"no matching command type executed and all relevant handler types disabled",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToExecuteCommandType[CommandThatIsExecutedByProcess](),
+			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			ToExecuteCommandType[*CommandThatIsExecutedByProcess](),
 			expectFail,
 			expectReport(
-				`✗ execute any 'stubs.CommandStub[TypeP]' command`,
+				`✗ execute any '*stubs.CommandStub[TypeP]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     nothing executed a matching command`,

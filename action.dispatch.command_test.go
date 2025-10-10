@@ -34,8 +34,8 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<integration>", "d1cf3af1-6c20-4125-8e68-192a6075d0b4")
 							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
-								dogma.RecordsEvent[EventStub[TypeA]](),
+								dogma.HandlesCommand[*CommandStub[TypeA]](),
+								dogma.RecordsEvent[*EventStub[TypeA]](),
 							)
 						},
 					}),
@@ -92,7 +92,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 
 		gm.Expect(t.Failed()).To(gm.BeTrue())
 		gm.Expect(t.Logs).To(gm.ContainElement(
-			"cannot execute command, stubs.CommandStub[TypeX] is a not a recognized message type",
+			"cannot execute command, *stubs.CommandStub[TypeX] is a not a recognized message type",
 		))
 	})
 
@@ -113,7 +113,7 @@ var _ = g.Describe("func ExecuteCommand()", func() {
 		)
 
 		gm.Expect(t.Logs).To(gm.ContainElement(
-			"--- executing stubs.CommandStub[TypeA] command ---",
+			"--- executing *stubs.CommandStub[TypeA] command ---",
 		))
 	})
 

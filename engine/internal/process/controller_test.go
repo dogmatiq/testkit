@@ -51,9 +51,9 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<name>", "7db72921-b805-4db5-8287-0af94a768643")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
-					dogma.ExecutesCommand[CommandStub[TypeA]](),
-					dogma.SchedulesTimeout[TimeoutStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
+					dogma.ExecutesCommand[*CommandStub[TypeA]](),
+					dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
 				)
 			},
 			RouteEventToInstanceFunc: func(
@@ -61,7 +61,7 @@ var _ = g.Describe("type Controller", func() {
 				m dogma.Event,
 			) (string, bool, error) {
 				switch x := m.(type) {
-				case EventStub[TypeA]:
+				case *EventStub[TypeA]:
 					id := fmt.Sprintf(
 						"<instance-%s>",
 						x.Content,
@@ -770,7 +770,7 @@ var _ = g.Describe("type Controller", func() {
 						"Method":         gm.Equal("RouteEventToInstance"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("routed an event of type stubs.EventStub[TypeA] to an empty ID"),
+						"Description":    gm.Equal("routed an event of type *stubs.EventStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),

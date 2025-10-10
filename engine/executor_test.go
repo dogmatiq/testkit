@@ -24,8 +24,8 @@ var _ = g.Describe("type CommandExecutor", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -69,7 +69,7 @@ var _ = g.Describe("type CommandExecutor", func() {
 		g.It("panics if the message is unrecognized", func() {
 			gm.Expect(func() {
 				executor.ExecuteCommand(context.Background(), CommandX1)
-			}).To(gm.PanicWith("the stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
+			}).To(gm.PanicWith("the *stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
 		})
 	})
 })

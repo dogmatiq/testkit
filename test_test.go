@@ -63,7 +63,7 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 								c.Routes(
-									dogma.HandlesEvent[EventStub[TypeA]](),
+									dogma.HandlesEvent[*EventStub[TypeA]](),
 								)
 							},
 							HandleEventFunc: func(
@@ -108,7 +108,7 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 								c.Routes(
-									dogma.HandlesEvent[EventStub[TypeA]](),
+									dogma.HandlesEvent[*EventStub[TypeA]](),
 								)
 								c.Disable()
 							},
@@ -135,7 +135,7 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 								c.Routes(
-									dogma.HandlesEvent[EventStub[TypeA]](),
+									dogma.HandlesEvent[*EventStub[TypeA]](),
 								)
 							},
 							HandleEventFunc: func(
@@ -180,7 +180,7 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 								c.Identity("<projection>", "fb5f05c0-589c-4d64-9599-a4875b5a3569")
 								c.Routes(
-									dogma.HandlesEvent[EventStub[TypeA]](),
+									dogma.HandlesEvent[*EventStub[TypeA]](),
 								)
 								c.Disable()
 							},
@@ -206,8 +206,8 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.AggregateConfigurer) {
 								c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 								c.Routes(
-									dogma.HandlesCommand[CommandStub[TypeA]](),
-									dogma.RecordsEvent[EventStub[TypeA]](),
+									dogma.HandlesCommand[*CommandStub[TypeA]](),
+									dogma.RecordsEvent[*EventStub[TypeA]](),
 								)
 							},
 							RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -254,8 +254,8 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.AggregateConfigurer) {
 								c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 								c.Routes(
-									dogma.HandlesCommand[CommandStub[TypeA]](),
-									dogma.RecordsEvent[EventStub[TypeA]](),
+									dogma.HandlesCommand[*CommandStub[TypeA]](),
+									dogma.RecordsEvent[*EventStub[TypeA]](),
 								)
 							},
 							RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -303,8 +303,8 @@ var _ = g.Describe("type Test", func() {
 							ConfigureFunc: func(c dogma.AggregateConfigurer) {
 								c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
 								c.Routes(
-									dogma.HandlesCommand[CommandStub[TypeA]](),
-									dogma.RecordsEvent[EventStub[TypeA]](),
+									dogma.HandlesCommand[*CommandStub[TypeA]](),
+									dogma.RecordsEvent[*EventStub[TypeA]](),
 								)
 							},
 							RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -333,7 +333,7 @@ var _ = g.Describe("type Test", func() {
 				)
 
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeA]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeA]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a similar event was recorded by the '<aggregate>' aggregate message handler`,
@@ -342,7 +342,7 @@ var _ = g.Describe("type Test", func() {
 				`  |     • check the content of the message`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA]{`,
+				`  |     *stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA]{`,
 				`  |         Content:         "A[-2-]{+1+}" <<[-bob-]{+anna+}'s customer ID>>`,
 				`  |         ValidationError: ""`,
 				`  |     }`,
