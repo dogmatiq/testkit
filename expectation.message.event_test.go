@@ -42,11 +42,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
 							c.Routes(
-								dogma.HandlesCommand[CommandThatIsIgnored](),
+								dogma.HandlesCommand[*CommandThatIsIgnored](),
 
-								dogma.HandlesCommand[CommandThatRecordsEvent](),
-								dogma.RecordsEvent[EventThatIsRecorded](),
-								dogma.RecordsEvent[EventThatIsNeverRecorded](),
+								dogma.HandlesCommand[*CommandThatRecordsEvent](),
+								dogma.RecordsEvent[*EventThatIsRecorded](),
+								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -58,8 +58,8 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 							m dogma.Command,
 						) {
 							switch m := m.(type) {
-							case CommandThatRecordsEvent:
-								s.RecordEvent(EventThatIsRecorded{
+							case *CommandThatRecordsEvent:
+								s.RecordEvent(&EventThatIsRecorded{
 									Content: m.Content,
 								})
 							}
@@ -70,9 +70,9 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 						ConfigureFunc: func(c dogma.ProcessConfigurer) {
 							c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
 							c.Routes(
-								dogma.HandlesEvent[EventThatExecutesCommand](),
-								dogma.HandlesEvent[EventThatIsOnlyConsumed](),
-								dogma.ExecutesCommand[CommandThatIsIgnored](),
+								dogma.HandlesEvent[*EventThatExecutesCommand](),
+								dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
+								dogma.ExecutesCommand[*CommandThatIsIgnored](),
 							)
 						},
 						RouteEventToInstanceFunc: func(
@@ -88,8 +88,8 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 							m dogma.Event,
 						) error {
 							switch m.(type) {
-							case EventThatExecutesCommand:
-								s.ExecuteCommand(CommandThatIsIgnored{})
+							case *EventThatExecutesCommand:
+								s.ExecuteCommand(&CommandThatIsIgnored{})
 							}
 							return nil
 						},
@@ -115,20 +115,20 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		},
 		g.Entry(
 			"event recorded as expected",
-			ExecuteCommand(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectPass,
 			expectReport(
-				`✓ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✓ record a specific '*stubs.EventStub[TypeE]' event`,
 			),
 		),
 		g.Entry(
 			"no matching event recorded",
-			ExecuteCommand(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsNeverRecorded{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsNeverRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeX]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeX]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -140,11 +140,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"no matching event recorded and all relevant handler types disabled",
-			ExecuteCommand(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -160,11 +160,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"no matching event recorded and no relevant handler types engaged",
-			ExecuteCommand(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handlers (aggregate or integration) were engaged`,
@@ -180,11 +180,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"no messages produced at all",
-			ExecuteCommand(CommandThatIsIgnored{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			ExecuteCommand(&CommandThatIsIgnored{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -196,11 +196,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"no events recorded at all",
-			RecordEvent(EventThatExecutesCommand{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			RecordEvent(&EventThatExecutesCommand{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -212,11 +212,11 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"similar event recorded with a different value",
-			ExecuteCommand(CommandThatRecordsEvent{Content: "<content>"}),
-			ToRecordEvent(EventThatIsRecorded{Content: "<different>"}),
+			ExecuteCommand(&CommandThatRecordsEvent{Content: "<content>"}),
+			ToRecordEvent(&EventThatIsRecorded{Content: "<different>"}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a similar event was recorded by the '<aggregate>' aggregate message handler`,
@@ -225,7 +225,7 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • check the content of the message`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeE]{`,
+				`  |     *stubs.EventStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeE]{`,
 				`  |         Content:         "<[-differ-]{+cont+}ent>"`,
 				`  |         ValidationError: ""`,
 				`  |     }`,
@@ -233,16 +233,16 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		),
 		g.Entry(
 			"does not include an explanation when negated and a sibling expectation passes",
-			ExecuteCommand(CommandThatRecordsEvent{}),
+			ExecuteCommand(&CommandThatRecordsEvent{}),
 			NoneOf(
-				ToRecordEvent(EventThatIsRecorded{}),
-				ToRecordEvent(EventThatIsNeverRecorded{}),
+				ToRecordEvent(&EventThatIsRecorded{}),
+				ToRecordEvent(&EventThatIsNeverRecorded{}),
 			),
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ record a specific 'stubs.EventStub[TypeE]' event`,
-				`    ✗ record a specific 'stubs.EventStub[TypeX]' event`,
+				`    ✓ record a specific '*stubs.EventStub[TypeE]' event`,
+				`    ✗ record a specific '*stubs.EventStub[TypeX]' event`,
 			),
 		),
 	)
@@ -256,7 +256,7 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 
 		gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"an event of type stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
+			"an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
 		))
 	})
 
@@ -264,12 +264,12 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		test := Begin(testingT, app)
 		test.Expect(
 			noop,
-			ToRecordEvent(EventThatIsOnlyConsumed{}),
+			ToRecordEvent(&EventThatIsOnlyConsumed{}),
 		)
 
 		gm.Expect(testingT.Failed()).To(gm.BeTrue())
 		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"no handlers record events of type stubs.EventStub[TypeO], it is only ever consumed",
+			"no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed",
 		))
 	})
 

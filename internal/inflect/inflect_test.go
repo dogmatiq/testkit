@@ -78,7 +78,7 @@ var _ = g.Describe("func Sprintf()", func() {
 				"the %T <message>",
 				CommandA1,
 			),
-		).To(gm.Equal("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+		).To(gm.Equal("the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })
 
@@ -101,6 +101,6 @@ var _ = g.Describe("func Errorf()", func() {
 				"the %T <message>",
 				CommandA1,
 			),
-		).To(gm.MatchError("the stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+		).To(gm.MatchError("the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
 	})
 })

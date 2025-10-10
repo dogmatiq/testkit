@@ -35,7 +35,7 @@ var _ = g.Describe("func Call()", func() {
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<integration>", "832d78d7-a006-414f-b6d7-3153aa7c9ab8")
 							c.Routes(
-								dogma.HandlesCommand[CommandStub[TypeA]](),
+								dogma.HandlesCommand[*CommandStub[TypeA]](),
 							)
 						},
 					}),

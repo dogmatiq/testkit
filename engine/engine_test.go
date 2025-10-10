@@ -75,8 +75,8 @@ var _ = g.Describe("type Engine", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
 				c.Routes(
-					dogma.HandlesCommand[AggregateCommand](),
-					dogma.RecordsEvent[AggregateEvent](),
+					dogma.HandlesCommand[*AggregateCommand](),
+					dogma.RecordsEvent[*AggregateEvent](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -88,9 +88,9 @@ var _ = g.Describe("type Engine", func() {
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "4721492d-7fa3-4cfa-9f0f-a3cb1f95933e")
 				c.Routes(
-					dogma.HandlesEvent[ForeignEventForProcess](),
-					dogma.HandlesEvent[AggregateEvent](), // shared with <projection>
-					dogma.ExecutesCommand[IntegrationCommand](),
+					dogma.HandlesEvent[*ForeignEventForProcess](),
+					dogma.HandlesEvent[*AggregateEvent](), // shared with <projection>
+					dogma.ExecutesCommand[*IntegrationCommand](),
 				)
 			},
 			RouteEventToInstanceFunc: func(context.Context, dogma.Event) (string, bool, error) {
@@ -102,8 +102,8 @@ var _ = g.Describe("type Engine", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<integration>", "8b840c55-0b04-4107-bd4c-c69052c9fca3")
 				c.Routes(
-					dogma.HandlesCommand[IntegrationCommand](),
-					dogma.RecordsEvent[IntegrationEvent](),
+					dogma.HandlesCommand[*IntegrationCommand](),
+					dogma.RecordsEvent[*IntegrationEvent](),
 				)
 			},
 		}
@@ -112,8 +112,8 @@ var _ = g.Describe("type Engine", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<projection>", "f2b324d6-74f1-409e-8b28-8e44454037a9")
 				c.Routes(
-					dogma.HandlesEvent[ForeignEventForProjection](),
-					dogma.HandlesEvent[AggregateEvent](), // shared with <process>
+					dogma.HandlesEvent[*ForeignEventForProjection](),
+					dogma.HandlesEvent[*AggregateEvent](), // shared with <process>
 				)
 			},
 		}
@@ -122,7 +122,7 @@ var _ = g.Describe("type Engine", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<disabled-projection>", "06426c1f-788d-4852-9a3f-c77580dafaed")
 				c.Routes(
-					dogma.HandlesEvent[ForeignEventForProjection](),
+					dogma.HandlesEvent[*ForeignEventForProjection](),
 				)
 				c.Disable()
 			},
@@ -158,7 +158,7 @@ var _ = g.Describe("type Engine", func() {
 
 			err := engine.Dispatch(
 				context.Background(),
-				AggregateCommand{},
+				&AggregateCommand{},
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(called).To(gm.BeTrue())
@@ -177,7 +177,7 @@ var _ = g.Describe("type Engine", func() {
 
 			err := engine.Dispatch(
 				context.Background(),
-				ForeignEventForProjection{},
+				&ForeignEventForProjection{},
 			)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(called).To(gm.BeTrue())
@@ -196,7 +196,7 @@ var _ = g.Describe("type Engine", func() {
 			buf := &fact.Buffer{}
 			err := engine.Dispatch(
 				context.Background(),
-				AggregateCommand{},
+				&AggregateCommand{},
 				WithCurrentTime(now),
 				WithObserver(buf),
 				EnableAggregates(false),
@@ -211,7 +211,7 @@ var _ = g.Describe("type Engine", func() {
 						MessageID:     "1",
 						CausationID:   "1",
 						CorrelationID: "1",
-						Message:       AggregateCommand{},
+						Message:       &AggregateCommand{},
 						CreatedAt:     now,
 					},
 					Reason: fact.HandlerTypeDisabled,
@@ -232,7 +232,7 @@ var _ = g.Describe("type Engine", func() {
 			buf := &fact.Buffer{}
 			err := engine.Dispatch(
 				context.Background(),
-				AggregateCommand{},
+				&AggregateCommand{},
 				WithCurrentTime(now),
 				WithObserver(buf),
 				EnableHandler("<aggregate>", false),
@@ -247,7 +247,7 @@ var _ = g.Describe("type Engine", func() {
 						MessageID:     "1",
 						CausationID:   "1",
 						CorrelationID: "1",
-						Message:       AggregateCommand{},
+						Message:       &AggregateCommand{},
 						CreatedAt:     now,
 					},
 					Reason: fact.IndividualHandlerDisabled,
@@ -267,7 +267,7 @@ var _ = g.Describe("type Engine", func() {
 
 			err := engine.Dispatch(
 				context.Background(),
-				AggregateCommand{},
+				&AggregateCommand{},
 				EnableHandler("<aggregate>", false),
 				EnableHandler("<aggregate>", true),
 			)
@@ -287,7 +287,7 @@ var _ = g.Describe("type Engine", func() {
 				return errors.New("<error>")
 			}
 
-			err := engine.Dispatch(ctx, IntegrationCommand{})
+			err := engine.Dispatch(ctx, &IntegrationCommand{})
 			gm.Expect(err).To(gm.Equal(context.Canceled))
 		})
 
@@ -300,7 +300,7 @@ var _ = g.Describe("type Engine", func() {
 				return errors.New("<error>")
 			}
 
-			err := engine.Dispatch(context.Background(), IntegrationCommand{})
+			err := engine.Dispatch(context.Background(), &IntegrationCommand{})
 			gm.Expect(err).To(gm.MatchError("<integration> integration: <error>"))
 		})
 
@@ -308,17 +308,17 @@ var _ = g.Describe("type Engine", func() {
 			gm.Expect(func() {
 				engine.Dispatch(
 					context.Background(),
-					AggregateCommand{
+					&AggregateCommand{
 						ValidationError: "<invalid>",
 					},
 				)
-			}).To(gm.PanicWith("cannot dispatch invalid stubs.CommandStub[TypeA] message: <invalid>"))
+			}).To(gm.PanicWith("cannot dispatch invalid *stubs.CommandStub[TypeA] message: <invalid>"))
 		})
 
 		g.It("panics if the message type is unrecognized", func() {
 			gm.Expect(func() {
 				engine.Dispatch(context.Background(), CommandX1)
-			}).To(gm.PanicWith("the stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
+			}).To(gm.PanicWith("the *stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
 		})
 	})
 

@@ -37,13 +37,13 @@ var _ = g.Describe("type Controller", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch x := m.(type) {
-				case CommandStub[TypeA]:
+				case *CommandStub[TypeA]:
 					return fmt.Sprintf(
 						"<instance-%s>",
 						x.Content,
@@ -183,7 +183,7 @@ var _ = g.Describe("type Controller", func() {
 						"Method":         gm.Equal("RouteCommandToInstance"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("routed a command of type stubs.CommandStub[TypeA] to an empty ID"),
+						"Description":    gm.Equal("routed a command of type *stubs.CommandStub[TypeA] to an empty ID"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),

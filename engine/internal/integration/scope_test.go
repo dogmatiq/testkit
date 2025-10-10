@@ -36,8 +36,8 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "24ec3839-5d51-4904-9b45-34b5282e7f24")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 		}
@@ -119,7 +119,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleCommand"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
+						"Description":    gm.Equal("recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),
@@ -138,7 +138,7 @@ var _ = g.Describe("type scope", func() {
 				s dogma.IntegrationCommandScope,
 				_ dogma.Command,
 			) error {
-				s.RecordEvent(EventStub[TypeA]{
+				s.RecordEvent(&EventStub[TypeA]{
 					ValidationError: "<invalid>",
 				})
 				return nil
@@ -159,7 +159,7 @@ var _ = g.Describe("type scope", func() {
 						"Method":         gm.Equal("HandleCommand"),
 						"Implementation": gm.Equal(cfg.Source.Get()),
 						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
+						"Description":    gm.Equal("recorded an invalid *stubs.EventStub[TypeA] event: <invalid>"),
 						"Location": MatchAllFields(
 							Fields{
 								"Func": gm.Not(gm.BeEmpty()),

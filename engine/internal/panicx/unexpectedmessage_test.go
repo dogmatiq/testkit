@@ -16,7 +16,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "a0eab8dd-db22-467a-87c2-c38138c582e8")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
 				)
 			},
 		},
@@ -30,7 +30,7 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 
 				x := r.(UnexpectedMessage)
 				gm.Expect(x.String()).To(gm.Equal(
-					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type stubs.EventStub[TypeX]",
+					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type *stubs.EventStub[TypeX]",
 				))
 			}()
 
@@ -54,7 +54,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "b665eca3-936e-41e3-b9ab-c618cfa95ec2")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
 				)
 			},
 		},

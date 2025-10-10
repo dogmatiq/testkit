@@ -40,11 +40,11 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
 							c.Routes(
-								dogma.HandlesCommand[CommandThatIsIgnored](),
+								dogma.HandlesCommand[*CommandThatIsIgnored](),
 
-								dogma.HandlesCommand[CommandThatRecordsEvent](),
-								dogma.RecordsEvent[EventThatIsRecorded](),
-								dogma.RecordsEvent[EventThatIsNeverRecorded](),
+								dogma.HandlesCommand[*CommandThatRecordsEvent](),
+								dogma.RecordsEvent[*EventThatIsRecorded](),
+								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
 							)
 						},
 						RouteCommandToInstanceFunc: func(dogma.Command) string {
@@ -56,8 +56,8 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 							m dogma.Command,
 						) {
 							switch m := m.(type) {
-							case CommandThatRecordsEvent:
-								s.RecordEvent(EventThatIsRecorded{
+							case *CommandThatRecordsEvent:
+								s.RecordEvent(&EventThatIsRecorded{
 									Content: m.Content,
 								})
 							}
@@ -91,20 +91,20 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 		},
 		g.Entry(
 			"event recorded as expected",
-			executeCommandViaExecutor(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			executeCommandViaExecutor(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectPass,
 			expectReport(
-				`✓ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✓ record a specific '*stubs.EventStub[TypeE]' event`,
 			),
 		),
 		g.Entry(
 			"no matching event recorded",
-			executeCommandViaExecutor(CommandThatRecordsEvent{}),
-			ToRecordEvent(EventThatIsNeverRecorded{}),
+			executeCommandViaExecutor(&CommandThatRecordsEvent{}),
+			ToRecordEvent(&EventThatIsNeverRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeX]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeX]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     nothing recorded a matching event`,
@@ -118,10 +118,10 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -132,11 +132,11 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 		),
 		g.Entry(
 			"no events recorded at all",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToRecordEvent(EventThatIsRecorded{}),
+			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
-				`✗ record a specific 'stubs.EventStub[TypeE]' event`,
+				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,

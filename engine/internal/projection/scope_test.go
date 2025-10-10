@@ -34,7 +34,7 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "deaaf068-bfd3-4ed2-a69d-850cb9bfab8d")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
 				)
 			},
 		}

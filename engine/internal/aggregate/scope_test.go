@@ -36,13 +36,13 @@ var _ = g.Describe("type scope", func() {
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
 				c.Routes(
-					dogma.HandlesCommand[CommandStub[TypeA]](),
-					dogma.RecordsEvent[EventStub[TypeA]](),
+					dogma.HandlesCommand[*CommandStub[TypeA]](),
+					dogma.RecordsEvent[*EventStub[TypeA]](),
 				)
 			},
 			RouteCommandToInstanceFunc: func(m dogma.Command) string {
 				switch m.(type) {
-				case CommandStub[TypeA]:
+				case *CommandStub[TypeA]:
 					return "<instance>"
 				default:
 					panic(dogma.UnexpectedMessage)
@@ -237,7 +237,7 @@ var _ = g.Describe("type scope", func() {
 							"Method":         gm.Equal("HandleCommand"),
 							"Implementation": gm.Equal(cfg.Source.Get()),
 							"Message":        gm.Equal(command.Message),
-							"Description":    gm.Equal("recorded an event of type stubs.EventStub[TypeX], which is not produced by this handler"),
+							"Description":    gm.Equal("recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler"),
 							"Location": MatchAllFields(
 								Fields{
 									"Func": gm.Not(gm.BeEmpty()),
@@ -256,7 +256,7 @@ var _ = g.Describe("type scope", func() {
 					s dogma.AggregateCommandScope,
 					_ dogma.Command,
 				) {
-					s.RecordEvent(EventStub[TypeA]{
+					s.RecordEvent(&EventStub[TypeA]{
 						ValidationError: "<invalid>",
 					})
 				}
@@ -276,7 +276,7 @@ var _ = g.Describe("type scope", func() {
 							"Method":         gm.Equal("HandleCommand"),
 							"Implementation": gm.Equal(cfg.Source.Get()),
 							"Message":        gm.Equal(command.Message),
-							"Description":    gm.Equal("recorded an invalid stubs.EventStub[TypeA] event: <invalid>"),
+							"Description":    gm.Equal("recorded an invalid *stubs.EventStub[TypeA] event: <invalid>"),
 							"Location": MatchAllFields(
 								Fields{
 									"Func": gm.Not(gm.BeEmpty()),

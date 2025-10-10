@@ -41,8 +41,8 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 							c.Identity("<integration>", "b4f6e091-6171-4c61-bf3b-9952aea28547")
 							c.Routes(
-								dogma.HandlesCommand[CommandThatIsIgnored](),
-								dogma.HandlesCommand[CommandThatRecordsEvent](),
+								dogma.HandlesCommand[*CommandThatIsIgnored](),
+								dogma.HandlesCommand[*CommandThatRecordsEvent](),
 							)
 						},
 						HandleCommandFunc: func(
@@ -51,8 +51,8 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 							m dogma.Command,
 						) error {
 							switch m.(type) {
-							case CommandThatRecordsEvent:
-								s.RecordEvent(EventThatExecutesCommand{})
+							case *CommandThatRecordsEvent:
+								s.RecordEvent(&EventThatExecutesCommand{})
 							}
 							return nil
 						},
@@ -62,8 +62,8 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 						ConfigureFunc: func(c dogma.ProcessConfigurer) {
 							c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
 							c.Routes(
-								dogma.HandlesEvent[EventThatExecutesCommand](),
-								dogma.ExecutesCommand[CommandThatIsExecutedByProcess](),
+								dogma.HandlesEvent[*EventThatExecutesCommand](),
+								dogma.ExecutesCommand[*CommandThatIsExecutedByProcess](),
 							)
 						},
 						RouteEventToInstanceFunc: func(
@@ -79,9 +79,9 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 							m dogma.Event,
 						) error {
 							switch m := m.(type) {
-							case EventThatExecutesCommand:
+							case *EventThatExecutesCommand:
 								s.ExecuteCommand(
-									CommandThatIsExecutedByProcess{
+									&CommandThatIsExecutedByProcess{
 										Content: m.Content,
 									},
 								)
@@ -118,20 +118,20 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 		},
 		g.Entry(
 			"command executed as expected",
-			executeCommandViaExecutor(CommandThatIsIgnored{}),
-			ToExecuteCommand(CommandThatIsIgnored{}),
+			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			ToExecuteCommand(&CommandThatIsIgnored{}),
 			expectPass,
 			expectReport(
-				`✓ execute a specific 'stubs.CommandStub[TypeX]' command`,
+				`✓ execute a specific '*stubs.CommandStub[TypeX]' command`,
 			),
 		),
 		g.Entry(
 			"no messages produced at all",
 			Call(func() {}),
-			ToExecuteCommand(CommandThatIsIgnored{}),
+			ToExecuteCommand(&CommandThatIsIgnored{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'stubs.CommandStub[TypeX]' command`,
+				`✗ execute a specific '*stubs.CommandStub[TypeX]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -142,11 +142,11 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 		),
 		g.Entry(
 			"no matching command executed and all relevant handler types disabled",
-			executeCommandViaExecutor(CommandThatRecordsEvent{}),
-			ToExecuteCommand(CommandThatIsExecutedByProcess{}),
+			executeCommandViaExecutor(&CommandThatRecordsEvent{}),
+			ToExecuteCommand(&CommandThatIsExecutedByProcess{}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'stubs.CommandStub[TypeP]' command`,
+				`✗ execute a specific '*stubs.CommandStub[TypeP]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     nothing executed a matching command`,
@@ -161,11 +161,11 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 		),
 		g.Entry(
 			"similar command executed with a different value",
-			executeCommandViaExecutor(CommandThatIsIgnored{Content: "<content>"}),
-			ToExecuteCommand(CommandThatIsIgnored{Content: "<different>"}),
+			executeCommandViaExecutor(&CommandThatIsIgnored{Content: "<content>"}),
+			ToExecuteCommand(&CommandThatIsIgnored{Content: "<different>"}),
 			expectFail,
 			expectReport(
-				`✗ execute a specific 'stubs.CommandStub[TypeX]' command`,
+				`✗ execute a specific '*stubs.CommandStub[TypeX]' command`,
 				``,
 				`  | EXPLANATION`,
 				`  |     a similar command was executed via a dogma.CommandExecutor`,
@@ -174,7 +174,7 @@ var _ = g.Describe("func ToExecuteCommand() (when used with the Call() action)",
 				`  |     • check the content of the message`,
 				`  | `,
 				`  | MESSAGE DIFF`,
-				`  |     stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeX]{`,
+				`  |     *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeX]{`,
 				`  |         Content:         "<[-differ-]{+cont+}ent>"`,
 				`  |         ValidationError: ""`,
 				`  |     }`,

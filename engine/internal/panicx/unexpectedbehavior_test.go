@@ -15,7 +15,7 @@ var _ = g.Describe("type UnexpectedBehavior", func() {
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
 				c.Identity("<name>", "fce4f9f3-e8ee-45ce-924f-be8c3c0a9285")
 				c.Routes(
-					dogma.HandlesEvent[EventStub[TypeA]](),
+					dogma.HandlesEvent[*EventStub[TypeA]](),
 				)
 			},
 		},
