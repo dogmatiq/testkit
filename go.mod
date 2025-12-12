@@ -14,7 +14,7 @@ require (
 	github.com/sergi/go-diff v1.4.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.32.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
