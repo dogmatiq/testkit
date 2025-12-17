@@ -1,12 +1,12 @@
 module github.com/dogmatiq/testkit
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/dogmatiq/cosyne v0.2.0
 	github.com/dogmatiq/dapper v0.6.0
 	github.com/dogmatiq/dogma v0.19.0
-	github.com/dogmatiq/enginekit v0.19.17
+	github.com/dogmatiq/enginekit v0.19.18
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/onsi/ginkgo/v2 v2.27.3
