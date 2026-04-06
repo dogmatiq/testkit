@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"slices"
 
 	"github.com/dogmatiq/dogma"
 )
@@ -22,7 +23,19 @@ type CommandExecutor struct {
 func (e CommandExecutor) ExecuteCommand(
 	ctx context.Context,
 	m dogma.Command,
-	_ ...dogma.ExecuteCommandOption,
+	opts ...dogma.ExecuteCommandOption,
 ) error {
-	return e.Engine.Dispatch(ctx, m, e.Options...)
+	options := e.Options
+	if len(opts) > 0 {
+		options = slices.Clone(options)
+
+		for _, opt := range opts {
+			switch o := opt.(type) {
+			case dogma.IdempotencyKeyOption:
+				options = append(options, WithIdempotencyKey(o.Key()))
+			}
+		}
+	}
+
+	return e.Engine.Dispatch(ctx, m, options...)
 }

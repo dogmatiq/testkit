@@ -59,3 +59,10 @@ type HandlingSkipped struct {
 	Envelope *envelope.Envelope
 	Reason   HandlerSkipReason
 }
+
+// CommandDeduplicated indicates that the command was not dispatched because,
+// according to the idempotency key, it had already been dispatched.
+type CommandDeduplicated struct {
+	Envelope *envelope.Envelope
+	Key      string
+}

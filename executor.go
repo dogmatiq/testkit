@@ -28,7 +28,7 @@ var _ dogma.CommandExecutor = (*CommandExecutor)(nil)
 func (e *CommandExecutor) ExecuteCommand(
 	ctx context.Context,
 	m dogma.Command,
-	_ ...dogma.ExecuteCommandOption,
+	opts ...dogma.ExecuteCommandOption,
 ) error {
 	e.m.RLock()
 	defer e.m.RUnlock()
@@ -38,10 +38,10 @@ func (e *CommandExecutor) ExecuteCommand(
 	}
 
 	if e.interceptor != nil {
-		return e.interceptor(ctx, m, e.next)
+		return e.interceptor(ctx, m, opts, e.next)
 	}
 
-	return e.next.ExecuteCommand(ctx, m)
+	return e.next.ExecuteCommand(ctx, m, opts...)
 }
 
 // Bind sets the engine and options used to execute commands.
@@ -91,13 +91,13 @@ func (e *CommandExecutor) Intercept(fn CommandExecutorInterceptor) CommandExecut
 // to specify custom behavior for the dogma.CommandExecutor returned by
 // Test.CommandExecutor().
 //
-// m is the command being executed.
+// m and options are the arguments passed to ExecuteCommand().
 //
 // e can be used to execute the command as it would be executed without this
 // interceptor installed.
 type CommandExecutorInterceptor func(
 	ctx context.Context,
-	m dogma.Command,
+	m dogma.Command, options []dogma.ExecuteCommandOption,
 	e dogma.CommandExecutor,
 ) error
 

@@ -18,14 +18,14 @@ import (
 type Engine struct {
 	messageIDs envelope.MessageIDGenerator
 
-	// m protects the controllers, routes and resetters collections. The
-	// collections themselves are static and hence may be read without acquiring
-	// the mutex, but m must be held in order to call any method on a
-	// controller, or to call a resetter.
-	m           cosyne.Mutex
-	controllers map[string]controller
-	routes      map[message.Type][]controller
-	resetters   []func()
+	// The controllers and routes maps are static and may be read without
+	// acquiring the mutex, but m must be held to call any method on a
+	// controller, to call a resetter, or to read or write idempotencyKeys.
+	m               cosyne.Mutex
+	controllers     map[string]controller
+	routes          map[message.Type][]controller
+	resetters       []func()
+	idempotencyKeys map[string]struct{}
 }
 
 // New returns a new engine that uses the given app configuration.
@@ -36,9 +36,10 @@ func New(
 	opts := newEngineOptions(options)
 
 	e := &Engine{
-		controllers: map[string]controller{},
-		routes:      map[message.Type][]controller{},
-		resetters:   opts.resetters,
+		controllers:     map[string]controller{},
+		routes:          map[message.Type][]controller{},
+		resetters:       opts.resetters,
+		idempotencyKeys: map[string]struct{}{},
 	}
 
 	registerControllers(e, opts, app)
@@ -63,6 +64,7 @@ func (e *Engine) Reset() {
 	defer e.m.Unlock()
 
 	e.messageIDs.Reset()
+	clear(e.idempotencyKeys)
 
 	for _, c := range e.controllers {
 		c.Reset()
@@ -216,7 +218,7 @@ func (e *Engine) Dispatch(
 	err = e.m.Lock(ctx)
 	if err == nil {
 		defer e.m.Unlock()
-		err = e.dispatch(ctx, oo, env)
+		err = e.dispatchUnlessDuplicate(ctx, oo, env)
 	}
 
 	oo.observers.Notify(
@@ -229,6 +231,29 @@ func (e *Engine) Dispatch(
 	)
 
 	return err
+}
+
+func (e *Engine) dispatchUnlessDuplicate(
+	ctx context.Context,
+	oo *operationOptions,
+	env *envelope.Envelope,
+) error {
+	if oo.idempotencyKey == "" {
+		return e.dispatch(ctx, oo, env)
+	}
+
+	if _, seen := e.idempotencyKeys[oo.idempotencyKey]; seen {
+		oo.observers.Notify(fact.CommandDeduplicated{
+			Envelope: env,
+			Key:      oo.idempotencyKey,
+		})
+
+		return nil
+	}
+
+	e.idempotencyKeys[oo.idempotencyKey] = struct{}{}
+
+	return e.dispatch(ctx, oo, env)
 }
 
 func (e *Engine) dispatch(

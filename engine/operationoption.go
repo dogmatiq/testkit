@@ -100,6 +100,15 @@ func WithCurrentTime(t time.Time) OperationOption {
 	})
 }
 
+// WithIdempotencyKey returns an operation option that deduplicates commands
+// with the same key. The second and subsequent dispatches with the same key
+// are a no-op.
+func WithIdempotencyKey(key string) OperationOption {
+	return operationOptionFunc(func(_ *Engine, oo *operationOptions) {
+		oo.idempotencyKey = key
+	})
+}
+
 // operationOptions is a container for the options set via OperationOption
 // values.
 type operationOptions struct {
@@ -107,6 +116,7 @@ type operationOptions struct {
 	observers           fact.ObserverGroup
 	enabledHandlerTypes map[config.HandlerType]bool
 	enabledHandlers     map[string]bool
+	idempotencyKey      string
 }
 
 // newOperationOptions returns a new operationOptions with the given options.

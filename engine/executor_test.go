@@ -71,5 +71,33 @@ var _ = g.Describe("type CommandExecutor", func() {
 				executor.ExecuteCommand(context.Background(), CommandX1)
 			}).To(gm.PanicWith("the *stubs.CommandStub[TypeX] message type is not consumed by any handlers"))
 		})
+
+		g.It("deduplicates commands with the same idempotency key", func() {
+			callCount := 0
+			aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, _ dogma.AggregateCommandScope, _ dogma.Command) {
+				callCount++
+			}
+
+			err := executor.ExecuteCommand(context.Background(), CommandA1, dogma.WithIdempotencyKey("my-key"))
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(callCount).To(gm.Equal(1))
+
+			err = executor.ExecuteCommand(context.Background(), CommandA1, dogma.WithIdempotencyKey("my-key"))
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(callCount).To(gm.Equal(1))
+		})
+
+		g.It("does not deduplicate commands with different idempotency keys", func() {
+			callCount := 0
+			aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, _ dogma.AggregateCommandScope, _ dogma.Command) {
+				callCount++
+			}
+
+			err := executor.ExecuteCommand(context.Background(), CommandA1, dogma.WithIdempotencyKey("key-1"))
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			err = executor.ExecuteCommand(context.Background(), CommandA1, dogma.WithIdempotencyKey("key-2"))
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(callCount).To(gm.Equal(2))
+		})
 	})
 })

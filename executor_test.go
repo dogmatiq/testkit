@@ -51,6 +51,7 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 		doNothing = func(
 			context.Context,
 			dogma.Command,
+			[]dogma.ExecuteCommandOption,
 			dogma.CommandExecutor,
 		) error {
 			return nil
@@ -59,11 +60,12 @@ var _ = g.Describe("func InterceptCommandExecutor()", func() {
 		executeCommandAndReturnError = func(
 			ctx context.Context,
 			m dogma.Command,
+			opts []dogma.ExecuteCommandOption,
 			e dogma.CommandExecutor,
 		) error {
 			gm.Expect(m).To(gm.Equal(CommandA1))
 
-			err := e.ExecuteCommand(ctx, m)
+			err := e.ExecuteCommand(ctx, m, opts...)
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 
 			return errors.New("<error>")

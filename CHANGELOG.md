@@ -11,6 +11,17 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Added
+
+- Added support for `dogma.WithIdempotencyKey()`.
+
+### Changed
+
+- **[BC]** Updated `CommandExecutorInterceptor` to receive `[]dogma.ExecuteCommandOption`.
+- Bumped Dogma to v0.20.0.
+
 ## [0.20.0] - 2025-12-17
 
 - **[BC]** Bumped Dogma to v0.19.0.

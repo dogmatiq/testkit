@@ -152,6 +152,14 @@ var _ = g.Describe("type Logger", func() {
 				},
 			),
 			g.Entry(
+				"CommandDeduplicated",
+				`= 10  ∵ 10  ⋲ 10  ↻ ⚙    *stubs.CommandStub[TypeA]? ● command ignored because it's idempotency key "<key>" has already been used`,
+				CommandDeduplicated{
+					Envelope: command,
+					Key:      "<key>",
+				},
+			),
+			g.Entry(
 				"DispatchCompleted (success)",
 				"",
 				DispatchCompleted{

@@ -31,6 +31,8 @@ func (l *Logger) Notify(f Fact) {
 		l.dispatchCycleBegun(x)
 	case DispatchBegun:
 		l.dispatchBegun(x)
+	case CommandDeduplicated:
+		l.commandDeduplicated(x)
 	case HandlingCompleted:
 		l.handlingCompleted(x)
 	case HandlingSkipped:
@@ -110,6 +112,22 @@ func (l *Logger) dispatchBegun(f DispatchBegun) {
 		},
 		mt.String()+mt.Kind().Symbol(),
 		f.Envelope.Message.MessageDescription(),
+	)
+}
+
+// commandDeduplicated logs the message for f.
+func (l *Logger) commandDeduplicated(f CommandDeduplicated) {
+	mt := message.TypeOf(f.Envelope.Message)
+
+	l.log(
+		f.Envelope,
+		[]logging.Icon{
+			logging.RetryIcon,
+			logging.SystemIcon,
+			"",
+		},
+		mt.String()+mt.Kind().Symbol(),
+		fmt.Sprintf("command ignored because it's idempotency key %q has already been used", f.Key),
 	)
 }
 
