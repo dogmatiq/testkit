@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Added
 
 - Added support for `dogma.WithIdempotencyKey()`.
+- Added support for `dogma.WithEventObserver()`.
 
 ### Changed
 

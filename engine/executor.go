@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/testkit/fact"
 )
 
 // CommandExecutor adapts an Engine to the dogma.CommandExecutor interface.
@@ -25,7 +26,13 @@ func (e CommandExecutor) ExecuteCommand(
 	m dogma.Command,
 	opts ...dogma.ExecuteCommandOption,
 ) error {
-	options := e.Options
+	var (
+		options           = e.Options
+		observerSatisfied bool
+		observerError     error
+		hasObservers      bool
+	)
+
 	if len(opts) > 0 {
 		options = slices.Clone(options)
 
@@ -33,9 +40,69 @@ func (e CommandExecutor) ExecuteCommand(
 			switch o := opt.(type) {
 			case dogma.IdempotencyKeyOption:
 				options = append(options, WithIdempotencyKey(o.Key()))
+			case dogma.EventObserverOption:
+				hasObservers = true
+				adapted := adaptEventObserver(ctx, o, &observerSatisfied, &observerError)
+				options = append(options, WithObserver(adapted))
 			}
 		}
 	}
 
-	return e.Engine.Dispatch(ctx, m, options...)
+	if err := e.Engine.Dispatch(ctx, m, options...); err != nil {
+		return err
+	}
+
+	if !hasObservers {
+		return nil
+	}
+
+	if observerError != nil {
+		return observerError
+	}
+
+	if observerSatisfied {
+		return nil
+	}
+
+	return dogma.ErrEventObserverNotSatisfied
+}
+
+// adaptEventObserver adapts a [dogma.EventObserver] to a [fact.Observer].
+func adaptEventObserver(
+	ctx context.Context,
+	opt dogma.EventObserverOption,
+	observerSatisfied *bool,
+	observerErr *error,
+) fact.Observer {
+	observedType := opt.EventType().ID()
+	observe := opt.Observer()
+
+	return fact.ObserverFunc(func(f fact.Fact) {
+		if *observerSatisfied || *observerErr != nil {
+			return
+		}
+
+		var event dogma.Event
+
+		switch f := f.(type) {
+		case fact.EventRecordedByAggregate:
+			event = f.EventEnvelope.Message.(dogma.Event)
+		case fact.EventRecordedByIntegration:
+			event = f.EventEnvelope.Message.(dogma.Event)
+		default:
+			return
+		}
+
+		t, ok := dogma.RegisteredMessageTypeOf(event)
+		if !ok || t.ID() != observedType {
+			return
+		}
+
+		satisfied, err := observe(ctx, event)
+		if err != nil {
+			*observerErr = err
+		} else if satisfied {
+			*observerSatisfied = true
+		}
+	})
 }

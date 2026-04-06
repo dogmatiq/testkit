@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
@@ -98,6 +99,254 @@ var _ = g.Describe("type CommandExecutor", func() {
 			err = executor.ExecuteCommand(context.Background(), CommandA1, dogma.WithIdempotencyKey("key-2"))
 			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 			gm.Expect(callCount).To(gm.Equal(2))
+		})
+
+		g.It("supports WithEventObserver()", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			called := false
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called = true
+						gm.Expect(e).To(gm.Equal(EventA1))
+						return true, nil
+					},
+				),
+			)
+
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
+		})
+
+		g.It("returns the observer error", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(context.Context, *EventStub[TypeA]) (bool, error) {
+						return false, errors.New("<observer-error>")
+					},
+				),
+			)
+
+			gm.Expect(err).To(gm.MatchError("<observer-error>"))
+		})
+
+		g.It("returns ErrEventObserverNotSatisfied when observer is not called", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(context.Context, *EventStub[TypeB]) (bool, error) {
+						return true, nil
+					},
+				),
+			)
+
+			gm.Expect(err).To(gm.MatchError(dogma.ErrEventObserverNotSatisfied))
+		})
+
+		g.It("returns ErrEventObserverNotSatisfied when observer returns false", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			called := false
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called = true
+						gm.Expect(e).To(gm.Equal(EventA1))
+						return false, nil
+					},
+				),
+			)
+
+			gm.Expect(err).To(gm.MatchError(dogma.ErrEventObserverNotSatisfied))
+			gm.Expect(called).To(gm.BeTrue())
+		})
+
+		g.It("supports multiple event observers", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(context.Context, *EventStub[TypeB]) (bool, error) {
+						return true, nil
+					},
+				),
+				dogma.WithEventObserver(
+					func(context.Context, *EventStub[TypeA]) (bool, error) {
+						return true, nil
+					},
+				),
+			)
+
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+		})
+
+		g.It("returns ErrEventObserverNotSatisfied when all observers return false", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			called1 := false
+			called2 := false
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called1 = true
+						return false, nil
+					},
+				),
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called2 = true
+						return false, nil
+					},
+				),
+			)
+
+			gm.Expect(err).To(gm.MatchError(dogma.ErrEventObserverNotSatisfied))
+			gm.Expect(called1).To(gm.BeTrue())
+			gm.Expect(called2).To(gm.BeTrue())
+		})
+
+		g.It("returns success when any observer is satisfied among multiple", func() {
+			aggregate.HandleCommandFunc = func(
+				_ dogma.AggregateRoot,
+				s dogma.AggregateCommandScope,
+				_ dogma.Command,
+			) {
+				s.RecordEvent(EventA1)
+			}
+
+			called1 := false
+			called2 := false
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandA1,
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called1 = true
+						return false, nil
+					},
+				),
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeA]) (bool, error) {
+						called2 = true
+						return true, nil
+					},
+				),
+			)
+
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called1).To(gm.BeTrue())
+			gm.Expect(called2).To(gm.BeTrue())
+		})
+	})
+
+	g.Context("with an integration handler", func() {
+		var (
+			integration *IntegrationMessageHandlerStub
+		)
+
+		g.BeforeEach(func() {
+			integration = &IntegrationMessageHandlerStub{
+				ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+					c.Identity("<integration>", "c8b8a8e0-8e0a-4c2a-9f8e-8e0a4c2a9f8e")
+					c.Routes(
+						dogma.HandlesCommand[*CommandStub[TypeB]](),
+						dogma.RecordsEvent[*EventStub[TypeB]](),
+					)
+				},
+				HandleCommandFunc: func(
+					_ context.Context,
+					s dogma.IntegrationCommandScope,
+					_ dogma.Command,
+				) error {
+					s.RecordEvent(EventB1)
+					return nil
+				},
+			}
+
+			app = &ApplicationStub{
+				ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+					c.Identity("<app>", "d905114d-b026-4f1a-9bc6-3abd86058e2d")
+					c.Routes(
+						dogma.ViaIntegration(integration),
+					)
+				},
+			}
+
+			engine = MustNew(runtimeconfig.FromApplication(app))
+
+			executor = &CommandExecutor{
+				Engine: engine,
+			}
+		})
+
+		g.It("observer is called for integration-recorded events", func() {
+			called := false
+			err := executor.ExecuteCommand(
+				context.Background(),
+				CommandB1,
+				dogma.WithEventObserver(
+					func(_ context.Context, e *EventStub[TypeB]) (bool, error) {
+						called = true
+						gm.Expect(e).To(gm.Equal(EventB1))
+						return true, nil
+					},
+				),
+			)
+
+			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			gm.Expect(called).To(gm.BeTrue())
 		})
 	})
 })
