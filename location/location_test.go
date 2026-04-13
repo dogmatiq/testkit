@@ -1,98 +1,123 @@
 package location_test
 
 import (
+	"strings"
+	"testing"
+
+	"github.com/dogmatiq/testkit/internal/test"
 	. "github.com/dogmatiq/testkit/location"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = g.Describe("type Location", func() {
-	g.Describe("func OfFunc()", func() {
-		g.It("returns the expected location", func() {
+func TestLocation(t *testing.T) {
+	t.Run("func OfFunc()", func(t *testing.T) {
+		t.Run("it returns the expected location", func(t *testing.T) {
 			loc := OfFunc(doNothing)
 
-			gm.Expect(loc).To(MatchAllFields(
-				Fields{
-					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.doNothing"),
-					"File": gm.HaveSuffix("/location/linenumber_test.go"),
-					"Line": gm.Equal(50),
-				},
-			))
+			if got, want := loc.Func, "github.com/dogmatiq/testkit/location_test.doNothing"; got != want {
+				t.Fatalf("unexpected function name: got %q, want %q", got, want)
+			}
+
+			if !strings.HasSuffix(loc.File, "/location/linenumber_test.go") {
+				t.Fatalf("unexpected file name: got %q, want suffix %q", loc.File, "/location/linenumber_test.go")
+			}
+
+			if got, want := loc.Line, 50; got != want {
+				t.Fatalf("unexpected line number: got %d, want %d", got, want)
+			}
 		})
 
-		g.It("panics if the value is not a function", func() {
-			gm.Expect(func() {
+		t.Run("it panics if the value is not a function", func(t *testing.T) {
+			test.ExpectPanic(t, "fn must be a function", func() {
 				OfFunc("<not a function>")
-			}).To(gm.PanicWith("fn must be a function"))
+			})
 		})
 	})
 
-	g.Describe("func OfMethod()", func() {
-		g.It("returns the expected location", func() {
+	t.Run("func OfMethod()", func(t *testing.T) {
+		t.Run("it returns the expected location", func(t *testing.T) {
 			loc := OfMethod(ofMethodT{}, "Method")
 
-			gm.Expect(loc).To(MatchAllFields(
-				Fields{
-					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.ofMethodT.Method"),
-					"File": gm.HaveSuffix("/location/linenumber_test.go"),
-					"Line": gm.Equal(57),
-				},
-			))
+			if got, want := loc.Func, "github.com/dogmatiq/testkit/location_test.ofMethodT.Method"; got != want {
+				t.Fatalf("unexpected function name: got %q, want %q", got, want)
+			}
+
+			if !strings.HasSuffix(loc.File, "/location/linenumber_test.go") {
+				t.Fatalf("unexpected file name: got %q, want suffix %q", loc.File, "/location/linenumber_test.go")
+			}
+
+			if got, want := loc.Line, 57; got != want {
+				t.Fatalf("unexpected line number: got %d, want %d", got, want)
+			}
 		})
 
-		g.It("panics if the methods does not exist", func() {
-			gm.Expect(func() {
+		t.Run("it panics if the methods does not exist", func(t *testing.T) {
+			test.ExpectPanic(t, "method does not exist", func() {
 				OfMethod(ofMethodT{}, "DoesNotExist")
-			}).To(gm.PanicWith("method does not exist"))
+			})
 		})
 	})
 
-	g.Describe("func OfCall()", func() {
-		g.It("returns the expected location", func() {
+	t.Run("func OfCall()", func(t *testing.T) {
+		t.Run("it returns the expected location", func(t *testing.T) {
 			loc := ofCallLayer2()
 
-			gm.Expect(loc).To(MatchAllFields(
-				Fields{
-					"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.ofCallLayer2"),
-					"File": gm.HaveSuffix("/location/linenumber_test.go"),
-					"Line": gm.Equal(53),
-				},
-			))
+			if got, want := loc.Func, "github.com/dogmatiq/testkit/location_test.ofCallLayer2"; got != want {
+				t.Fatalf("unexpected function name: got %q, want %q", got, want)
+			}
+
+			if !strings.HasSuffix(loc.File, "/location/linenumber_test.go") {
+				t.Fatalf("unexpected file name: got %q, want suffix %q", loc.File, "/location/linenumber_test.go")
+			}
+
+			if got, want := loc.Line, 53; got != want {
+				t.Fatalf("unexpected line number: got %d, want %d", got, want)
+			}
 		})
 	})
 
-	g.Describe("func OfPanic()", func() {
-		g.It("returns the expected location", func() {
+	t.Run("func OfPanic()", func(t *testing.T) {
+		t.Run("it returns the expected location", func(t *testing.T) {
 			defer func() {
 				recover()
 				loc := OfPanic()
 
-				gm.Expect(loc).To(MatchAllFields(
-					Fields{
-						"Func": gm.Equal("github.com/dogmatiq/testkit/location_test.doPanic"),
-						"File": gm.HaveSuffix("/location/linenumber_test.go"),
-						"Line": gm.Equal(51),
-					},
-				))
+				if got, want := loc.Func, "github.com/dogmatiq/testkit/location_test.doPanic"; got != want {
+					t.Fatalf("unexpected function name: got %q, want %q", got, want)
+				}
+
+				if !strings.HasSuffix(loc.File, "/location/linenumber_test.go") {
+					t.Fatalf("unexpected file name: got %q, want suffix %q", loc.File, "/location/linenumber_test.go")
+				}
+
+				if got, want := loc.Line, 51; got != want {
+					t.Fatalf("unexpected line number: got %d, want %d", got, want)
+				}
 			}()
 
 			doPanic()
 		})
 	})
 
-	g.Describe("func String()", func() {
-		g.DescribeTable(
-			"it returns the expected string",
-			func(s string, l Location) {
-				gm.Expect(l.String()).To(gm.Equal(s))
-			},
-			g.Entry("empty", "<unknown>", Location{}),
-			g.Entry("function name only", "<function>(...)", Location{Func: "<function>"}),
-			g.Entry("function name only (global closure)", "<function glob..>(...)", Location{Func: "<function glob..>"}),
-			g.Entry("file location only", "<file>:123", Location{File: "<file>", Line: 123}),
-			g.Entry("both", "<file>:123 [<function>(...)]", Location{Func: "<function>", File: "<file>", Line: 123}),
-			g.Entry("both (global closure)", "<file>:123", Location{Func: "<function glob..>", File: "<file>", Line: 123}),
-		)
+	t.Run("func String()", func(t *testing.T) {
+		cases := []struct {
+			Name     string
+			Location Location
+			Want     string
+		}{
+			{"empty", Location{}, "<unknown>"},
+			{"function name only", Location{Func: "<function>"}, "<function>(...)"},
+			{"function name only (global closure)", Location{Func: "<function glob..>"}, "<function glob..>(...)"},
+			{"file location only", Location{File: "<file>", Line: 123}, "<file>:123"},
+			{"both", Location{Func: "<function>", File: "<file>", Line: 123}, "<file>:123 [<function>(...)]"},
+			{"both (global closure)", Location{Func: "<function glob..>", File: "<file>", Line: 123}, "<file>:123"},
+		}
+
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				if got := c.Location.String(); got != c.Want {
+					t.Fatalf("unexpected string representation: got %q, want %q", got, c.Want)
+				}
+			})
+		}
 	})
-})
+}

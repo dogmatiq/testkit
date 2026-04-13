@@ -1,33 +1,33 @@
 package envelope_test
 
 import (
+	"testing"
+
 	. "github.com/dogmatiq/testkit/envelope"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type MessageIDGenerator", func() {
-	var generator *MessageIDGenerator
+func TestMessageIDGenerator(t *testing.T) {
+	t.Run("func Next()", func(t *testing.T) {
+		t.Run("it returns the next ID in the sequence", func(t *testing.T) {
+			generator := &MessageIDGenerator{}
 
-	g.BeforeEach(func() {
-		generator = &MessageIDGenerator{}
-	})
-
-	g.Describe("func Next()", func() {
-		g.It("returns the next ID in the sequence", func() {
-			gm.Expect(generator.Next()).To(gm.Equal("1"))
-			gm.Expect(generator.Next()).To(gm.Equal("2"))
-			gm.Expect(generator.Next()).To(gm.Equal("3"))
+			test.Expect(t, "unexpected message ID", generator.Next(), "1")
+			test.Expect(t, "unexpected message ID", generator.Next(), "2")
+			test.Expect(t, "unexpected message ID", generator.Next(), "3")
 		})
 	})
 
-	g.Describe("func Reset()", func() {
-		g.It("returns the sequence to 1", func() {
+	t.Run("func Reset()", func(t *testing.T) {
+		t.Run("it returns the sequence to 1", func(t *testing.T) {
+			generator := &MessageIDGenerator{}
+
 			generator.Next()
 			generator.Next()
 			generator.Next()
 			generator.Reset()
-			gm.Expect(generator.Next()).To(gm.Equal("1"))
+
+			test.Expect(t, "unexpected message ID", generator.Next(), "1")
 		})
 	})
-})
+}
