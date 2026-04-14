@@ -2,97 +2,53 @@ package process_test
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
+	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	internaltest "github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type scope", func() {
-	var (
-		messageIDs envelope.MessageIDGenerator
-		handler    *ProcessMessageHandlerStub
-		cfg        *config.Process
-		ctrl       *Controller
-		event      *envelope.Envelope
-	)
+func TestScope(t *testing.T) {
+	t.Run("InstanceID", func(t *testing.T) {
+		env := newProcessScopeTestEnv()
+		called := false
 
-	g.BeforeEach(func() {
-		event = envelope.NewEvent(
-			"1000",
-			EventA1,
+		env.handler.HandleEventFunc = func(
+			_ context.Context,
+			_ dogma.ProcessRoot,
+			s dogma.ProcessEventScope,
+			_ dogma.Event,
+		) error {
+			called = true
+			internaltest.Expect(t, "unexpected instance ID", s.InstanceID(), "<instance>")
+			return nil
+		}
+
+		_, err := env.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
 			time.Now(),
+			env.event,
 		)
+		expectNoError(t, err)
 
-		handler = &ProcessMessageHandlerStub{
-			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
-				c.Routes(
-					dogma.HandlesEvent[*EventStub[TypeA]](),
-					dogma.ExecutesCommand[*CommandStub[TypeA]](),
-					dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
-				)
-			},
-			RouteEventToInstanceFunc: func(
-				_ context.Context,
-				m dogma.Event,
-			) (string, bool, error) {
-				switch m.(type) {
-				case *EventStub[TypeA]:
-					return "<instance>", true, nil
-				default:
-					panic(dogma.UnexpectedMessage)
-				}
-			},
+		if !called {
+			t.Fatal("expected HandleEvent() to be called")
 		}
-
-		cfg = runtimeconfig.FromProcess(handler)
-
-		ctrl = &Controller{
-			Config:     cfg,
-			MessageIDs: &messageIDs,
-		}
-
-		messageIDs.Reset() // reset after setup for a predictable ID.
 	})
 
-	g.Describe("func InstanceID()", func() {
-		g.It("returns the instance ID", func() {
-			called := false
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
-				_ dogma.Event,
-			) error {
-				called = true
-				gm.Expect(s.InstanceID()).To(gm.Equal("<instance>"))
-				return nil
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(called).To(gm.BeTrue())
-		})
-	})
-
-	g.Describe("func End()", func() {
-		g.It("records a fact", func() {
-			handler.HandleEventFunc = func(
+	t.Run("End", func(t *testing.T) {
+		t.Run("records a fact", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -103,26 +59,42 @@ var _ = g.Describe("type scope", func() {
 			}
 
 			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
+			_, err := env.ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),
-				event,
+				env.event,
 			)
+			expectNoError(t, err)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.ProcessInstanceEnded{
-					Handler:    cfg,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
-					Envelope:   event,
+			expectFacts(
+				t,
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceNotFound{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceBegun{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceEnded{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
 				},
-			))
+			)
 		})
 
-		g.It("does nothing if the instance has already been ended", func() {
-			handler.HandleEventFunc = func(
+		t.Run("does nothing if the instance has already been ended", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -130,26 +102,48 @@ var _ = g.Describe("type scope", func() {
 			) error {
 				s.End()
 				s.End()
-
 				return nil
 			}
 
 			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
+			_, err := env.ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),
-				event,
+				env.event,
 			)
+			expectNoError(t, err)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.HaveLen(3)) // not found, instance begun, instance ended (once)
+			expectFacts(
+				t,
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceNotFound{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceBegun{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceEnded{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
+				},
+			)
 		})
 	})
 
-	g.Describe("func ExecuteCommand()", func() {
-		g.It("records a fact", func() {
-			handler.HandleEventFunc = func(
+	t.Run("ExecuteCommand", func(t *testing.T) {
+		t.Run("records a fact", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -161,36 +155,52 @@ var _ = g.Describe("type scope", func() {
 
 			buf := &fact.Buffer{}
 			now := time.Now()
-			_, err := ctrl.Handle(
+			_, err := env.ctrl.Handle(
 				context.Background(),
 				buf,
 				now,
-				event,
+				env.event,
 			)
+			expectNoError(t, err)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.CommandExecutedByProcess{
-					Handler:    cfg,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
-					Envelope:   event,
-					CommandEnvelope: event.NewCommand(
-						"1",
-						CommandA1,
-						now,
-						envelope.Origin{
-							Handler:     cfg,
-							HandlerType: config.ProcessHandlerType,
-							InstanceID:  "<instance>",
-						},
-					),
+			expectFacts(
+				t,
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceNotFound{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceBegun{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
+					fact.CommandExecutedByProcess{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+						CommandEnvelope: env.event.NewCommand(
+							"1",
+							CommandA1,
+							now,
+							envelope.Origin{
+								Handler:     env.cfg,
+								HandlerType: config.ProcessHandlerType,
+								InstanceID:  "<instance>",
+							},
+						),
+					},
 				},
-			))
+			)
 		})
 
-		g.It("panics if the command type is not configured to be produced", func() {
-			handler.HandleEventFunc = func(
+		t.Run("panics if the command type is not configured to be produced", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -200,36 +210,31 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
 		})
 
-		g.It("panics if the command is invalid", func() {
-			handler.HandleEventFunc = func(
+		t.Run("panics if the command is invalid", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -241,36 +246,31 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed an invalid *stubs.CommandStub[TypeA] command: <invalid>"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "executed an invalid *stubs.CommandStub[TypeA] command: <invalid>",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
 		})
 
-		g.It("panics if the process has ended", func() {
-			handler.HandleEventFunc = func(
+		t.Run("panics if the process has ended", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -281,82 +281,92 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("executed a command of type *stubs.CommandStub[TypeA] on an ended process"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "executed a command of type *stubs.CommandStub[TypeA] on an ended process",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
 		})
 	})
 
-	g.Describe("func ScheduleTimeout()", func() {
-		g.It("records a fact", func() {
-			t := time.Now().Add(10 * time.Second)
-
-			handler.HandleEventFunc = func(
+	t.Run("ScheduleTimeout", func(t *testing.T) {
+		t.Run("records a fact", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			scheduledFor := time.Now().Add(10 * time.Second)
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(TimeoutA1, t)
+				s.ScheduleTimeout(TimeoutA1, scheduledFor)
 				return nil
 			}
 
 			buf := &fact.Buffer{}
 			now := time.Now()
-			_, err := ctrl.Handle(
+			_, err := env.ctrl.Handle(
 				context.Background(),
 				buf,
 				now,
-				event,
+				env.event,
 			)
+			expectNoError(t, err)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.TimeoutScheduledByProcess{
-					Handler:    cfg,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
-					Envelope:   event,
-					TimeoutEnvelope: event.NewTimeout(
-						"1",
-						TimeoutA1,
-						now,
-						t,
-						envelope.Origin{
-							Handler:     cfg,
-							HandlerType: config.ProcessHandlerType,
-							InstanceID:  "<instance>",
-						},
-					),
+			expectFacts(
+				t,
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceNotFound{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Envelope:   env.event,
+					},
+					fact.ProcessInstanceBegun{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+					},
+					fact.TimeoutScheduledByProcess{
+						Handler:    env.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   env.event,
+						TimeoutEnvelope: env.event.NewTimeout(
+							"1",
+							TimeoutA1,
+							now,
+							scheduledFor,
+							envelope.Origin{
+								Handler:     env.cfg,
+								HandlerType: config.ProcessHandlerType,
+								InstanceID:  "<instance>",
+							},
+						),
+					},
 				},
-			))
+			)
 		})
 
-		g.It("panics if the timeout type is not configured to be scheduled", func() {
-			handler.HandleEventFunc = func(
+		t.Run("panics if the timeout type is not configured to be scheduled", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
@@ -366,40 +376,35 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled a timeout of type *stubs.TimeoutStub[TypeX], which is not produced by this handler"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeX], which is not produced by this handler",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
 		})
 
-		g.It("panics if the timeout is invalid", func() {
-			handler.HandleEventFunc = func(
+		t.Run("panics if the timeout is invalid", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
-				m dogma.Event,
+				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(
 					&TimeoutStub[TypeA]{
@@ -410,155 +415,215 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled an invalid *stubs.TimeoutStub[TypeA] timeout: <invalid>"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "scheduled an invalid *stubs.TimeoutStub[TypeA] timeout: <invalid>",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
 		})
 
-		g.It("panics if the process has ended", func() {
-			t := time.Now().Add(10 * time.Second)
-
-			handler.HandleEventFunc = func(
+		t.Run("panics if the process has ended", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			scheduledFor := time.Now().Add(10 * time.Second)
+			env.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ dogma.ProcessRoot,
 				s dogma.ProcessEventScope,
 				_ dogma.Event,
 			) error {
 				s.End()
-				s.ScheduleTimeout(TimeoutA1, t)
+				s.ScheduleTimeout(TimeoutA1, scheduledFor)
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					event,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("ProcessMessageHandler"),
-						"Method":         gm.Equal("HandleEvent"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(event.Message),
-						"Description":    gm.Equal("scheduled a timeout of type *stubs.TimeoutStub[TypeA] on an ended process"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/process/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
-		})
-	})
-
-	g.Describe("func ScheduledFor()", func() {
-		g.It("returns the time that the timeout message was scheduled to occur", func() {
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event, // create the instance
-			)
-
-			timeout := event.NewTimeout(
-				"2000",
-				TimeoutA1,
-				time.Now(),
-				time.Now().Add(10*time.Second),
-				envelope.Origin{
-					Handler:     cfg,
-					HandlerType: config.ProcessHandlerType,
-					InstanceID:  "<instance>",
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
 				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Source.Get(),
+					Message:        env.event.Message,
+					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeA] on an ended process",
+				},
+				"/engine/internal/process/scope_test.go",
 			)
-
-			handler.HandleTimeoutFunc = func(
-				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessTimeoutScope,
-				_ dogma.Timeout,
-			) error {
-				gm.Expect(s.ScheduledFor()).To(gm.BeTemporally("==", timeout.ScheduledFor))
-				return nil
-			}
-
-			_, err = ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				timeout,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 	})
 
-	g.Describe("func Log()", func() {
-		g.BeforeEach(func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
-				_ dogma.Event,
-			) error {
-				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return nil
+	t.Run("ScheduledFor", func(t *testing.T) {
+		env := newProcessScopeTestEnv()
+
+		_, err := env.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			env.event,
+		)
+		expectNoError(t, err)
+
+		timeout := env.event.NewTimeout(
+			"2000",
+			TimeoutA1,
+			time.Now(),
+			time.Now().Add(10*time.Second),
+			envelope.Origin{
+				Handler:     env.cfg,
+				HandlerType: config.ProcessHandlerType,
+				InstanceID:  "<instance>",
+			},
+		)
+
+		env.handler.HandleTimeoutFunc = func(
+			_ context.Context,
+			_ dogma.ProcessRoot,
+			s dogma.ProcessTimeoutScope,
+			_ dogma.Timeout,
+		) error {
+			if !s.ScheduledFor().Equal(timeout.ScheduledFor) {
+				t.Fatalf(
+					"unexpected scheduled time: got %s, want %s",
+					s.ScheduledFor(),
+					timeout.ScheduledFor,
+				)
 			}
-		})
+			return nil
+		}
 
-		g.It("records a fact", func() {
-			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
-				context.Background(),
-				buf,
-				time.Now(),
-				event,
-			)
+		_, err = env.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			timeout,
+		)
+		expectNoError(t, err)
+	})
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.MessageLoggedByProcess{
-					Handler:    cfg,
+	t.Run("Log", func(t *testing.T) {
+		env := newProcessScopeTestEnv()
+		env.handler.HandleEventFunc = func(
+			_ context.Context,
+			_ dogma.ProcessRoot,
+			s dogma.ProcessEventScope,
+			_ dogma.Event,
+		) error {
+			s.Log("<format>", "<arg-1>", "<arg-2>")
+			return nil
+		}
+
+		buf := &fact.Buffer{}
+		_, err := env.ctrl.Handle(
+			context.Background(),
+			buf,
+			time.Now(),
+			env.event,
+		)
+		expectNoError(t, err)
+
+		expectFacts(
+			t,
+			buf.Facts(),
+			[]fact.Fact{
+				fact.ProcessInstanceNotFound{
+					Handler:    env.cfg,
+					InstanceID: "<instance>",
+					Envelope:   env.event,
+				},
+				fact.ProcessInstanceBegun{
+					Handler:    env.cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
-					Envelope:   event,
+					Envelope:   env.event,
+				},
+				fact.MessageLoggedByProcess{
+					Handler:    env.cfg,
+					InstanceID: "<instance>",
+					Root:       &ProcessRootStub{},
+					Envelope:   env.event,
 					LogFormat:  "<format>",
 					LogArguments: []any{
 						"<arg-1>",
 						"<arg-2>",
 					},
 				},
-			))
-		})
+			},
+		)
 	})
-})
+}
+
+type processScopeTestEnv struct {
+	messageIDs envelope.MessageIDGenerator
+	handler    *ProcessMessageHandlerStub
+	cfg        *config.Process
+	ctrl       *Controller
+	event      *envelope.Envelope
+}
+
+func newProcessScopeTestEnv() *processScopeTestEnv {
+	event := envelope.NewEvent(
+		"1000",
+		EventA1,
+		time.Now(),
+	)
+
+	handler := &ProcessMessageHandlerStub{
+		ConfigureFunc: func(c dogma.ProcessConfigurer) {
+			c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
+			c.Routes(
+				dogma.HandlesEvent[*EventStub[TypeA]](),
+				dogma.ExecutesCommand[*CommandStub[TypeA]](),
+				dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
+			)
+		},
+		RouteEventToInstanceFunc: func(
+			_ context.Context,
+			m dogma.Event,
+		) (string, bool, error) {
+			switch m.(type) {
+			case *EventStub[TypeA]:
+				return "<instance>", true, nil
+			default:
+				panic(dogma.UnexpectedMessage)
+			}
+		},
+	}
+
+	cfg := runtimeconfig.FromProcess(handler)
+	env := &processScopeTestEnv{
+		handler: handler,
+		cfg:     cfg,
+		event:   event,
+	}
+
+	env.ctrl = &Controller{
+		Config:     cfg,
+		MessageIDs: &env.messageIDs,
+	}
+
+	env.messageIDs.Reset()
+
+	return env
+}
