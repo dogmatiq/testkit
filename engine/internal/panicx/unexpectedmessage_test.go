@@ -1,16 +1,17 @@
 package panicx_test
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type UnexpectedMessage", func() {
+func TestUnexpectedMessage(t *testing.T) {
 	config := runtimeconfig.FromProjection(
 		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -22,33 +23,36 @@ var _ = g.Describe("type UnexpectedMessage", func() {
 		},
 	)
 
-	g.Describe("func String()", func() {
-		g.It("returns a description of the panic", func() {
-			defer func() {
-				r := recover()
-				gm.Expect(r).To(gm.BeAssignableToTypeOf(UnexpectedMessage{}))
+	t.Run("func String()", func(t *testing.T) {
+		defer func() {
+			r := recover()
+			x, ok := r.(UnexpectedMessage)
+			if !ok {
+				t.Fatalf("expected UnexpectedMessage panic, got %T", r)
+			}
 
-				x := r.(UnexpectedMessage)
-				gm.Expect(x.String()).To(gm.Equal(
-					"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type *stubs.EventStub[TypeX]",
-				))
-			}()
-
-			EnrichUnexpectedMessage(
-				config,
-				"<interface>",
-				"<method>",
-				config.Source.Get(),
-				EventX1,
-				func() {
-					panic(dogma.UnexpectedMessage)
-				},
+			test.Expect(
+				t,
+				"unexpected string representation",
+				x.String(),
+				"the '<name>' projection message handler did not expect *stubs.ProjectionMessageHandlerStub.<method>() to be called with a message of type *stubs.EventStub[TypeX]",
 			)
-		})
-	})
-})
+		}()
 
-var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
+		EnrichUnexpectedMessage(
+			config,
+			"<interface>",
+			"<method>",
+			config.Source.Get(),
+			EventX1,
+			func() {
+				panic(dogma.UnexpectedMessage)
+			},
+		)
+	})
+}
+
+func TestEnrichUnexpectedMessage(t *testing.T) {
 	config := runtimeconfig.FromProjection(
 		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -60,7 +64,7 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 		},
 	)
 
-	g.It("calls the function", func() {
+	t.Run("calls the function", func(t *testing.T) {
 		called := false
 
 		EnrichUnexpectedMessage(
@@ -74,51 +78,59 @@ var _ = g.Describe("func EnrichUnexpectedMessage()", func() {
 			},
 		)
 
-		gm.Expect(called).To(gm.BeTrue())
+		test.Expect(t, "expected function to be called", called, true)
 	})
 
-	g.It("propagates panic values", func() {
-		gm.Expect(func() {
-			EnrichUnexpectedMessage(
-				config,
-				"<interface>",
-				"<method>",
-				config.Source.Get(),
-				EventX1,
-				func() {
-					panic("<panic>")
-				},
-			)
-		}).To(gm.PanicWith("<panic>"))
+	t.Run("propagates panic values", func(t *testing.T) {
+		defer func() {
+			r := recover()
+			test.Expect(t, "unexpected panic value", r, "<panic>")
+		}()
+
+		EnrichUnexpectedMessage(
+			config,
+			"<interface>",
+			"<method>",
+			config.Source.Get(),
+			EventX1,
+			func() {
+				panic("<panic>")
+			},
+		)
 	})
 
-	g.It("converts UnexpectedMessage values", func() {
-		gm.Expect(func() {
-			EnrichUnexpectedMessage(
-				config,
-				"<interface>",
-				"<method>",
-				config.Source.Get(),
-				EventX1,
-				doPanic,
+	t.Run("converts UnexpectedMessage values", func(t *testing.T) {
+		defer func() {
+			r := recover()
+			x, ok := r.(UnexpectedMessage)
+			if !ok {
+				t.Fatalf("expected UnexpectedMessage panic, got %T", r)
+			}
+
+			test.Expect(t, "unexpected handler", x.Handler, config)
+			test.Expect(t, "unexpected interface", x.Interface, "<interface>")
+			test.Expect(t, "unexpected method", x.Method, "<method>")
+			test.Expect(t, "unexpected implementation", x.Implementation, config.Source.Get())
+			test.Expect(t, "unexpected message", x.Message, EventX1)
+			test.Expect(
+				t,
+				"unexpected panic location func",
+				x.PanicLocation.Func,
+				"github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic",
 			)
-		}).To(gm.PanicWith(
-			MatchAllFields(
-				Fields{
-					"Handler":        gm.Equal(config),
-					"Interface":      gm.Equal("<interface>"),
-					"Method":         gm.Equal("<method>"),
-					"Implementation": gm.Equal(config.Source.Get()),
-					"Message":        gm.Equal(EventX1),
-					"PanicLocation": MatchAllFields(
-						Fields{
-							"Func": gm.Equal("github.com/dogmatiq/testkit/engine/internal/panicx_test.doPanic"),
-							"File": gm.HaveSuffix("/engine/internal/panicx/linenumber_test.go"),
-							"Line": gm.Equal(50),
-						},
-					),
-				},
-			),
-		))
+			if !strings.HasSuffix(x.PanicLocation.File, "/engine/internal/panicx/linenumber_test.go") {
+				t.Fatalf("unexpected panic location file: %s", x.PanicLocation.File)
+			}
+			test.Expect(t, "unexpected panic location line", x.PanicLocation.Line, 50)
+		}()
+
+		EnrichUnexpectedMessage(
+			config,
+			"<interface>",
+			"<method>",
+			config.Source.Get(),
+			EventX1,
+			doPanic,
+		)
 	})
-})
+}
