@@ -2,22 +2,15 @@ package testkit_test
 
 import (
 	"context"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-		test     *Test
-	)
-
+func TestToRecordEvent_WhenUsedWithCallAction(t *testing.T) {
 	type (
 		CommandThatIsIgnored    = CommandStub[TypeX]
 		CommandThatRecordsEvent = CommandStub[TypeE]
@@ -26,81 +19,78 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 		EventThatIsNeverRecorded = EventStub[TypeX]
 	)
 
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "58067ffe-c1d6-4097-8acb-c55a7936cb4b")
 
-		app = &ApplicationStub{
-			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "58067ffe-c1d6-4097-8acb-c55a7936cb4b")
+			c.Routes(
+				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatIsIgnored](),
 
-				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
-							c.Routes(
-								dogma.HandlesCommand[*CommandThatIsIgnored](),
+							dogma.HandlesCommand[*CommandThatRecordsEvent](),
+							dogma.RecordsEvent[*EventThatIsRecorded](),
+							dogma.RecordsEvent[*EventThatIsNeverRecorded](),
+						)
+					},
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
+						return "<instance>"
+					},
+					HandleCommandFunc: func(
+						_ dogma.AggregateRoot,
+						s dogma.AggregateCommandScope,
+						m dogma.Command,
+					) {
+						switch m := m.(type) {
+						case *CommandThatRecordsEvent:
+							s.RecordEvent(&EventThatIsRecorded{
+								Content: m.Content,
+							})
+						}
+					},
+				}),
+			)
+		},
+	}
 
-								dogma.HandlesCommand[*CommandThatRecordsEvent](),
-								dogma.RecordsEvent[*EventThatIsRecorded](),
-								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							_ dogma.AggregateRoot,
-							s dogma.AggregateCommandScope,
-							m dogma.Command,
-						) {
-							switch m := m.(type) {
-							case *CommandThatRecordsEvent:
-								s.RecordEvent(&EventThatIsRecorded{
-									Content: m.Content,
-								})
-							}
-						},
-					}),
-				)
-			},
-		}
-	})
+	executeCommandViaExecutor := func(tb *testing.T, tc *Test, m dogma.Command) Action {
+		tb.Helper()
 
-	executeCommandViaExecutor := func(m dogma.Command) Action {
 		return Call(func() {
-			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			err := tc.CommandExecutor().ExecuteCommand(context.Background(), m)
+			if err != nil {
+				tb.Fatalf("unexpected execute error: %v", err)
+			}
 		})
 	}
 
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			a Action,
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-			options ...TestOption,
-		) {
-			test = Begin(testingT, app, options...)
-			test.Expect(a, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
-		},
-		g.Entry(
+	cases := []struct {
+		Name        string
+		Action      func(*testing.T, *Test) Action
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+		Options     []TestOption
+	}{
+		{
 			"event recorded as expected",
-			executeCommandViaExecutor(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return executeCommandViaExecutor(t, tc, &CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
 			expectPass,
 			expectReport(
 				`✓ record a specific '*stubs.EventStub[TypeE]' event`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching event recorded",
-			executeCommandViaExecutor(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return executeCommandViaExecutor(t, tc, &CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsNeverRecorded{}),
 			expectFail,
 			expectReport(
@@ -114,10 +104,13 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no messages produced at all",
-			Call(func() {}),
+			func(*testing.T, *Test) Action {
+				return Call(func() {})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
@@ -129,10 +122,13 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no events recorded at all",
-			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			func(t *testing.T, tc *Test) Action {
+				return executeCommandViaExecutor(t, tc, &CommandThatIsIgnored{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
 			expectFail,
 			expectReport(
@@ -146,6 +142,21 @@ var _ = g.Describe("func ToRecordEvent() (when used with the Call() action)", fu
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 				`  |     • verify the logic within the code that uses the dogma.EventRecorder`,
 			),
-		),
-	)
-})
+			nil,
+		},
+	}
+
+	for _, c := range cases {
+		c := c
+		t.Run(c.Name, func(t *testing.T) {
+			mt := &testingmock.T{FailSilently: true}
+			tc := Begin(mt, app, c.Options...)
+			tc.Expect(c.Action(t, tc), c.Expectation)
+			c.Report(mt)
+
+			if mt.Failed() != !c.Passes {
+				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+			}
+		})
+	}
+}
