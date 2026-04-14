@@ -3,81 +3,62 @@ package testkit_test
 import (
 	"context"
 	"reflect"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func DefaultMessageComparator()", func() {
-	g.When("the messages are equal", func() {
-		g.DescribeTable(
-			"it returns true",
-			func(a, b dogma.Message) {
-				gm.Expect(
-					DefaultMessageComparator(a, b),
-				).To(gm.BeTrue())
-			},
-			g.Entry(
-				"plain struct",
-				CommandA1,
-				CommandA1,
-			),
-			g.Entry(
-				"protocol buffers",
-				&ProtoMessage{Value: "<value>"},
-				&ProtoMessage{Value: "<value>"},
-			),
-		)
+func TestDefaultMessageComparator(t *testing.T) {
+	t.Run("the messages are equal", func(t *testing.T) {
+		t.Run("plain struct", func(t *testing.T) {
+			if !DefaultMessageComparator(CommandA1, CommandA1) {
+				t.Fatal("expected messages to be equal")
+			}
+		})
 
-		g.It("ignores unexported fields when comparing protocol buffers messages", func() {
+		t.Run("protocol buffers", func(t *testing.T) {
+			if !DefaultMessageComparator(&ProtoMessage{Value: "<value>"}, &ProtoMessage{Value: "<value>"}) {
+				t.Fatal("expected messages to be equal")
+			}
+		})
+
+		t.Run("it ignores unexported fields when comparing protocol buffers messages", func(t *testing.T) {
 			a := &ProtoMessage{Value: "<value>"}
 			b := &ProtoMessage{Value: "<value>"}
 
-			g.By("initializing the unexported fields within one of the messages")
 			_ = a.String()
 
-			gm.Expect(
-				reflect.DeepEqual(a, b),
-			).To(
-				gm.BeFalse(),
-				"unexported fields do not differ",
-			)
+			if reflect.DeepEqual(a, b) {
+				t.Fatal("unexported fields do not differ")
+			}
 
-			gm.Expect(
-				DefaultMessageComparator(a, b),
-			).To(gm.BeTrue())
+			if !DefaultMessageComparator(a, b) {
+				t.Fatal("expected comparator to ignore unexported fields")
+			}
 		})
 	})
 
-	g.When("the messages are not equal", func() {
-		g.DescribeTable(
-			"it returns false",
-			func(a, b dogma.Message) {
-				gm.Expect(
-					DefaultMessageComparator(a, b),
-				).To(gm.BeFalse())
-			},
-			g.Entry(
-				"different types",
-				CommandA1,
-				CommandB1,
-			),
-			g.Entry(
-				"protocol buffers",
-				&ProtoMessage{Value: "<value-a>"},
-				&ProtoMessage{Value: "<value-b>"},
-			),
-		)
-	})
-})
+	t.Run("the messages are not equal", func(t *testing.T) {
+		t.Run("different types", func(t *testing.T) {
+			if DefaultMessageComparator(CommandA1, CommandB1) {
+				t.Fatal("expected messages to be different")
+			}
+		})
 
-var _ = g.Describe("func WithMessageComparator()", func() {
-	g.It("configures how messages are compared", func() {
+		t.Run("protocol buffers", func(t *testing.T) {
+			if DefaultMessageComparator(&ProtoMessage{Value: "<value-a>"}, &ProtoMessage{Value: "<value-b>"}) {
+				t.Fatal("expected messages to be different")
+			}
+		})
+	})
+}
+
+func TestWithMessageComparator(t *testing.T) {
+	t.Run("it configures how messages are compared", func(t *testing.T) {
 		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "7cb41db6-0116-4d03-80d7-277cc391b47e")
@@ -120,4 +101,4 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 				ToRecordEvent(EventA2), // this would fail without our custom comparator
 			)
 	})
-})
+}
