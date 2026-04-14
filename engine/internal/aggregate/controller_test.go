@@ -15,8 +15,8 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 	"github.com/dogmatiq/testkit/location"
-	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestControllerHandlerConfig(t *testing.T) {

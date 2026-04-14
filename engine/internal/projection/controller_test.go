@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 type controllerTestFixture struct {

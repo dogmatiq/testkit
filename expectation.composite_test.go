@@ -7,7 +7,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func newCompositeFixture() (*testingmock.T, *Test) {
@@ -68,7 +68,6 @@ func TestAllOf(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)
@@ -161,7 +160,6 @@ func TestAnyOf(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)
@@ -255,7 +253,6 @@ func TestNoneOf(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)

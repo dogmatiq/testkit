@@ -2,6 +2,7 @@ package testkit_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -9,7 +10,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToRecordEvent(t *testing.T) {
@@ -257,7 +258,6 @@ func TestToRecordEvent(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -311,7 +311,7 @@ func TestToRecordEvent_UnrecognizedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !containsString(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+	if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
 		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
 	}
 }
@@ -357,7 +357,7 @@ func TestToRecordEvent_UnproducedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !containsString(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+	if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
 		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }

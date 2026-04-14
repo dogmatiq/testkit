@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestString(t *testing.T) {

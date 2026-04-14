@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestNot(t *testing.T) {
@@ -67,7 +67,6 @@ func TestNot(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			c := c
 			t.Run(c.Name, func(t *testing.T) {
 				mt, tc := newFixture()
 				tc.Expect(ExecuteCommand(CommandA1), c.Expectation)

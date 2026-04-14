@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestObserverGroup(t *testing.T) {

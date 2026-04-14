@@ -3,13 +3,14 @@ package testkit_test
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToOnlyExecuteCommandsMatching(t *testing.T) {
@@ -86,7 +87,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:84`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:85`,
 			),
 			nil,
 		},
@@ -102,7 +103,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:100`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:101`,
 			),
 			nil,
 		},
@@ -118,7 +119,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:115`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:116`,
 			),
 			nil,
 		},
@@ -134,7 +135,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:131`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:132`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -167,7 +168,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:157`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:158`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -193,7 +194,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:190`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:191`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -210,7 +211,6 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -243,7 +243,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})
@@ -263,7 +263,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
+		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

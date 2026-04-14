@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/internal/inflect"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestInflect(t *testing.T) {

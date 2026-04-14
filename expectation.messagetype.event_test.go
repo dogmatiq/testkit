@@ -2,6 +2,7 @@ package testkit_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -232,7 +233,6 @@ func TestToRecordEventType(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -256,7 +256,7 @@ func TestToRecordEventType(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+		if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})
@@ -272,7 +272,7 @@ func TestToRecordEventType(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+		if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

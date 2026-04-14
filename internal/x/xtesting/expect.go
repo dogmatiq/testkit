@@ -3,7 +3,6 @@ package xtesting
 import (
 	"fmt"
 	"reflect"
-	"runtime/debug"
 	"strings"
 
 	"github.com/dogmatiq/enginekit/enginetest/stubs"
@@ -21,7 +20,8 @@ type TestingT interface {
 	Failed() bool
 }
 
-// Expect compares two values and fails the test if they are different.
+// defaultOptions returns the default cmp.Options applied to every comparison,
+// merged with any caller-provided options.
 func defaultOptions(options []cmp.Option) []cmp.Option {
 	return append(
 		[]cmp.Option{
@@ -118,16 +118,9 @@ func ExpectPanic(
 		t.Helper()
 
 		got := recover()
-
-		if got != nil {
-			defer func() {
-				t.Helper()
-
-				if t.Failed() {
-					m := "\n=== stack trace ===\n\n" + string(debug.Stack())
-					t.Log(m)
-				}
-			}()
+		if got == nil {
+			t.Fatal("expected a panic, but the function returned normally")
+			return
 		}
 
 		Expect(

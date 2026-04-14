@@ -2,6 +2,7 @@ package testkit_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToExecuteCommand(t *testing.T) {
@@ -229,7 +230,6 @@ func TestToExecuteCommand(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -290,7 +290,7 @@ func TestToExecuteCommand_UnrecognizedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !containsString(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+	if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
 		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
 	}
 }
@@ -321,7 +321,7 @@ func TestToExecuteCommand_UnproducedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !containsString(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
+	if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
 		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }
@@ -338,13 +338,4 @@ func TestToExecuteCommand_InvalidMessage(t *testing.T) {
 			ValidationError: "<invalid>",
 		})
 	})
-}
-
-func containsString(ss []string, want string) bool {
-	for _, s := range ss {
-		if s == want {
-			return true
-		}
-	}
-	return false
 }

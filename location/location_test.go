@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 	. "github.com/dogmatiq/testkit/location"
-	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestLocation(t *testing.T) {

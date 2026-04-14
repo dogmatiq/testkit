@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	. "github.com/dogmatiq/testkit/envelope"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestMessageIDGenerator(t *testing.T) {

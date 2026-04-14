@@ -3,6 +3,7 @@ package testkit_test
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -10,7 +11,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToRecordEventMatching(t *testing.T) {
@@ -121,7 +122,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:114`,
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:115`,
 			),
 			nil,
 		},
@@ -141,7 +142,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:134`,
+				`✓ record an event that matches the predicate near expectation.messagematch.event_test.go:135`,
 			),
 			nil,
 		},
@@ -157,7 +158,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:154`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:155`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -184,7 +185,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:181`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:182`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -208,7 +209,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:205`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:206`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -231,7 +232,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:228`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:229`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no events were recorded at all`,
@@ -254,7 +255,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:251`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:252`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -282,7 +283,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:279`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:280`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -308,7 +309,7 @@ func TestToRecordEventMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:305`,
+				`✗ record an event that matches the predicate near expectation.messagematch.event_test.go:306`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers recorded a matching event`,
@@ -343,15 +344,14 @@ func TestToRecordEventMatching(t *testing.T) {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:334`,
-				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:338`,
+				`    ✓ record an event that matches the predicate near expectation.messagematch.event_test.go:335`,
+				`    ✗ record an event that matches the predicate near expectation.messagematch.event_test.go:339`,
 			),
 			nil,
 		},
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -384,7 +384,7 @@ func TestToRecordEventMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+		if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})
@@ -404,7 +404,7 @@ func TestToRecordEventMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeC], it is only ever consumed") {
+		if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeC], it is only ever consumed") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

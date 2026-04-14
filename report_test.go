@@ -2,7 +2,7 @@ package testkit_test
 
 import (
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 // reportMatcher validates that some action produced a particular test report.

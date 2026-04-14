@@ -13,7 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestAdvanceTime(t *testing.T) {

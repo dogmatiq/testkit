@@ -7,7 +7,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestScopeRecordedAt(t *testing.T) {

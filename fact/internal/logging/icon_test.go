@@ -5,7 +5,7 @@ import (
 
 	"github.com/dogmatiq/enginekit/config"
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestIcon(t *testing.T) {

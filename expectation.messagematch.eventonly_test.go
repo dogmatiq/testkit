@@ -2,13 +2,14 @@ package testkit_test
 
 import (
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	"github.com/dogmatiq/testkit/x/xtesting"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToOnlyRecordEventsMatching(t *testing.T) {
@@ -80,7 +81,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:78`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:79`,
 			),
 			nil,
 		},
@@ -96,7 +97,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:94`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:95`,
 			),
 			nil,
 		},
@@ -112,7 +113,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:109`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:110`,
 			),
 			nil,
 		},
@@ -128,7 +129,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:125`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:126`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -162,7 +163,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:152`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:153`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -189,7 +190,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:186`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:187`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -207,7 +208,6 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
@@ -240,7 +240,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+		if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})
@@ -260,7 +260,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !containsString(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+		if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

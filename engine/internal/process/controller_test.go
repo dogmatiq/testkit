@@ -16,8 +16,8 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 	"github.com/dogmatiq/testkit/location"
-	"github.com/dogmatiq/testkit/x/xtesting"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
