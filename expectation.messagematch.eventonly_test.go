@@ -2,21 +2,16 @@ package testkit_test
 
 import (
 	"errors"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
-var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-	)
-
+func TestToOnlyRecordEventsMatching(t *testing.T) {
 	type (
 		CommandThatRecordsEvent = CommandStub[TypeE]
 
@@ -25,69 +20,59 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 		EventThatIsOnlyConsumed  = EventStub[TypeO]
 	)
 
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
 
-		app = &ApplicationStub{
-			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
+			c.Routes(
+				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatRecordsEvent](),
+							dogma.RecordsEvent[*EventThatIsRecorded](),
+							dogma.RecordsEvent[*EventThatIsNeverRecorded](),
+						)
+					},
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
+						return "<instance>"
+					},
+					HandleCommandFunc: func(
+						_ dogma.AggregateRoot,
+						s dogma.AggregateCommandScope,
+						m dogma.Command,
+					) {
+						s.RecordEvent(EventE1)
+						s.RecordEvent(EventE2)
+						s.RecordEvent(EventE3)
+					},
+				}),
 
-				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
-							c.Routes(
-								dogma.HandlesCommand[*CommandThatRecordsEvent](),
-								dogma.RecordsEvent[*EventThatIsRecorded](),
-								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							_ dogma.AggregateRoot,
-							s dogma.AggregateCommandScope,
-							m dogma.Command,
-						) {
-							s.RecordEvent(EventE1)
-							s.RecordEvent(EventE2)
-							s.RecordEvent(EventE3)
-						},
-					}),
-
-					dogma.ViaProjection(&ProjectionMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-							c.Identity("<projection>", "de708f1d-3651-437e-91ae-275a423ecd15")
-							c.Routes(
-								dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
-							)
-						},
-					}),
-				)
-			},
-		}
-	})
-
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			a Action,
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-			options ...TestOption,
-		) {
-			test := Begin(testingT, app, options...)
-			test.Expect(a, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
+				dogma.ViaProjection(&ProjectionMessageHandlerStub{
+					ConfigureFunc: func(c dogma.ProjectionConfigurer) {
+						c.Identity("<projection>", "de708f1d-3651-437e-91ae-275a423ecd15")
+						c.Routes(
+							dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
+						)
+					},
+				}),
+			)
 		},
-		g.Entry(
+	}
+
+	cases := []struct {
+		Name        string
+		Action      func(*testing.T, *Test) Action
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+		Options     []TestOption
+	}{
+		{
 			"all recorded events match",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(*testing.T, *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					return nil
@@ -95,12 +80,15 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:93`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:78`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"all recorded events match, using predicate with a more specific type",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(*testing.T, *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToOnlyRecordEventsMatching(
 				func(*EventThatIsRecorded) error {
 					return nil
@@ -108,12 +96,15 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:106`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:94`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no events recorded at all",
-			noop,
+			func(*testing.T, *Test) Action {
+				return noop
+			},
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					panic("unexpected call")
@@ -121,12 +112,15 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:118`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:109`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"none of the recorded events match",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(*testing.T, *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					return errors.New("<error>")
@@ -134,7 +128,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:131`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:125`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -147,10 +141,13 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"some matching events recorded",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(*testing.T, *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToOnlyRecordEventsMatching(
 				func(m dogma.Event) error {
 					switch m {
@@ -165,7 +162,7 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:155`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:152`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -178,10 +175,13 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching events recorded, using predicate with a more specific type",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(*testing.T, *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToOnlyRecordEventsMatching(
 				func(*EventThatIsNeverRecorded) error {
 					panic("unexpected call")
@@ -202,12 +202,33 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-	)
+			nil,
+		},
+	}
 
-	g.It("fails the test if the message type is unrecognized", func() {
-		test := Begin(testingT, app)
-		test.Expect(
+	for _, c := range cases {
+		c := c
+		t.Run(c.Name, func(t *testing.T) {
+			mt := &testingmock.T{FailSilently: true}
+			tc := Begin(mt, app, c.Options...)
+			tc.Expect(c.Action(t, tc), c.Expectation)
+
+			if mt.Failed() != !c.Passes {
+				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+			}
+
+			preReportCount := len(mt.Logs)
+			c.Report(mt)
+			if len(mt.Logs) > preReportCount {
+				t.Fatalf("report content mismatch:\n%v", mt.Logs[preReportCount:])
+			}
+		})
+	}
+
+	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
+		mt := &testingmock.T{FailSilently: true}
+		tc := Begin(mt, app)
+		tc.Expect(
 			noop,
 			ToOnlyRecordEventsMatching(
 				func(*EventStub[TypeU]) error {
@@ -216,15 +237,18 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		)
 
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
-		))
+		if !mt.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		if !containsString(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+			t.Fatalf("expected log message not found, got: %v", mt.Logs)
+		}
 	})
 
-	g.It("fails the test if the message type is not produced by any handlers", func() {
-		test := Begin(testingT, app)
-		test.Expect(
+	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
+		mt := &testingmock.T{FailSilently: true}
+		tc := Begin(mt, app)
+		tc.Expect(
 			noop,
 			ToOnlyRecordEventsMatching(
 				func(*EventThatIsOnlyConsumed) error {
@@ -233,16 +257,22 @@ var _ = g.Describe("func ToOnlyRecordEventsMatching()", func() {
 			),
 		)
 
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed",
-		))
+		if !mt.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		if !containsString(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+			t.Fatalf("expected log message not found, got: %v", mt.Logs)
+		}
 	})
 
-	g.It("panics if the function is nil", func() {
-		gm.Expect(func() {
-			var fn func(dogma.Event) error
-			ToOnlyRecordEventsMatching(fn)
-		}).To(gm.PanicWith("ToOnlyRecordEventsMatching(<nil>): function must not be nil"))
+	t.Run("panics if the function is nil", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			"ToOnlyRecordEventsMatching(<nil>): function must not be nil",
+			func() {
+				var fn func(dogma.Event) error
+				ToOnlyRecordEventsMatching(fn)
+			},
+		)
 	})
-})
+}
