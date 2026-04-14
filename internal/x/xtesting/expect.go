@@ -119,7 +119,7 @@ func ExpectPanic(
 
 		got := recover()
 		if got == nil {
-			t.Fatal("expected a panic, but the function returned normally")
+			t.Fatal("expected a panic")
 			return
 		}
 
