@@ -1,40 +1,40 @@
 package fact_test
 
 import (
+	"testing"
 	"time"
 
 	. "github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type ObserverGroup", func() {
-	g.Describe("func Notify()", func() {
-		g.It("notifies each of the observers in the group", func() {
+func TestObserverGroup(t *testing.T) {
+	t.Run("func Notify()", func(t *testing.T) {
+		t.Run("it notifies each of the observers in the group", func(t *testing.T) {
 			f := TickCycleBegun{}
 
 			n := 0
 			g := ObserverGroup{
 				ObserverFunc(func(of Fact) {
 					n++
-					gm.Expect(of).To(gm.Equal(f))
+					test.Expect(t, "unexpected fact", of, f)
 				}),
 				ObserverFunc(func(of Fact) {
 					n++
-					gm.Expect(of).To(gm.Equal(f))
+					test.Expect(t, "unexpected fact", of, f)
 				}),
 			}
 
 			g.Notify(f)
 
-			gm.Expect(n).To(gm.Equal(2))
+			test.Expect(t, "unexpected notification count", n, 2)
 		})
 	})
-})
+}
 
-var _ = g.Describe("type Buffer", func() {
-	g.Describe("func Notify()", func() {
-		g.It("appends the fact to the buffer", func() {
+func TestBuffer(t *testing.T) {
+	t.Run("func Notify()", func(t *testing.T) {
+		t.Run("it appends the fact to the buffer", func(t *testing.T) {
 			f1 := TickCycleBegun{
 				EngineTime: time.Now(),
 			}
@@ -46,18 +46,20 @@ var _ = g.Describe("type Buffer", func() {
 			b.Notify(f1)
 			b.Notify(f2)
 
-			gm.Expect(b.Facts()).To(gm.Equal([]Fact{
-				f1,
-				f2,
-			}))
+			test.Expect(
+				t,
+				"unexpected buffered facts",
+				b.Facts(),
+				[]Fact{f1, f2},
+			)
 		})
 	})
-})
+}
 
-var _ = g.Describe("var Ignore", func() {
-	g.Describe("func Notify()", func() {
-		g.It("does nothing", func() {
+func TestIgnore(t *testing.T) {
+	t.Run("func Notify()", func(t *testing.T) {
+		t.Run("it does nothing", func(t *testing.T) {
 			Ignore.Notify(TickCycleBegun{})
 		})
 	})
-})
+}

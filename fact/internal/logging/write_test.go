@@ -2,109 +2,90 @@ package logging_test
 
 import (
 	"strings"
+	"testing"
 
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-func describeTable(
-	description string,
-	fn func(expected string, ids []IconWithLabel, icons []Icon, text []string),
-) bool {
-	return g.DescribeTable(
-		description,
-		fn,
-		g.Entry(
-			"renders a standard log message",
-			"= 123  ∵ 456  ⋲ 789  ▼ ↻  <foo> ● <bar>",
-			[]IconWithLabel{
-				MessageIDIcon.WithLabel("123"),
-				CausationIDIcon.WithLabel("456"),
-				CorrelationIDIcon.WithLabel("789"),
-			},
-			[]Icon{
-				InboundIcon,
-				RetryIcon,
-			},
-			[]string{
-				"<foo>",
-				"<bar>",
-			},
-		),
-		g.Entry(
-			"renders a hyphen in place of empty labels",
-			"= 123  ∵ 456  ⋲ -  ▼    <foo> ● <bar>",
-			[]IconWithLabel{
-				MessageIDIcon.WithLabel("123"),
-				CausationIDIcon.WithLabel("456"),
-				CorrelationIDIcon.WithLabel(""),
-			},
-			[]Icon{
-				InboundIcon,
-				"",
-			},
-			[]string{
-				"<foo>",
-				"<bar>",
-			},
-		),
-		g.Entry(
-			"pads empty icons to the same width",
-			"= 123  ∵ 456  ⋲ 789  ▼    <foo> ● <bar>",
-			[]IconWithLabel{
-				MessageIDIcon.WithLabel("123"),
-				CausationIDIcon.WithLabel("456"),
-				CorrelationIDIcon.WithLabel("789"),
-			},
-			[]Icon{
-				InboundIcon,
-				"",
-			},
-			[]string{
-				"<foo>",
-				"<bar>",
-			},
-		),
-		g.Entry(
-			"skips empty text",
-			"= 123  ∵ 456  ⋲ 789  ▼ ↻  <foo> ● <bar>",
-			[]IconWithLabel{
-				MessageIDIcon.WithLabel("123"),
-				CausationIDIcon.WithLabel("456"),
-				CorrelationIDIcon.WithLabel("789"),
-			},
-			[]Icon{
-				InboundIcon,
-				RetryIcon,
-			},
-			[]string{
-				"<foo>",
-				"",
-				"<bar>",
-			},
-		),
-	)
+func TestString(t *testing.T) {
+	for _, c := range writeTestCases {
+		t.Run(c.Name, func(t *testing.T) {
+			test.Expect(
+				t,
+				"unexpected string",
+				String(c.Ids, c.Icons, c.Text...),
+				c.Expected,
+			)
+		})
+	}
 }
 
-var _ = describeTable(
-	"func String()",
-	func(expected string, ids []IconWithLabel, icons []Icon, text []string) {
-		gm.Expect(
-			String(ids, icons, text...),
-		).To(gm.Equal(expected))
+func TestWrite(t *testing.T) {
+	for _, c := range writeTestCases {
+		t.Run(c.Name, func(t *testing.T) {
+			w := &strings.Builder{}
+
+			n, err := Write(w, c.Ids, c.Icons, c.Text...)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			test.Expect(t, "unexpected byte count", n, len(c.Expected))
+			test.Expect(t, "unexpected output", w.String(), c.Expected)
+		})
+	}
+}
+
+var writeTestCases = []struct {
+	Name     string
+	Expected string
+	Ids      []IconWithLabel
+	Icons    []Icon
+	Text     []string
+}{
+	{
+		Name:     "renders a standard log message",
+		Expected: "= 123  ∵ 456  ⋲ 789  ▼ ↻  <foo> ● <bar>",
+		Ids: []IconWithLabel{
+			MessageIDIcon.WithLabel("123"),
+			CausationIDIcon.WithLabel("456"),
+			CorrelationIDIcon.WithLabel("789"),
+		},
+		Icons: []Icon{InboundIcon, RetryIcon},
+		Text:  []string{"<foo>", "<bar>"},
 	},
-)
-
-var _ = describeTable(
-	"func Write()",
-	func(expected string, ids []IconWithLabel, icons []Icon, text []string) {
-		w := &strings.Builder{}
-
-		n, err := Write(w, ids, icons, text...)
-		gm.Expect(err).ShouldNot(gm.HaveOccurred())
-		gm.Expect(n).To(gm.Equal(len(expected)))
-
-		gm.Expect(w.String()).To(gm.Equal(expected))
+	{
+		Name:     "renders a hyphen in place of empty labels",
+		Expected: "= 123  ∵ 456  ⋲ -  ▼    <foo> ● <bar>",
+		Ids: []IconWithLabel{
+			MessageIDIcon.WithLabel("123"),
+			CausationIDIcon.WithLabel("456"),
+			CorrelationIDIcon.WithLabel(""),
+		},
+		Icons: []Icon{InboundIcon, ""},
+		Text:  []string{"<foo>", "<bar>"},
 	},
-)
+	{
+		Name:     "pads empty icons to the same width",
+		Expected: "= 123  ∵ 456  ⋲ 789  ▼    <foo> ● <bar>",
+		Ids: []IconWithLabel{
+			MessageIDIcon.WithLabel("123"),
+			CausationIDIcon.WithLabel("456"),
+			CorrelationIDIcon.WithLabel("789"),
+		},
+		Icons: []Icon{InboundIcon, ""},
+		Text:  []string{"<foo>", "<bar>"},
+	},
+	{
+		Name:     "skips empty text",
+		Expected: "= 123  ∵ 456  ⋲ 789  ▼ ↻  <foo> ● <bar>",
+		Ids: []IconWithLabel{
+			MessageIDIcon.WithLabel("123"),
+			CausationIDIcon.WithLabel("456"),
+			CorrelationIDIcon.WithLabel("789"),
+		},
+		Icons: []Icon{InboundIcon, RetryIcon},
+		Text:  []string{"<foo>", "", "<bar>"},
+	},
+}

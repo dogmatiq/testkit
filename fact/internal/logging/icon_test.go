@@ -1,49 +1,54 @@
 package logging_test
 
 import (
+	"testing"
+
 	"github.com/dogmatiq/enginekit/config"
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type Icon", func() {
-	g.Describe("func String()", func() {
-		g.It("returns the icon string", func() {
-			gm.Expect(
+func TestIcon(t *testing.T) {
+	t.Run("func String()", func(t *testing.T) {
+		t.Run("it returns the icon string", func(t *testing.T) {
+			test.Expect(
+				t,
+				"unexpected icon string",
 				TransactionIDIcon.String(),
-			).To(gm.Equal("⨀"))
+				"⨀",
+			)
 		})
 	})
-})
+}
 
-var _ = g.Describe("type IconWithLabel", func() {
-	g.Describe("func IconWithLabel()", func() {
-		g.It("returns the icon and label", func() {
-			gm.Expect(
-				TransactionIDIcon.WithLabel("<foo>").String(),
-			).To(gm.Equal("⨀ <foo>"))
-		})
+func TestIconWithLabel(t *testing.T) {
+	t.Run("it returns the icon and label", func(t *testing.T) {
+		test.Expect(
+			t,
+			"unexpected icon label string",
+			TransactionIDIcon.WithLabel("<foo>").String(),
+			"⨀ <foo>",
+		)
 	})
-})
+}
 
-var _ = g.Describe("func DirectionIcon()", func() {
-	g.It("returns the expected icon", func() {
-		gm.Expect(DirectionIcon(true, false)).To(gm.Equal(InboundIcon))
-		gm.Expect(DirectionIcon(false, false)).To(gm.Equal(OutboundIcon))
+func TestDirectionIcon(t *testing.T) {
+	t.Run("it returns the expected icon", func(t *testing.T) {
+		test.Expect(t, "unexpected inbound icon", DirectionIcon(true, false), InboundIcon)
+		test.Expect(t, "unexpected outbound icon", DirectionIcon(false, false), OutboundIcon)
 	})
 
-	g.It("returns the expected error icon", func() {
-		gm.Expect(DirectionIcon(true, true)).To(gm.Equal(InboundErrorIcon))
-		gm.Expect(DirectionIcon(false, true)).To(gm.Equal(OutboundErrorIcon))
+	t.Run("it returns the expected error icon", func(t *testing.T) {
+		test.Expect(t, "unexpected inbound error icon", DirectionIcon(true, true), InboundErrorIcon)
+		test.Expect(t, "unexpected outbound error icon", DirectionIcon(false, true), OutboundErrorIcon)
 	})
-})
+}
 
-var _ = g.Describe("func HandlerTypeIcon()", func() {
-	g.It("returns the expected icon", func() {
-		gm.Expect(HandlerTypeIcon(config.AggregateHandlerType)).To(gm.Equal(AggregateIcon))
-		gm.Expect(HandlerTypeIcon(config.ProcessHandlerType)).To(gm.Equal(ProcessIcon))
-		gm.Expect(HandlerTypeIcon(config.IntegrationHandlerType)).To(gm.Equal(IntegrationIcon))
-		gm.Expect(HandlerTypeIcon(config.ProjectionHandlerType)).To(gm.Equal(ProjectionIcon))
+func TestHandlerTypeIcon(t *testing.T) {
+	t.Run("it returns the expected icon", func(t *testing.T) {
+		test.Expect(t, "unexpected aggregate icon", HandlerTypeIcon(config.AggregateHandlerType), AggregateIcon)
+		test.Expect(t, "unexpected process icon", HandlerTypeIcon(config.ProcessHandlerType), ProcessIcon)
+		test.Expect(t, "unexpected integration icon", HandlerTypeIcon(config.IntegrationHandlerType), IntegrationIcon)
+		test.Expect(t, "unexpected projection icon", HandlerTypeIcon(config.ProjectionHandlerType), ProjectionIcon)
 	})
-})
+}
