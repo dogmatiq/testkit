@@ -3,6 +3,7 @@ package integration_test
 import (
 	"context"
 	"errors"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -10,30 +11,23 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
+	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("type Controller", func() {
-	var (
-		messageIDs envelope.MessageIDGenerator
-		handler    *IntegrationMessageHandlerStub
-		cfg        *config.Integration
-		ctrl       *Controller
-		command    *envelope.Envelope
-	)
+func TestController(t *testing.T) {
+	newController := func() (*IntegrationMessageHandlerStub, *config.Integration, *Controller, *envelope.Envelope) {
+		var messageIDs envelope.MessageIDGenerator
 
-	g.BeforeEach(func() {
-		command = envelope.NewCommand(
+		command := envelope.NewCommand(
 			"1000",
 			CommandA1,
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandlerStub{
+		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca")
 				c.Routes(
@@ -43,55 +37,64 @@ var _ = g.Describe("type Controller", func() {
 			},
 		}
 
-		cfg = runtimeconfig.FromIntegration(handler)
-
-		ctrl = &Controller{
+		cfg := runtimeconfig.FromIntegration(handler)
+		ctrl := &Controller{
 			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
-		messageIDs.Reset() // reset after setup for a predictable ID.
+		messageIDs.Reset()
+
+		return handler, cfg, ctrl, command
+	}
+
+	t.Run("func HandlerConfig()", func(t *testing.T) {
+		_, cfg, ctrl, _ := newController()
+
+		test.Expect(t, "unexpected handler config", ctrl.HandlerConfig(), cfg)
 	})
 
-	g.Describe("func HandlerConfig()", func() {
-		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
-		})
-	})
+	t.Run("func Tick()", func(t *testing.T) {
+		t.Run("it does not return any envelopes", func(t *testing.T) {
+			_, _, ctrl, _ := newController()
 
-	g.Describe("func Tick()", func() {
-		g.It("does not return any envelopes", func() {
 			envelopes, err := ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(envelopes).To(gm.BeEmpty())
+
+			test.Expect(t, "unexpected error", err, nil)
+			test.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
 		})
 
-		g.It("does not record any facts", func() {
+		t.Run("it does not record any facts", func(t *testing.T) {
+			_, _, ctrl, _ := newController()
 			buf := &fact.Buffer{}
+
 			_, err := ctrl.Tick(
 				context.Background(),
 				buf,
 				time.Now(),
 			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.BeEmpty())
+
+			test.Expect(t, "unexpected error", err, nil)
+			test.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
 		})
 	})
 
-	g.Describe("func Handle()", func() {
-		g.It("forwards the message to the handler", func() {
+	t.Run("func Handle()", func(t *testing.T) {
+		t.Run("it forwards the message to the handler", func(t *testing.T) {
+			handler, _, ctrl, command := newController()
 			called := false
+
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				_ dogma.IntegrationCommandScope,
 				m dogma.Command,
 			) error {
 				called = true
-				gm.Expect(m).To(gm.Equal(CommandA1))
+				test.Expect(t, "unexpected command", m, CommandA1)
 				return nil
 			}
 
@@ -102,11 +105,13 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(called).To(gm.BeTrue())
+			test.Expect(t, "unexpected error", err, nil)
+			test.Expect(t, "expected handler to be called", called, true)
 		})
 
-		g.It("returns the recorded events", func() {
+		t.Run("it returns the recorded events", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
+
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -125,34 +130,40 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(events).To(gm.ConsistOf(
-				command.NewEvent(
-					"1",
-					EventA1,
-					now,
-					envelope.Origin{
-						Handler:     cfg,
-						HandlerType: config.IntegrationHandlerType,
-					},
-					"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
-					0,
-				),
-				command.NewEvent(
-					"2",
-					EventA2,
-					now,
-					envelope.Origin{
-						Handler:     cfg,
-						HandlerType: config.IntegrationHandlerType,
-					},
-					"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
-					1,
-				),
-			))
+			test.Expect(t, "unexpected error", err, nil)
+			test.Expect(
+				t,
+				"unexpected events",
+				events,
+				[]*envelope.Envelope{
+					command.NewEvent(
+						"1",
+						EventA1,
+						now,
+						envelope.Origin{
+							Handler:     cfg,
+							HandlerType: config.IntegrationHandlerType,
+						},
+						"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+						0,
+					),
+					command.NewEvent(
+						"2",
+						EventA2,
+						now,
+						envelope.Origin{
+							Handler:     cfg,
+							HandlerType: config.IntegrationHandlerType,
+						},
+						"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+						1,
+					),
+				},
+			)
 		})
 
-		g.It("propagates handler errors", func() {
+		t.Run("it propagates handler errors", func(t *testing.T) {
+			handler, _, ctrl, command := newController()
 			expected := errors.New("<error>")
 
 			handler.HandleCommandFunc = func(
@@ -170,10 +181,12 @@ var _ = g.Describe("type Controller", func() {
 				command,
 			)
 
-			gm.Expect(err).To(gm.Equal(expected))
+			test.Expect(t, "unexpected error", err, expected)
 		})
 
-		g.It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
+		t.Run("it provides more context to UnexpectedMessage panics from HandleCommand()", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
+
 			handler.HandleCommandFunc = func(
 				context.Context,
 				dogma.IntegrationCommandScope,
@@ -182,30 +195,30 @@ var _ = g.Describe("type Controller", func() {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   gm.Equal(cfg),
-						"Interface": gm.Equal("IntegrationMessageHandler"),
-						"Method":    gm.Equal("HandleCommand"),
-						"Message":   gm.Equal(command.Message),
-					},
-				),
-			))
+			defer func() {
+				r := recover()
+				x, ok := r.(panicx.UnexpectedMessage)
+				if !ok {
+					t.Fatalf("expected UnexpectedMessage panic, got %T", r)
+				}
+
+				test.Expect(t, "unexpected handler", x.Handler, cfg)
+				test.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				test.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				test.Expect(t, "unexpected message", x.Message, command.Message)
+			}()
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
 		})
 	})
 
-	g.Describe("func Reset()", func() {
-		g.It("does nothing", func() {
-			ctrl.Reset()
-		})
+	t.Run("func Reset()", func(t *testing.T) {
+		_, _, ctrl, _ := newController()
+		ctrl.Reset()
 	})
-})
+}
