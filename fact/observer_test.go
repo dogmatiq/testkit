@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestObserverGroup(t *testing.T) {
@@ -17,17 +17,17 @@ func TestObserverGroup(t *testing.T) {
 			g := ObserverGroup{
 				ObserverFunc(func(of Fact) {
 					n++
-					test.Expect(t, "unexpected fact", of, f)
+					xtesting.Expect(t, "unexpected fact", of, f)
 				}),
 				ObserverFunc(func(of Fact) {
 					n++
-					test.Expect(t, "unexpected fact", of, f)
+					xtesting.Expect(t, "unexpected fact", of, f)
 				}),
 			}
 
 			g.Notify(f)
 
-			test.Expect(t, "unexpected notification count", n, 2)
+			xtesting.Expect(t, "unexpected notification count", n, 2)
 		})
 	})
 }
@@ -46,7 +46,7 @@ func TestBuffer(t *testing.T) {
 			b.Notify(f1)
 			b.Notify(f2)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected buffered facts",
 				b.Facts(),

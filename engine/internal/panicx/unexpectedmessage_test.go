@@ -8,7 +8,7 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestUnexpectedMessage(t *testing.T) {
@@ -31,7 +31,7 @@ func TestUnexpectedMessage(t *testing.T) {
 				t.Fatalf("expected UnexpectedMessage panic, got %T", r)
 			}
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected string representation",
 				x.String(),
@@ -78,13 +78,13 @@ func TestEnrichUnexpectedMessage(t *testing.T) {
 			},
 		)
 
-		test.Expect(t, "expected function to be called", called, true)
+		xtesting.Expect(t, "expected function to be called", called, true)
 	})
 
 	t.Run("propagates panic values", func(t *testing.T) {
 		defer func() {
 			r := recover()
-			test.Expect(t, "unexpected panic value", r, "<panic>")
+			xtesting.Expect(t, "unexpected panic value", r, "<panic>")
 		}()
 
 		EnrichUnexpectedMessage(
@@ -107,12 +107,12 @@ func TestEnrichUnexpectedMessage(t *testing.T) {
 				t.Fatalf("expected UnexpectedMessage panic, got %T", r)
 			}
 
-			test.Expect(t, "unexpected handler", x.Handler, config)
-			test.Expect(t, "unexpected interface", x.Interface, "<interface>")
-			test.Expect(t, "unexpected method", x.Method, "<method>")
-			test.Expect(t, "unexpected implementation", x.Implementation, config.Source.Get())
-			test.Expect(t, "unexpected message", x.Message, EventX1)
-			test.Expect(
+			xtesting.Expect(t, "unexpected handler", x.Handler, config)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "<interface>")
+			xtesting.Expect(t, "unexpected method", x.Method, "<method>")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, config.Source.Get())
+			xtesting.Expect(t, "unexpected message", x.Message, EventX1)
+			xtesting.Expect(
 				t,
 				"unexpected panic location func",
 				x.PanicLocation.Func,
@@ -121,7 +121,7 @@ func TestEnrichUnexpectedMessage(t *testing.T) {
 			if !strings.HasSuffix(x.PanicLocation.File, "/engine/internal/panicx/linenumber_test.go") {
 				t.Fatalf("unexpected panic location file: %s", x.PanicLocation.File)
 			}
-			test.Expect(t, "unexpected panic location line", x.PanicLocation.Line, 50)
+			xtesting.Expect(t, "unexpected panic location line", x.PanicLocation.Line, 50)
 		}()
 
 		EnrichUnexpectedMessage(

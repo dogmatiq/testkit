@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dogmatiq/testkit/internal/test"
 	. "github.com/dogmatiq/testkit/location"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestLocation(t *testing.T) {
@@ -27,7 +27,7 @@ func TestLocation(t *testing.T) {
 		})
 
 		t.Run("it panics if the value is not a function", func(t *testing.T) {
-			test.ExpectPanic(t, "fn must be a function", func() {
+			xtesting.ExpectPanic(t, "fn must be a function", func() {
 				OfFunc("<not a function>")
 			})
 		})
@@ -51,7 +51,7 @@ func TestLocation(t *testing.T) {
 		})
 
 		t.Run("it panics if the methods does not exist", func(t *testing.T) {
-			test.ExpectPanic(t, "method does not exist", func() {
+			xtesting.ExpectPanic(t, "method does not exist", func() {
 				OfMethod(ofMethodT{}, "DoesNotExist")
 			})
 		})

@@ -11,7 +11,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestLogger(t *testing.T) {
@@ -110,8 +110,8 @@ func TestLogger(t *testing.T) {
 
 					obs.Notify(c.Fact)
 
-					test.Expect(t, "unexpected log output", output, c.Message)
-					test.Expect(t, "unexpected logger invocation", called, c.Message != "")
+					xtesting.Expect(t, "unexpected log output", output, c.Message)
+					xtesting.Expect(t, "unexpected logger invocation", called, c.Message != "")
 				})
 			}
 		}

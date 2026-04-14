@@ -10,7 +10,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestRun(t *testing.T) {
@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 		cancel()
 
 		err := Run(ctx, newEngine(), 0)
-		test.Expect(t, "unexpected error", err, context.Canceled)
+		xtesting.Expect(t, "unexpected error", err, context.Canceled)
 	})
 
 	t.Run("it returns an error if the context is canceled between ticks", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestRun(t *testing.T) {
 		}()
 
 		err := Run(ctx, newEngine(), 0)
-		test.Expect(t, "unexpected error", err, context.Canceled)
+		xtesting.Expect(t, "unexpected error", err, context.Canceled)
 	})
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "github.com/dogmatiq/testkit/internal/report"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestWriteDiff(t *testing.T) {
@@ -18,7 +18,7 @@ func TestWriteDiff(t *testing.T) {
 			"foo qux baz",
 		)
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected diff",
 			w.String(),

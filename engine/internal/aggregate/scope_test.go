@@ -12,7 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestScopeRecordEvent(t *testing.T) {
@@ -38,7 +38,7 @@ func TestScopeRecordEvent(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected facts",
 			buf.Facts(),
@@ -110,7 +110,7 @@ func TestScopeRecordEvent(t *testing.T) {
 			t.Fatal("expected EventRecordedByAggregate fact")
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected fact",
 			got,
@@ -186,12 +186,12 @@ func TestScopeRecordEvent(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		test.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
-		test.Expect(
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(
 			t,
 			"unexpected description",
 			x.Description,
@@ -223,12 +223,12 @@ func TestScopeRecordEvent(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		test.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
-		test.Expect(
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(
 			t,
 			"unexpected description",
 			x.Description,
@@ -248,7 +248,7 @@ func TestScopeInstanceID(t *testing.T) {
 		_ dogma.Command,
 	) {
 		called = true
-		test.Expect(t, "unexpected instance ID", s.InstanceID(), "<instance>")
+		xtesting.Expect(t, "unexpected instance ID", s.InstanceID(), "<instance>")
 	}
 
 	_, err := f.ctrl.Handle(
@@ -261,7 +261,7 @@ func TestScopeInstanceID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	test.Expect(t, "expected handler to be called", called, true)
+	xtesting.Expect(t, "expected handler to be called", called, true)
 }
 
 func TestScopeLog(t *testing.T) {
@@ -285,7 +285,7 @@ func TestScopeLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	test.Expect(
+	xtesting.Expect(
 		t,
 		"unexpected facts",
 		buf.Facts(),

@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestScope(t *testing.T) {
@@ -69,8 +69,8 @@ func TestScope(t *testing.T) {
 				command,
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(
 				t,
 				"unexpected facts",
 				buf.Facts(),
@@ -112,12 +112,12 @@ func TestScope(t *testing.T) {
 					t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
 				}
 
-				test.Expect(t, "unexpected handler", x.Handler, cfg)
-				test.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
-				test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-				test.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
-				test.Expect(t, "unexpected message", x.Message, command.Message)
-				test.Expect(
+				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
+				xtesting.Expect(
 					t,
 					"unexpected description",
 					x.Description,
@@ -162,12 +162,12 @@ func TestScope(t *testing.T) {
 					t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
 				}
 
-				test.Expect(t, "unexpected handler", x.Handler, cfg)
-				test.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
-				test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-				test.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
-				test.Expect(t, "unexpected message", x.Message, command.Message)
-				test.Expect(
+				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
+				xtesting.Expect(
 					t,
 					"unexpected description",
 					x.Description,
@@ -213,8 +213,8 @@ func TestScope(t *testing.T) {
 				command,
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(
 				t,
 				"unexpected facts",
 				buf.Facts(),

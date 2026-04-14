@@ -16,8 +16,8 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	internaltest "github.com/dogmatiq/testkit/internal/test"
 	"github.com/dogmatiq/testkit/location"
+	"github.com/dogmatiq/testkit/x/xtesting"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
@@ -217,7 +217,7 @@ func TestController(t *testing.T) {
 					m dogma.Event,
 				) error {
 					called = true
-					internaltest.Expect(t, "unexpected event", m, EventA1)
+					xtesting.Expect(t, "unexpected event", m, EventA1)
 					return nil
 				}
 
@@ -254,7 +254,7 @@ func TestController(t *testing.T) {
 					env.event,
 				)
 
-				internaltest.Expect(t, "unexpected error", err, expected)
+				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
 			t.Run("returns both commands and timeouts", func(t *testing.T) {
@@ -535,7 +535,7 @@ func TestController(t *testing.T) {
 					m dogma.Timeout,
 				) error {
 					called = true
-					internaltest.Expect(t, "unexpected timeout", m, TimeoutA1)
+					xtesting.Expect(t, "unexpected timeout", m, TimeoutA1)
 					return nil
 				}
 
@@ -572,7 +572,7 @@ func TestController(t *testing.T) {
 					env.timeout,
 				)
 
-				internaltest.Expect(t, "unexpected error", err, expected)
+				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
 			t.Run("returns both commands and timeouts", func(t *testing.T) {
@@ -774,7 +774,7 @@ func TestController(t *testing.T) {
 				env.event,
 			)
 
-			internaltest.Expect(t, "unexpected error", err, expected)
+			xtesting.Expect(t, "unexpected error", err, expected)
 		})
 
 		t.Run("panics when the handler routes to an empty instance ID", func(t *testing.T) {
@@ -1166,7 +1166,7 @@ func expectNoError(t *testing.T, err error) {
 func expectEnvelopeSet(t *testing.T, got, want []*envelope.Envelope) {
 	t.Helper()
 
-	internaltest.Expect(
+	xtesting.Expect(
 		t,
 		"unexpected envelopes",
 		got,
@@ -1181,7 +1181,7 @@ func expectEnvelopeSet(t *testing.T, got, want []*envelope.Envelope) {
 
 func expectFacts(t *testing.T, got, want []fact.Fact) {
 	t.Helper()
-	internaltest.Expect(t, "unexpected facts", got, want)
+	xtesting.Expect(t, "unexpected facts", got, want)
 }
 
 func expectUnexpectedBehavior(
@@ -1207,7 +1207,7 @@ func expectUnexpectedBehavior(
 		x.Location = location.Location{}
 		want.Location = location.Location{}
 
-		internaltest.Expect(t, "unexpected panic", x, want)
+		xtesting.Expect(t, "unexpected panic", x, want)
 
 		if loc.Func == "" {
 			t.Fatal("unexpected empty panic location func")
@@ -1245,11 +1245,11 @@ func expectUnexpectedMessage(
 			t.Fatalf("expected panicx.UnexpectedMessage panic, got %T", r)
 		}
 
-		internaltest.Expect(t, "unexpected handler", x.Handler, handler)
-		internaltest.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
-		internaltest.Expect(t, "unexpected method", x.Method, method)
-		internaltest.Expect(t, "unexpected implementation", x.Implementation, handler.Source.Get())
-		internaltest.Expect(t, "unexpected message", x.Message, message)
+		xtesting.Expect(t, "unexpected handler", x.Handler, handler)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, method)
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, handler.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, message)
 	}()
 
 	fn()

@@ -8,7 +8,7 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/internal/inflect"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestInflect(t *testing.T) {
@@ -94,14 +94,14 @@ func TestInflect(t *testing.T) {
 
 				for _, x := range tests {
 					t.Run(fmt.Sprintf("%s", x.Kind), func(t *testing.T) {
-						test.Expect(
+						xtesting.Expect(
 							t,
 							"unexpected inflected string",
 							Sprint(x.Kind, c.Template),
 							x.Out,
 						)
 
-						test.Expect(
+						xtesting.Expect(
 							t,
 							"unexpected uppercase inflected string",
 							Sprint(x.Kind, strings.ToUpper(c.Template)),
@@ -115,7 +115,7 @@ func TestInflect(t *testing.T) {
 
 	t.Run("func Sprintf()", func(t *testing.T) {
 		t.Run("it returns the inflected and substituted string", func(t *testing.T) {
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected formatted string",
 				Sprintf(
@@ -139,7 +139,7 @@ func TestInflect(t *testing.T) {
 				t.Fatal("expected an error")
 			}
 
-			test.Expect(t, "unexpected error message", err.Error(), "the command")
+			xtesting.Expect(t, "unexpected error message", err.Error(), "the command")
 		})
 	})
 
@@ -155,7 +155,7 @@ func TestInflect(t *testing.T) {
 				t.Fatal("expected an error")
 			}
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected error message",
 				err.Error(),

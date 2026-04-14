@@ -1,11 +1,10 @@
-package test
+package xtesting
 
 import (
 	"fmt"
 	"reflect"
 	"runtime/debug"
 	"strings"
-	"testing"
 
 	"github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
@@ -14,16 +13,17 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-// Expect compares two values and fails the test if they are different.
-func Expect(
-	t *testing.T,
-	failMessage string,
-	got, want any,
-	options ...cmp.Option,
-) {
-	t.Helper()
+// TestingT is the subset of [testing.TB] needed by these helpers.
+type TestingT interface {
+	Helper()
+	Fatal(args ...any)
+	Log(args ...any)
+	Failed() bool
+}
 
-	options = append(
+// Expect compares two values and fails the test if they are different.
+func defaultOptions(options []cmp.Option) []cmp.Option {
+	return append(
 		[]cmp.Option{
 			protocmp.Transform(),
 			cmpopts.EquateEmpty(),
@@ -42,6 +42,50 @@ func Expect(
 		},
 		options...,
 	)
+}
+
+// ExpectContains asserts that slice contains an element equal to want.
+func ExpectContains[T any](
+	t TestingT,
+	failMessage string,
+	slice []T,
+	want T,
+	options ...cmp.Option,
+) {
+	t.Helper()
+
+	options = defaultOptions(options)
+
+	for _, item := range slice {
+		if cmp.Diff(want, item, options...) == "" {
+			return
+		}
+	}
+
+	w := &strings.Builder{}
+
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "===", failMessage, "===")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "--- want ---")
+	fmt.Fprintln(w, want)
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "--- slice ---")
+	fmt.Fprintln(w, slice)
+
+	t.Fatal(w.String())
+}
+
+// Expect compares two values and fails the test if they are different.
+func Expect(
+	t TestingT,
+	failMessage string,
+	got, want any,
+	options ...cmp.Option,
+) {
+	t.Helper()
+
+	options = defaultOptions(options)
 
 	if diff := cmp.Diff(want, got, options...); diff != "" {
 		w := &strings.Builder{}
@@ -64,7 +108,7 @@ func Expect(
 
 // ExpectPanic asserts that a function panics with a specific value.
 func ExpectPanic(
-	t *testing.T,
+	t TestingT,
 	want string,
 	fn func(),
 ) {

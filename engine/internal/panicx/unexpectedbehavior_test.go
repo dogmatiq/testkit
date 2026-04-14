@@ -7,7 +7,7 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestUnexpectedBehavior(t *testing.T) {
@@ -31,7 +31,7 @@ func TestUnexpectedBehavior(t *testing.T) {
 			Description:    "<description>",
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected string representation",
 			x.String(),

@@ -9,7 +9,7 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestEnvelope(t *testing.T) {
@@ -22,7 +22,7 @@ func TestEnvelope(t *testing.T) {
 				now,
 			)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected envelope",
 				env,
@@ -46,7 +46,7 @@ func TestEnvelope(t *testing.T) {
 				now,
 			)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected envelope",
 				env,
@@ -93,7 +93,7 @@ func TestEnvelope(t *testing.T) {
 				origin,
 			)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected envelope",
 				child,
@@ -144,7 +144,7 @@ func TestEnvelope(t *testing.T) {
 				offset,
 			)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected envelope",
 				child,
@@ -195,7 +195,7 @@ func TestEnvelope(t *testing.T) {
 				origin,
 			)
 
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected envelope",
 				child,

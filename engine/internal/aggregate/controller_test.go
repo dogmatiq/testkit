@@ -15,8 +15,8 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
 	"github.com/dogmatiq/testkit/location"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestControllerHandlerConfig(t *testing.T) {
@@ -40,7 +40,7 @@ func TestControllerTick(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
+		xtesting.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
 	})
 
 	t.Run("records no facts", func(t *testing.T) {
@@ -56,7 +56,7 @@ func TestControllerTick(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
+		xtesting.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
 	})
 }
 
@@ -71,7 +71,7 @@ func TestControllerHandle(t *testing.T) {
 			m dogma.Command,
 		) {
 			called = true
-			test.Expect(t, "unexpected message", m, stubs.CommandA1)
+			xtesting.Expect(t, "unexpected message", m, stubs.CommandA1)
 		}
 
 		_, err := f.ctrl.Handle(
@@ -84,7 +84,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(t, "expected handler to be called", called, true)
+		xtesting.Expect(t, "expected handler to be called", called, true)
 	})
 
 	t.Run("returns the recorded events", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected events",
 			events,
@@ -158,12 +158,12 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
-		test.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
-		test.Expect(
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(
 			t,
 			"unexpected description",
 			x.Description,
@@ -191,7 +191,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal("expected AggregateInstanceNotFound fact")
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected fact",
 			got,
@@ -213,7 +213,7 @@ func TestControllerHandle(t *testing.T) {
 			_ dogma.Command,
 		) {
 			called = true
-			test.Expect(t, "unexpected aggregate root", r, &stubs.AggregateRootStub{})
+			xtesting.Expect(t, "unexpected aggregate root", r, &stubs.AggregateRootStub{})
 		}
 
 		_, err := f.ctrl.Handle(
@@ -226,7 +226,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(t, "expected handler to be called", called, true)
+		xtesting.Expect(t, "expected handler to be called", called, true)
 	})
 
 	t.Run("panics if New returns nil when the instance does not exist", func(t *testing.T) {
@@ -244,12 +244,12 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "New")
-		test.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
-		test.Expect(t, "unexpected description", x.Description, "returned a nil AggregateRoot")
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "New")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil AggregateRoot")
 		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
@@ -273,7 +273,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal("expected AggregateInstanceLoaded fact")
 		}
 
-		test.Expect(
+		xtesting.Expect(
 			t,
 			"unexpected fact",
 			got,
@@ -299,7 +299,7 @@ func TestControllerHandle(t *testing.T) {
 			_ dogma.Command,
 		) {
 			called = true
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected aggregate root",
 				r,
@@ -319,7 +319,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		test.Expect(t, "expected handler to be called", called, true)
+		xtesting.Expect(t, "expected handler to be called", called, true)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from RouteCommandToInstance", func(t *testing.T) {
@@ -337,10 +337,10 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from HandleCommand", func(t *testing.T) {
@@ -362,10 +362,10 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		test.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with new events", func(t *testing.T) {
@@ -395,10 +395,10 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
-		test.Expect(t, "unexpected method", x.Method, "ApplyEvent")
-		test.Expect(t, "unexpected message", x.Message, stubs.EventA1)
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with historical events", func(t *testing.T) {
@@ -422,10 +422,10 @@ func TestControllerHandle(t *testing.T) {
 			)
 		})
 
-		test.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		test.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
-		test.Expect(t, "unexpected method", x.Method, "ApplyEvent")
-		test.Expect(t, "unexpected message", x.Message, stubs.EventA1)
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 	})
 }
 

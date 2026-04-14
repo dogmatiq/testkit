@@ -7,7 +7,7 @@ import (
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestScopeRecordedAt(t *testing.T) {
@@ -58,7 +58,7 @@ func TestScopeLog(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	test.Expect(
+	xtesting.Expect(
 		t,
 		"unexpected logged facts",
 		buf.Facts(),

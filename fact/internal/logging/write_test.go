@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	. "github.com/dogmatiq/testkit/fact/internal/logging"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestString(t *testing.T) {
 	for _, c := range writeTestCases {
 		t.Run(c.Name, func(t *testing.T) {
-			test.Expect(
+			xtesting.Expect(
 				t,
 				"unexpected string",
 				String(c.Ids, c.Icons, c.Text...),
@@ -31,8 +31,8 @@ func TestWrite(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			test.Expect(t, "unexpected byte count", n, len(c.Expected))
-			test.Expect(t, "unexpected output", w.String(), c.Expected)
+			xtesting.Expect(t, "unexpected byte count", n, len(c.Expected))
+			xtesting.Expect(t, "unexpected output", w.String(), c.Expected)
 		})
 	}
 }

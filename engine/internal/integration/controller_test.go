@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestController(t *testing.T) {
@@ -51,7 +51,7 @@ func TestController(t *testing.T) {
 	t.Run("func HandlerConfig()", func(t *testing.T) {
 		_, cfg, ctrl, _ := newController()
 
-		test.Expect(t, "unexpected handler config", ctrl.HandlerConfig(), cfg)
+		xtesting.Expect(t, "unexpected handler config", ctrl.HandlerConfig(), cfg)
 	})
 
 	t.Run("func Tick()", func(t *testing.T) {
@@ -64,8 +64,8 @@ func TestController(t *testing.T) {
 				time.Now(),
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
 		})
 
 		t.Run("it does not record any facts", func(t *testing.T) {
@@ -78,8 +78,8 @@ func TestController(t *testing.T) {
 				time.Now(),
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
 		})
 	})
 
@@ -94,7 +94,7 @@ func TestController(t *testing.T) {
 				m dogma.Command,
 			) error {
 				called = true
-				test.Expect(t, "unexpected command", m, CommandA1)
+				xtesting.Expect(t, "unexpected command", m, CommandA1)
 				return nil
 			}
 
@@ -105,8 +105,8 @@ func TestController(t *testing.T) {
 				command,
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(t, "expected handler to be called", called, true)
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(t, "expected handler to be called", called, true)
 		})
 
 		t.Run("it returns the recorded events", func(t *testing.T) {
@@ -130,8 +130,8 @@ func TestController(t *testing.T) {
 				command,
 			)
 
-			test.Expect(t, "unexpected error", err, nil)
-			test.Expect(
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(
 				t,
 				"unexpected events",
 				events,
@@ -181,7 +181,7 @@ func TestController(t *testing.T) {
 				command,
 			)
 
-			test.Expect(t, "unexpected error", err, expected)
+			xtesting.Expect(t, "unexpected error", err, expected)
 		})
 
 		t.Run("it provides more context to UnexpectedMessage panics from HandleCommand()", func(t *testing.T) {
@@ -202,10 +202,10 @@ func TestController(t *testing.T) {
 					t.Fatalf("expected UnexpectedMessage panic, got %T", r)
 				}
 
-				test.Expect(t, "unexpected handler", x.Handler, cfg)
-				test.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
-				test.Expect(t, "unexpected method", x.Method, "HandleCommand")
-				test.Expect(t, "unexpected message", x.Message, command.Message)
+				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
 			}()
 
 			ctrl.Handle(

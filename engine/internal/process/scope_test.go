@@ -13,7 +13,7 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	internaltest "github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestScope(t *testing.T) {
@@ -28,7 +28,7 @@ func TestScope(t *testing.T) {
 			_ dogma.Event,
 		) error {
 			called = true
-			internaltest.Expect(t, "unexpected instance ID", s.InstanceID(), "<instance>")
+			xtesting.Expect(t, "unexpected instance ID", s.InstanceID(), "<instance>")
 			return nil
 		}
 

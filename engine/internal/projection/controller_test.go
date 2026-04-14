@@ -14,7 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/projection"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 type controllerTestFixture struct {
@@ -95,8 +95,8 @@ func TestControllerTick(t *testing.T) {
 			time.Now(),
 		)
 
-		test.Expect(t, "unexpected tick error", err, expected)
-		test.Expect(
+		xtesting.Expect(t, "unexpected tick error", err, expected)
+		xtesting.Expect(
 			t,
 			"unexpected compaction facts",
 			buf.Facts(),
@@ -162,7 +162,7 @@ func TestControllerHandle(t *testing.T) {
 			m dogma.Event,
 		) (uint64, error) {
 			called = true
-			test.Expect(t, "unexpected event", m, EventA1)
+			xtesting.Expect(t, "unexpected event", m, EventA1)
 			return s.Offset() + 1, nil
 		}
 
@@ -199,7 +199,7 @@ func TestControllerHandle(t *testing.T) {
 			fx.event,
 		)
 
-		test.Expect(t, "unexpected handler error", err, expected)
+		xtesting.Expect(t, "unexpected handler error", err, expected)
 	})
 
 	t.Run("it propagates errors when loading the checkpoint offset", func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestControllerHandle(t *testing.T) {
 			fx.event,
 		)
 
-		test.Expect(t, "unexpected checkpoint error", err, expected)
+		xtesting.Expect(t, "unexpected checkpoint error", err, expected)
 	})
 
 	t.Run("it passes the correct stream offsets", func(t *testing.T) {
@@ -360,7 +360,7 @@ func TestControllerHandle(t *testing.T) {
 			if x.Method != "HandleEvent" {
 				t.Fatalf("unexpected method: %s", x.Method)
 			}
-			test.Expect(t, "unexpected panic message", x.Message, fx.event.Message)
+			xtesting.Expect(t, "unexpected panic message", x.Message, fx.event.Message)
 		}()
 
 		fx.ctrl.Handle(
@@ -392,7 +392,7 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		test.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
+		xtesting.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
 	})
 
 	t.Run("when compact-during-handling is enabled, it performs projection compaction", func(t *testing.T) {
@@ -415,8 +415,8 @@ func TestControllerHandle(t *testing.T) {
 			fx.event,
 		)
 
-		test.Expect(t, "unexpected handle error", err, expected)
-		test.Expect(
+		xtesting.Expect(t, "unexpected handle error", err, expected)
+		xtesting.Expect(
 			t,
 			"unexpected compaction facts",
 			buf.Facts(),

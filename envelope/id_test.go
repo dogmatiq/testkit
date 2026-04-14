@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	. "github.com/dogmatiq/testkit/envelope"
-	"github.com/dogmatiq/testkit/internal/test"
+	"github.com/dogmatiq/testkit/x/xtesting"
 )
 
 func TestMessageIDGenerator(t *testing.T) {
@@ -12,9 +12,9 @@ func TestMessageIDGenerator(t *testing.T) {
 		t.Run("it returns the next ID in the sequence", func(t *testing.T) {
 			generator := &MessageIDGenerator{}
 
-			test.Expect(t, "unexpected message ID", generator.Next(), "1")
-			test.Expect(t, "unexpected message ID", generator.Next(), "2")
-			test.Expect(t, "unexpected message ID", generator.Next(), "3")
+			xtesting.Expect(t, "unexpected message ID", generator.Next(), "1")
+			xtesting.Expect(t, "unexpected message ID", generator.Next(), "2")
+			xtesting.Expect(t, "unexpected message ID", generator.Next(), "3")
 		})
 	})
 
@@ -27,7 +27,7 @@ func TestMessageIDGenerator(t *testing.T) {
 			generator.Next()
 			generator.Reset()
 
-			test.Expect(t, "unexpected message ID", generator.Next(), "1")
+			xtesting.Expect(t, "unexpected message ID", generator.Next(), "1")
 		})
 	})
 }
