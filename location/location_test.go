@@ -104,12 +104,36 @@ func TestLocation(t *testing.T) {
 			Location Location
 			Want     string
 		}{
-			{"empty", Location{}, "<unknown>"},
-			{"function name only", Location{Func: "<function>"}, "<function>(...)"},
-			{"function name only (global closure)", Location{Func: "<function glob..>"}, "<function glob..>(...)"},
-			{"file location only", Location{File: "<file>", Line: 123}, "<file>:123"},
-			{"both", Location{Func: "<function>", File: "<file>", Line: 123}, "<file>:123 [<function>(...)]"},
-			{"both (global closure)", Location{Func: "<function glob..>", File: "<file>", Line: 123}, "<file>:123"},
+			{
+				Name:     "empty",
+				Location: Location{},
+				Want:     "<unknown>",
+			},
+			{
+				Name:     "function name only",
+				Location: Location{Func: "<function>"},
+				Want:     "<function>(...)",
+			},
+			{
+				Name:     "function name only (global closure)",
+				Location: Location{Func: "<function glob..>"},
+				Want:     "<function glob..>(...)",
+			},
+			{
+				Name:     "file location only",
+				Location: Location{File: "<file>", Line: 123},
+				Want:     "<file>:123",
+			},
+			{
+				Name:     "both",
+				Location: Location{Func: "<function>", File: "<file>", Line: 123},
+				Want:     "<file>:123 [<function>(...)]",
+			},
+			{
+				Name:     "both (global closure)",
+				Location: Location{Func: "<function glob..>", File: "<file>", Line: 123},
+				Want:     "<file>:123",
+			},
 		}
 
 		for _, c := range cases {

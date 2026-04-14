@@ -2,14 +2,14 @@ package report_test
 
 import (
 	"strings"
+	"testing"
 
 	. "github.com/dogmatiq/testkit/internal/report"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("func WriteDiff()", func() {
-	g.It("produces a word-diff of the input", func() {
+func TestWriteDiff(t *testing.T) {
+	t.Run("it produces a word-diff of the input", func(t *testing.T) {
 		var w strings.Builder
 
 		WriteDiff(
@@ -18,8 +18,11 @@ var _ = g.Describe("func WriteDiff()", func() {
 			"foo qux baz",
 		)
 
-		gm.Expect(w.String()).To(
-			gm.Equal("foo [-bar-]{+qux+} baz"),
+		test.Expect(
+			t,
+			"unexpected diff",
+			w.String(),
+			"foo [-bar-]{+qux+} baz",
 		)
 	})
-})
+}

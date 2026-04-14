@@ -1,106 +1,166 @@
 package inflect_test
 
 import (
+	"fmt"
 	"strings"
+	"testing"
 
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
 	. "github.com/dogmatiq/testkit/internal/inflect"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/test"
 )
 
-var _ = g.Describe("func Sprint()", func() {
-	entry := func(k message.Kind, in, out string) g.TableEntry {
-		return g.Entry(
-			in+" ("+k.String()+")",
-			k,
-			in,
-			out,
-		)
-	}
+func TestInflect(t *testing.T) {
+	t.Run("func Sprint()", func(t *testing.T) {
+		cases := []struct {
+			Template string
+			Command  string
+			Event    string
+			Timeout  string
+		}{
+			{
+				Template: "a <message>",
+				Command:  "a command",
+				Event:    "an event",
+				Timeout:  "a timeout",
+			},
+			{
+				Template: "an <message>",
+				Command:  "a command",
+				Event:    "an event",
+				Timeout:  "a timeout",
+			},
+			{
+				Template: "the <messages>",
+				Command:  "the commands",
+				Event:    "the events",
+				Timeout:  "the timeouts",
+			},
+			{
+				Template: "1 <messages>",
+				Command:  "1 command",
+				Event:    "1 event",
+				Timeout:  "1 timeout",
+			},
+			{
+				Template: "21 <messages>",
+				Command:  "21 commands",
+				Event:    "21 events",
+				Timeout:  "21 timeouts",
+			},
+			{
+				Template: "only 1 <messages>",
+				Command:  "only 1 command",
+				Event:    "only 1 event",
+				Timeout:  "only 1 timeout",
+			},
+			{
+				Template: "only 21 <messages>",
+				Command:  "only 21 commands",
+				Event:    "only 21 events",
+				Timeout:  "only 21 timeouts",
+			},
+			{
+				Template: "<produce> a specific <message>",
+				Command:  "execute a specific command",
+				Event:    "record a specific event",
+				Timeout:  "schedule a specific timeout",
+			},
+			{
+				Template: "the <message> was <produced>",
+				Command:  "the command was executed",
+				Event:    "the event was recorded",
+				Timeout:  "the timeout was scheduled",
+			},
+			{
+				Template: "via a <dispatcher>",
+				Command:  "via a dogma.CommandExecutor",
+				Event:    "via a dogma.EventRecorder",
+				Timeout:  "via a <dispatcher>",
+			},
+		}
 
-	g.DescribeTable(
-		"returns a properly inflected string",
-		func(k message.Kind, in, out string) {
-			gm.Expect(Sprint(k, in)).To(gm.Equal(out))
+		for _, c := range cases {
+			t.Run(c.Template, func(t *testing.T) {
+				tests := []struct {
+					Kind message.Kind
+					Out  string
+				}{
+					{message.CommandKind, c.Command},
+					{message.EventKind, c.Event},
+					{message.TimeoutKind, c.Timeout},
+				}
 
-			in = strings.ToUpper(in)
-			out = strings.ToUpper(out)
-			gm.Expect(Sprint(k, in)).To(gm.Equal(out))
-		},
-		entry(message.CommandKind, "a <message>", "a command"),
-		entry(message.EventKind, "a <message>", "an event"),
-		entry(message.TimeoutKind, "a <message>", "a timeout"),
+				for _, x := range tests {
+					t.Run(fmt.Sprintf("%s", x.Kind), func(t *testing.T) {
+						test.Expect(
+							t,
+							"unexpected inflected string",
+							Sprint(x.Kind, c.Template),
+							x.Out,
+						)
 
-		entry(message.CommandKind, "an <message>", "a command"),
-		entry(message.EventKind, "an <message>", "an event"),
-		entry(message.TimeoutKind, "an <message>", "a timeout"),
-
-		entry(message.CommandKind, "the <messages>", "the commands"),
-		entry(message.EventKind, "the <messages>", "the events"),
-		entry(message.TimeoutKind, "the <messages>", "the timeouts"),
-
-		entry(message.CommandKind, "1 <messages>", "1 command"),
-		entry(message.EventKind, "1 <messages>", "1 event"),
-		entry(message.TimeoutKind, "1 <messages>", "1 timeout"),
-
-		entry(message.CommandKind, "21 <messages>", "21 commands"),
-		entry(message.EventKind, "21 <messages>", "21 events"),
-		entry(message.TimeoutKind, "21 <messages>", "21 timeouts"),
-
-		entry(message.CommandKind, "only 1 <messages>", "only 1 command"),
-		entry(message.EventKind, "only 1 <messages>", "only 1 event"),
-		entry(message.TimeoutKind, "only 1 <messages>", "only 1 timeout"),
-
-		entry(message.CommandKind, "only 21 <messages>", "only 21 commands"),
-		entry(message.EventKind, "only 21 <messages>", "only 21 events"),
-		entry(message.TimeoutKind, "only 21 <messages>", "only 21 timeouts"),
-
-		entry(message.CommandKind, "<produce> a specific <message>", "execute a specific command"),
-		entry(message.EventKind, "<produce> a specific <message>", "record a specific event"),
-		entry(message.TimeoutKind, "<produce> a specific <message>", "schedule a specific timeout"),
-
-		entry(message.CommandKind, "the <message> was <produced>", "the command was executed"),
-		entry(message.EventKind, "the <message> was <produced>", "the event was recorded"),
-		entry(message.TimeoutKind, "the <message> was <produced>", "the timeout was scheduled"),
-
-		entry(message.CommandKind, "via a <dispatcher>", "via a dogma.CommandExecutor"),
-		entry(message.EventKind, "via a <dispatcher>", "via a dogma.EventRecorder"),
-	)
-})
-
-var _ = g.Describe("func Sprintf()", func() {
-	g.It("returns the inflected and substituted string", func() {
-		gm.Expect(
-			Sprintf(
-				message.CommandKind,
-				"the %T <message>",
-				CommandA1,
-			),
-		).To(gm.Equal("the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+						test.Expect(
+							t,
+							"unexpected uppercase inflected string",
+							Sprint(x.Kind, strings.ToUpper(c.Template)),
+							strings.ToUpper(x.Out),
+						)
+					})
+				}
+			})
+		}
 	})
-})
 
-var _ = g.Describe("func Error()", func() {
-	g.It("returns an error with the inflected message", func() {
-		gm.Expect(
-			Error(
+	t.Run("func Sprintf()", func(t *testing.T) {
+		t.Run("it returns the inflected and substituted string", func(t *testing.T) {
+			test.Expect(
+				t,
+				"unexpected formatted string",
+				Sprintf(
+					message.CommandKind,
+					"the %T <message>",
+					CommandA1,
+				),
+				"the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command",
+			)
+		})
+	})
+
+	t.Run("func Error()", func(t *testing.T) {
+		t.Run("it returns an error with the inflected message", func(t *testing.T) {
+			err := Error(
 				message.CommandKind,
 				"the <message>",
-			),
-		).To(gm.MatchError("the command"))
-	})
-})
+			)
 
-var _ = g.Describe("func Errorf()", func() {
-	g.It("returns an error with the inflected and substituted message", func() {
-		gm.Expect(
-			Errorf(
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+
+			test.Expect(t, "unexpected error message", err.Error(), "the command")
+		})
+	})
+
+	t.Run("func Errorf()", func(t *testing.T) {
+		t.Run("it returns an error with the inflected and substituted message", func(t *testing.T) {
+			err := Errorf(
 				message.CommandKind,
 				"the %T <message>",
 				CommandA1,
-			),
-		).To(gm.MatchError("the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command"))
+			)
+
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+
+			test.Expect(
+				t,
+				"unexpected error message",
+				err.Error(),
+				"the *stubs.CommandStub[github.com/dogmatiq/enginekit/enginetest/stubs.TypeA] command",
+			)
+		})
 	})
-})
+}
