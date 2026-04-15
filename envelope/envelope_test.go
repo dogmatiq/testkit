@@ -1,6 +1,7 @@
 package envelope_test
 
 import (
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -8,13 +9,12 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/envelope"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("type Envelope", func() {
-	g.Describe("func NewCommand()", func() {
-		g.It("returns the expected envelope", func() {
+func TestEnvelope(t *testing.T) {
+	t.Run("func NewCommand()", func(t *testing.T) {
+		t.Run("it returns the expected envelope", func(t *testing.T) {
 			now := time.Now()
 			env := NewCommand(
 				"100",
@@ -22,7 +22,10 @@ var _ = g.Describe("type Envelope", func() {
 				now,
 			)
 
-			gm.Expect(env).To(gm.Equal(
+			xtesting.Expect(
+				t,
+				"unexpected envelope",
+				env,
 				&Envelope{
 					MessageID:     "100",
 					CorrelationID: "100",
@@ -30,12 +33,12 @@ var _ = g.Describe("type Envelope", func() {
 					Message:       CommandA1,
 					CreatedAt:     now,
 				},
-			))
+			)
 		})
 	})
 
-	g.Describe("func NewEvent()", func() {
-		g.It("returns the expected envelope", func() {
+	t.Run("func NewEvent()", func(t *testing.T) {
+		t.Run("it returns the expected envelope", func(t *testing.T) {
 			now := time.Now()
 			env := NewEvent(
 				"100",
@@ -43,7 +46,10 @@ var _ = g.Describe("type Envelope", func() {
 				now,
 			)
 
-			gm.Expect(env).To(gm.Equal(
+			xtesting.Expect(
+				t,
+				"unexpected envelope",
+				env,
 				&Envelope{
 					MessageID:         "100",
 					CorrelationID:     "100",
@@ -53,22 +59,22 @@ var _ = g.Describe("type Envelope", func() {
 					EventStreamID:     "87d0e883-8f15-5eaf-9601-fe3a7dd517a4",
 					EventStreamOffset: 0,
 				},
-			))
+			)
 		})
 	})
 
-	g.Describe("func NewCommand()", func() {
-		handler := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
-			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
-				c.Routes(
-					dogma.HandlesEvent[*EventStub[TypeA]](),
-					dogma.ExecutesCommand[*CommandStub[TypeA]](),
-				)
-			},
-		})
+	t.Run("func (Envelope) NewCommand()", func(t *testing.T) {
+		t.Run("it returns the expected envelope", func(t *testing.T) {
+			handler := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
+				ConfigureFunc: func(c dogma.ProcessConfigurer) {
+					c.Identity("<handler>", "d1c7e18a-4d72-4705-a120-6cfb29eef655")
+					c.Routes(
+						dogma.HandlesEvent[*EventStub[TypeA]](),
+						dogma.ExecutesCommand[*CommandStub[TypeA]](),
+					)
+				},
+			})
 
-		g.It("returns the expected envelope", func() {
 			parent := NewEvent(
 				"100",
 				EventP1,
@@ -87,7 +93,10 @@ var _ = g.Describe("type Envelope", func() {
 				origin,
 			)
 
-			gm.Expect(child).To(gm.Equal(
+			xtesting.Expect(
+				t,
+				"unexpected envelope",
+				child,
 				&Envelope{
 					MessageID:     "200",
 					CorrelationID: "100",
@@ -96,22 +105,22 @@ var _ = g.Describe("type Envelope", func() {
 					CreatedAt:     now,
 					Origin:        &origin,
 				},
-			))
+			)
 		})
 	})
 
-	g.Describe("func NewEvent()", func() {
-		handler := runtimeconfig.FromAggregate(&AggregateMessageHandlerStub{
-			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
-				c.Routes(
-					dogma.HandlesCommand[*CommandStub[TypeA]](),
-					dogma.RecordsEvent[*EventStub[TypeA]](),
-				)
-			},
-		})
+	t.Run("func (Envelope) NewEvent()", func(t *testing.T) {
+		t.Run("it returns the expected envelope", func(t *testing.T) {
+			handler := runtimeconfig.FromAggregate(&AggregateMessageHandlerStub{
+				ConfigureFunc: func(c dogma.AggregateConfigurer) {
+					c.Identity("<handler>", "8688dc39-b5d0-4468-89fd-0d9452667c0c")
+					c.Routes(
+						dogma.HandlesCommand[*CommandStub[TypeA]](),
+						dogma.RecordsEvent[*EventStub[TypeA]](),
+					)
+				},
+			})
 
-		g.It("returns the expected envelope", func() {
 			const streamID = "10208426-7df8-4f47-ac2a-a83f55c3b1c0"
 			const offset = 42
 
@@ -135,7 +144,10 @@ var _ = g.Describe("type Envelope", func() {
 				offset,
 			)
 
-			gm.Expect(child).To(gm.Equal(
+			xtesting.Expect(
+				t,
+				"unexpected envelope",
+				child,
 				&Envelope{
 					MessageID:         "200",
 					CorrelationID:     "100",
@@ -146,23 +158,23 @@ var _ = g.Describe("type Envelope", func() {
 					EventStreamID:     streamID,
 					EventStreamOffset: offset,
 				},
-			))
+			)
 		})
 	})
 
-	g.Describe("func NewTimeout()", func() {
-		handler := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
-			ConfigureFunc: func(c dogma.ProcessConfigurer) {
-				c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
-				c.Routes(
-					dogma.HandlesEvent[*EventStub[TypeA]](),
-					dogma.ExecutesCommand[*CommandStub[TypeA]](),
-					dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
-				)
-			},
-		})
+	t.Run("func (Envelope) NewTimeout()", func(t *testing.T) {
+		t.Run("it returns the expected envelope", func(t *testing.T) {
+			handler := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
+				ConfigureFunc: func(c dogma.ProcessConfigurer) {
+					c.Identity("<handler>", "1d4e3d22-52fe-4b1b-9bf5-44b2050c08c2")
+					c.Routes(
+						dogma.HandlesEvent[*EventStub[TypeA]](),
+						dogma.ExecutesCommand[*CommandStub[TypeA]](),
+						dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
+					)
+				},
+			})
 
-		g.It("returns the expected envelope", func() {
 			parent := NewCommand(
 				"100",
 				CommandP1,
@@ -183,7 +195,10 @@ var _ = g.Describe("type Envelope", func() {
 				origin,
 			)
 
-			gm.Expect(child).To(gm.Equal(
+			xtesting.Expect(
+				t,
+				"unexpected envelope",
+				child,
 				&Envelope{
 					MessageID:     "200",
 					CorrelationID: "100",
@@ -193,7 +208,7 @@ var _ = g.Describe("type Envelope", func() {
 					ScheduledFor:  s,
 					Origin:        &origin,
 				},
-			))
+			)
 		})
 	})
-})
+}

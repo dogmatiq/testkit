@@ -1,48 +1,33 @@
 package testkit_test
 
 import (
+	"testing"
+
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
-	"github.com/dogmatiq/testkit"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func ToRepeatedly()", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-		test     *Test
-	)
-
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
-
-		app = &ApplicationStub{
+func TestToRepeatedly(t *testing.T) {
+	newFixture := func() (*testingmock.T, *Test) {
+		mt := &testingmock.T{FailSilently: true}
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "259ae495-fcef-43e2-986a-ea6b82f65fcd")
 			},
 		}
+		return mt, Begin(mt, app)
+	}
 
-		test = testkit.Begin(testingT, app)
-	})
-
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-		) {
-			test.Expect(noop, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
-		},
-		g.Entry(
+	cases := []struct {
+		Name        string
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+	}{
+		{
 			"it passes when all of the repeated expectations pass",
 			ToRepeatedly(
 				"<description>",
@@ -62,8 +47,8 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 			expectReport(
 				`✓ <description>`,
 			),
-		),
-		g.Entry(
+		},
+		{
 			"it fails when any of the repeated expectations fail",
 			ToRepeatedly(
 				"<description>",
@@ -84,8 +69,8 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 				`✗ <description> (1 of 2 iteration(s) failed, iteration #1 shown)`,
 				`    ✗ <always fail>`,
 			),
-		),
-		g.Entry(
+		},
+		{
 			"it fails when all of the repeated expectations fail",
 			ToRepeatedly(
 				"<description>",
@@ -106,11 +91,23 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 				`✗ <description> (2 of 2 iteration(s) failed, iteration #0 shown)`,
 				`    ✗ <always fail>`,
 			),
-		),
-	)
+		},
+	}
 
-	g.It("produces the expected caption", func() {
-		test.Expect(
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			mt, tc := newFixture()
+			tc.Expect(noop, c.Expectation)
+			c.Report(mt)
+			if mt.Failed() != !c.Passes {
+				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+			}
+		})
+	}
+
+	t.Run("it produces the expected caption", func(t *testing.T) {
+		mt, tc := newFixture()
+		tc.Expect(
 			noop,
 			ToRepeatedly(
 				"<description>",
@@ -120,33 +117,51 @@ var _ = g.Describe("func ToRepeatedly()", func() {
 				},
 			),
 		)
-
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
+		xtesting.ExpectContains[string](
+			t,
+			"expected log message not found",
+			mt.Logs,
 			"--- expect [no-op] to <description> ---",
-		))
+		)
 	})
 
-	g.It("panics if the description is empty", func() {
-		gm.Expect(func() {
-			ToRepeatedly("", 1, func(i int) Expectation { return nil })
-		}).To(gm.PanicWith(`ToRepeatedly("", 1, <func>): description must not be empty`))
+	t.Run("it panics if the description is empty", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			`ToRepeatedly("", 1, <func>): description must not be empty`,
+			func() {
+				ToRepeatedly("", 1, func(i int) Expectation { return nil })
+			},
+		)
 	})
 
-	g.It("panics if the count is zero", func() {
-		gm.Expect(func() {
-			ToRepeatedly("<description>", 0, func(i int) Expectation { return nil })
-		}).To(gm.PanicWith(`ToRepeatedly("<description>", 0, <func>): n must be 1 or greater`))
+	t.Run("it panics if the count is zero", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			`ToRepeatedly("<description>", 0, <func>): n must be 1 or greater`,
+			func() {
+				ToRepeatedly("<description>", 0, func(i int) Expectation { return nil })
+			},
+		)
 	})
 
-	g.It("panics if the count is negative", func() {
-		gm.Expect(func() {
-			ToRepeatedly("<description>", -1, func(i int) Expectation { return nil })
-		}).To(gm.PanicWith(`ToRepeatedly("<description>", -1, <func>): n must be 1 or greater`))
+	t.Run("it panics if the count is negative", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			`ToRepeatedly("<description>", -1, <func>): n must be 1 or greater`,
+			func() {
+				ToRepeatedly("<description>", -1, func(i int) Expectation { return nil })
+			},
+		)
 	})
 
-	g.It("panics if the function is nil", func() {
-		gm.Expect(func() {
-			ToRepeatedly("<description>", 1, nil)
-		}).To(gm.PanicWith(`ToRepeatedly("<description>", 1, <nil>): function must not be nil`))
+	t.Run("it panics if the function is nil", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			`ToRepeatedly("<description>", 1, <nil>): function must not be nil`,
+			func() {
+				ToRepeatedly("<description>", 1, nil)
+			},
+		)
 	})
-})
+}

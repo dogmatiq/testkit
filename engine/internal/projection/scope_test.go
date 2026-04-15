@@ -2,128 +2,100 @@ package projection_test
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/config"
-	"github.com/dogmatiq/enginekit/config/runtimeconfig"
-	. "github.com/dogmatiq/enginekit/enginetest/stubs"
-	. "github.com/dogmatiq/testkit/engine/internal/projection"
-	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("type scope", func() {
-	var (
-		handler *ProjectionMessageHandlerStub
-		cfg     *config.Projection
-		ctrl    *Controller
-		event   *envelope.Envelope
+func TestScopeRecordedAt(t *testing.T) {
+	fx := newControllerTestFixture()
+
+	fx.handler.HandleEventFunc = func(
+		_ context.Context,
+		s dogma.ProjectionEventScope,
+		_ dogma.Event,
+	) (uint64, error) {
+		if !s.RecordedAt().Equal(fx.event.CreatedAt) {
+			t.Fatalf("unexpected recorded time: %v", s.RecordedAt())
+		}
+		return s.Offset() + 1, nil
+	}
+
+	_, err := fx.ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		time.Now(),
+		fx.event,
 	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
 
-	g.BeforeEach(func() {
-		event = envelope.NewEvent(
-			"1000",
-			EventA1,
-			time.Now(),
-		)
+func TestScopeLog(t *testing.T) {
+	fx := newControllerTestFixture()
 
-		handler = &ProjectionMessageHandlerStub{
-			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
-				c.Identity("<name>", "deaaf068-bfd3-4ed2-a69d-850cb9bfab8d")
-				c.Routes(
-					dogma.HandlesEvent[*EventStub[TypeA]](),
-				)
-			},
-		}
+	fx.handler.HandleEventFunc = func(
+		_ context.Context,
+		s dogma.ProjectionEventScope,
+		_ dogma.Event,
+	) (uint64, error) {
+		s.Log("<format>", "<arg-1>", "<arg-2>")
+		return s.Offset() + 1, nil
+	}
 
-		cfg = runtimeconfig.FromProjection(handler)
+	buf := &fact.Buffer{}
+	_, err := fx.ctrl.Handle(
+		context.Background(),
+		buf,
+		time.Now(),
+		fx.event,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
-		ctrl = &Controller{
-			Config: cfg,
-		}
-	})
-
-	g.Describe("func RecordedAt()", func() {
-		g.It("returns event creation time", func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (uint64, error) {
-				gm.Expect(s.RecordedAt()).To(
-					gm.BeTemporally("==", event.CreatedAt),
-				)
-				return s.Offset() + 1, nil
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				event,
-			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-		})
-	})
-
-	g.Describe("func Log()", func() {
-		g.BeforeEach(func() {
-			handler.HandleEventFunc = func(
-				_ context.Context,
-				s dogma.ProjectionEventScope,
-				_ dogma.Event,
-			) (uint64, error) {
-				s.Log("<format>", "<arg-1>", "<arg-2>")
-				return s.Offset() + 1, nil
-			}
-		})
-
-		g.It("records a fact", func() {
-			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
-				context.Background(),
-				buf,
-				time.Now(),
-				event,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.MessageLoggedByProjection{
-					Handler:   cfg,
-					Envelope:  event,
-					LogFormat: "<format>",
-					LogArguments: []any{
-						"<arg-1>",
-						"<arg-2>",
-					},
+	xtesting.Expect(
+		t,
+		"unexpected logged facts",
+		buf.Facts(),
+		[]fact.Fact{
+			fact.MessageLoggedByProjection{
+				Handler:   fx.cfg,
+				Envelope:  fx.event,
+				LogFormat: "<format>",
+				LogArguments: []any{
+					"<arg-1>",
+					"<arg-2>",
 				},
-			))
-		})
-	})
+			},
+		},
+	)
+}
 
-	g.Describe("func Now()", func() {
-		g.It("returns the current engine time", func() {
-			now := time.Now()
+func TestScopeNow(t *testing.T) {
+	fx := newControllerTestFixture()
+	now := time.Now()
 
-			handler.CompactFunc = func(
-				_ context.Context,
-				s dogma.ProjectionCompactScope,
-			) error {
-				gm.Expect(s.Now()).To(gm.Equal(now))
-				return nil
-			}
+	fx.handler.CompactFunc = func(
+		_ context.Context,
+		s dogma.ProjectionCompactScope,
+	) error {
+		if got := s.Now(); got != now {
+			t.Fatalf("unexpected current time: %v", got)
+		}
+		return nil
+	}
 
-			_, err := ctrl.Tick(
-				context.Background(),
-				fact.Ignore,
-				now,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-		})
-	})
-})
+	_, err := fx.ctrl.Tick(
+		context.Background(),
+		fact.Ignore,
+		now,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}

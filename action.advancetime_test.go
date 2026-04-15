@@ -2,6 +2,8 @@ package testkit_test
 
 import (
 	"fmt"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -11,48 +13,45 @@ import (
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func AdvanceTime()", func() {
-	var (
-		app       *ApplicationStub
-		t         *testingmock.T
-		startTime time.Time
-		buf       *fact.Buffer
-		test      *Test
-	)
-
-	g.BeforeEach(func() {
-		app = &ApplicationStub{
+func TestAdvanceTime(t *testing.T) {
+	newFixture := func() (*testingmock.T, time.Time, *fact.Buffer, *Test) {
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "140ca29b-7a05-4f26-968b-6285255e6d8a")
 			},
 		}
 
-		t = &testingmock.T{}
-		startTime = time.Now()
-		buf = &fact.Buffer{}
+		tm := &testingmock.T{}
+		startTime := time.Now()
+		buf := &fact.Buffer{}
 
-		test = Begin(
-			t,
+		tc := Begin(
+			tm,
 			app,
 			StartTimeAt(startTime),
 			WithUnsafeOperationOptions(
 				engine.WithObserver(buf),
 			),
 		)
-	})
 
-	g.It("retains the virtual time between calls", func() {
-		test.Prepare(
+		return tm, startTime, buf, tc
+	}
+
+	t.Run("it retains the virtual time between calls", func(t *testing.T) {
+		_, startTime, buf, tc := newFixture()
+
+		tc.Prepare(
 			AdvanceTime(ByDuration(1*time.Second)),
 			AdvanceTime(ByDuration(1*time.Second)),
 		)
 
-		gm.Expect(buf.Facts()).To(gm.ContainElement(
+		xtesting.ExpectContains[fact.Fact](
+			t,
+			"expected tick fact",
+			buf.Facts(),
 			fact.TickCycleBegun{
 				EngineTime: startTime.Add(2 * time.Second),
 				EnabledHandlerTypes: map[config.HandlerType]bool{
@@ -63,55 +62,61 @@ var _ = g.Describe("func AdvanceTime()", func() {
 				},
 				EnabledHandlers: map[string]bool{},
 			},
-		))
+		)
 	})
 
-	g.It("fails the test if time is reversed", func() {
-		t.FailSilently = true
+	t.Run("it fails the test if time is reversed", func(t *testing.T) {
+		tm, startTime, _, tc := newFixture()
+		tm.FailSilently = true
 
 		target := startTime.Add(-1 * time.Second)
 
-		test.Prepare(
-			AdvanceTime(
-				ToTime(target),
-			),
+		tc.Prepare(AdvanceTime(ToTime(target)))
+
+		if !tm.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		xtesting.ExpectContains(
+			t,
+			"expected failure log",
+			tm.Logs,
+			fmt.Sprintf("adjusting the clock to %s would reverse time", target.Format(time.RFC3339)),
 		)
-
-		gm.Expect(t.Failed()).To(gm.BeTrue())
-		gm.Expect(t.Logs).To(gm.ContainElement(
-			fmt.Sprintf(
-				"adjusting the clock to %s would reverse time",
-				target.Format(time.RFC3339),
-			),
-		))
 	})
 
-	g.It("panics if the adjustment is nil", func() {
-		gm.Expect(func() {
-			AdvanceTime(nil)
-		}).To(gm.PanicWith("AdvanceTime(<nil>): adjustment must not be nil"))
-	})
-
-	g.It("captures the location that the action was created", func() {
-		act := advanceTime(ByDuration(10 * time.Second))
-		gm.Expect(act.Location()).To(MatchAllFields(
-			Fields{
-				"Func": gm.Equal("github.com/dogmatiq/testkit_test.advanceTime"),
-				"File": gm.HaveSuffix("/action.linenumber_test.go"),
-				"Line": gm.Equal(50),
+	t.Run("it panics if the adjustment is nil", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			"AdvanceTime(<nil>): adjustment must not be nil",
+			func() {
+				AdvanceTime(nil)
 			},
-		))
+		)
 	})
 
-	g.When("passed a ToTime() adjustment", func() {
+	t.Run("it captures the location that the action was created", func(t *testing.T) {
+		act := advanceTime(ByDuration(10 * time.Second))
+		loc := act.Location()
+
+		xtesting.Expect(t, "unexpected function name", loc.Func, "github.com/dogmatiq/testkit_test.advanceTime")
+		if !strings.HasSuffix(loc.File, "/action.linenumber_test.go") {
+			t.Fatalf("unexpected file: %s", loc.File)
+		}
+		xtesting.Expect(t, "unexpected line", loc.Line, 50)
+	})
+
+	t.Run("passed a ToTime() adjustment", func(t *testing.T) {
 		targetTime := time.Date(2100, 1, 2, 3, 4, 5, 6, time.UTC)
 
-		g.It("advances the clock to the provided time", func() {
-			test.Prepare(
-				AdvanceTime(ToTime(targetTime)),
-			)
+		t.Run("it advances the clock to the provided time", func(t *testing.T) {
+			_, _, buf, tc := newFixture()
 
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
+			tc.Prepare(AdvanceTime(ToTime(targetTime)))
+
+			xtesting.ExpectContains[fact.Fact](
+				t,
+				"expected tick fact",
+				buf.Facts(),
 				fact.TickCycleBegun{
 					EngineTime: targetTime,
 					EnabledHandlerTypes: map[config.HandlerType]bool{
@@ -122,27 +127,33 @@ var _ = g.Describe("func AdvanceTime()", func() {
 					},
 					EnabledHandlers: map[string]bool{},
 				},
-			))
+			)
 		})
 
-		g.It("produces the expected caption", func() {
-			test.Prepare(
-				AdvanceTime(ToTime(targetTime)),
-			)
+		t.Run("it produces the expected caption", func(t *testing.T) {
+			tm, _, _, tc := newFixture()
 
-			gm.Expect(t.Logs).To(gm.ContainElement(
+			tc.Prepare(AdvanceTime(ToTime(targetTime)))
+
+			xtesting.ExpectContains(
+				t,
+				"expected caption",
+				tm.Logs,
 				"--- advancing time to 2100-01-02T03:04:05Z ---",
-			))
+			)
 		})
 	})
 
-	g.When("passed a ByDuration() adjustment", func() {
-		g.It("advances the clock then performs a tick", func() {
-			test.Prepare(
-				AdvanceTime(ByDuration(3 * time.Second)),
-			)
+	t.Run("passed a ByDuration() adjustment", func(t *testing.T) {
+		t.Run("it advances the clock then performs a tick", func(t *testing.T) {
+			_, startTime, buf, tc := newFixture()
 
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
+			tc.Prepare(AdvanceTime(ByDuration(3 * time.Second)))
+
+			xtesting.ExpectContains[fact.Fact](
+				t,
+				"expected tick fact",
+				buf.Facts(),
 				fact.TickCycleBegun{
 					EngineTime: startTime.Add(3 * time.Second),
 					EnabledHandlerTypes: map[config.HandlerType]bool{
@@ -153,23 +164,30 @@ var _ = g.Describe("func AdvanceTime()", func() {
 					},
 					EnabledHandlers: map[string]bool{},
 				},
-			))
-		})
-
-		g.It("produces the expected caption", func() {
-			test.Prepare(
-				AdvanceTime(ByDuration(3 * time.Second)),
 			)
-
-			gm.Expect(t.Logs).To(gm.ContainElement(
-				"--- advancing time by 3s ---",
-			))
 		})
 
-		g.It("panics if the duration is negative", func() {
-			gm.Expect(func() {
-				ByDuration(-1 * time.Second)
-			}).To(gm.PanicWith("ByDuration(-1s): duration must not be negative"))
+		t.Run("it produces the expected caption", func(t *testing.T) {
+			tm, _, _, tc := newFixture()
+
+			tc.Prepare(AdvanceTime(ByDuration(3 * time.Second)))
+
+			xtesting.ExpectContains(
+				t,
+				"expected caption",
+				tm.Logs,
+				"--- advancing time by 3s ---",
+			)
+		})
+
+		t.Run("it panics if the duration is negative", func(t *testing.T) {
+			xtesting.ExpectPanic(
+				t,
+				"ByDuration(-1s): duration must not be negative",
+				func() {
+					ByDuration(-1 * time.Second)
+				},
+			)
 		})
 	})
-})
+}

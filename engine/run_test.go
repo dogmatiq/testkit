@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -9,29 +10,21 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func Run()", func() {
-	var (
-		app    *ApplicationStub
-		engine *Engine
-	)
-
-	g.BeforeEach(func() {
-		app = &ApplicationStub{
+func TestRun(t *testing.T) {
+	newEngine := func() *Engine {
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "9e55f1ed-1f9a-46d9-a01f-e57638f74eb7")
 			},
 		}
 
-		engine = MustNew(
-			runtimeconfig.FromApplication(app),
-		)
-	})
+		return MustNew(runtimeconfig.FromApplication(app))
+	}
 
-	g.It("calls tick repeatedly", func() {
+	t.Run("it calls tick repeatedly", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -41,31 +34,45 @@ var _ = g.Describe("func Run()", func() {
 		}()
 
 		buf := &fact.Buffer{}
-		Run(
-			ctx,
-			engine,
-			5*time.Millisecond,
-			WithObserver(buf),
-		)
+		Run(ctx, newEngine(), 5*time.Millisecond, WithObserver(buf))
 
 		facts := buf.Facts()
-		gm.Expect(len(facts)).To(gm.BeNumerically(">=", 6))
+		if len(facts) < 6 {
+			t.Fatalf("unexpected fact count: got %d, want >= 6", len(facts))
+		}
 
-		for i := 0; i < 6; i += 2 {
-			gm.Expect(facts[i]).To(gm.BeAssignableToTypeOf(fact.TickCycleBegun{}))
-			gm.Expect(facts[i+1]).To(gm.BeAssignableToTypeOf(fact.TickCycleCompleted{}))
+		want := []any{
+			fact.TickCycleBegun{},
+			fact.TickCycleCompleted{},
+			fact.TickCycleBegun{},
+			fact.TickCycleCompleted{},
+			fact.TickCycleBegun{},
+			fact.TickCycleCompleted{},
+		}
+
+		for i, expected := range want {
+			switch expected.(type) {
+			case fact.TickCycleBegun:
+				if _, ok := facts[i].(fact.TickCycleBegun); !ok {
+					t.Fatalf("unexpected fact at %d: got %T, want fact.TickCycleBegun", i, facts[i])
+				}
+			case fact.TickCycleCompleted:
+				if _, ok := facts[i].(fact.TickCycleCompleted); !ok {
+					t.Fatalf("unexpected fact at %d: got %T, want fact.TickCycleCompleted", i, facts[i])
+				}
+			}
 		}
 	})
 
-	g.It("returns an error if the context is canceled while ticking", func() {
+	t.Run("it returns an error if the context is canceled while ticking", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
-		err := Run(ctx, engine, 0)
-		gm.Expect(err).To(gm.Equal(context.Canceled))
+		err := Run(ctx, newEngine(), 0)
+		xtesting.Expect(t, "unexpected error", err, context.Canceled)
 	})
 
-	g.It("returns an error if the context is canceled between ticks", func() {
+	t.Run("it returns an error if the context is canceled between ticks", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		go func() {
@@ -73,30 +80,23 @@ var _ = g.Describe("func Run()", func() {
 			cancel()
 		}()
 
-		err := Run(ctx, engine, 0)
-		gm.Expect(err).To(gm.Equal(context.Canceled))
+		err := Run(ctx, newEngine(), 0)
+		xtesting.Expect(t, "unexpected error", err, context.Canceled)
 	})
-})
+}
 
-var _ = g.Describe("func RunTimeScaled()", func() {
-	var (
-		app    *ApplicationStub
-		engine *Engine
-	)
-
-	g.BeforeEach(func() {
-		app = &ApplicationStub{
+func TestRunTimeScaled(t *testing.T) {
+	newEngine := func() *Engine {
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "4f06c58d-b854-41e9-92ee-d4e4ba137670")
 			},
 		}
 
-		engine = MustNew(
-			runtimeconfig.FromApplication(app),
-		)
-	})
+		return MustNew(runtimeconfig.FromApplication(app))
+	}
 
-	g.It("scales type by the given factor", func() {
+	t.Run("it scales time by the given factor", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -111,26 +111,51 @@ var _ = g.Describe("func RunTimeScaled()", func() {
 
 		RunTimeScaled(
 			ctx,
-			engine,
+			newEngine(),
 			10*time.Millisecond,
 			0.5,
 			epoch,
 			WithObserver(buf),
 		)
 
-		facts := buf.Facts()
-		gm.Expect(len(facts)).To(gm.BeNumerically(">=", 6))
+		var tickTimes []time.Time
 
-		t := facts[0].(fact.TickCycleBegun).EngineTime
-		gm.Expect(t).To(gm.BeTemporally(">=", epoch))
-		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(5*time.Millisecond)))
+		for _, f := range buf.Facts() {
+			if begun, ok := f.(fact.TickCycleBegun); ok {
+				tickTimes = append(tickTimes, begun.EngineTime)
 
-		t = facts[2].(fact.TickCycleBegun).EngineTime
-		gm.Expect(t).To(gm.BeTemporally(">=", epoch.Add(5*time.Millisecond)))
-		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(10*time.Millisecond)))
+				if len(tickTimes) == 3 {
+					break
+				}
+			}
+		}
 
-		t = facts[4].(fact.TickCycleBegun).EngineTime
-		gm.Expect(t).To(gm.BeTemporally(">=", epoch.Add(10*time.Millisecond)))
-		gm.Expect(t).To(gm.BeTemporally("<", epoch.Add(15*time.Millisecond)))
+		if len(tickTimes) != 3 {
+			t.Fatalf("unexpected number of tick cycles: got %d, want at least 3", len(tickTimes))
+		}
+
+		if firstOffset := tickTimes[0].Sub(epoch); firstOffset < 0 || firstOffset >= 5*time.Millisecond {
+			t.Fatalf("unexpected first tick offset: got %s, want in [0s, 5ms)", firstOffset)
+		}
+
+		const (
+			minGap = 3 * time.Millisecond
+			maxGap = 8 * time.Millisecond
+		)
+
+		for i, curr := range tickTimes[1:] {
+			prev := tickTimes[i]
+
+			if gap := curr.Sub(prev); gap < minGap || gap >= maxGap {
+				t.Fatalf(
+					"unexpected gap between tick %d and %d: got %s, want in [%s, %s)",
+					i+1,
+					i+2,
+					gap,
+					minGap,
+					maxGap,
+				)
+			}
+		}
 	})
-})
+}

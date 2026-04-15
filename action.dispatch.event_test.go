@@ -2,6 +2,8 @@ package testkit_test
 
 import (
 	"context"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -12,22 +14,12 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func RecordEvent()", func() {
-	var (
-		app       *ApplicationStub
-		t         *testingmock.T
-		startTime time.Time
-		buf       *fact.Buffer
-		test      *Test
-	)
-
-	g.BeforeEach(func() {
-		app = &ApplicationStub{
+func TestRecordEvent(t *testing.T) {
+	newFixture := func() (*testingmock.T, time.Time, *fact.Buffer, *Test) {
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "38408e83-e8eb-4f82-abe1-7fa02cee0657")
 				c.Routes(
@@ -39,10 +31,7 @@ var _ = g.Describe("func RecordEvent()", func() {
 								dogma.ExecutesCommand[*CommandStub[TypeA]](),
 							)
 						},
-						RouteEventToInstanceFunc: func(
-							context.Context,
-							dogma.Event,
-						) (string, bool, error) {
+						RouteEventToInstanceFunc: func(context.Context, dogma.Event) (string, bool, error) {
 							return "<instance>", true, nil
 						},
 					}),
@@ -50,26 +39,31 @@ var _ = g.Describe("func RecordEvent()", func() {
 			},
 		}
 
-		t = &testingmock.T{}
-		startTime = time.Now()
-		buf = &fact.Buffer{}
+		tm := &testingmock.T{}
+		startTime := time.Now()
+		buf := &fact.Buffer{}
 
-		test = Begin(
-			t,
+		tc := Begin(
+			tm,
 			app,
 			StartTimeAt(startTime),
 			WithUnsafeOperationOptions(
 				engine.WithObserver(buf),
 			),
 		)
-	})
 
-	g.It("dispatches the message", func() {
-		test.Prepare(
-			RecordEvent(EventA1),
-		)
+		return tm, startTime, buf, tc
+	}
 
-		gm.Expect(buf.Facts()).To(gm.ContainElement(
+	t.Run("it dispatches the message", func(t *testing.T) {
+		_, startTime, buf, tc := newFixture()
+
+		tc.Prepare(RecordEvent(EventA1))
+
+		xtesting.ExpectContains[fact.Fact](
+			t,
+			"expected dispatch cycle begin fact",
+			buf.Facts(),
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
 					MessageID:         "1",
@@ -89,57 +83,71 @@ var _ = g.Describe("func RecordEvent()", func() {
 				},
 				EnabledHandlers: map[string]bool{},
 			},
-		))
-	})
-
-	g.It("fails the test if the message type is unrecognized", func() {
-		t.FailSilently = true
-
-		test.Prepare(
-			RecordEvent(EventX1),
 		)
-
-		gm.Expect(t.Failed()).To(gm.BeTrue())
-		gm.Expect(t.Logs).To(gm.ContainElement(
-			"cannot record event, *stubs.EventStub[TypeX] is a not a recognized message type",
-		))
 	})
 
-	g.It("does not satisfy its own expectations", func() {
-		t.FailSilently = true
+	t.Run("it fails the test if the message type is unrecognized", func(t *testing.T) {
+		tm, _, _, tc := newFixture()
+		tm.FailSilently = true
 
-		test.Expect(
+		tc.Prepare(RecordEvent(EventX1))
+
+		if !tm.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		xtesting.ExpectContains(
+			t,
+			"expected failure log",
+			tm.Logs,
+			"cannot record event, *stubs.EventStub[TypeX] is a not a recognized message type",
+		)
+	})
+
+	t.Run("it does not satisfy its own expectations", func(t *testing.T) {
+		tm, _, _, tc := newFixture()
+		tm.FailSilently = true
+
+		tc.Expect(
 			RecordEvent(EventA1),
 			ToRecordEvent(EventA1),
 		)
 
-		gm.Expect(t.Failed()).To(gm.BeTrue())
+		if !tm.Failed() {
+			t.Fatal("expected test to fail")
+		}
 	})
 
-	g.It("produces the expected caption", func() {
-		test.Prepare(
-			RecordEvent(EventA1),
-		)
+	t.Run("it produces the expected caption", func(t *testing.T) {
+		tm, _, _, tc := newFixture()
 
-		gm.Expect(t.Logs).To(gm.ContainElement(
+		tc.Prepare(RecordEvent(EventA1))
+
+		xtesting.ExpectContains(
+			t,
+			"expected caption",
+			tm.Logs,
 			"--- recording *stubs.EventStub[TypeA] event ---",
-		))
+		)
 	})
 
-	g.It("panics if the message is nil", func() {
-		gm.Expect(func() {
-			RecordEvent(nil)
-		}).To(gm.PanicWith("RecordEvent(<nil>): message must not be nil"))
-	})
-
-	g.It("captures the location that the action was created", func() {
-		act := recordEvent(EventA1)
-		gm.Expect(act.Location()).To(MatchAllFields(
-			Fields{
-				"Func": gm.Equal("github.com/dogmatiq/testkit_test.recordEvent"),
-				"File": gm.HaveSuffix("/action.linenumber_test.go"),
-				"Line": gm.Equal(53),
+	t.Run("it panics if the message is nil", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			"RecordEvent(<nil>): message must not be nil",
+			func() {
+				RecordEvent(nil)
 			},
-		))
+		)
 	})
-})
+
+	t.Run("it captures the location that the action was created", func(t *testing.T) {
+		act := recordEvent(EventA1)
+		loc := act.Location()
+
+		xtesting.Expect(t, "unexpected function name", loc.Func, "github.com/dogmatiq/testkit_test.recordEvent")
+		if !strings.HasSuffix(loc.File, "/action.linenumber_test.go") {
+			t.Fatalf("unexpected file: %s", loc.File)
+		}
+		xtesting.Expect(t, "unexpected line", loc.Line, 53)
+	})
+}

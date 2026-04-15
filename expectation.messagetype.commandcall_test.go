@@ -2,23 +2,16 @@ package testkit_test
 
 import (
 	"context"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() action)", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-		test     *Test
-	)
-
+func TestToExecuteCommandType_WhenUsedWithCallAction(t *testing.T) {
 	type (
 		CommandThatIsIgnored           = CommandStub[TypeX]
 		CommandThatIsExecutedByProcess = CommandStub[TypeP]
@@ -26,95 +19,92 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 		EventThatExecutesCommand = EventStub[TypeP]
 	)
 
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "f38c3003-bbd0-4b4a-b1f8-6922e9545acd")
 
-		app = &ApplicationStub{
-			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "f38c3003-bbd0-4b4a-b1f8-6922e9545acd")
+			c.Routes(
+				dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatIsIgnored](),
+						)
+					},
+				}),
 
-				c.Routes(
-					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
-						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-							c.Identity("<integration>", "efa4e6c1-1131-4ff6-9417-5eda4356c5aa")
-							c.Routes(
-								dogma.HandlesCommand[*CommandThatIsIgnored](),
+				dogma.ViaProcess(&ProcessMessageHandlerStub{
+					ConfigureFunc: func(c dogma.ProcessConfigurer) {
+						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
+						c.Routes(
+							dogma.HandlesEvent[*EventThatExecutesCommand](),
+							dogma.ExecutesCommand[*CommandThatIsExecutedByProcess](),
+						)
+					},
+					RouteEventToInstanceFunc: func(
+						context.Context,
+						dogma.Event,
+					) (string, bool, error) {
+						return "<instance>", true, nil
+					},
+					HandleEventFunc: func(
+						_ context.Context,
+						_ dogma.ProcessRoot,
+						s dogma.ProcessEventScope,
+						m dogma.Event,
+					) error {
+						switch m := m.(type) {
+						case *EventThatExecutesCommand:
+							s.ExecuteCommand(
+								&CommandThatIsExecutedByProcess{
+									Content: m.Content,
+								},
 							)
-						},
-					}),
+						}
 
-					dogma.ViaProcess(&ProcessMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProcessConfigurer) {
-							c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
-							c.Routes(
-								dogma.HandlesEvent[*EventThatExecutesCommand](),
-								dogma.ExecutesCommand[*CommandThatIsExecutedByProcess](),
-							)
-						},
-						RouteEventToInstanceFunc: func(
-							context.Context,
-							dogma.Event,
-						) (string, bool, error) {
-							return "<instance>", true, nil
-						},
-						HandleEventFunc: func(
-							_ context.Context,
-							_ dogma.ProcessRoot,
-							s dogma.ProcessEventScope,
-							m dogma.Event,
-						) error {
-							switch m := m.(type) {
-							case *EventThatExecutesCommand:
-								s.ExecuteCommand(
-									&CommandThatIsExecutedByProcess{
-										Content: m.Content,
-									},
-								)
-							}
+						return nil
+					},
+				}),
+			)
+		},
+	}
 
-							return nil
-						},
-					}),
-				)
-			},
-		}
-	})
+	executeCommandViaExecutor := func(tb *testing.T, tc *Test, m dogma.Command) Action {
+		tb.Helper()
 
-	executeCommandViaExecutor := func(m dogma.Command) Action {
 		return Call(func() {
-			err := test.CommandExecutor().ExecuteCommand(context.Background(), m)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
+			err := tc.CommandExecutor().ExecuteCommand(context.Background(), m)
+			if err != nil {
+				tb.Fatalf("unexpected execute error: %v", err)
+			}
 		})
 	}
 
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			a Action,
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-			options ...TestOption,
-		) {
-			test = Begin(testingT, app, options...)
-			test.Expect(a, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
-		},
-		g.Entry(
+	cases := []struct {
+		Name        string
+		Action      func(*testing.T, *Test) Action
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+		Options     []TestOption
+	}{
+		{
 			"command type executed as expected",
-			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			func(t *testing.T, tc *Test) Action {
+				return executeCommandViaExecutor(t, tc, &CommandThatIsIgnored{})
+			},
 			ToExecuteCommandType[*CommandThatIsIgnored](),
 			expectPass,
 			expectReport(
 				`✓ execute any '*stubs.CommandStub[TypeX]' command`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no messages produced at all",
-			Call(func() {}),
+			func(*testing.T, *Test) Action {
+				return Call(func() {})
+			},
 			ToExecuteCommandType[*CommandThatIsIgnored](),
 			expectFail,
 			expectReport(
@@ -126,10 +116,13 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching command type executed and all relevant handler types disabled",
-			executeCommandViaExecutor(&CommandThatIsIgnored{}),
+			func(t *testing.T, tc *Test) Action {
+				return executeCommandViaExecutor(t, tc, &CommandThatIsIgnored{})
+			},
 			ToExecuteCommandType[*CommandThatIsExecutedByProcess](),
 			expectFail,
 			expectReport(
@@ -142,9 +135,24 @@ var _ = g.Describe("func ToExecuteCommandType() (when used with the Call() actio
 				`  |     • enable process handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the code that uses the dogma.CommandExecutor`,
 			),
-			WithUnsafeOperationOptions(
-				engine.EnableProcesses(false),
-			),
-		),
-	)
-})
+			[]TestOption{
+				WithUnsafeOperationOptions(
+					engine.EnableProcesses(false),
+				),
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			mt := &testingmock.T{FailSilently: true}
+			tc := Begin(mt, app, c.Options...)
+			tc.Expect(c.Action(t, tc), c.Expectation)
+			c.Report(mt)
+
+			if mt.Failed() != !c.Passes {
+				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+			}
+		})
+	}
+}

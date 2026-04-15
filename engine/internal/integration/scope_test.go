@@ -2,6 +2,8 @@ package integration_test
 
 import (
 	"context"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -9,30 +11,23 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/integration"
+	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("type scope", func() {
-	var (
-		messageIDs envelope.MessageIDGenerator
-		handler    *IntegrationMessageHandlerStub
-		cfg        *config.Integration
-		ctrl       *Controller
-		command    *envelope.Envelope
-	)
+func TestScope(t *testing.T) {
+	newController := func() (*IntegrationMessageHandlerStub, *config.Integration, *Controller, *envelope.Envelope) {
+		var messageIDs envelope.MessageIDGenerator
 
-	g.BeforeEach(func() {
-		command = envelope.NewCommand(
+		command := envelope.NewCommand(
 			"1000",
 			CommandA1,
 			time.Now(),
 		)
 
-		handler = &IntegrationMessageHandlerStub{
+		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<name>", "24ec3839-5d51-4904-9b45-34b5282e7f24")
 				c.Routes(
@@ -42,18 +37,20 @@ var _ = g.Describe("type scope", func() {
 			},
 		}
 
-		cfg = runtimeconfig.FromIntegration(handler)
-
-		ctrl = &Controller{
+		cfg := runtimeconfig.FromIntegration(handler)
+		ctrl := &Controller{
 			Config:     cfg,
 			MessageIDs: &messageIDs,
 		}
 
-		messageIDs.Reset() // reset after setup for a predictable ID.
-	})
+		messageIDs.Reset()
 
-	g.Describe("func RecordEvent()", func() {
-		g.BeforeEach(func() {
+		return handler, cfg, ctrl, command
+	}
+
+	t.Run("func RecordEvent()", func(t *testing.T) {
+		t.Run("it records a fact", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -62,9 +59,7 @@ var _ = g.Describe("type scope", func() {
 				s.RecordEvent(EventA1)
 				return nil
 			}
-		})
 
-		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			now := time.Now()
 			_, err := ctrl.Handle(
@@ -74,65 +69,81 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.EventRecordedByIntegration{
-					Handler:  cfg,
-					Envelope: command,
-					EventEnvelope: command.NewEvent(
-						"1",
-						EventA1,
-						now,
-						envelope.Origin{
-							Handler:     cfg,
-							HandlerType: config.IntegrationHandlerType,
-						},
-						"24ec3839-5d51-4904-9b45-34b5282e7f24",
-						0,
-					),
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(
+				t,
+				"unexpected facts",
+				buf.Facts(),
+				[]fact.Fact{
+					fact.EventRecordedByIntegration{
+						Handler:  cfg,
+						Envelope: command,
+						EventEnvelope: command.NewEvent(
+							"1",
+							EventA1,
+							now,
+							envelope.Origin{
+								Handler:     cfg,
+								HandlerType: config.IntegrationHandlerType,
+							},
+							"24ec3839-5d51-4904-9b45-34b5282e7f24",
+							0,
+						),
+					},
 				},
-			))
+			)
 		})
 
-		g.It("panics if the event type is not configured to be produced", func() {
+		t.Run("it panics if the event type is not configured to be produced", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
-				m dogma.Command,
+				_ dogma.Command,
 			) error {
 				s.RecordEvent(EventX1)
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
+			defer func() {
+				r := recover()
+				x, ok := r.(panicx.UnexpectedBehavior)
+				if !ok {
+					t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
+				}
+
+				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
+				xtesting.Expect(
+					t,
+					"unexpected description",
+					x.Description,
+					"recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler",
 				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("IntegrationMessageHandler"),
-						"Method":         gm.Equal("HandleCommand"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/integration/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+				if x.Location.Func == "" {
+					t.Fatal("expected non-empty location func")
+				}
+				if !strings.HasSuffix(x.Location.File, "/engine/internal/integration/scope_test.go") {
+					t.Fatalf("unexpected location file: %s", x.Location.File)
+				}
+				if x.Location.Line == 0 {
+					t.Fatal("expected non-zero location line")
+				}
+			}()
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
 		})
 
-		g.It("panics if the event is invalid", func() {
+		t.Run("it panics if the event is invalid", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -144,37 +155,47 @@ var _ = g.Describe("type scope", func() {
 				return nil
 			}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
+			defer func() {
+				r := recover()
+				x, ok := r.(panicx.UnexpectedBehavior)
+				if !ok {
+					t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
+				}
+
+				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
+				xtesting.Expect(
+					t,
+					"unexpected description",
+					x.Description,
+					"recorded an invalid *stubs.EventStub[TypeA] event: <invalid>",
 				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("IntegrationMessageHandler"),
-						"Method":         gm.Equal("HandleCommand"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("recorded an invalid *stubs.EventStub[TypeA] event: <invalid>"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/engine/internal/integration/scope_test.go"),
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
+				if x.Location.Func == "" {
+					t.Fatal("expected non-empty location func")
+				}
+				if !strings.HasSuffix(x.Location.File, "/engine/internal/integration/scope_test.go") {
+					t.Fatalf("unexpected location file: %s", x.Location.File)
+				}
+				if x.Location.Line == 0 {
+					t.Fatal("expected non-zero location line")
+				}
+			}()
+
+			ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
 		})
 	})
 
-	g.Describe("func Log()", func() {
-		g.BeforeEach(func() {
+	t.Run("func Log()", func(t *testing.T) {
+		t.Run("it records a fact", func(t *testing.T) {
+			handler, cfg, ctrl, command := newController()
 			handler.HandleCommandFunc = func(
 				_ context.Context,
 				s dogma.IntegrationCommandScope,
@@ -183,9 +204,7 @@ var _ = g.Describe("type scope", func() {
 				s.Log("<format>", "<arg-1>", "<arg-2>")
 				return nil
 			}
-		})
 
-		g.It("records a fact", func() {
 			buf := &fact.Buffer{}
 			_, err := ctrl.Handle(
 				context.Background(),
@@ -194,18 +213,23 @@ var _ = g.Describe("type scope", func() {
 				command,
 			)
 
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.ContainElement(
-				fact.MessageLoggedByIntegration{
-					Handler:   cfg,
-					Envelope:  command,
-					LogFormat: "<format>",
-					LogArguments: []any{
-						"<arg-1>",
-						"<arg-2>",
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(
+				t,
+				"unexpected facts",
+				buf.Facts(),
+				[]fact.Fact{
+					fact.MessageLoggedByIntegration{
+						Handler:   cfg,
+						Envelope:  command,
+						LogFormat: "<format>",
+						LogArguments: []any{
+							"<arg-1>",
+							"<arg-2>",
+						},
 					},
 				},
-			))
+			)
 		})
 	})
-})
+}

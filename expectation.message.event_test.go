@@ -2,22 +2,18 @@ package testkit_test
 
 import (
 	"context"
+	"slices"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func ToRecordEvent()", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-	)
-
+func TestToRecordEvent(t *testing.T) {
 	type (
 		CommandThatIsIgnored    = CommandStub[TypeX]
 		CommandThatRecordsEvent = CommandStub[TypeE]
@@ -28,105 +24,98 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 		EventThatIsOnlyConsumed  = EventStub[TypeO]
 	)
 
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
 
-		app = &ApplicationStub{
-			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
+			c.Routes(
+				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatIsIgnored](),
 
-				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
-						ConfigureFunc: func(c dogma.AggregateConfigurer) {
-							c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
-							c.Routes(
-								dogma.HandlesCommand[*CommandThatIsIgnored](),
+							dogma.HandlesCommand[*CommandThatRecordsEvent](),
+							dogma.RecordsEvent[*EventThatIsRecorded](),
+							dogma.RecordsEvent[*EventThatIsNeverRecorded](),
+						)
+					},
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
+						return "<instance>"
+					},
+					HandleCommandFunc: func(
+						_ dogma.AggregateRoot,
+						s dogma.AggregateCommandScope,
+						m dogma.Command,
+					) {
+						switch m := m.(type) {
+						case *CommandThatRecordsEvent:
+							s.RecordEvent(&EventThatIsRecorded{
+								Content: m.Content,
+							})
+						}
+					},
+				}),
 
-								dogma.HandlesCommand[*CommandThatRecordsEvent](),
-								dogma.RecordsEvent[*EventThatIsRecorded](),
-								dogma.RecordsEvent[*EventThatIsNeverRecorded](),
-							)
-						},
-						RouteCommandToInstanceFunc: func(dogma.Command) string {
-							return "<instance>"
-						},
-						HandleCommandFunc: func(
-							_ dogma.AggregateRoot,
-							s dogma.AggregateCommandScope,
-							m dogma.Command,
-						) {
-							switch m := m.(type) {
-							case *CommandThatRecordsEvent:
-								s.RecordEvent(&EventThatIsRecorded{
-									Content: m.Content,
-								})
-							}
-						},
-					}),
-
-					dogma.ViaProcess(&ProcessMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProcessConfigurer) {
-							c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
-							c.Routes(
-								dogma.HandlesEvent[*EventThatExecutesCommand](),
-								dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
-								dogma.ExecutesCommand[*CommandThatIsIgnored](),
-							)
-						},
-						RouteEventToInstanceFunc: func(
-							context.Context,
-							dogma.Event,
-						) (string, bool, error) {
-							return "<instance>", true, nil
-						},
-						HandleEventFunc: func(
-							_ context.Context,
-							_ dogma.ProcessRoot,
-							s dogma.ProcessEventScope,
-							m dogma.Event,
-						) error {
-							switch m.(type) {
-							case *EventThatExecutesCommand:
-								s.ExecuteCommand(&CommandThatIsIgnored{})
-							}
-							return nil
-						},
-					}),
-				)
-			},
-		}
-	})
-
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			a Action,
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-			options ...TestOption,
-		) {
-			test := Begin(testingT, app, options...)
-			test.Expect(a, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
+				dogma.ViaProcess(&ProcessMessageHandlerStub{
+					ConfigureFunc: func(c dogma.ProcessConfigurer) {
+						c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
+						c.Routes(
+							dogma.HandlesEvent[*EventThatExecutesCommand](),
+							dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
+							dogma.ExecutesCommand[*CommandThatIsIgnored](),
+						)
+					},
+					RouteEventToInstanceFunc: func(
+						context.Context,
+						dogma.Event,
+					) (string, bool, error) {
+						return "<instance>", true, nil
+					},
+					HandleEventFunc: func(
+						_ context.Context,
+						_ dogma.ProcessRoot,
+						s dogma.ProcessEventScope,
+						m dogma.Event,
+					) error {
+						switch m.(type) {
+						case *EventThatExecutesCommand:
+							s.ExecuteCommand(&CommandThatIsIgnored{})
+						}
+						return nil
+					},
+				}),
+			)
 		},
-		g.Entry(
+	}
+
+	cases := []struct {
+		Name        string
+		Action      func(*testing.T, *Test) Action
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+		Options     []TestOption
+	}{
+		{
 			"event recorded as expected",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
-			expectPass,
+			true,
 			expectReport(
 				`✓ record a specific '*stubs.EventStub[TypeE]' event`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching event recorded",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsNeverRecorded{}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeX]' event`,
 				``,
@@ -137,12 +126,15 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching event recorded and all relevant handler types disabled",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
@@ -153,16 +145,20 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • enable aggregate handlers using the EnableHandlerType() option`,
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 			),
-			WithUnsafeOperationOptions(
-				engine.EnableAggregates(false),
-				engine.EnableIntegrations(false),
-			),
-		),
-		g.Entry(
+			[]TestOption{
+				WithUnsafeOperationOptions(
+					engine.EnableAggregates(false),
+					engine.EnableIntegrations(false),
+				),
+			},
+		},
+		{
 			"no matching event recorded and no relevant handler types engaged",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
@@ -173,16 +169,20 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • enable aggregate handlers using the EnableHandlerType() option`,
 				`  |     • check the application's routing configuration`,
 			),
-			WithUnsafeOperationOptions(
-				engine.EnableAggregates(false),
-				engine.EnableIntegrations(true),
-			),
-		),
-		g.Entry(
+			[]TestOption{
+				WithUnsafeOperationOptions(
+					engine.EnableAggregates(false),
+					engine.EnableIntegrations(true),
+				),
+			},
+		},
+		{
 			"no messages produced at all",
-			ExecuteCommand(&CommandThatIsIgnored{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatIsIgnored{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
@@ -193,12 +193,15 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no events recorded at all",
-			RecordEvent(&EventThatExecutesCommand{}),
+			func(t *testing.T, tc *Test) Action {
+				return RecordEvent(&EventThatExecutesCommand{})
+			},
 			ToRecordEvent(&EventThatIsRecorded{}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
@@ -209,12 +212,15 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"similar event recorded with a different value",
-			ExecuteCommand(&CommandThatRecordsEvent{Content: "<content>"}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{Content: "<content>"})
+			},
 			ToRecordEvent(&EventThatIsRecorded{Content: "<different>"}),
-			expectFail,
+			false,
 			expectReport(
 				`✗ record a specific '*stubs.EventStub[TypeE]' event`,
 				``,
@@ -230,52 +236,134 @@ var _ = g.Describe("func ToRecordEvent()", func() {
 				`  |         ValidationError: ""`,
 				`  |     }`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"does not include an explanation when negated and a sibling expectation passes",
-			ExecuteCommand(&CommandThatRecordsEvent{}),
+			func(t *testing.T, tc *Test) Action {
+				return ExecuteCommand(&CommandThatRecordsEvent{})
+			},
 			NoneOf(
 				ToRecordEvent(&EventThatIsRecorded{}),
 				ToRecordEvent(&EventThatIsNeverRecorded{}),
 			),
-			expectFail,
+			false,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
 				`    ✓ record a specific '*stubs.EventStub[TypeE]' event`,
 				`    ✗ record a specific '*stubs.EventStub[TypeX]' event`,
 			),
-		),
+			nil,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			mt := &testingmock.T{FailSilently: true}
+			tc := Begin(mt, app, c.Options...)
+			tc.Expect(c.Action(t, tc), c.Expectation)
+			c.Report(mt)
+			if mt.Failed() != !c.Passes {
+				t.Fatalf(
+					"expectation should have %s but %s",
+					map[bool]string{true: "passed", false: "failed"}[c.Passes],
+					map[bool]string{true: "passed", false: "failed"}[mt.Failed()],
+				)
+			}
+		})
+	}
+}
+
+func TestToRecordEvent_UnrecognizedMessageType(t *testing.T) {
+	type CommandThatIsIgnored = CommandStub[TypeX]
+
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
+			c.Routes(
+				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatIsIgnored](),
+							dogma.RecordsEvent[*EventStub[TypeX]](),
+						)
+					},
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
+						return "<instance>"
+					},
+					HandleCommandFunc: func(
+						_ dogma.AggregateRoot,
+						s dogma.AggregateCommandScope,
+						m dogma.Command,
+					) {
+						// no events recorded
+					},
+				}),
+			)
+		},
+	}
+
+	mt := &testingmock.T{FailSilently: true}
+	Begin(mt, app).Expect(
+		noop,
+		ToRecordEvent(EventU1),
 	)
 
-	g.It("fails the test if the message type is unrecognized", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToRecordEvent(EventU1),
-		)
+	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
+	if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
+	}
+}
 
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type",
-		))
+func TestToRecordEvent_UnproducedMessageType(t *testing.T) {
+	type EventThatIsOnlyConsumed = EventStub[TypeO]
+
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
+			c.Routes(
+				dogma.ViaProcess(&ProcessMessageHandlerStub{
+					ConfigureFunc: func(c dogma.ProcessConfigurer) {
+						c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
+						c.Routes(
+							dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
+							dogma.ExecutesCommand[*CommandStub[TypeX]](),
+						)
+					},
+					RouteEventToInstanceFunc: func(
+						context.Context,
+						dogma.Event,
+					) (string, bool, error) {
+						return "<instance>", true, nil
+					},
+					HandleEventFunc: func(
+						_ context.Context,
+						_ dogma.ProcessRoot,
+						s dogma.ProcessEventScope,
+						m dogma.Event,
+					) error {
+						return nil
+					},
+				}),
+			)
+		},
+	}
+
+	mt := &testingmock.T{FailSilently: true}
+	Begin(mt, app).Expect(
+		noop,
+		ToRecordEvent(&EventThatIsOnlyConsumed{}),
+	)
+
+	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
+	if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
+	}
+}
+
+func TestToRecordEvent_NilMessage(t *testing.T) {
+	xtesting.ExpectPanic(t, "ToRecordEvent(<nil>): message must not be nil", func() {
+		ToRecordEvent(nil)
 	})
-
-	g.It("fails the test if the message type is not produced by any handlers", func() {
-		test := Begin(testingT, app)
-		test.Expect(
-			noop,
-			ToRecordEvent(&EventThatIsOnlyConsumed{}),
-		)
-
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed",
-		))
-	})
-
-	g.It("panics if the message is nil", func() {
-		gm.Expect(func() {
-			ToRecordEvent(nil)
-		}).To(gm.PanicWith("ToRecordEvent(<nil>): message must not be nil"))
-	})
-})
+}

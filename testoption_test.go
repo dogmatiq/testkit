@@ -2,18 +2,18 @@ package testkit_test
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("func StartTimeAt()", func() {
-	g.It("sets the engine time as seen during a Prepare() call", func() {
+func TestStartTimeAt(t *testing.T) {
+	t.Run("it sets the engine time as seen during a Prepare() call", func(t *testing.T) {
 		now := time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC)
 		called := false
 
@@ -29,7 +29,7 @@ var _ = g.Describe("func StartTimeAt()", func() {
 				s dogma.ProjectionEventScope,
 				_ dogma.Event,
 			) (uint64, error) {
-				gm.Expect(s.RecordedAt()).To(gm.BeTemporally("==", now))
+				xtesting.Expect(t, "unexpected recorded-at time", s.RecordedAt(), now)
 				called = true
 				return s.Offset() + 1, nil
 			},
@@ -52,12 +52,14 @@ var _ = g.Describe("func StartTimeAt()", func() {
 			EnableHandlers("<handler-name>").
 			Prepare(RecordEvent(EventA1))
 
-		gm.Expect(called).To(gm.BeTrue())
+		if !called {
+			t.Fatal("expected handler to be called")
+		}
 	})
-})
+}
 
-var _ = g.Describe("func WithMessageComparator()", func() {
-	g.It("configures how messages are compared", func() {
+func TestWithMessageComparatorOption(t *testing.T) {
+	t.Run("it configures how messages are compared", func(t *testing.T) {
 		handler := &IntegrationMessageHandlerStub{
 			ConfigureFunc: func(c dogma.IntegrationConfigurer) {
 				c.Identity("<handler-name>", "191580b7-0b16-4e5e-be03-eda07e92b9b0")
@@ -100,4 +102,4 @@ var _ = g.Describe("func WithMessageComparator()", func() {
 				ToRecordEvent(EventA2), // this would fail without our custom comparator
 			)
 	})
-})
+}

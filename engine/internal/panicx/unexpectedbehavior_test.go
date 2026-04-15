@@ -1,15 +1,16 @@
 package panicx_test
 
 import (
+	"testing"
+
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine/internal/panicx"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("type UnexpectedBehavior", func() {
+func TestUnexpectedBehavior(t *testing.T) {
 	config := runtimeconfig.FromProjection(
 		&ProjectionMessageHandlerStub{
 			ConfigureFunc: func(c dogma.ProjectionConfigurer) {
@@ -21,19 +22,20 @@ var _ = g.Describe("type UnexpectedBehavior", func() {
 		},
 	)
 
-	g.Describe("func String()", func() {
-		g.It("returns a description of the panic", func() {
-			x := UnexpectedBehavior{
-				Handler:        config,
-				Interface:      "<interface>",
-				Method:         "<method>",
-				Implementation: config.Source.Get(),
-				Description:    "<description>",
-			}
+	t.Run("func String()", func(t *testing.T) {
+		x := UnexpectedBehavior{
+			Handler:        config,
+			Interface:      "<interface>",
+			Method:         "<method>",
+			Implementation: config.Source.Get(),
+			Description:    "<description>",
+		}
 
-			gm.Expect(x.String()).To(gm.Equal(
-				"the '<name>' projection message handler behaved unexpectedly in *stubs.ProjectionMessageHandlerStub.<method>(): <description>",
-			))
-		})
+		xtesting.Expect(
+			t,
+			"unexpected string representation",
+			x.String(),
+			"the '<name>' projection message handler behaved unexpectedly in *stubs.ProjectionMessageHandlerStub.<method>(): <description>",
+		)
 	})
-})
+}

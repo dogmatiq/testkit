@@ -3,516 +3,592 @@ package aggregate_test
 import (
 	"context"
 	"fmt"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
-	. "github.com/dogmatiq/enginekit/enginetest/stubs"
-	. "github.com/dogmatiq/testkit/engine/internal/aggregate"
+	stubs "github.com/dogmatiq/enginekit/enginetest/stubs"
+	"github.com/dogmatiq/testkit/engine/internal/aggregate"
+	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
+	"github.com/dogmatiq/testkit/location"
 )
 
-var _ = g.Describe("type Controller", func() {
-	var (
-		messageIDs envelope.MessageIDGenerator
-		handler    *AggregateMessageHandlerStub
-		cfg        *config.Aggregate
-		ctrl       *Controller
-		command    *envelope.Envelope
-	)
+func TestControllerHandlerConfig(t *testing.T) {
+	f := newControllerTestFixture()
 
-	g.BeforeEach(func() {
-		command = envelope.NewCommand(
-			"1000",
-			CommandA1,
+	if got := f.ctrl.HandlerConfig(); got != f.cfg {
+		t.Fatalf("unexpected handler config: got %p, want %p", got, f.cfg)
+	}
+}
+
+func TestControllerTick(t *testing.T) {
+	t.Run("returns no envelopes", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		envelopes, err := f.ctrl.Tick(
+			context.Background(),
+			fact.Ignore,
 			time.Now(),
 		)
-
-		handler = &AggregateMessageHandlerStub{
-			ConfigureFunc: func(c dogma.AggregateConfigurer) {
-				c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
-				c.Routes(
-					dogma.HandlesCommand[*CommandStub[TypeA]](),
-					dogma.RecordsEvent[*EventStub[TypeA]](),
-				)
-			},
-			RouteCommandToInstanceFunc: func(m dogma.Command) string {
-				switch x := m.(type) {
-				case *CommandStub[TypeA]:
-					return fmt.Sprintf(
-						"<instance-%s>",
-						x.Content,
-					)
-				default:
-					panic(dogma.UnexpectedMessage)
-				}
-			},
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		cfg = runtimeconfig.FromAggregate(handler)
+		xtesting.Expect(t, "unexpected envelopes", envelopes, []*envelope.Envelope(nil))
+	})
 
-		ctrl = &Controller{
-			Config:     cfg,
-			MessageIDs: &messageIDs,
+	t.Run("records no facts", func(t *testing.T) {
+		f := newControllerTestFixture()
+		buf := &fact.Buffer{}
+
+		_, err := f.ctrl.Tick(
+			context.Background(),
+			buf,
+			time.Now(),
+		)
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		messageIDs.Reset() // reset after setup for a predictable ID.
+		xtesting.Expect(t, "unexpected facts", buf.Facts(), []fact.Fact(nil))
+	})
+}
+
+func TestControllerHandle(t *testing.T) {
+	t.Run("forwards the message to the handler", func(t *testing.T) {
+		f := newControllerTestFixture()
+		called := false
+
+		f.handler.HandleCommandFunc = func(
+			_ dogma.AggregateRoot,
+			_ dogma.AggregateCommandScope,
+			m dogma.Command,
+		) {
+			called = true
+			xtesting.Expect(t, "unexpected message", m, stubs.CommandA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		xtesting.Expect(t, "expected handler to be called", called, true)
 	})
 
-	g.Describe("func HandlerConfig()", func() {
-		g.It("returns the handler config", func() {
-			gm.Expect(ctrl.HandlerConfig()).To(gm.BeIdenticalTo(cfg))
-		})
-	})
+	t.Run("returns the recorded events", func(t *testing.T) {
+		f := newControllerTestFixture()
 
-	g.Describe("func Tick()", func() {
-		g.It("does not return any envelopes", func() {
-			envelopes, err := ctrl.Tick(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(envelopes).To(gm.BeEmpty())
-		})
+		f.handler.HandleCommandFunc = func(
+			_ dogma.AggregateRoot,
+			s dogma.AggregateCommandScope,
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+			s.RecordEvent(stubs.EventA2)
+		}
 
-		g.It("does not record any facts", func() {
-			buf := &fact.Buffer{}
-			_, err := ctrl.Tick(
-				context.Background(),
-				buf,
-				time.Now(),
-			)
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).To(gm.BeEmpty())
-		})
-	})
+		now := time.Now()
+		events, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			now,
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	g.Describe("func Handle()", func() {
-		g.It("forwards the message to the handler", func() {
-			called := false
-			handler.HandleCommandFunc = func(
-				_ dogma.AggregateRoot,
-				_ dogma.AggregateCommandScope,
-				m dogma.Command,
-			) {
-				called = true
-				gm.Expect(m).To(gm.Equal(CommandA1))
-			}
-
-			_, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				command,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(called).To(gm.BeTrue())
-		})
-
-		g.It("returns the recorded events", func() {
-			handler.HandleCommandFunc = func(
-				_ dogma.AggregateRoot,
-				s dogma.AggregateCommandScope,
-				_ dogma.Command,
-			) {
-				s.RecordEvent(EventA1)
-				s.RecordEvent(EventA2)
-			}
-
-			now := time.Now()
-			events, err := ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				now,
-				command,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(events).To(gm.ConsistOf(
-				command.NewEvent(
+		xtesting.Expect(
+			t,
+			"unexpected events",
+			events,
+			[]*envelope.Envelope{
+				f.command.NewEvent(
 					"1",
-					EventA1,
+					stubs.EventA1,
 					now,
 					envelope.Origin{
-						Handler:     cfg,
+						Handler:     f.cfg,
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
 					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
 					0,
 				),
-				command.NewEvent(
+				f.command.NewEvent(
 					"2",
-					EventA2,
+					stubs.EventA2,
 					now,
 					envelope.Origin{
-						Handler:     cfg,
+						Handler:     f.cfg,
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
 					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
 					1,
 				),
-			))
-		})
+			},
+		)
+	})
 
-		g.It("panics when the handler routes to an empty instance ID", func() {
-			handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
-				return ""
-			}
+	t.Run("panics when the handler routes to an empty instance ID", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
+			return ""
+		}
 
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchAllFields(
-					Fields{
-						"Handler":        gm.Equal(cfg),
-						"Interface":      gm.Equal("AggregateMessageHandler"),
-						"Method":         gm.Equal("RouteCommandToInstance"),
-						"Implementation": gm.Equal(cfg.Source.Get()),
-						"Message":        gm.Equal(command.Message),
-						"Description":    gm.Equal("routed a command of type *stubs.CommandStub[TypeA] to an empty ID"),
-						"Location": MatchAllFields(
-							Fields{
-								"Func": gm.Not(gm.BeEmpty()),
-								"File": gm.HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
-								"Line": gm.Not(gm.BeZero()),
-							},
-						),
-					},
-				),
-			))
-		})
-
-		g.When("the instance does not exist", func() {
-			g.It("records a fact", func() {
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-				gm.Expect(buf.Facts()).To(gm.ContainElement(
-					fact.AggregateInstanceNotFound{
-						Handler:    cfg,
-						InstanceID: "<instance-A1>",
-						Envelope:   command,
-					},
-				))
-			})
-
-			g.It("passes a new aggregate root", func() {
-				handler.HandleCommandFunc = func(
-					r dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					gm.Expect(r).To(gm.Equal(&AggregateRootStub{}))
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			})
-
-			g.It("panics if New() returns nil", func() {
-				handler.NewFunc = func() dogma.AggregateRoot {
-					return nil
-				}
-
-				gm.Expect(func() {
-					ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						command,
-					)
-				}).To(gm.PanicWith(
-					MatchAllFields(
-						Fields{
-							"Handler":        gm.Equal(cfg),
-							"Interface":      gm.Equal("AggregateMessageHandler"),
-							"Method":         gm.Equal("New"),
-							"Implementation": gm.Equal(cfg.Source.Get()),
-							"Message":        gm.Equal(command.Message),
-							"Description":    gm.Equal("returned a nil AggregateRoot"),
-							"Location": MatchAllFields(
-								Fields{
-									"Func": gm.Not(gm.BeEmpty()),
-									"File": gm.HaveSuffix("/stubs/aggregate.go"), // from dogmatiq/enginekit module
-									"Line": gm.Not(gm.BeZero()),
-								},
-							),
-						},
-					),
-				))
-			})
-		})
-
-		g.When("the instance exists", func() {
-			g.BeforeEach(func() {
-				handler.HandleCommandFunc = func(
-					_ dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					s.RecordEvent(EventA1) // record event to create the instance
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-
-				handler.HandleCommandFunc = nil
-			})
-
-			g.It("records a fact", func() {
-				buf := &fact.Buffer{}
-				_, err := ctrl.Handle(
-					context.Background(),
-					buf,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-				gm.Expect(buf.Facts()).To(gm.ContainElement(
-					fact.AggregateInstanceLoaded{
-						Handler:    cfg,
-						InstanceID: "<instance-A1>",
-						Root: &AggregateRootStub{
-							AppliedEvents: []dogma.Event{
-								EventA1,
-							},
-						},
-						Envelope: command,
-					},
-				))
-			})
-
-			g.It("passes an aggregate root with historical events applied", func() {
-				handler.HandleCommandFunc = func(
-					r dogma.AggregateRoot,
-					s dogma.AggregateCommandScope,
-					_ dogma.Command,
-				) {
-					gm.Expect(r).To(gm.Equal(
-						&AggregateRootStub{
-							AppliedEvents: []dogma.Event{
-								EventA1,
-							},
-						},
-					))
-				}
-
-				_, err := ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-
-				gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			})
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from RouteCommandToInstance()", func() {
-			handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
-				panic(dogma.UnexpectedMessage)
-			}
-
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   gm.Equal(cfg),
-						"Interface": gm.Equal("AggregateMessageHandler"),
-						"Method":    gm.Equal("RouteCommandToInstance"),
-						"Message":   gm.Equal(command.Message),
-					},
-				),
-			))
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from HandleCommand()", func() {
-			handler.HandleCommandFunc = func(
-				dogma.AggregateRoot,
-				dogma.AggregateCommandScope,
-				dogma.Command,
-			) {
-				panic(dogma.UnexpectedMessage)
-			}
-
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   gm.Equal(cfg),
-						"Interface": gm.Equal("AggregateMessageHandler"),
-						"Method":    gm.Equal("HandleCommand"),
-						"Message":   gm.Equal(command.Message),
-					},
-				),
-			))
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with new events", func() {
-			handler.HandleCommandFunc = func(
-				_ dogma.AggregateRoot,
-				s dogma.AggregateCommandScope,
-				_ dogma.Command,
-			) {
-				s.RecordEvent(EventA1)
-			}
-
-			handler.NewFunc = func() dogma.AggregateRoot {
-				return &AggregateRootStub{
-					ApplyEventFunc: func(dogma.Event) {
-						panic(dogma.UnexpectedMessage)
-					},
-				}
-			}
-
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   gm.Equal(cfg),
-						"Interface": gm.Equal("AggregateRoot"),
-						"Method":    gm.Equal("ApplyEvent"),
-						"Message":   gm.Equal(EventA1),
-					},
-				),
-			))
-		})
-
-		g.It("provides more context to UnexpectedMessage panics from ApplyEvent() when called with historical events", func() {
-			handler.HandleCommandFunc = func(
-				_ dogma.AggregateRoot,
-				s dogma.AggregateCommandScope,
-				_ dogma.Command,
-			) {
-				s.RecordEvent(EventA1)
-			}
-
-			ctrl.Handle(
+		x := mustPanicUnexpectedBehavior(t, func() {
+			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				command,
+				f.command,
 			)
-
-			handler.HandleCommandFunc = nil
-			handler.NewFunc = func() dogma.AggregateRoot {
-				return &AggregateRootStub{
-					ApplyEventFunc: func(dogma.Event) {
-						panic(dogma.UnexpectedMessage)
-					},
-				}
-			}
-
-			gm.Expect(func() {
-				ctrl.Handle(
-					context.Background(),
-					fact.Ignore,
-					time.Now(),
-					command,
-				)
-			}).To(gm.PanicWith(
-				MatchFields(
-					IgnoreExtras,
-					Fields{
-						"Handler":   gm.Equal(cfg),
-						"Interface": gm.Equal("AggregateRoot"),
-						"Method":    gm.Equal("ApplyEvent"),
-						"Message":   gm.Equal(EventA1),
-					},
-				),
-			))
 		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(
+			t,
+			"unexpected description",
+			x.Description,
+			"routed a command of type *stubs.CommandStub[TypeA] to an empty ID",
+		)
+		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
-	g.Describe("func Reset()", func() {
-		g.BeforeEach(func() {
-			handler.HandleCommandFunc = func(
-				_ dogma.AggregateRoot,
-				s dogma.AggregateCommandScope,
-				_ dogma.Command,
-			) {
-				s.RecordEvent(EventA1) // record event to create the instance
-			}
+	t.Run("records AggregateInstanceNotFound when the instance does not exist", func(t *testing.T) {
+		f := newControllerTestFixture()
+		buf := &fact.Buffer{}
 
-			_, err := ctrl.Handle(
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			buf,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got, ok := findFact[fact.AggregateInstanceNotFound](buf.Facts())
+		if !ok {
+			t.Fatal("expected AggregateInstanceNotFound fact")
+		}
+
+		xtesting.Expect(
+			t,
+			"unexpected fact",
+			got,
+			fact.AggregateInstanceNotFound{
+				Handler:    f.cfg,
+				InstanceID: "<instance-A1>",
+				Envelope:   f.command,
+			},
+		)
+	})
+
+	t.Run("passes a new aggregate root when the instance does not exist", func(t *testing.T) {
+		f := newControllerTestFixture()
+		called := false
+
+		f.handler.HandleCommandFunc = func(
+			r dogma.AggregateRoot,
+			_ dogma.AggregateCommandScope,
+			_ dogma.Command,
+		) {
+			called = true
+			xtesting.Expect(t, "unexpected aggregate root", r, &stubs.AggregateRootStub{})
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		xtesting.Expect(t, "expected handler to be called", called, true)
+	})
+
+	t.Run("panics if New returns nil when the instance does not exist", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.NewFunc = func() dogma.AggregateRoot {
+			return nil
+		}
+
+		x := mustPanicUnexpectedBehavior(t, func() {
+			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				command,
+				f.command,
 			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
 		})
 
-		g.It("removes all instances", func() {
-			ctrl.Reset()
-
-			buf := &fact.Buffer{}
-			_, err := ctrl.Handle(
-				context.Background(),
-				buf,
-				time.Now(),
-				command,
-			)
-
-			gm.Expect(err).ShouldNot(gm.HaveOccurred())
-			gm.Expect(buf.Facts()).NotTo(gm.ContainElement(
-				gm.BeAssignableToTypeOf(fact.AggregateInstanceLoaded{}),
-			))
-		})
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "New")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil AggregateRoot")
+		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
-})
+
+	t.Run("records AggregateInstanceLoaded when the instance exists", func(t *testing.T) {
+		f := newControllerTestFixture()
+		seedControllerInstance(t, f)
+
+		buf := &fact.Buffer{}
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			buf,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got, ok := findFact[fact.AggregateInstanceLoaded](buf.Facts())
+		if !ok {
+			t.Fatal("expected AggregateInstanceLoaded fact")
+		}
+
+		xtesting.Expect(
+			t,
+			"unexpected fact",
+			got,
+			fact.AggregateInstanceLoaded{
+				Handler:    f.cfg,
+				InstanceID: "<instance-A1>",
+				Root: &stubs.AggregateRootStub{
+					AppliedEvents: []dogma.Event{stubs.EventA1},
+				},
+				Envelope: f.command,
+			},
+		)
+	})
+
+	t.Run("passes an aggregate root with historical events applied when the instance exists", func(t *testing.T) {
+		f := newControllerTestFixture()
+		seedControllerInstance(t, f)
+		called := false
+
+		f.handler.HandleCommandFunc = func(
+			r dogma.AggregateRoot,
+			_ dogma.AggregateCommandScope,
+			_ dogma.Command,
+		) {
+			called = true
+			xtesting.Expect(
+				t,
+				"unexpected aggregate root",
+				r,
+				&stubs.AggregateRootStub{
+					AppliedEvents: []dogma.Event{stubs.EventA1},
+				},
+			)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		xtesting.Expect(t, "expected handler to be called", called, true)
+	})
+
+	t.Run("provides more context to UnexpectedMessage panics from RouteCommandToInstance", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.RouteCommandToInstanceFunc = func(dogma.Command) string {
+			panic(dogma.UnexpectedMessage)
+		}
+
+		x := mustPanicUnexpectedMessage(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+	})
+
+	t.Run("provides more context to UnexpectedMessage panics from HandleCommand", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.HandleCommandFunc = func(
+			dogma.AggregateRoot,
+			dogma.AggregateCommandScope,
+			dogma.Command,
+		) {
+			panic(dogma.UnexpectedMessage)
+		}
+
+		x := mustPanicUnexpectedMessage(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+	})
+
+	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with new events", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.HandleCommandFunc = func(
+			_ dogma.AggregateRoot,
+			s dogma.AggregateCommandScope,
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		f.handler.NewFunc = func() dogma.AggregateRoot {
+			return &stubs.AggregateRootStub{
+				ApplyEventFunc: func(dogma.Event) {
+					panic(dogma.UnexpectedMessage)
+				},
+			}
+		}
+
+		x := mustPanicUnexpectedMessage(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
+	})
+
+	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with historical events", func(t *testing.T) {
+		f := newControllerTestFixture()
+		seedControllerInstance(t, f)
+
+		f.handler.NewFunc = func() dogma.AggregateRoot {
+			return &stubs.AggregateRootStub{
+				ApplyEventFunc: func(dogma.Event) {
+					panic(dogma.UnexpectedMessage)
+				},
+			}
+		}
+
+		x := mustPanicUnexpectedMessage(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
+	})
+}
+
+func TestControllerReset(t *testing.T) {
+	f := newControllerTestFixture()
+	seedControllerInstance(t, f)
+	f.ctrl.Reset()
+
+	buf := &fact.Buffer{}
+	_, err := f.ctrl.Handle(
+		context.Background(),
+		buf,
+		time.Now(),
+		f.command,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, ok := findFact[fact.AggregateInstanceLoaded](buf.Facts()); ok {
+		t.Fatal("did not expect AggregateInstanceLoaded fact after reset")
+	}
+}
+
+type controllerTestFixture struct {
+	messageIDs envelope.MessageIDGenerator
+	handler    *stubs.AggregateMessageHandlerStub
+	cfg        *config.Aggregate
+	ctrl       *aggregate.Controller
+	command    *envelope.Envelope
+}
+
+func newControllerTestFixture() *controllerTestFixture {
+	f := &controllerTestFixture{
+		command: envelope.NewCommand(
+			"1000",
+			stubs.CommandA1,
+			time.Now(),
+		),
+	}
+
+	f.handler = &stubs.AggregateMessageHandlerStub{
+		ConfigureFunc: func(c dogma.AggregateConfigurer) {
+			c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
+			c.Routes(
+				dogma.HandlesCommand[*stubs.CommandStub[stubs.TypeA]](),
+				dogma.RecordsEvent[*stubs.EventStub[stubs.TypeA]](),
+			)
+		},
+		RouteCommandToInstanceFunc: func(m dogma.Command) string {
+			switch x := m.(type) {
+			case *stubs.CommandStub[stubs.TypeA]:
+				return fmt.Sprintf("<instance-%s>", x.Content)
+			default:
+				panic(dogma.UnexpectedMessage)
+			}
+		},
+	}
+
+	f.cfg = runtimeconfig.FromAggregate(f.handler)
+	f.ctrl = &aggregate.Controller{
+		Config:     f.cfg,
+		MessageIDs: &f.messageIDs,
+	}
+
+	f.messageIDs.Reset()
+
+	return f
+}
+
+func seedControllerInstance(t *testing.T, f *controllerTestFixture) {
+	t.Helper()
+
+	f.handler.HandleCommandFunc = func(
+		_ dogma.AggregateRoot,
+		s dogma.AggregateCommandScope,
+		_ dogma.Command,
+	) {
+		s.RecordEvent(stubs.EventA1)
+	}
+
+	_, err := f.ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		time.Now(),
+		f.command,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f.handler.HandleCommandFunc = nil
+}
+
+func mustPanicUnexpectedBehavior(t *testing.T, fn func()) panicx.UnexpectedBehavior {
+	t.Helper()
+
+	r := recoverPanic(t, fn)
+	x, ok := r.(panicx.UnexpectedBehavior)
+	if !ok {
+		t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
+	}
+
+	return x
+}
+
+func mustPanicUnexpectedMessage(t *testing.T, fn func()) panicx.UnexpectedMessage {
+	t.Helper()
+
+	r := recoverPanic(t, fn)
+	x, ok := r.(panicx.UnexpectedMessage)
+	if !ok {
+		t.Fatalf("expected UnexpectedMessage panic, got %T", r)
+	}
+
+	return x
+}
+
+func recoverPanic(t *testing.T, fn func()) any {
+	t.Helper()
+
+	var r any
+
+	func() {
+		defer func() {
+			r = recover()
+		}()
+
+		fn()
+	}()
+
+	if r == nil {
+		t.Fatal("expected panic")
+	}
+
+	return r
+}
+
+func expectLocation(t *testing.T, loc location.Location, fileSuffix string) {
+	t.Helper()
+
+	if loc.Func == "" {
+		t.Fatal("expected location func to be set")
+	}
+
+	if !strings.HasSuffix(loc.File, fileSuffix) {
+		t.Fatalf("unexpected location file: %s", loc.File)
+	}
+
+	if loc.Line == 0 {
+		t.Fatal("expected location line to be set")
+	}
+}
+
+func findFact[T any](facts []fact.Fact) (T, bool) {
+	var zero T
+
+	for _, f := range facts {
+		x, ok := f.(T)
+		if ok {
+			return x, true
+		}
+	}
+
+	return zero, false
+}

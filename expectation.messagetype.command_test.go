@@ -2,6 +2,8 @@ package testkit_test
 
 import (
 	"context"
+	"slices"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -10,16 +12,9 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
 )
 
-var _ = g.Describe("func ToExecuteCommandType()", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-	)
-
+func TestToExecuteCommandType(t *testing.T) {
 	type (
 		EventThatIsIgnored        = EventStub[TypeX]
 		EventThatExecutesCommand  = EventStub[TypeC]
@@ -32,107 +27,94 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 		TimeoutThatIsScheduled = TimeoutStub[TypeT]
 	)
 
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "936ab3fa-f379-42e7-9100-a4d28accc932")
 
-		app = &ApplicationStub{
-			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-				c.Identity("<app>", "936ab3fa-f379-42e7-9100-a4d28accc932")
+			c.Routes(
+				dogma.ViaProcess(&ProcessMessageHandlerStub{
+					ConfigureFunc: func(c dogma.ProcessConfigurer) {
+						c.Identity("<process>", "72df8a82-b6ab-4fed-bfdc-1fedf6636041")
+						c.Routes(
+							dogma.HandlesEvent[*EventThatIsIgnored](),
 
-				// Register a process that will execute the commands about which
-				// we will make assertions using ToExecuteCommand().
-				c.Routes(
-					dogma.ViaProcess(&ProcessMessageHandlerStub{
-						ConfigureFunc: func(c dogma.ProcessConfigurer) {
-							c.Identity("<process>", "72df8a82-b6ab-4fed-bfdc-1fedf6636041")
-							c.Routes(
-								dogma.HandlesEvent[*EventThatIsIgnored](),
+							dogma.HandlesEvent[*EventThatExecutesCommand](),
+							dogma.ExecutesCommand[*CommandThatIsExecuted](),
+							dogma.ExecutesCommand[*CommandThatIsNeverExecuted](),
 
-								dogma.HandlesEvent[*EventThatExecutesCommand](),
-								dogma.ExecutesCommand[*CommandThatIsExecuted](),
-								dogma.ExecutesCommand[*CommandThatIsNeverExecuted](),
-
-								dogma.HandlesEvent[*EventThatSchedulesTimeout](),
-								dogma.SchedulesTimeout[*TimeoutThatIsScheduled](),
+							dogma.HandlesEvent[*EventThatSchedulesTimeout](),
+							dogma.SchedulesTimeout[*TimeoutThatIsScheduled](),
+						)
+					},
+					RouteEventToInstanceFunc: func(
+						context.Context,
+						dogma.Event,
+					) (string, bool, error) {
+						return "<instance>", true, nil
+					},
+					HandleEventFunc: func(
+						_ context.Context,
+						_ dogma.ProcessRoot,
+						s dogma.ProcessEventScope,
+						m dogma.Event,
+					) error {
+						switch m := m.(type) {
+						case *EventThatExecutesCommand:
+							s.ExecuteCommand(
+								&CommandThatIsExecuted{
+									Content: m.Content,
+								},
 							)
-
-						},
-						RouteEventToInstanceFunc: func(
-							context.Context,
-							dogma.Event,
-						) (string, bool, error) {
-							return "<instance>", true, nil
-						},
-						HandleEventFunc: func(
-							_ context.Context,
-							_ dogma.ProcessRoot,
-							s dogma.ProcessEventScope,
-							m dogma.Event,
-						) error {
-							switch m := m.(type) {
-							case *EventThatExecutesCommand:
-								s.ExecuteCommand(
-									&CommandThatIsExecuted{
-										Content: m.Content,
-									},
-								)
-							case *EventThatSchedulesTimeout:
-								s.ScheduleTimeout(
-									&TimeoutThatIsScheduled{
-										Content: m.Content,
-									},
-									time.Now().Add(1*time.Hour),
-								)
-							}
-
-							return nil
-						},
-					}),
-
-					// Register an integration so that we can test what happens when
-					// we expect execution of a command that is never executed by
-					// any handler (only consumed).
-					dogma.ViaIntegration(&IntegrationMessageHandlerStub{
-						ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-							c.Identity("<integration>", "bc84090e-270c-4ca9-bb4e-4b152031d996")
-							c.Routes(
-								dogma.HandlesCommand[*CommandThatIsOnlyConsumed](),
+						case *EventThatSchedulesTimeout:
+							s.ScheduleTimeout(
+								&TimeoutThatIsScheduled{
+									Content: m.Content,
+								},
+								time.Now().Add(1*time.Hour),
 							)
-						},
-					}),
-				)
-			},
-		}
-	})
+						}
 
-	g.DescribeTable(
-		"expectation behavior",
-		func(
-			a Action,
-			e Expectation,
-			ok bool,
-			rm reportMatcher,
-			options ...TestOption,
-		) {
-			test := Begin(testingT, app, options...)
-			test.Expect(a, e)
-			rm(testingT)
-			gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
+						return nil
+					},
+				}),
+
+				dogma.ViaIntegration(&IntegrationMessageHandlerStub{
+					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+						c.Identity("<integration>", "bc84090e-270c-4ca9-bb4e-4b152031d996")
+						c.Routes(
+							dogma.HandlesCommand[*CommandThatIsOnlyConsumed](),
+						)
+					},
+				}),
+			)
 		},
-		g.Entry(
+	}
+
+	cases := []struct {
+		Name        string
+		Action      func(*testing.T, *Test) Action
+		Expectation Expectation
+		Passes      bool
+		Report      reportMatcher
+		Options     []TestOption
+	}{
+		{
 			"command type executed as expected",
-			RecordEvent(&EventThatExecutesCommand{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatExecutesCommand{})
+			},
 			ToExecuteCommandType[*CommandThatIsExecuted](),
 			expectPass,
 			expectReport(
 				`✓ execute any '*stubs.CommandStub[TypeC]' command`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching command types executed",
-			RecordEvent(&EventThatExecutesCommand{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatExecutesCommand{})
+			},
 			ToExecuteCommandType[*CommandThatIsNeverExecuted](),
 			expectFail,
 			expectReport(
@@ -144,10 +126,13 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no messages produced at all",
-			RecordEvent(&EventThatIsIgnored{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatIsIgnored{})
+			},
 			ToExecuteCommandType[*CommandThatIsExecuted](),
 			expectFail,
 			expectReport(
@@ -159,10 +144,13 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no commands produced at all",
-			RecordEvent(&EventThatSchedulesTimeout{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatSchedulesTimeout{})
+			},
 			ToExecuteCommandType[*CommandThatIsExecuted](),
 			expectFail,
 			expectReport(
@@ -174,10 +162,13 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the '<process>' process message handler`,
 			),
-		),
-		g.Entry(
+			nil,
+		},
+		{
 			"no matching command type executed and all relevant handler types disabled",
-			RecordEvent(&EventThatExecutesCommand{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatExecutesCommand{})
+			},
 			ToExecuteCommandType[*CommandThatIsExecuted](),
 			expectFail,
 			expectReport(
@@ -189,13 +180,17 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 				`  | SUGGESTIONS`,
 				`  |     • enable process handlers using the EnableHandlerType() option`,
 			),
-			WithUnsafeOperationOptions(
-				engine.EnableProcesses(false),
-			),
-		),
-		g.Entry(
+			[]TestOption{
+				WithUnsafeOperationOptions(
+					engine.EnableProcesses(false),
+				),
+			},
+		},
+		{
 			"does not include an explanation when negated and a sibling expectation passes",
-			RecordEvent(&EventThatExecutesCommand{}),
+			func(*testing.T, *Test) Action {
+				return RecordEvent(&EventThatExecutesCommand{})
+			},
 			NoneOf(
 				ToExecuteCommandType[*CommandThatIsExecuted](),
 				ToExecuteCommandType[*CommandThatIsNeverExecuted](),
@@ -206,32 +201,52 @@ var _ = g.Describe("func ToExecuteCommandType()", func() {
 				`    ✓ execute any '*stubs.CommandStub[TypeC]' command`,
 				`    ✗ execute any '*stubs.CommandStub[TypeX]' command`,
 			),
-		),
-	)
+			nil,
+		},
+	}
 
-	g.It("fails the test if the message type is unrecognized", func() {
-		test := Begin(testingT, app)
-		test.Expect(
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			mt := &testingmock.T{FailSilently: true}
+			tc := Begin(mt, app, c.Options...)
+			tc.Expect(c.Action(t, tc), c.Expectation)
+			c.Report(mt)
+
+			if mt.Failed() != !c.Passes {
+				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+			}
+		})
+	}
+
+	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
+		mt := &testingmock.T{FailSilently: true}
+		tc := Begin(mt, app)
+		tc.Expect(
 			noop,
 			ToExecuteCommandType[*stubs.CommandStub[TypeU]](),
 		)
 
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type",
-		))
+		if !mt.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+			t.Fatalf("expected log message not found, got: %v", mt.Logs)
+		}
 	})
 
-	g.It("fails the test if the message type is not produced by any handlers", func() {
-		test := Begin(testingT, app)
-		test.Expect(
+	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
+		mt := &testingmock.T{FailSilently: true}
+		tc := Begin(mt, app)
+		tc.Expect(
 			noop,
 			ToExecuteCommandType[*CommandThatIsOnlyConsumed](),
 		)
 
-		gm.Expect(testingT.Failed()).To(gm.BeTrue())
-		gm.Expect(testingT.Logs).To(gm.ContainElement(
-			"no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed",
-		))
+		if !mt.Failed() {
+			t.Fatal("expected test to fail")
+		}
+		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
+			t.Fatalf("expected log message not found, got: %v", mt.Logs)
+		}
 	})
-})
+}

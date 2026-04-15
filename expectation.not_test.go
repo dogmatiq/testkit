@@ -2,28 +2,19 @@ package testkit_test
 
 import (
 	"context"
+	"testing"
 
 	"github.com/dogmatiq/dogma"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/internal/testingmock"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Context("not expectation", func() {
-	var (
-		testingT *testingmock.T
-		app      dogma.Application
-		test     *Test
-	)
-
-	g.BeforeEach(func() {
-		testingT = &testingmock.T{
-			FailSilently: true,
-		}
-
-		app = &ApplicationStub{
+func TestNot(t *testing.T) {
+	newFixture := func() (*testingmock.T, *Test) {
+		mt := &testingmock.T{FailSilently: true}
+		app := &ApplicationStub{
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "00df8612-2fd4-4ae3-9acf-afc2b4daf272")
 				c.Routes(
@@ -47,62 +38,74 @@ var _ = g.Context("not expectation", func() {
 				)
 			},
 		}
-
-		test = Begin(testingT, app).
-			EnableHandlers("<integration>")
-	})
-
-	testExpectationBehavior := func(
-		e Expectation,
-		ok bool,
-		rm reportMatcher,
-	) {
-		test.Expect(ExecuteCommand(CommandA1), e)
-		rm(testingT)
-		gm.Expect(testingT.Failed()).To(gm.Equal(!ok))
+		return mt, Begin(mt, app).EnableHandlers("<integration>")
 	}
 
-	g.Describe("func Not()", func() {
-		g.DescribeTable(
-			"expectation behavior",
-			testExpectationBehavior,
-			g.Entry(
+	t.Run("func Not()", func(t *testing.T) {
+		cases := []struct {
+			Name        string
+			Expectation Expectation
+			Passes      bool
+			Report      reportMatcher
+		}{
+			{
 				"it fails when the child expectation passes",
 				Not(ToRecordEvent(EventA1)),
 				expectFail,
 				expectReport(
 					`✗ do not record a specific '*stubs.EventStub[TypeA]' event`,
 				),
-			),
-			g.Entry(
+			},
+			{
 				"it passes when the child expectation fails",
 				Not(ToRecordEvent(EventA2)),
 				expectPass,
 				expectReport(
 					`✓ do not record a specific '*stubs.EventStub[TypeA]' event`,
 				),
-			),
-		)
+			},
+		}
 
-		g.It("produces the expected caption", func() {
-			test.Expect(
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				mt, tc := newFixture()
+				tc.Expect(ExecuteCommand(CommandA1), c.Expectation)
+				c.Report(mt)
+				if mt.Failed() != !c.Passes {
+					t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
+				}
+			})
+		}
+
+		t.Run("it produces the expected caption", func(t *testing.T) {
+			mt, tc := newFixture()
+			tc.Expect(
 				noop,
 				Not(ToRecordEvent(EventA2)),
 			)
-
-			gm.Expect(testingT.Logs).To(gm.ContainElement(
+			xtesting.ExpectContains[string](
+				t,
+				"expected log message not found",
+				mt.Logs,
 				"--- expect [no-op] not to record a specific '*stubs.EventStub[TypeA]' event ---",
-			))
+			)
 		})
 
-		g.It("fails the test if the child cannot construct a predicate", func() {
-			test.Expect(
+		t.Run("it fails the test if the child cannot construct a predicate", func(t *testing.T) {
+			mt, tc := newFixture()
+			tc.Expect(
 				noop,
 				Not(failBeforeAction),
 			)
-
-			gm.Expect(testingT.Logs).To(gm.ContainElement("<always fail before action>"))
-			gm.Expect(testingT.Failed()).To(gm.BeTrue())
+			xtesting.ExpectContains[string](
+				t,
+				"expected log message not found",
+				mt.Logs,
+				"<always fail before action>",
+			)
+			if !mt.Failed() {
+				t.Fatal("expected test to fail")
+			}
 		})
 	})
-})
+}

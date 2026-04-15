@@ -2,6 +2,7 @@ package fact_test
 
 import (
 	"errors"
+	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
@@ -10,12 +11,11 @@ import (
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
-	g "github.com/onsi/ginkgo/v2"
-	gm "github.com/onsi/gomega"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-var _ = g.Describe("type Logger", func() {
-	g.Describe("func Notify()", func() {
+func TestLogger(t *testing.T) {
+	t.Run("func Notify()", func(t *testing.T) {
 		now, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
 		if err != nil {
 			panic(err)
@@ -84,16 +84,21 @@ var _ = g.Describe("type Logger", func() {
 			},
 		)
 
-		g.DescribeTable(
-			"logs the expected message",
-			func(m string, f Fact) {
-				var (
-					output string
-					called bool
-				)
+		type logCase struct {
+			Name    string
+			Message string
+			Fact    Fact
+		}
 
-				obs := NewLogger(
-					func(s string) {
+		run := func(t *testing.T, cases []logCase) {
+			for _, c := range cases {
+				t.Run(c.Name, func(t *testing.T) {
+					var (
+						output string
+						called bool
+					)
+
+					obs := NewLogger(func(s string) {
 						called = true
 
 						if output != "" {
@@ -101,417 +106,334 @@ var _ = g.Describe("type Logger", func() {
 						}
 
 						output += s
-					},
-				)
+					})
 
-				obs.Notify(f)
+					obs.Notify(c.Fact)
 
-				gm.Expect(output).To(gm.BeIdenticalTo(m))
-				gm.Expect(called).To(gm.Equal(m != ""))
-			},
+					xtesting.Expect(t, "unexpected log output", output, c.Message)
+					xtesting.Expect(t, "unexpected logger invocation", called, c.Message != "")
+				})
+			}
+		}
 
-			// dispatch ...
-
-			g.Entry(
-				"DispatchCycleBegun",
-				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatching ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
-				DispatchCycleBegun{
-					Envelope:   command,
-					EngineTime: now,
-					EnabledHandlerTypes: map[config.HandlerType]bool{
-						config.AggregateHandlerType: true,
-						config.ProcessHandlerType:   true,
-					},
-					EnabledHandlers: map[string]bool{
-						"<enabled>":  true,
-						"<disabled>": false,
-					},
-				},
-			),
-			g.Entry(
-				"DispatchCycleCompleted (success)",
-				"",
-				DispatchCycleCompleted{
-					Envelope: command,
-				},
-			),
-			g.Entry(
-				"DispatchCycleCompleted (failure)",
-				"",
-				DispatchCycleCompleted{
-					Envelope: command,
-					Error:    errors.New("<error>"),
-				},
-			),
-
-			g.Entry(
-				"DispatchBegun",
-				"= 10  ∵ 10  ⋲ 10  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
-				DispatchBegun{
-					Envelope: command,
-				},
-			),
-			g.Entry(
-				"CommandDeduplicated",
-				`= 10  ∵ 10  ⋲ 10  ↻ ⚙    *stubs.CommandStub[TypeA]? ● command ignored because it's idempotency key "<key>" has already been used`,
-				CommandDeduplicated{
-					Envelope: command,
-					Key:      "<key>",
-				},
-			),
-			g.Entry(
-				"DispatchCompleted (success)",
-				"",
-				DispatchCompleted{
-					Envelope: command,
-				},
-			),
-			g.Entry(
-				"DispatchCompleted (failure)",
-				"",
-				DispatchCompleted{
-					Envelope: command,
-					Error:    errors.New("<error>"),
-				},
-			),
-
-			g.Entry(
-				"HandlingBegun",
-				"",
-				HandlingBegun{},
-			),
-			g.Entry(
-				"HandlingCompleted (success)",
-				"",
-				HandlingCompleted{},
-			),
-			g.Entry(
-				"HandlingCompleted (failure)",
-				"= 10  ∵ 10  ⋲ 10  ▽ ∴ ✖  <aggregate> ● <error>",
-				HandlingCompleted{
-					Handler:  aggregate,
-					Envelope: command,
-					Error:    errors.New("<error>"),
-				},
-			),
-			g.Entry(
-				"HandlingSkipped (handler type)",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
-				HandlingSkipped{
-					Handler:  aggregate,
-					Envelope: command,
-					Reason:   HandlerTypeDisabled,
-				},
-			),
-			g.Entry(
-				"HandlingSkipped (individual handler)",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled during this tick of the test engine",
-				HandlingSkipped{
-					Handler:  aggregate,
-					Envelope: command,
-					Reason:   IndividualHandlerDisabled,
-				},
-			),
-			g.Entry(
-				"HandlingSkipped (individual handler via configuration)",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled by its Configure() method",
-				HandlingSkipped{
-					Handler:  aggregate,
-					Envelope: command,
-					Reason:   IndividualHandlerDisabledByConfiguration,
-				},
-			),
-
-			// tick ...
-
-			g.Entry(
-				"TickCycleBegun",
-				"= --  ∵ --  ⋲ --    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
-				TickCycleBegun{
-					EngineTime: now,
-					EnabledHandlerTypes: map[config.HandlerType]bool{
-						config.AggregateHandlerType: true,
-						config.ProcessHandlerType:   true,
-					},
-					EnabledHandlers: map[string]bool{
-						"<enabled>":  true,
-						"<disabled>": false,
+		t.Run("dispatch", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "DispatchCycleBegun",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatching ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
+					Fact: DispatchCycleBegun{
+						Envelope:   command,
+						EngineTime: now,
+						EnabledHandlerTypes: map[config.HandlerType]bool{
+							config.AggregateHandlerType: true,
+							config.ProcessHandlerType:   true,
+						},
+						EnabledHandlers: map[string]bool{
+							"<enabled>":  true,
+							"<disabled>": false,
+						},
 					},
 				},
-			),
-			g.Entry(
-				"TickCycleCompleted (success)",
-				"",
-				TickCycleCompleted{},
-			),
-			g.Entry(
-				"TickCycleCompleted (failure)",
-				"",
-				TickCycleCompleted{
-					Error: errors.New("<error>"),
+				{
+					Name:    "DispatchCycleCompleted (success)",
+					Message: "",
+					Fact:    DispatchCycleCompleted{Envelope: command},
 				},
-			),
+				{
+					Name:    "DispatchCycleCompleted (failure)",
+					Message: "",
+					Fact:    DispatchCycleCompleted{Envelope: command, Error: errors.New("<error>")},
+				},
+				{
+					Name:    "DispatchBegun",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Fact:    DispatchBegun{Envelope: command},
+				},
+				{
+					Name:    "CommandDeduplicated",
+					Message: `= 10  ∵ 10  ⋲ 10  ↻ ⚙    *stubs.CommandStub[TypeA]? ● command ignored because it's idempotency key "<key>" has already been used`,
+					Fact:    CommandDeduplicated{Envelope: command, Key: "<key>"},
+				},
+				{
+					Name:    "DispatchCompleted (success)",
+					Message: "",
+					Fact:    DispatchCompleted{Envelope: command},
+				},
+				{
+					Name:    "DispatchCompleted (failure)",
+					Message: "",
+					Fact:    DispatchCompleted{Envelope: command, Error: errors.New("<error>")},
+				},
+				{
+					Name:    "HandlingBegun",
+					Message: "",
+					Fact:    HandlingBegun{},
+				},
+				{
+					Name:    "HandlingCompleted (success)",
+					Message: "",
+					Fact:    HandlingCompleted{},
+				},
+				{
+					Name:    "HandlingCompleted (failure)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▽ ∴ ✖  <aggregate> ● <error>",
+					Fact:    HandlingCompleted{Handler: aggregate, Envelope: command, Error: errors.New("<error>")},
+				},
+				{
+					Name:    "HandlingSkipped (handler type)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
+					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: HandlerTypeDisabled},
+				},
+				{
+					Name:    "HandlingSkipped (individual handler)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled during this tick of the test engine",
+					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: IndividualHandlerDisabled},
+				},
+				{
+					Name:    "HandlingSkipped (individual handler via configuration)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled by its Configure() method",
+					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: IndividualHandlerDisabledByConfiguration},
+				},
+			})
+		})
 
-			g.Entry(
-				"TickBegun",
-				"",
-				TickBegun{},
-			),
-			g.Entry(
-				"TickCompleted (success)",
-				"",
-				TickCompleted{},
-			),
-			g.Entry(
-				"TickCompleted (failure)",
-				"= --  ∵ --  ⋲ --    ∴ ✖  <aggregate> ● <error>",
-				TickCompleted{
-					Handler: aggregate,
-					Error:   errors.New("<error>"),
+		t.Run("tick", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "TickCycleBegun",
+					Message: "= --  ∵ --  ⋲ --    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
+					Fact: TickCycleBegun{
+						EngineTime: now,
+						EnabledHandlerTypes: map[config.HandlerType]bool{
+							config.AggregateHandlerType: true,
+							config.ProcessHandlerType:   true,
+						},
+						EnabledHandlers: map[string]bool{
+							"<enabled>":  true,
+							"<disabled>": false,
+						},
+					},
 				},
-			),
+				{
+					Name:    "TickCycleCompleted (success)",
+					Message: "",
+					Fact:    TickCycleCompleted{},
+				},
+				{
+					Name:    "TickCycleCompleted (failure)",
+					Message: "",
+					Fact:    TickCycleCompleted{Error: errors.New("<error>")},
+				},
+				{
+					Name:    "TickBegun",
+					Message: "",
+					Fact:    TickBegun{},
+				},
+				{
+					Name:    "TickCompleted (success)",
+					Message: "",
+					Fact:    TickCompleted{},
+				},
+				{
+					Name:    "TickCompleted (failure)",
+					Message: "= --  ∵ --  ⋲ --    ∴ ✖  <aggregate> ● <error>",
+					Fact:    TickCompleted{Handler: aggregate, Error: errors.New("<error>")},
+				},
+			})
+		})
 
-			// aggregates ...
+		t.Run("aggregate", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "AggregateInstanceLoaded",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
+					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
+				},
+				{
+					Name:    "AggregateInstanceNotFound",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
+					Fact:    AggregateInstanceNotFound{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
+				},
+				{
+					Name:    "AggregateInstanceCreated",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance created",
+					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
+				},
+				{
+					Name:    "EventRecordedByAggregate",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Fact: EventRecordedByAggregate{
+						Handler:    aggregate,
+						InstanceID: "<instance>",
+						Envelope:   command,
+						EventEnvelope: command.NewEvent(
+							"20",
+							EventA1,
+							time.Now(),
+							envelope.Origin{},
+							"a4dea2c6-6499-441c-94ad-686334880c1c",
+							42,
+						),
+					},
+				},
+				{
+					Name:    "MessageLoggedByAggregate",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <message>",
+					Fact: MessageLoggedByAggregate{
+						Handler:      aggregate,
+						InstanceID:   "<instance>",
+						Envelope:     command,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
+				},
+			})
+		})
 
-			g.Entry(
-				"AggregateInstanceLoaded",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
-				AggregateInstanceLoaded{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
+		t.Run("process", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "ProcessInstanceLoaded",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● loaded an existing instance",
+					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
-			),
-			g.Entry(
-				"AggregateInstanceNotFound",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
-				AggregateInstanceNotFound{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
+				{
+					Name:    "ProcessEventIgnored",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> ● event ignored because it was not routed to any instance",
+					Fact:    ProcessEventIgnored{Handler: process, Envelope: event},
 				},
-			),
-			g.Entry(
-				"AggregateInstanceCreated",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance created",
-				AggregateInstanceCreated{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
+				{
+					Name:    "ProcessEventRoutedToEndedInstance",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● event ignored because the target instance has ended",
+					Fact:    ProcessEventRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
-			),
-			g.Entry(
-				"EventRecordedByAggregate",
-				"= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
-				EventRecordedByAggregate{
-					Handler:    aggregate,
-					InstanceID: "<instance>",
-					Envelope:   command,
-					EventEnvelope: command.NewEvent(
-						"20",
-						EventA1,
-						time.Now(),
-						envelope.Origin{},
-						"a4dea2c6-6499-441c-94ad-686334880c1c",
-						42,
-					),
+				{
+					Name:    "ProcessTimeoutRoutedToEndedInstance",
+					Message: "= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance has ended",
+					Fact:    ProcessTimeoutRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: timeout},
 				},
-			),
-			g.Entry(
-				"MessageLoggedByAggregate",
-				"= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <message>",
-				MessageLoggedByAggregate{
-					Handler:      aggregate,
-					InstanceID:   "<instance>",
-					Envelope:     command,
-					LogFormat:    "<%s>",
-					LogArguments: []any{"message"},
+				{
+					Name:    "ProcessInstanceNotFound",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance does not yet exist",
+					Fact:    ProcessInstanceNotFound{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
-			),
+				{
+					Name:    "ProcessInstanceBegun",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance begun",
+					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Envelope: event},
+				},
+				{
+					Name:    "ProcessInstanceEnded",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance ended",
+					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Envelope: event},
+				},
+				{
+					Name:    "ProcessInstanceEndingReverted",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● reverted ending process instance",
+					Fact:    ProcessInstanceEndingReverted{Handler: process, InstanceID: "<instance>", Envelope: event},
+				},
+				{
+					Name:    "CommandExecutedByProcess",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Fact: CommandExecutedByProcess{
+						Handler:    process,
+						InstanceID: "<instance>",
+						Envelope:   event,
+						CommandEnvelope: event.NewCommand(
+							"20",
+							CommandA1,
+							time.Now(),
+							envelope.Origin{},
+						),
+					},
+				},
+				{
+					Name:    "TimeoutScheduledByProcess",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
+					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", TimeoutEnvelope: timeout},
+				},
+				{
+					Name:    "MessageLoggedByProcess",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <message>",
+					Fact: MessageLoggedByProcess{
+						Handler:      process,
+						InstanceID:   "<instance>",
+						Envelope:     event,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
+				},
+			})
+		})
 
-			// processes ...
+		t.Run("integration", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "EventRecordedByIntegration",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Fact: EventRecordedByIntegration{
+						Handler:  integration,
+						Envelope: command,
+						EventEnvelope: command.NewEvent(
+							"20",
+							EventA1,
+							time.Now(),
+							envelope.Origin{},
+							"1494ce69-b98c-41b4-9617-7fa45aa1ed21",
+							42,
+						),
+					},
+				},
+				{
+					Name:    "MessageLoggedByIntegration",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⨝    <integration> ● <message>",
+					Fact: MessageLoggedByIntegration{
+						Handler:      integration,
+						Envelope:     command,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
+				},
+			})
+		})
 
-			g.Entry(
-				"ProcessInstanceLoaded",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● loaded an existing instance",
-				ProcessInstanceLoaded{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
+		t.Run("projection", func(t *testing.T) {
+			run(t, []logCase{
+				{
+					Name:    "ProjectionCompactionBegun",
+					Message: "",
+					Fact:    ProjectionCompactionBegun{},
 				},
-			),
-			g.Entry(
-				"ProcessEventIgnored",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> ● event ignored because it was not routed to any instance",
-				ProcessEventIgnored{
-					Handler:  process,
-					Envelope: event,
+				{
+					Name:    "ProjectionCompactionCompleted (success)",
+					Message: "= --  ∵ --  ⋲ --    Σ    <projection> ● compacted",
+					Fact:    ProjectionCompactionCompleted{Handler: projection},
 				},
-			),
-			g.Entry(
-				"ProcessEventRoutedToEndedInstance",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● event ignored because the target instance has ended",
-				ProcessEventRoutedToEndedInstance{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
+				{
+					Name:    "ProjectionCompactionCompleted (failure)",
+					Message: "= --  ∵ --  ⋲ --    Σ ✖  <projection> ● compaction failed: <error>",
+					Fact:    ProjectionCompactionCompleted{Handler: projection, Error: errors.New("<error>")},
 				},
-			),
-			g.Entry(
-				"ProcessTimeoutRoutedToEndedInstance",
-				"= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance has ended",
-				ProcessTimeoutRoutedToEndedInstance{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   timeout,
+				{
+					Name:    "MessageLoggedByProjection",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ Σ    <projection> ● <message>",
+					Fact: MessageLoggedByProjection{
+						Handler:      projection,
+						Envelope:     command,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
 				},
-			),
-			g.Entry(
-				"ProcessInstanceNotFound",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance does not yet exist",
-				ProcessInstanceNotFound{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
+				{
+					Name:    "MessageLoggedByProjection (compacting)",
+					Message: "= --  ∵ --  ⋲ --    Σ    <projection> ● <message>",
+					Fact: MessageLoggedByProjection{
+						Handler:      projection,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
 				},
-			),
-			g.Entry(
-				"ProcessInstanceBegun",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance begun",
-				ProcessInstanceBegun{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
-				},
-			),
-			g.Entry(
-				"ProcessInstanceEnded",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance ended",
-				ProcessInstanceEnded{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
-				},
-			),
-			g.Entry(
-				"ProcessInstanceEndingReverted",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● reverted ending process instance",
-				ProcessInstanceEndingReverted{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
-				},
-			),
-			g.Entry(
-				"CommandExecutedByProcess",
-				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
-				CommandExecutedByProcess{
-					Handler:    process,
-					InstanceID: "<instance>",
-					Envelope:   event,
-					CommandEnvelope: event.NewCommand(
-						"20",
-						CommandA1,
-						time.Now(),
-						envelope.Origin{},
-					),
-				},
-			),
-			g.Entry(
-				"TimeoutScheduledByProcess",
-				"= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
-				TimeoutScheduledByProcess{
-					Handler:         process,
-					InstanceID:      "<instance>",
-					TimeoutEnvelope: timeout,
-				},
-			),
-			g.Entry(
-				"MessageLoggedByProcess",
-				"= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <message>",
-				MessageLoggedByProcess{
-					Handler:      process,
-					InstanceID:   "<instance>",
-					Envelope:     event,
-					LogFormat:    "<%s>",
-					LogArguments: []any{"message"},
-				},
-			),
-
-			// integrations ...
-
-			g.Entry(
-				"EventRecordedByIntegration",
-				"= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
-				EventRecordedByIntegration{
-					Handler:  integration,
-					Envelope: command,
-					EventEnvelope: command.NewEvent(
-						"20",
-						EventA1,
-						time.Now(),
-						envelope.Origin{},
-						"1494ce69-b98c-41b4-9617-7fa45aa1ed21",
-						42,
-					),
-				},
-			),
-			g.Entry(
-				"MessageLoggedByIntegration",
-				"= 10  ∵ 10  ⋲ 10  ▼ ⨝    <integration> ● <message>",
-				MessageLoggedByIntegration{
-					Handler:      integration,
-					Envelope:     command,
-					LogFormat:    "<%s>",
-					LogArguments: []any{"message"},
-				},
-			),
-
-			// projections ...
-
-			g.Entry(
-				"ProjectionCompactionBegun",
-				"",
-				ProjectionCompactionBegun{},
-			),
-
-			g.Entry(
-				"ProjectionCompactionCompleted (success)",
-				"= --  ∵ --  ⋲ --    Σ    <projection> ● compacted",
-				ProjectionCompactionCompleted{
-					Handler: projection,
-				},
-			),
-
-			g.Entry(
-				"ProjectionCompactionCompleted (failure)",
-				"= --  ∵ --  ⋲ --    Σ ✖  <projection> ● compaction failed: <error>",
-				ProjectionCompactionCompleted{
-					Handler: projection,
-					Error:   errors.New("<error>"),
-				},
-			),
-
-			g.Entry(
-				"MessageLoggedByProjection",
-				"= 10  ∵ 10  ⋲ 10  ▼ Σ    <projection> ● <message>",
-				MessageLoggedByProjection{
-					Handler:      projection,
-					Envelope:     command,
-					LogFormat:    "<%s>",
-					LogArguments: []any{"message"},
-				},
-			),
-
-			g.Entry(
-				"MessageLoggedByProjection (compacting)",
-				"= --  ∵ --  ⋲ --    Σ    <projection> ● <message>",
-				MessageLoggedByProjection{
-					Handler:      projection,
-					LogFormat:    "<%s>",
-					LogArguments: []any{"message"},
-				},
-			),
-		)
+			})
+		})
 	})
-})
+}
