@@ -68,9 +68,16 @@ func (e *messageTypeExpectation) Caption() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) {
-	if err := guardAgainstExpectationOnImpossibleType(s, e.expectedType); err != nil {
-		return nil, err
+func (e *messageTypeExpectation) Predicate(s PredicateScope) Predicate {
+	if explanation, impossible := isExpectationOnImpossibleType(s, e.expectedType); impossible {
+		return &failingPredicate{
+			criteria: inflect.Sprintf(
+				e.expectedType.Kind(),
+				"<produce> any '%s' <message>",
+				e.expectedType,
+			),
+			explanation: explanation,
+		}
 	}
 
 	return &messageTypePredicate{
@@ -79,7 +86,7 @@ func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) 
 			kind:    e.expectedType.Kind(),
 			options: s.Options,
 		},
-	}, nil
+	}
 }
 
 // messageTypePredicate is the Predicate implementation for

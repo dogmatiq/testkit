@@ -243,7 +243,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+		if !slices.Contains(mt.Logs, "  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})
@@ -263,7 +263,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")
 		}
-		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
+		if !slices.Contains(mt.Logs, "  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

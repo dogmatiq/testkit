@@ -49,28 +49,23 @@ func (e *repeatExpectation) Caption() string {
 	return fmt.Sprintf("to %s", e.criteria)
 }
 
-func (e *repeatExpectation) Predicate(s PredicateScope) (Predicate, error) {
+func (e *repeatExpectation) Predicate(s PredicateScope) Predicate {
 	var predicates []Predicate
 
 	for i := 0; i < e.count; i++ {
 		x := e.factory(i)
 
 		if x == nil {
-			return nil, fmt.Errorf("on iteration %d: factory returned a nil expectation", i)
+			panic(fmt.Sprintf("ToRepeatedly(%#v, %d, <func>): factory returned a nil expectation on iteration %d", e.criteria, e.count, i))
 		}
 
-		p, err := x.Predicate(s)
-		if err != nil {
-			return nil, fmt.Errorf("on iteration %d: %w", i, err)
-		}
-
-		predicates = append(predicates, p)
+		predicates = append(predicates, x.Predicate(s))
 	}
 
 	return &repeatPredicate{
 		criteria: e.criteria,
 		children: predicates,
-	}, nil
+	}
 }
 
 // repeatPredicate is the Predicate implementation for repeatExpectation.

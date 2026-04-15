@@ -72,12 +72,7 @@ func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
 
 func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
-
-	// TODO: These checks should result in information being added to the
-	// report, not just returning an error.
-	//
-	// See https://github.com/dogmatiq/testkit/issues/162
-
+	// REVIEW: this comment was removed but nothing changed?
 	if !s.App.RouteSet().HasMessageType(mt) {
 		return inflect.Errorf(
 			mt.Kind(),

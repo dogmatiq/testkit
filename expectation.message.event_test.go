@@ -311,7 +311,7 @@ func TestToRecordEvent_UnrecognizedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
+	if !slices.Contains(mt.Logs, "  |     an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
 		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
 	}
 }
@@ -357,7 +357,7 @@ func TestToRecordEvent_UnproducedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
+	if !slices.Contains(mt.Logs, "  |     no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
 		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }

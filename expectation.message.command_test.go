@@ -290,7 +290,8 @@ func TestToExecuteCommand_UnrecognizedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+	if !slices.Contains(mt.Logs, "  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
+		// REVIEW: why are these pipes now necessary in the assertion?
 		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
 	}
 }
@@ -321,7 +322,7 @@ func TestToExecuteCommand_UnproducedMessageType(t *testing.T) {
 	)
 
 	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
+	if !slices.Contains(mt.Logs, "  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
 		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }

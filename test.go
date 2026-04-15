@@ -110,11 +110,7 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
-	p, err := e.Predicate(s)
-	if err != nil {
-		t.testingT.Fatal(err)
-		return t // required when using a mock testingT that does not panic
-	}
+	p := e.Predicate(s)
 
 	// Using a defer inside a closure satisfies the requirements of the
 	// Expectation and Predicate interfaces which state that p.Done() must
@@ -124,7 +120,18 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		defer p.Done()
 		return t.doAction(act, engine.WithObserver(p))
 	}(); err != nil {
-		t.testingT.Fatal(err)
+		rep := &Report{
+			TreeOk:      false,
+			Ok:          false,
+			Criteria:    act.Caption(),
+			Explanation: err.Error(),
+		}
+		buf := &strings.Builder{}
+		fmt.Fprint(buf, "--- TEST REPORT ---\n\n")
+		must.WriteTo(buf, rep)
+		t.testingT.Log(buf.String())
+		t.testingT.FailNow()
+		// REVIEW: this is a hack - making a report here.
 		return t // required when using a mock testingT that does not panic
 	}
 

@@ -117,16 +117,11 @@ func (e *compositeExpectation) Caption() string {
 	return e.caption
 }
 
-func (e *compositeExpectation) Predicate(s PredicateScope) (Predicate, error) {
+func (e *compositeExpectation) Predicate(s PredicateScope) Predicate {
 	var children []Predicate
 
 	for _, c := range e.children {
-		p, err := c.Predicate(s)
-		if err != nil {
-			return nil, err
-		}
-
-		children = append(children, p)
+		children = append(children, c.Predicate(s))
 	}
 
 	return &compositePredicate{
@@ -134,7 +129,7 @@ func (e *compositeExpectation) Predicate(s PredicateScope) (Predicate, error) {
 		children:   children,
 		pred:       e.pred,
 		isInverted: e.isInverted,
-	}, nil
+	}
 }
 
 // compositePredicate is the Predicate implementation for compositeExpectation.
