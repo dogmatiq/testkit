@@ -22,6 +22,13 @@ type Action interface {
 	// constructed.
 	Location() location.Location
 
+	// Validate returns an error if this action cannot be performed against the
+	// given application configuration.
+	//
+	// It is called before Do() and before ConfigurePredicate() when the action
+	// is used with Test.Expect().
+	Validate(app *config.Application) error
+
 	// ConfigurePredicate updates o with any options required by the action.
 	//
 	// It is called before Do() when the action is used with Test.Expect().

@@ -147,11 +147,26 @@ func (e *messageMatchExpectation[T]) Caption() string {
 	)
 }
 
-func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, error) {
+func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) Predicate {
 	t := message.TypeFor[T]()
 	if t.ReflectType().Kind() != reflect.Interface {
-		if err := guardAgainstExpectationOnImpossibleType(s, t); err != nil {
-			return nil, err
+		if explanation, impossible := isExpectationOnImpossibleType(s, t); impossible {
+			criteria := inflect.Sprintf(
+				message.KindFor[T](),
+				"<produce> a <message> that matches the predicate near %s",
+				location.OfFunc(e.pred),
+			)
+			if e.exhaustive {
+				criteria = inflect.Sprintf(
+					message.KindFor[T](),
+					"only <produce> <messages> that match the predicate near %s",
+					location.OfFunc(e.pred),
+				)
+			}
+			return &failingPredicate{
+				criteria:    criteria,
+				explanation: explanation,
+			}
 		}
 	}
 
@@ -162,7 +177,7 @@ func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, err
 			kind:    message.KindFor[T](),
 			options: s.Options,
 		},
-	}, nil
+	}
 }
 
 // messageMatchPredicate is the [Predicate] implementation for

@@ -2,7 +2,6 @@ package testkit_test
 
 import (
 	"context"
-	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -255,6 +254,32 @@ func TestToRecordEvent(t *testing.T) {
 			),
 			nil,
 		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToRecordEvent(EventU1),
+			false,
+			expectReport(
+				`✗ record a specific '*stubs.EventStub[TypeU]' event`,
+				``,
+				`  | EXPLANATION`,
+				`  |     an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToRecordEvent(&EventThatIsOnlyConsumed{}),
+			false,
+			expectReport(
+				`✗ record a specific '*stubs.EventStub[TypeO]' event`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed`,
+			),
+			nil,
+		},
 	}
 
 	for _, c := range cases {
@@ -271,94 +296,6 @@ func TestToRecordEvent(t *testing.T) {
 				)
 			}
 		})
-	}
-}
-
-func TestToRecordEvent_UnrecognizedMessageType(t *testing.T) {
-	type CommandThatIsIgnored = CommandStub[TypeX]
-
-	app := &ApplicationStub{
-		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
-			c.Routes(
-				dogma.ViaAggregate(&AggregateMessageHandlerStub{
-					ConfigureFunc: func(c dogma.AggregateConfigurer) {
-						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
-						c.Routes(
-							dogma.HandlesCommand[*CommandThatIsIgnored](),
-							dogma.RecordsEvent[*EventStub[TypeX]](),
-						)
-					},
-					RouteCommandToInstanceFunc: func(dogma.Command) string {
-						return "<instance>"
-					},
-					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
-						m dogma.Command,
-					) {
-						// no events recorded
-					},
-				}),
-			)
-		},
-	}
-
-	mt := &testingmock.T{FailSilently: true}
-	Begin(mt, app).Expect(
-		noop,
-		ToRecordEvent(EventU1),
-	)
-
-	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
-		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
-	}
-}
-
-func TestToRecordEvent_UnproducedMessageType(t *testing.T) {
-	type EventThatIsOnlyConsumed = EventStub[TypeO]
-
-	app := &ApplicationStub{
-		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
-			c.Routes(
-				dogma.ViaProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
-						c.Routes(
-							dogma.HandlesEvent[*EventThatIsOnlyConsumed](),
-							dogma.ExecutesCommand[*CommandStub[TypeX]](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						return nil
-					},
-				}),
-			)
-		},
-	}
-
-	mt := &testingmock.T{FailSilently: true}
-	Begin(mt, app).Expect(
-		noop,
-		ToRecordEvent(&EventThatIsOnlyConsumed{}),
-	)
-
-	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
-		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }
 

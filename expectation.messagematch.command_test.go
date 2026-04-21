@@ -3,7 +3,6 @@ package testkit_test
 import (
 	"context"
 	"errors"
-	"slices"
 	"testing"
 	"time"
 
@@ -124,7 +123,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:117`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:116`,
 			),
 			nil,
 		},
@@ -144,7 +143,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:137`,
+				`✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:136`,
 			),
 			nil,
 		},
@@ -160,7 +159,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:157`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:156`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -186,7 +185,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:183`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:182`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -209,7 +208,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:206`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:205`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no messages were produced at all`,
@@ -231,7 +230,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:228`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:227`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no commands were executed at all`,
@@ -253,7 +252,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:250`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:249`,
 				``,
 				`  | EXPLANATION`,
 				`  |     no relevant handler types were enabled`,
@@ -279,7 +278,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:276`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:275`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -304,7 +303,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:301`,
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:300`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the engaged handlers executed a matching command`,
@@ -338,8 +337,42 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			expectFail,
 			expectReport(
 				`✗ none of (1 of the expectations passed unexpectedly)`,
-				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:329`,
-				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:333`,
+				`    ✓ execute a command that matches the predicate near expectation.messagematch.command_test.go:328`,
+				`    ✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:332`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommandMatching(
+				func(*CommandStub[TypeU]) error {
+					return nil
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:350`,
+				``,
+				`  | EXPLANATION`,
+				`  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommandMatching(
+				func(*CommandThatIsOnlyConsumed) error {
+					return nil
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ execute a command that matches the predicate near expectation.messagematch.command_test.go:367`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed`,
 			),
 			nil,
 		},
@@ -362,46 +395,6 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToExecuteCommandMatching(
-				func(*CommandStub[TypeU]) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
-
-	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToExecuteCommandMatching(
-				func(*CommandThatIsOnlyConsumed) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
 
 	t.Run("panics if the function is nil", func(t *testing.T) {
 		xtesting.ExpectPanic(

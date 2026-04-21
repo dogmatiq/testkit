@@ -3,6 +3,7 @@ package testkit_test
 import (
 	"context"
 
+	"github.com/dogmatiq/enginekit/config"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -18,5 +19,6 @@ type noopAction struct {
 
 func (a noopAction) Caption() string                             { return "[no-op]" }
 func (a noopAction) Location() location.Location                 { return location.Location{Func: "<noop>"} }
+func (a noopAction) Validate(*config.Application) error          { return nil }
 func (a noopAction) ConfigurePredicate(*PredicateOptions)        {}
 func (a noopAction) Do(ctx context.Context, s ActionScope) error { return a.err }

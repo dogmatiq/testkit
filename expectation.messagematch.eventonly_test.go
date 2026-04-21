@@ -2,7 +2,6 @@ package testkit_test
 
 import (
 	"errors"
-	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -81,7 +80,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:79`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:78`,
 			),
 			nil,
 		},
@@ -97,7 +96,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:95`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:94`,
 			),
 			nil,
 		},
@@ -113,7 +112,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:110`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:109`,
 			),
 			nil,
 		},
@@ -129,7 +128,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:126`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:125`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -163,7 +162,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:153`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:152`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant events matched the predicate`,
@@ -190,7 +189,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:187`,
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:186`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant events matched the predicate`,
@@ -202,6 +201,40 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 				`  |     • verify the logic within the predicate function`,
 				`  |     • enable integration handlers using the EnableHandlerType() option`,
 				`  |     • verify the logic within the '<aggregate>' aggregate message handler`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToOnlyRecordEventsMatching(
+				func(*EventStub[TypeU]) error {
+					return nil
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:212`,
+				``,
+				`  | EXPLANATION`,
+				`  |     an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToOnlyRecordEventsMatching(
+				func(*EventThatIsOnlyConsumed) error {
+					return nil
+				},
+			),
+			expectFail,
+			expectReport(
+				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:229`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed`,
 			),
 			nil,
 		},
@@ -224,46 +257,6 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToOnlyRecordEventsMatching(
-				func(*EventStub[TypeU]) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
-
-	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToOnlyRecordEventsMatching(
-				func(*EventThatIsOnlyConsumed) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
 
 	t.Run("panics if the function is nil", func(t *testing.T) {
 		xtesting.ExpectPanic(

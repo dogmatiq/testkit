@@ -3,6 +3,7 @@ package testkit
 import (
 	"context"
 
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -56,6 +57,10 @@ type callAction struct {
 
 func (a callAction) Caption() string {
 	return "calling user-defined function"
+}
+
+func (a callAction) Validate(*config.Application) error {
+	return nil
 }
 
 func (a callAction) Location() location.Location {

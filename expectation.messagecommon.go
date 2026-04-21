@@ -72,22 +72,18 @@ func reportNoMatch(rep *Report, t *tracker) {
 	}
 }
 
-// guardAgainstExpectationOnImpossibleType returns an error if the predicate
-// with scope s cannot possible match a message of type t.
-func guardAgainstExpectationOnImpossibleType(
+// isExpectationOnImpossibleType returns the explanation and true if the
+// predicate with scope s can never match a message of type t.
+func isExpectationOnImpossibleType(
 	s PredicateScope,
 	t message.Type,
-) error {
-	// TODO: These checks should result in information being added to the
-	// report, not just returning an error.
-	//
-	// See https://github.com/dogmatiq/testkit/issues/162
+) (string, bool) {
 	if !s.App.RouteSet().HasMessageType(t) {
-		return inflect.Errorf(
+		return inflect.Sprintf(
 			t.Kind(),
 			"a <message> of type %s can never be <produced>, the application does not use this message type",
 			t,
-		)
+		), true
 	}
 
 	if !s.Options.MatchDispatchCycleStartedFacts {
@@ -95,15 +91,15 @@ func guardAgainstExpectationOnImpossibleType(
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
 		if !s.App.RouteSet().DirectionOf(t).Has(config.OutboundDirection) {
-			return inflect.Errorf(
+			return inflect.Sprintf(
 				t.Kind(),
 				"no handlers <produce> <messages> of type %s, it is only ever consumed",
 				t,
-			)
+			), true
 		}
 	}
 
-	return nil
+	return "", false
 }
 
 // tracker is a fact.Observer used by expectations that need to keep track of

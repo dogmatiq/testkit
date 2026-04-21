@@ -1,7 +1,6 @@
 package testkit_test
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -42,7 +41,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at expectation.satisfy_test.go:38`,
+				`  |     Fail() called at expectation.satisfy_test.go:37`,
 			),
 		},
 		{
@@ -55,7 +54,7 @@ func TestToSatisfy(t *testing.T) {
 				`✓ <description> (the expectation was skipped)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     SkipNow() called at expectation.satisfy_test.go:51`,
+				`  |     SkipNow() called at expectation.satisfy_test.go:50`,
 			),
 		},
 		{
@@ -94,7 +93,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Error() called at expectation.satisfy_test.go:90`,
+				`  |     Error() called at expectation.satisfy_test.go:89`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
@@ -110,7 +109,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Errorf() called at expectation.satisfy_test.go:106`,
+				`  |     Errorf() called at expectation.satisfy_test.go:105`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
@@ -126,7 +125,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatal() called at expectation.satisfy_test.go:122`,
+				`  |     Fatal() called at expectation.satisfy_test.go:121`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <message>`,
@@ -142,7 +141,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fatalf() called at expectation.satisfy_test.go:138`,
+				`  |     Fatalf() called at expectation.satisfy_test.go:137`,
 				`  | `,
 				`  | LOG MESSAGES`,
 				`  |     <format value>`,
@@ -163,7 +162,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:159`,
+				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:158`,
 			),
 		},
 		{
@@ -177,7 +176,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called at expectation.satisfy_test.go:173`,
+				`  |     Fail() called at expectation.satisfy_test.go:172`,
 			),
 		},
 		{
@@ -197,7 +196,7 @@ func TestToSatisfy(t *testing.T) {
 				`✗ <description> (the expectation failed)`,
 				``,
 				`  | EXPLANATION`,
-				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:193`,
+				`  |     Fail() called indirectly by call at expectation.satisfy_test.go:192`,
 			),
 		},
 	}
@@ -254,7 +253,14 @@ func TestToSatisfy(t *testing.T) {
 			),
 		)
 
-		if !slices.Contains(mt.Logs, "--- expect [no-op] to <description> ---") {
+		var found bool
+		for _, log := range mt.Logs {
+			if log == "--- expect [no-op] to <description> ---" {
+				found = true
+				break
+			}
+		}
+		if !found {
 			t.Fatalf("expected log message not found, got: %v", mt.Logs)
 		}
 	})

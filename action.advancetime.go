@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -81,6 +82,10 @@ func (a advanceTimeAction) Caption() string {
 
 func (a advanceTimeAction) Location() location.Location {
 	return a.loc
+}
+
+func (a advanceTimeAction) Validate(*config.Application) error {
+	return nil
 }
 
 func (a advanceTimeAction) ConfigurePredicate(*PredicateOptions) {

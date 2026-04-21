@@ -49,7 +49,7 @@ func (e *satisfyExpectation) Caption() string {
 	return fmt.Sprintf("to %s", e.criteria)
 }
 
-func (e satisfyExpectation) Predicate(s PredicateScope) (Predicate, error) {
+func (e satisfyExpectation) Predicate(s PredicateScope) Predicate {
 	return &satisfyPredicate{
 		criteria: e.criteria,
 		pred:     e.pred,
@@ -57,7 +57,7 @@ func (e satisfyExpectation) Predicate(s PredicateScope) (Predicate, error) {
 			Options: s.Options,
 			name:    e.criteria,
 		},
-	}, nil
+	}
 }
 
 // compositePredicate is the Predicate implementation for satisfyExpectation.

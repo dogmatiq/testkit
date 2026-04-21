@@ -90,22 +90,5 @@ func TestNot(t *testing.T) {
 				"--- expect [no-op] not to record a specific '*stubs.EventStub[TypeA]' event ---",
 			)
 		})
-
-		t.Run("it fails the test if the child cannot construct a predicate", func(t *testing.T) {
-			mt, tc := newFixture()
-			tc.Expect(
-				noop,
-				Not(failBeforeAction),
-			)
-			xtesting.ExpectContains[string](
-				t,
-				"expected log message not found",
-				mt.Logs,
-				"<always fail before action>",
-			)
-			if !mt.Failed() {
-				t.Fatal("expected test to fail")
-			}
-		})
 	})
 }

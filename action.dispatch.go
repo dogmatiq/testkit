@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/validation"
@@ -67,18 +68,9 @@ func (a dispatchAction) Location() location.Location {
 	return a.loc
 }
 
-func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
-}
-
-func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
+func (a dispatchAction) Validate(app *config.Application) error {
 	mt := message.TypeOf(a.m)
-
-	// TODO: These checks should result in information being added to the
-	// report, not just returning an error.
-	//
-	// See https://github.com/dogmatiq/testkit/issues/162
-
-	if !s.App.RouteSet().HasMessageType(mt) {
+	if !app.RouteSet().HasMessageType(mt) {
 		return inflect.Errorf(
 			mt.Kind(),
 			"cannot <produce> <message>, %s is a not a recognized message type",
@@ -86,5 +78,12 @@ func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 		)
 	}
 
+	return nil
+}
+
+func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
+}
+
+func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	return s.Engine.Dispatch(ctx, a.m, s.OperationOptions...)
 }

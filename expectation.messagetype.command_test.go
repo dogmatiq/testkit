@@ -2,12 +2,10 @@ package testkit_test
 
 import (
 	"context"
-	"slices"
 	"testing"
 	"time"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
@@ -203,6 +201,32 @@ func TestToExecuteCommandType(t *testing.T) {
 			),
 			nil,
 		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommandType[*CommandStub[TypeU]](),
+			false,
+			expectReport(
+				`✗ execute any '*stubs.CommandStub[TypeU]' command`,
+				``,
+				`  | EXPLANATION`,
+				`  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommandType[*CommandThatIsOnlyConsumed](),
+			false,
+			expectReport(
+				`✗ execute any '*stubs.CommandStub[TypeO]' command`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed`,
+			),
+			nil,
+		},
 	}
 
 	for _, c := range cases {
@@ -217,36 +241,4 @@ func TestToExecuteCommandType(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToExecuteCommandType[*stubs.CommandStub[TypeU]](),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
-
-	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToExecuteCommandType[*CommandThatIsOnlyConsumed](),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
 }

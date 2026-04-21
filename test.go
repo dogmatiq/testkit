@@ -88,6 +88,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.testingT.Helper()
 
 	for _, act := range actions {
+		if err := act.Validate(t.app); err != nil {
+			t.testingT.Fatal(err)
+			continue
+		}
 		logf(t.testingT, "--- %s ---", act.Caption())
 		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
@@ -110,22 +114,21 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
-	p, err := e.Predicate(s)
-	if err != nil {
-		t.testingT.Fatal(err)
-		return t // required when using a mock testingT that does not panic
-	}
-
-	// Using a defer inside a closure satisfies the requirements of the
-	// Expectation and Predicate interfaces which state that p.Done() must
-	// be called exactly once, and that it must be called before calling
-	// p.Report().
-	if err := func() error {
-		defer p.Done()
-		return t.doAction(act, engine.WithObserver(p))
-	}(); err != nil {
-		t.testingT.Fatal(err)
-		return t // required when using a mock testingT that does not panic
+	var p Predicate
+	if err := act.Validate(t.app); err != nil {
+		p = &failingPredicate{criteria: e.Caption(), explanation: err.Error()}
+		p.Done()
+	} else {
+		rp := e.Predicate(s)
+		if err := func() error {
+			defer rp.Done()
+			return t.doAction(act, engine.WithObserver(rp))
+		}(); err != nil {
+			p = &failingPredicate{criteria: e.Caption(), explanation: err.Error()}
+			p.Done()
+		} else {
+			p = rp
+		}
 	}
 
 	options := []dapper.Option{
