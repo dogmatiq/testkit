@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/validation"
@@ -68,9 +67,9 @@ func (a dispatchAction) Location() location.Location {
 	return a.loc
 }
 
-func (a dispatchAction) Validate(app *config.Application) error {
+func (a dispatchAction) Validate(s ActionValidationScope) error {
 	mt := message.TypeOf(a.m)
-	if !app.RouteSet().HasMessageType(mt) {
+	if !s.App.RouteSet().HasMessageType(mt) {
 		return inflect.Errorf(
 			mt.Kind(),
 			"cannot <produce> <message>, %s is not a recognized message type",

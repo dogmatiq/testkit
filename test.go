@@ -88,13 +88,20 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.testingT.Helper()
 
 	for _, act := range actions {
-		if err := act.Validate(t.app); err != nil {
-			t.testingT.Fatal(err)
-			continue
+		vs := ActionValidationScope{
+			App:          t.app,
+			VirtualClock: t.virtualClock,
 		}
+
+		if err := act.Validate(vs); err != nil {
+			t.testingT.Fatal(err)
+			return t // required when using a mock TestingT that does not panic
+		}
+
 		logf(t.testingT, "--- %s ---", act.Caption())
 		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
+			return t // required when using a mock TestingT that does not panic
 		}
 	}
 
@@ -105,30 +112,37 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) *Test {
 	t.testingT.Helper()
 
-	s := PredicateScope{
-		App:     t.app,
-		Options: t.predicateOptions,
-	}
-
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
-	var p Predicate
-	if err := act.Validate(t.app); err != nil {
-		p = &failingPredicate{criteria: e.Caption(), explanation: err.Error()}
-		p.Done()
+	var (
+		p  Predicate
+		vs = ActionValidationScope{
+			App:          t.app,
+			VirtualClock: t.virtualClock,
+		}
+	)
+
+	if err := act.Validate(vs); err != nil {
+		p = &failingPredicate{
+			criteria:    e.Caption(),
+			explanation: err.Error(),
+		}
 	} else {
-		act.ConfigurePredicate(&s.Options)
-		rp := e.Predicate(s)
-		if err := func() error {
-			defer rp.Done()
-			return t.doAction(act, engine.WithObserver(rp))
-		}(); err != nil {
-			p = &failingPredicate{criteria: e.Caption(), explanation: err.Error()}
+		ps := PredicateScope{
+			App:     t.app,
+			Options: t.predicateOptions,
+		}
+
+		act.ConfigurePredicate(&ps.Options)
+		p = e.Predicate(ps)
+		if err := t.doAction(act, engine.WithObserver(p)); err != nil {
 			p.Done()
-		} else {
-			p = rp
+			t.testingT.Fatal(err)
+			return t // required when using a mock TestingT that does not panic
 		}
 	}
+
+	p.Done()
 
 	options := []dapper.Option{
 		dapper.WithPackagePaths(false),

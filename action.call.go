@@ -3,7 +3,6 @@ package testkit
 import (
 	"context"
 
-	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -59,7 +58,7 @@ func (a callAction) Caption() string {
 	return "calling user-defined function"
 }
 
-func (a callAction) Validate(*config.Application) error {
+func (a callAction) Validate(ActionValidationScope) error {
 	return nil
 }
 

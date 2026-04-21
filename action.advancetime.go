@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -84,7 +83,14 @@ func (a advanceTimeAction) Location() location.Location {
 	return a.loc
 }
 
-func (a advanceTimeAction) Validate(*config.Application) error {
+func (a advanceTimeAction) Validate(s ActionValidationScope) error {
+	now := a.adj.Step(s.VirtualClock)
+	if now.Before(s.VirtualClock) {
+		return fmt.Errorf(
+			"adjusting the clock %s would reverse time",
+			a.adj.Description(),
+		)
+	}
 	return nil
 }
 
@@ -93,14 +99,6 @@ func (a advanceTimeAction) ConfigurePredicate(*PredicateOptions) {
 
 func (a advanceTimeAction) Do(ctx context.Context, s ActionScope) error {
 	now := a.adj.Step(*s.VirtualClock)
-
-	if now.Before(*s.VirtualClock) {
-		return fmt.Errorf(
-			"adjusting the clock %s would reverse time",
-			a.adj.Description(),
-		)
-	}
-
 	*s.VirtualClock = now
 
 	// There is already an engine.WithCurrentTime() based on the virtual clock
