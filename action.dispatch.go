@@ -73,7 +73,7 @@ func (a dispatchAction) Validate(app *config.Application) error {
 	if !app.RouteSet().HasMessageType(mt) {
 		return inflect.Errorf(
 			mt.Kind(),
-			"cannot <produce> <message>, %s is a not a recognized message type",
+			"cannot <produce> <message>, %s is not a recognized message type",
 			mt,
 		)
 	}

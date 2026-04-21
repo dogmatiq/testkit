@@ -110,8 +110,6 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		Options: t.predicateOptions,
 	}
 
-	act.ConfigurePredicate(&s.Options)
-
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
 	var p Predicate
@@ -119,6 +117,7 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		p = &failingPredicate{criteria: e.Caption(), explanation: err.Error()}
 		p.Done()
 	} else {
+		act.ConfigurePredicate(&s.Options)
 		rp := e.Predicate(s)
 		if err := func() error {
 			defer rp.Done()
