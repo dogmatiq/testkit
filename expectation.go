@@ -68,22 +68,3 @@ type PredicateOptions struct {
 	// by handlers.
 	MatchDispatchCycleStartedFacts bool
 }
-
-// failingPredicate is a [Predicate] that always fails, reporting a
-// pre-determined criteria and explanation.
-type failingPredicate struct {
-	criteria    string
-	explanation string
-}
-
-func (p *failingPredicate) Notify(fact.Fact) {}
-func (p *failingPredicate) Ok() bool         { return false }
-func (p *failingPredicate) Done()            {}
-func (p *failingPredicate) Report(ctx ReportGenerationContext) *Report {
-	return &Report{
-		TreeOk:      ctx.TreeOk,
-		Ok:          false,
-		Criteria:    p.criteria,
-		Explanation: p.explanation,
-	}
-}

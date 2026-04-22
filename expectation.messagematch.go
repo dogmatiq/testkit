@@ -3,9 +3,9 @@ package testkit
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -148,31 +148,10 @@ func (e *messageMatchExpectation[T]) Caption() string {
 }
 
 func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) Predicate {
-	t := message.TypeFor[T]()
-	if t.ReflectType().Kind() != reflect.Interface {
-		if explanation, impossible := isExpectationOnImpossibleType(s, t); impossible {
-			criteria := inflect.Sprintf(
-				message.KindFor[T](),
-				"<produce> a <message> that matches the predicate near %s",
-				location.OfFunc(e.pred),
-			)
-			if e.exhaustive {
-				criteria = inflect.Sprintf(
-					message.KindFor[T](),
-					"only <produce> <messages> that match the predicate near %s",
-					location.OfFunc(e.pred),
-				)
-			}
-			return &failingPredicate{
-				criteria:    criteria,
-				explanation: explanation,
-			}
-		}
-	}
-
 	return &messageMatchPredicate[T]{
 		pred:       e.pred,
 		exhaustive: e.exhaustive,
+		app:        s.App,
 		tracker: tracker{
 			kind:    message.KindFor[T](),
 			options: s.Options,
@@ -185,6 +164,7 @@ func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) Predicate {
 type messageMatchPredicate[T dogma.Message] struct {
 	pred       func(T) error
 	exhaustive bool
+	app        *config.Application
 	failures   []*failedMatch
 	matched    int
 	ignored    int
@@ -289,6 +269,10 @@ func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 	}
 
 	if p.ok || ctx.TreeOk || ctx.IsInverted {
+		return rep
+	}
+
+	if !p.exhaustive && reportImpossible(rep, p.app, p.tracker.options, message.TypeFor[T]()) {
 		return rep
 	}
 

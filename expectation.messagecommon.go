@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"reflect"
+
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
@@ -72,34 +74,57 @@ func reportNoMatch(rep *Report, t *tracker) {
 	}
 }
 
-// isExpectationOnImpossibleType returns the explanation and true if the
-// predicate with scope s can never match a message of type t.
-func isExpectationOnImpossibleType(
-	s PredicateScope,
+// reportImpossible populates rep for expectations that can never be satisfied
+// because the message type cannot possibly be produced. It returns true if the
+// type is impossible, in which case the caller should return early.
+func reportImpossible(
+	rep *Report,
+	app *config.Application,
+	options PredicateOptions,
 	t message.Type,
-) (string, bool) {
-	if !s.App.RouteSet().HasMessageType(t) {
-		return inflect.Sprintf(
+) bool {
+	if t.ReflectType().Kind() == reflect.Interface {
+		return false
+	}
+
+	if !app.RouteSet().HasMessageType(t) {
+		rep.Explanation = inflect.Sprintf(
 			t.Kind(),
 			"a <message> of type %s can never be <produced>, the application does not use this message type",
 			t,
-		), true
+		)
+
+		rep.Section(suggestionsSection).AppendListItem(
+			fmt.Sprintf(
+				"add a route for %s to the application's configuration",
+				t,
+			),
+		)
+
+		return true
 	}
 
-	if !s.Options.MatchDispatchCycleStartedFacts {
+	if !options.MatchDispatchCycleStartedFacts {
 		// If we're NOT matching messages from DispatchCycleStarted facts that
 		// means this expectation can only ever pass if the message is produced
 		// by a handler.
-		if !s.App.RouteSet().DirectionOf(t).Has(config.OutboundDirection) {
-			return inflect.Sprintf(
+		if !app.RouteSet().DirectionOf(t).Has(config.OutboundDirection) {
+			rep.Explanation = inflect.Sprintf(
 				t.Kind(),
 				"no handlers <produce> <messages> of type %s, it is only ever consumed",
 				t,
-			), true
+			)
+			rep.Section(suggestionsSection).AppendListItem(
+				fmt.Sprintf(
+					"add an outbound route for %s to a handler in the application's configuration",
+					t,
+				),
+			)
+			return true
 		}
 	}
 
-	return "", false
+	return false
 }
 
 // tracker is a fact.Observer used by expectations that need to keep track of

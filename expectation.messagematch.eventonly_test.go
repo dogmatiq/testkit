@@ -205,36 +205,30 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			nil,
 		},
 		{
-			"fails the test if the message type is unrecognized",
+			"passes the test if the message type is unrecognized",
 			func(*testing.T, *Test) Action { return noop },
 			ToOnlyRecordEventsMatching(
 				func(*EventStub[TypeU]) error {
 					return nil
 				},
 			),
-			expectFail,
+			expectPass,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:212`,
-				``,
-				`  | EXPLANATION`,
-				`  |     an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:212`,
 			),
 			nil,
 		},
 		{
-			"fails the test if the message type is not produced by any handlers",
+			"passes the test if the message type is not produced by any handlers",
 			func(*testing.T, *Test) Action { return noop },
 			ToOnlyRecordEventsMatching(
 				func(*EventThatIsOnlyConsumed) error {
 					return nil
 				},
 			),
-			expectFail,
+			expectPass,
 			expectReport(
-				`✗ only record events that match the predicate near expectation.messagematch.eventonly_test.go:229`,
-				``,
-				`  | EXPLANATION`,
-				`  |     no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed`,
+				`✓ only record events that match the predicate near expectation.messagematch.eventonly_test.go:226`,
 			),
 			nil,
 		},

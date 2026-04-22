@@ -88,20 +88,10 @@ func (t *Test) Prepare(actions ...Action) *Test {
 	t.testingT.Helper()
 
 	for _, act := range actions {
-		vs := ActionValidationScope{
-			App:          t.app,
-			VirtualClock: t.virtualClock,
-		}
-
-		if err := act.Validate(vs); err != nil {
-			t.testingT.Fatal(err)
-			return t // required when using a mock TestingT that does not panic
-		}
-
 		logf(t.testingT, "--- %s ---", act.Caption())
 		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
-			return t // required when using a mock TestingT that does not panic
+			return t // required when using a mock testingT that does not panic
 		}
 	}
 
@@ -112,37 +102,28 @@ func (t *Test) Prepare(actions ...Action) *Test {
 func (t *Test) Expect(act Action, e Expectation) *Test {
 	t.testingT.Helper()
 
-	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
-
-	var (
-		p  Predicate
-		vs = ActionValidationScope{
-			App:          t.app,
-			VirtualClock: t.virtualClock,
-		}
-	)
-
-	if err := act.Validate(vs); err != nil {
-		p = &failingPredicate{
-			criteria:    e.Caption(),
-			explanation: err.Error(),
-		}
-	} else {
-		ps := PredicateScope{
-			App:     t.app,
-			Options: t.predicateOptions,
-		}
-
-		act.ConfigurePredicate(&ps.Options)
-		p = e.Predicate(ps)
-		if err := t.doAction(act, engine.WithObserver(p)); err != nil {
-			p.Done()
-			t.testingT.Fatal(err)
-			return t // required when using a mock TestingT that does not panic
-		}
+	s := PredicateScope{
+		App:     t.app,
+		Options: t.predicateOptions,
 	}
 
-	p.Done()
+	act.ConfigurePredicate(&s.Options)
+
+	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
+
+	p := e.Predicate(s)
+
+	// Using a defer inside a closure satisfies the requirements of the
+	// Expectation and Predicate interfaces which state that p.Done() must
+	// be called exactly once, and that it must be called before calling
+	// p.Report().
+	if err := func() error {
+		defer p.Done()
+		return t.doAction(act, engine.WithObserver(p))
+	}(); err != nil {
+		t.testingT.Fatal(err)
+		return t // required when using a mock testingT that does not panic
+	}
 
 	options := []dapper.Option{
 		dapper.WithPackagePaths(false),

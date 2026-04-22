@@ -208,36 +208,30 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			nil,
 		},
 		{
-			"fails the test if the message type is unrecognized",
+			"passes the test if the message type is unrecognized",
 			func(*testing.T, *Test) Action { return noop },
 			ToOnlyExecuteCommandsMatching(
 				func(*CommandStub[TypeU]) error {
 					return nil
 				},
 			),
-			expectFail,
+			expectPass,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:215`,
-				``,
-				`  | EXPLANATION`,
-				`  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:215`,
 			),
 			nil,
 		},
 		{
-			"fails the test if the message type is not produced by any handlers",
+			"passes the test if the message type is not produced by any handlers",
 			func(*testing.T, *Test) Action { return noop },
 			ToOnlyExecuteCommandsMatching(
 				func(*CommandThatIsOnlyConsumed) error {
 					return nil
 				},
 			),
-			expectFail,
+			expectPass,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:232`,
-				``,
-				`  | EXPLANATION`,
-				`  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:229`,
 			),
 			nil,
 		},

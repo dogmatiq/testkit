@@ -67,7 +67,10 @@ func (a dispatchAction) Location() location.Location {
 	return a.loc
 }
 
-func (a dispatchAction) Validate(s ActionValidationScope) error {
+func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
+}
+
+func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	mt := message.TypeOf(a.m)
 	if !s.App.RouteSet().HasMessageType(mt) {
 		return inflect.Errorf(
@@ -77,12 +80,5 @@ func (a dispatchAction) Validate(s ActionValidationScope) error {
 		)
 	}
 
-	return nil
-}
-
-func (a dispatchAction) ConfigurePredicate(*PredicateOptions) {
-}
-
-func (a dispatchAction) Do(ctx context.Context, s ActionScope) error {
 	return s.Engine.Dispatch(ctx, a.m, s.OperationOptions...)
 }

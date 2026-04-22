@@ -22,13 +22,6 @@ type Action interface {
 	// constructed.
 	Location() location.Location
 
-	// Validate returns an error if this action cannot be performed given the
-	// current test state.
-	//
-	// It is called before Do() and before ConfigurePredicate() when the action
-	// is used with Test.Expect().
-	Validate(s ActionValidationScope) error
-
 	// ConfigurePredicate updates o with any options required by the action.
 	//
 	// It is called before Do() when the action is used with Test.Expect().
@@ -58,14 +51,4 @@ type ActionScope struct {
 	// OperationOptions is the set of options that should be used with calling
 	// Engine.Dispatch() or Engine.Tick().
 	OperationOptions []engine.OperationOption
-}
-
-// ActionValidationScope encapsulates the information available to an Action's
-// Validate() method.
-type ActionValidationScope struct {
-	// App is the application being tested.
-	App *config.Application
-
-	// VirtualClock is the current value of the test's virtual clock.
-	VirtualClock time.Time
 }

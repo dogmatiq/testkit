@@ -18,6 +18,5 @@ type noopAction struct {
 
 func (a noopAction) Caption() string                             { return "[no-op]" }
 func (a noopAction) Location() location.Location                 { return location.Location{Func: "<noop>"} }
-func (a noopAction) Validate(ActionValidationScope) error        { return nil }
 func (a noopAction) ConfigurePredicate(*PredicateOptions)        {}
 func (a noopAction) Do(ctx context.Context, s ActionScope) error { return a.err }

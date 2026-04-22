@@ -58,10 +58,6 @@ func (a callAction) Caption() string {
 	return "calling user-defined function"
 }
 
-func (a callAction) Validate(ActionValidationScope) error {
-	return nil
-}
-
 func (a callAction) Location() location.Location {
 	return a.loc
 }
