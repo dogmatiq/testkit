@@ -88,6 +88,7 @@ func (a advanceTimeAction) ConfigurePredicate(*PredicateOptions) {
 
 func (a advanceTimeAction) Do(ctx context.Context, s ActionScope) error {
 	now := a.adj.Step(*s.VirtualClock)
+
 	if now.Before(*s.VirtualClock) {
 		return fmt.Errorf(
 			"adjusting the clock %s would reverse time",

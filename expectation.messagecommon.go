@@ -2,9 +2,8 @@ package testkit
 
 import (
 	"fmt"
-	"strings"
-
 	"reflect"
+	"strings"
 
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
