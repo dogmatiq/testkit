@@ -40,7 +40,7 @@ type UnexpectedBehavior struct {
 func (x UnexpectedBehavior) String() string {
 	return fmt.Sprintf(
 		"the '%s' %s message handler behaved unexpectedly in %T.%s(): %s",
-		x.Handler.Identity().Name,
+		x.Handler.Identity().GetName(),
 		x.Handler.HandlerType(),
 		x.Implementation,
 		x.Method,

@@ -156,7 +156,7 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 		rep.Explanation = inflect.Sprintf(
 			mt.Kind(),
 			"a similar <message> was <produced> by the '%s' %s message handler",
-			p.bestMatch.Origin.Handler.Identity().Name,
+			p.bestMatch.Origin.Handler.Identity().GetName(),
 			p.bestMatch.Origin.HandlerType,
 		)
 	}

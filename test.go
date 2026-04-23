@@ -238,7 +238,7 @@ func (t *Test) enableHandlers(names []string, enable bool) *Test {
 		if !ok {
 			panic(fmt.Sprintf(
 				"the %q application does not have a handler named %q",
-				t.app.Identity().Name,
+				t.app.Identity().GetName(),
 				n,
 			))
 		}
@@ -272,7 +272,7 @@ func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
 		matched := false
 
 		for _, h := range t.app.Handlers() {
-			name := h.Identity().Name
+			name := h.Identity().GetName()
 			if !h.IsDisabled() && re.MatchString(name) {
 				names[name] = struct{}{}
 				matched = true
@@ -282,7 +282,7 @@ func (t *Test) enableHandlersLike(patterns []string, enable bool) *Test {
 		if !matched {
 			panic(fmt.Sprintf(
 				"the %q application does not have any handlers with names that match the regular expression (%s), or all such handlers have been disabled by a call to ProjectionConfigurer.Disable()",
-				t.app.Identity().Name,
+				t.app.Identity().GetName(),
 				p,
 			))
 		}

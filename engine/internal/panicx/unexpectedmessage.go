@@ -36,7 +36,7 @@ type UnexpectedMessage struct {
 func (x UnexpectedMessage) String() string {
 	return fmt.Sprintf(
 		"the '%s' %s message handler did not expect %T.%s() to be called with a message of type %s",
-		x.Handler.Identity().Name,
+		x.Handler.Identity().GetName(),
 		x.Handler.HandlerType(),
 		x.Implementation,
 		x.Method,

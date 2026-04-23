@@ -145,7 +145,7 @@ func (e *Engine) tick(
 				err,
 				fmt.Errorf(
 					"%s %s: %w",
-					c.HandlerConfig().Identity().Name,
+					c.HandlerConfig().Identity().GetName(),
 					c.HandlerConfig().HandlerType(),
 					cerr,
 				),
@@ -274,7 +274,7 @@ func (e *Engine) dispatch(
 		if mt.Kind() == message.TimeoutKind {
 			// always dispatch timeouts back to their origin handler
 			controllers = []controller{
-				e.controllers[env.Origin.Handler.Identity().Name],
+				e.controllers[env.Origin.Handler.Identity().GetName()],
 			}
 		} else {
 			controllers = e.routes[mt]
@@ -296,7 +296,7 @@ func (e *Engine) dispatch(
 					derr,
 					fmt.Errorf(
 						"%s %s: %w",
-						c.HandlerConfig().Identity().Name,
+						c.HandlerConfig().Identity().GetName(),
 						c.HandlerConfig().HandlerType(),
 						cerr,
 					),
@@ -365,7 +365,7 @@ func (e *Engine) skipHandler(
 	h config.Handler,
 	oo *operationOptions,
 ) (bool, fact.HandlerSkipReason) {
-	if en, ok := oo.enabledHandlers[h.Identity().Name]; ok {
+	if en, ok := oo.enabledHandlers[h.Identity().GetName()]; ok {
 		return !en, fact.IndividualHandlerDisabled
 	}
 

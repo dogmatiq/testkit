@@ -130,7 +130,7 @@ func (c *Controller) Handle(
 		now:        now,
 		root:       r,
 		command:    env,
-		streamID:   uuidpb.Derive(c.Config.Identity().Key, id).AsString(),
+		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsString(),
 		offset:     uint64(len(history)),
 	}
 

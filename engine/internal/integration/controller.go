@@ -56,7 +56,7 @@ func (c *Controller) Handle(
 		observer:   obs,
 		now:        now,
 		command:    env,
-		streamID:   c.Config.Identity().Key.AsString(),
+		streamID:   c.Config.Identity().GetKey().AsString(),
 		offset:     c.offset,
 	}
 

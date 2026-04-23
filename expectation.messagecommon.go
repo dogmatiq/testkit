@@ -168,7 +168,7 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 		}
 	case fact.HandlingBegun:
 		t.updateEngaged(
-			x.Handler.Identity().Name,
+			x.Handler.Identity().GetName(),
 			x.Handler.HandlerType(),
 		)
 	case fact.EventRecordedByAggregate:
