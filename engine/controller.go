@@ -106,7 +106,7 @@ func registerController(
 ) {
 	cfg := ctrl.HandlerConfig()
 
-	e.controllers[cfg.Identity().Name] = ctrl
+	e.controllers[cfg.Identity().GetName()] = ctrl
 
 	types := cfg.
 		RouteSet().

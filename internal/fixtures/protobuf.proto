@@ -1,5 +1,4 @@
-syntax = "proto3";
-
+edition = "2024";
 package dogmatiq.testkit.fixtures;
 
 option go_package = "github.com/dogmatiq/testkit/internal/fixtures";

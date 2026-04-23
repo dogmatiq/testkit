@@ -21,14 +21,17 @@ func TestDefaultMessageComparator(t *testing.T) {
 		})
 
 		t.Run("protocol buffers", func(t *testing.T) {
-			if !DefaultMessageComparator(&ProtoMessage{Value: "<value>"}, &ProtoMessage{Value: "<value>"}) {
+			if !DefaultMessageComparator(
+				NewProtoMessageBuilder().WithValue("<value>").Build(),
+				NewProtoMessageBuilder().WithValue("<value>").Build(),
+			) {
 				t.Fatal("expected messages to be equal")
 			}
 		})
 
 		t.Run("it ignores unexported fields when comparing protocol buffers messages", func(t *testing.T) {
-			a := &ProtoMessage{Value: "<value>"}
-			b := &ProtoMessage{Value: "<value>"}
+			a := NewProtoMessageBuilder().WithValue("<value>").Build()
+			b := NewProtoMessageBuilder().WithValue("<value>").Build()
 
 			_ = a.String()
 
@@ -50,7 +53,10 @@ func TestDefaultMessageComparator(t *testing.T) {
 		})
 
 		t.Run("protocol buffers", func(t *testing.T) {
-			if DefaultMessageComparator(&ProtoMessage{Value: "<value-a>"}, &ProtoMessage{Value: "<value-b>"}) {
+			if DefaultMessageComparator(
+				NewProtoMessageBuilder().WithValue("<value-a>").Build(),
+				NewProtoMessageBuilder().WithValue("<value-b>").Build(),
+			) {
 				t.Fatal("expected messages to be different")
 			}
 		})
