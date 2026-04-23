@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -64,27 +65,25 @@ func (e *messageExpectation) Caption() string {
 	)
 }
 
-func (e *messageExpectation) Predicate(s PredicateScope) (Predicate, error) {
+func (e *messageExpectation) Predicate(s PredicateScope) Predicate {
 	mt := message.TypeOf(e.expectedMessage)
-
-	if err := guardAgainstExpectationOnImpossibleType(s, mt); err != nil {
-		return nil, err
-	}
 
 	return &messagePredicate{
 		messageComparator: s.Options.MessageComparator,
 		expectedMessage:   e.expectedMessage,
+		app:               s.App,
 		tracker: tracker{
 			kind:    mt.Kind(),
 			options: s.Options,
 		},
-	}, nil
+	}
 }
 
 // messagePredicate is the Predicate implementation for messageExpectation.
 type messagePredicate struct {
 	messageComparator MessageComparator
 	expectedMessage   dogma.Message
+	app               *config.Application
 	ok                bool
 	bestMatch         *envelope.Envelope
 	tracker           tracker
@@ -139,7 +138,10 @@ func (p *messagePredicate) Report(ctx ReportGenerationContext) *Report {
 	}
 
 	if p.bestMatch == nil {
-		reportNoMatch(rep, &p.tracker)
+		if !reportImpossible(rep, p.app, p.tracker.options, message.TypeOf(p.expectedMessage)) {
+			reportNoMatch(rep, &p.tracker)
+		}
+
 		return rep
 	}
 

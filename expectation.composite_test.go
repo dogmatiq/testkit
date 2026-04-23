@@ -89,20 +89,6 @@ func TestAllOf(t *testing.T) {
 		)
 	})
 
-	t.Run("it fails the test if one of its children cannot construct a predicate", func(t *testing.T) {
-		mt, tc := newCompositeFixture()
-		tc.Expect(noop, AllOf(pass, failBeforeAction))
-		xtesting.ExpectContains[string](
-			t,
-			"expected log message not found",
-			mt.Logs,
-			"<always fail before action>",
-		)
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-	})
-
 	t.Run("it panics if no children are provided", func(t *testing.T) {
 		xtesting.ExpectPanic(
 			t,
@@ -179,20 +165,6 @@ func TestAnyOf(t *testing.T) {
 			mt.Logs,
 			"--- expect [no-op] to meet at least one of 2 expectations ---",
 		)
-	})
-
-	t.Run("it fails the test if one of its children cannot construct a predicate", func(t *testing.T) {
-		mt, tc := newCompositeFixture()
-		tc.Expect(noop, AnyOf(pass, failBeforeAction))
-		xtesting.ExpectContains[string](
-			t,
-			"expected log message not found",
-			mt.Logs,
-			"<always fail before action>",
-		)
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
 	})
 
 	t.Run("it panics if no children are provided", func(t *testing.T) {
@@ -283,20 +255,6 @@ func TestNoneOf(t *testing.T) {
 			mt.Logs,
 			"--- expect [no-op] not to [always pass] ---",
 		)
-	})
-
-	t.Run("it fails the test if one of its children cannot construct a predicate", func(t *testing.T) {
-		mt, tc := newCompositeFixture()
-		tc.Expect(noop, NoneOf(pass, failBeforeAction))
-		xtesting.ExpectContains[string](
-			t,
-			"expected log message not found",
-			mt.Logs,
-			"<always fail before action>",
-		)
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
 	})
 
 	t.Run("it panics if no children are provided", func(t *testing.T) {

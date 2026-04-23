@@ -3,9 +3,9 @@ package testkit
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
@@ -147,22 +147,16 @@ func (e *messageMatchExpectation[T]) Caption() string {
 	)
 }
 
-func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, error) {
-	t := message.TypeFor[T]()
-	if t.ReflectType().Kind() != reflect.Interface {
-		if err := guardAgainstExpectationOnImpossibleType(s, t); err != nil {
-			return nil, err
-		}
-	}
-
+func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) Predicate {
 	return &messageMatchPredicate[T]{
 		pred:       e.pred,
 		exhaustive: e.exhaustive,
+		app:        s.App,
 		tracker: tracker{
 			kind:    message.KindFor[T](),
 			options: s.Options,
 		},
-	}, nil
+	}
 }
 
 // messageMatchPredicate is the [Predicate] implementation for
@@ -170,6 +164,7 @@ func (e *messageMatchExpectation[T]) Predicate(s PredicateScope) (Predicate, err
 type messageMatchPredicate[T dogma.Message] struct {
 	pred       func(T) error
 	exhaustive bool
+	app        *config.Application
 	failures   []*failedMatch
 	matched    int
 	ignored    int
@@ -274,6 +269,10 @@ func (p *messageMatchPredicate[T]) Report(ctx ReportGenerationContext) *Report {
 	}
 
 	if p.ok || ctx.TreeOk || ctx.IsInverted {
+		return rep
+	}
+
+	if !p.exhaustive && reportImpossible(rep, p.app, p.tracker.options, message.TypeFor[T]()) {
 		return rep
 	}
 

@@ -2,7 +2,6 @@ package testkit_test
 
 import (
 	"context"
-	"slices"
 	"testing"
 	"time"
 
@@ -227,6 +226,38 @@ func TestToExecuteCommand(t *testing.T) {
 			),
 			nil,
 		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommand(CommandU1),
+			false,
+			expectReport(
+				`✗ execute a specific '*stubs.CommandStub[TypeU]' command`,
+				``,
+				`  | EXPLANATION`,
+				`  |     a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • add a route for *stubs.CommandStub[TypeU] to the application's configuration`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToExecuteCommand(&CommandThatIsOnlyConsumed{}),
+			false,
+			expectReport(
+				`✗ execute a specific '*stubs.CommandStub[TypeO]' command`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • add an outbound route for *stubs.CommandStub[TypeO] to a handler in the application's configuration`,
+			),
+			nil,
+		},
 	}
 
 	for _, c := range cases {
@@ -243,86 +274,6 @@ func TestToExecuteCommand(t *testing.T) {
 				)
 			}
 		})
-	}
-}
-
-func TestToExecuteCommand_UnrecognizedMessageType(t *testing.T) {
-	type (
-		EventThatIsIgnored        = EventStub[TypeX]
-		CommandThatIsOnlyConsumed = CommandStub[TypeO]
-	)
-
-	app := &ApplicationStub{
-		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-			c.Identity("<app>", "ce773269-4ad7-4c7f-a0ff-cda2e5899743")
-			c.Routes(
-				dogma.ViaProcess(&ProcessMessageHandlerStub{
-					ConfigureFunc: func(c dogma.ProcessConfigurer) {
-						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
-						c.Routes(
-							dogma.HandlesEvent[*EventThatIsIgnored](),
-							dogma.ExecutesCommand[*CommandThatIsOnlyConsumed](),
-						)
-					},
-					RouteEventToInstanceFunc: func(
-						context.Context,
-						dogma.Event,
-					) (string, bool, error) {
-						return "<instance>", true, nil
-					},
-					HandleEventFunc: func(
-						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
-						m dogma.Event,
-					) error {
-						return nil
-					},
-				}),
-			)
-		},
-	}
-
-	mt := &testingmock.T{FailSilently: true}
-	Begin(mt, app).Expect(
-		noop,
-		ToExecuteCommand(CommandU1),
-	)
-
-	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
-		t.Fatalf("expected unrecognized message type error in logs: %v", mt.Logs)
-	}
-}
-
-func TestToExecuteCommand_UnproducedMessageType(t *testing.T) {
-	type CommandThatIsOnlyConsumed = CommandStub[TypeO]
-
-	app := &ApplicationStub{
-		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
-			c.Identity("<app>", "ce773269-4ad7-4c7f-a0ff-cda2e5899743")
-			c.Routes(
-				dogma.ViaIntegration(&IntegrationMessageHandlerStub{
-					ConfigureFunc: func(c dogma.IntegrationConfigurer) {
-						c.Identity("<integration>", "49fa7c5f-7682-4743-bf8a-ed96dee2d81a")
-						c.Routes(
-							dogma.HandlesCommand[*CommandThatIsOnlyConsumed](),
-						)
-					},
-				}),
-			)
-		},
-	}
-
-	mt := &testingmock.T{FailSilently: true}
-	Begin(mt, app).Expect(
-		noop,
-		ToExecuteCommand(&CommandThatIsOnlyConsumed{}),
-	)
-
-	xtesting.Expect(t, "test should have failed", mt.Failed(), true)
-	if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
-		t.Fatalf("expected unproduced message type error in logs: %v", mt.Logs)
 	}
 }
 

@@ -93,7 +93,7 @@ func TestExecuteCommand(t *testing.T) {
 			t,
 			"expected error log",
 			tm.Logs,
-			"cannot execute command, *stubs.CommandStub[TypeX] is a not a recognized message type",
+			"cannot execute command, *stubs.CommandStub[TypeX] is not a recognized message type",
 		)
 	})
 

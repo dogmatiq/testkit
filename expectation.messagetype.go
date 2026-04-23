@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"github.com/dogmatiq/dogma"
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
@@ -68,24 +69,22 @@ func (e *messageTypeExpectation) Caption() string {
 	)
 }
 
-func (e *messageTypeExpectation) Predicate(s PredicateScope) (Predicate, error) {
-	if err := guardAgainstExpectationOnImpossibleType(s, e.expectedType); err != nil {
-		return nil, err
-	}
-
+func (e *messageTypeExpectation) Predicate(s PredicateScope) Predicate {
 	return &messageTypePredicate{
 		expectedType: e.expectedType,
+		app:          s.App,
 		tracker: tracker{
 			kind:    e.expectedType.Kind(),
 			options: s.Options,
 		},
-	}, nil
+	}
 }
 
 // messageTypePredicate is the Predicate implementation for
 // messageTypeExpectation.
 type messageTypePredicate struct {
 	expectedType message.Type
+	app          *config.Application
 	ok           bool
 	tracker      tracker
 }
@@ -122,6 +121,9 @@ func (p *messageTypePredicate) Report(ctx ReportGenerationContext) *Report {
 		return rep
 	}
 
-	reportNoMatch(rep, &p.tracker)
+	if !reportImpossible(rep, p.app, p.tracker.options, p.expectedType) {
+		reportNoMatch(rep, &p.tracker)
+	}
+
 	return rep
 }

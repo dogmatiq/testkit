@@ -24,15 +24,10 @@ func (e *notExpectation) Caption() string {
 	return e.caption
 }
 
-func (e *notExpectation) Predicate(s PredicateScope) (Predicate, error) {
-	p, err := e.expectation.Predicate(s)
-	if err != nil {
-		return nil, err
-	}
-
+func (e *notExpectation) Predicate(s PredicateScope) Predicate {
 	return &notPredicate{
-		expectation: p,
-	}, nil
+		expectation: e.expectation.Predicate(s),
+	}
 }
 
 // notPredicate is the [Predicate] implementation for [notExpectation].

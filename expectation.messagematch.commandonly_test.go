@@ -3,7 +3,6 @@ package testkit_test
 import (
 	"context"
 	"errors"
-	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -87,7 +86,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:85`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:84`,
 			),
 			nil,
 		},
@@ -103,7 +102,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:101`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:100`,
 			),
 			nil,
 		},
@@ -119,7 +118,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectPass,
 			expectReport(
-				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:116`,
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:115`,
 			),
 			nil,
 		},
@@ -135,7 +134,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:132`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:131`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -168,7 +167,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:158`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:157`,
 				``,
 				`  | EXPLANATION`,
 				`  |     only 1 of 2 relevant commands matched the predicate`,
@@ -194,7 +193,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			),
 			expectFail,
 			expectReport(
-				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:191`,
+				`✗ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:190`,
 				``,
 				`  | EXPLANATION`,
 				`  |     none of the 3 relevant commands matched the predicate`,
@@ -205,6 +204,34 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 				`  | SUGGESTIONS`,
 				`  |     • verify the logic within the predicate function`,
 				`  |     • verify the logic within the '<process>' process message handler`,
+			),
+			nil,
+		},
+		{
+			"passes the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToOnlyExecuteCommandsMatching(
+				func(*CommandStub[TypeU]) error {
+					return nil
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:215`,
+			),
+			nil,
+		},
+		{
+			"passes the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToOnlyExecuteCommandsMatching(
+				func(*CommandThatIsOnlyConsumed) error {
+					return nil
+				},
+			),
+			expectPass,
+			expectReport(
+				`✓ only execute commands that match the predicate near expectation.messagematch.commandonly_test.go:229`,
 			),
 			nil,
 		},
@@ -227,46 +254,6 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToOnlyExecuteCommandsMatching(
-				func(*CommandStub[TypeU]) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "a command of type *stubs.CommandStub[TypeU] can never be executed, the application does not use this message type") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
-
-	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToOnlyExecuteCommandsMatching(
-				func(*CommandThatIsOnlyConsumed) error {
-					return nil
-				},
-			),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "no handlers execute commands of type *stubs.CommandStub[TypeO], it is only ever consumed") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
 
 	t.Run("panics if the function is nil", func(t *testing.T) {
 		xtesting.ExpectPanic(

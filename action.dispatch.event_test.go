@@ -99,7 +99,7 @@ func TestRecordEvent(t *testing.T) {
 			t,
 			"expected failure log",
 			tm.Logs,
-			"cannot record event, *stubs.EventStub[TypeX] is a not a recognized message type",
+			"cannot record event, *stubs.EventStub[TypeX] is not a recognized message type",
 		)
 	})
 

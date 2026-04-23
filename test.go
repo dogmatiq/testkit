@@ -91,6 +91,7 @@ func (t *Test) Prepare(actions ...Action) *Test {
 		logf(t.testingT, "--- %s ---", act.Caption())
 		if err := t.doAction(act); err != nil {
 			t.testingT.Fatal(err)
+			return t // required when using a mock testingT that does not panic
 		}
 	}
 
@@ -110,11 +111,7 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 
 	logf(t.testingT, "--- expect %s %s ---", act.Caption(), e.Caption())
 
-	p, err := e.Predicate(s)
-	if err != nil {
-		t.testingT.Fatal(err)
-		return t // required when using a mock testingT that does not panic
-	}
+	p := e.Predicate(s)
 
 	// Using a defer inside a closure satisfies the requirements of the
 	// Expectation and Predicate interfaces which state that p.Done() must

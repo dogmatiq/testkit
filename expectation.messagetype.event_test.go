@@ -2,7 +2,6 @@ package testkit_test
 
 import (
 	"context"
-	"slices"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -230,6 +229,38 @@ func TestToRecordEventType(t *testing.T) {
 			),
 			nil,
 		},
+		{
+			"fails the test if the message type is unrecognized",
+			func(*testing.T, *Test) Action { return noop },
+			ToRecordEventType[*EventStub[TypeU]](),
+			false,
+			expectReport(
+				`✗ record any '*stubs.EventStub[TypeU]' event`,
+				``,
+				`  | EXPLANATION`,
+				`  |     an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • add a route for *stubs.EventStub[TypeU] to the application's configuration`,
+			),
+			nil,
+		},
+		{
+			"fails the test if the message type is not produced by any handlers",
+			func(*testing.T, *Test) Action { return noop },
+			ToRecordEventType[*EventThatIsOnlyConsumed](),
+			false,
+			expectReport(
+				`✗ record any '*stubs.EventStub[TypeO]' event`,
+				``,
+				`  | EXPLANATION`,
+				`  |     no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed`,
+				`  | `,
+				`  | SUGGESTIONS`,
+				`  |     • add an outbound route for *stubs.EventStub[TypeO] to a handler in the application's configuration`,
+			),
+			nil,
+		},
 	}
 
 	for _, c := range cases {
@@ -244,36 +275,4 @@ func TestToRecordEventType(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("fails the test if the message type is unrecognized", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToRecordEventType[*EventStub[TypeU]](),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "an event of type *stubs.EventStub[TypeU] can never be recorded, the application does not use this message type") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
-
-	t.Run("fails the test if the message type is not produced by any handlers", func(t *testing.T) {
-		mt := &testingmock.T{FailSilently: true}
-		tc := Begin(mt, app)
-		tc.Expect(
-			noop,
-			ToRecordEventType[*EventThatIsOnlyConsumed](),
-		)
-
-		if !mt.Failed() {
-			t.Fatal("expected test to fail")
-		}
-		if !slices.Contains(mt.Logs, "no handlers record events of type *stubs.EventStub[TypeO], it is only ever consumed") {
-			t.Fatalf("expected log message not found, got: %v", mt.Logs)
-		}
-	})
 }

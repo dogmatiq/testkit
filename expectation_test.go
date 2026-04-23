@@ -1,8 +1,6 @@
 package testkit_test
 
 import (
-	"errors"
-
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/fact"
 )
@@ -13,9 +11,6 @@ var (
 
 	// fail is an Expectation that always fails.
 	fail = staticExpectation{ok: false}
-
-	// failBeforeAction is an Expectation that fails before the Action occurs.
-	failBeforeAction = staticExpectation{err: errors.New("<always fail before action>")}
 )
 
 // staticExpectation is is an Expectation that always produces the same result.
@@ -23,8 +18,7 @@ var (
 //
 // It implements both the Expectation and Predicate interfaces.
 type staticExpectation struct {
-	ok  bool
-	err error
+	ok bool
 }
 
 func (e staticExpectation) Caption() string {
@@ -35,10 +29,10 @@ func (e staticExpectation) Caption() string {
 	return "to [always fail]"
 }
 
-func (e staticExpectation) Predicate(PredicateScope) (Predicate, error) { return e, e.err }
-func (e staticExpectation) Notify(fact.Fact)                            {}
-func (e staticExpectation) Ok() bool                                    { return e.ok }
-func (e staticExpectation) Done()                                       {}
+func (e staticExpectation) Predicate(PredicateScope) Predicate { return e }
+func (e staticExpectation) Notify(fact.Fact)                   {}
+func (e staticExpectation) Ok() bool                           { return e.ok }
+func (e staticExpectation) Done()                              {}
 func (e staticExpectation) Report(ctx ReportGenerationContext) *Report {
 	c := "<always fail>"
 	if e.ok {
