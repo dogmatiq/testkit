@@ -65,16 +65,6 @@ type ProcessInstanceEnded struct {
 	Envelope   *envelope.Envelope
 }
 
-// ProcessInstanceEndingReverted indicates that a process message handler
-// "reverted" ending a process instance by executing a new command or scheduling
-// a new timeout.
-type ProcessInstanceEndingReverted struct {
-	Handler    *config.Process
-	InstanceID string
-	Root       dogma.ProcessRoot
-	Envelope   *envelope.Envelope
-}
-
 // CommandExecutedByProcess indicates that a process executed a command while
 // handling an event or timeout.
 type CommandExecutedByProcess struct {
@@ -101,6 +91,7 @@ type MessageLoggedByProcess struct {
 	Handler      *config.Process
 	InstanceID   string
 	Root         dogma.ProcessRoot
+	Ended        bool
 	Envelope     *envelope.Envelope
 	LogFormat    string
 	LogArguments []any

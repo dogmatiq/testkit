@@ -84,6 +84,21 @@ func TestLogger(t *testing.T) {
 			},
 		)
 
+		aggregateWithDescription := &AggregateRootStub{
+			AggregateInstanceDescriptionFunc: func() string {
+				return "<description>"
+			},
+		}
+
+		processWithDescription := &ProcessRootStub{
+			ProcessInstanceDescriptionFunc: func(ended bool) string {
+				if ended {
+					return "<ended>"
+				}
+				return "<not ended>"
+			},
+		}
+
 		type logCase struct {
 			Name    string
 			Message string
@@ -247,7 +262,12 @@ func TestLogger(t *testing.T) {
 				{
 					Name:    "AggregateInstanceLoaded",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
-					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
+					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Root: &AggregateRootStub{}, Envelope: command},
+				},
+				{
+					Name:    "AggregateInstanceLoaded (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● loaded an existing instance",
+					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Root: aggregateWithDescription, Envelope: command},
 				},
 				{
 					Name:    "AggregateInstanceNotFound",
@@ -257,7 +277,12 @@ func TestLogger(t *testing.T) {
 				{
 					Name:    "AggregateInstanceCreated",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance created",
-					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
+					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Root: &AggregateRootStub{}, Envelope: command},
+				},
+				{
+					Name:    "AggregateInstanceCreated (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● instance created",
+					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Root: aggregateWithDescription, Envelope: command},
 				},
 				{
 					Name:    "EventRecordedByAggregate",
@@ -265,6 +290,25 @@ func TestLogger(t *testing.T) {
 					Fact: EventRecordedByAggregate{
 						Handler:    aggregate,
 						InstanceID: "<instance>",
+						Root:       &AggregateRootStub{},
+						Envelope:   command,
+						EventEnvelope: command.NewEvent(
+							"20",
+							EventA1,
+							time.Now(),
+							envelope.Origin{},
+							"a4dea2c6-6499-441c-94ad-686334880c1c",
+							42,
+						),
+					},
+				},
+				{
+					Name:    "EventRecordedByAggregate (with description)",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● <description> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Fact: EventRecordedByAggregate{
+						Handler:    aggregate,
+						InstanceID: "<instance>",
+						Root:       aggregateWithDescription,
 						Envelope:   command,
 						EventEnvelope: command.NewEvent(
 							"20",
@@ -282,6 +326,19 @@ func TestLogger(t *testing.T) {
 					Fact: MessageLoggedByAggregate{
 						Handler:      aggregate,
 						InstanceID:   "<instance>",
+						Root:         &AggregateRootStub{},
+						Envelope:     command,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
+				},
+				{
+					Name:    "MessageLoggedByAggregate (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● <message>",
+					Fact: MessageLoggedByAggregate{
+						Handler:      aggregate,
+						InstanceID:   "<instance>",
+						Root:         aggregateWithDescription,
 						Envelope:     command,
 						LogFormat:    "<%s>",
 						LogArguments: []any{"message"},
@@ -295,7 +352,12 @@ func TestLogger(t *testing.T) {
 				{
 					Name:    "ProcessInstanceLoaded",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● loaded an existing instance",
-					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Envelope: event},
+					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
+				},
+				{
+					Name:    "ProcessInstanceLoaded (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● loaded an existing instance",
+					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "ProcessEventIgnored",
@@ -320,17 +382,22 @@ func TestLogger(t *testing.T) {
 				{
 					Name:    "ProcessInstanceBegun",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance begun",
-					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Envelope: event},
+					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
+				},
+				{
+					Name:    "ProcessInstanceBegun (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● instance begun",
+					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceEnded",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance ended",
-					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Envelope: event},
+					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
 				},
 				{
-					Name:    "ProcessInstanceEndingReverted",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● reverted ending process instance",
-					Fact:    ProcessInstanceEndingReverted{Handler: process, InstanceID: "<instance>", Envelope: event},
+					Name:    "ProcessInstanceEnded (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <ended> ● instance ended",
+					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "CommandExecutedByProcess",
@@ -338,6 +405,23 @@ func TestLogger(t *testing.T) {
 					Fact: CommandExecutedByProcess{
 						Handler:    process,
 						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   event,
+						CommandEnvelope: event.NewCommand(
+							"20",
+							CommandA1,
+							time.Now(),
+							envelope.Origin{},
+						),
+					},
+				},
+				{
+					Name:    "CommandExecutedByProcess (with description)",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Fact: CommandExecutedByProcess{
+						Handler:    process,
+						InstanceID: "<instance>",
+						Root:       processWithDescription,
 						Envelope:   event,
 						CommandEnvelope: event.NewCommand(
 							"20",
@@ -350,7 +434,12 @@ func TestLogger(t *testing.T) {
 				{
 					Name:    "TimeoutScheduledByProcess",
 					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
-					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", TimeoutEnvelope: timeout},
+					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, TimeoutEnvelope: timeout},
+				},
+				{
+					Name:    "TimeoutScheduledByProcess (with description)",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
+					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: processWithDescription, TimeoutEnvelope: timeout},
 				},
 				{
 					Name:    "MessageLoggedByProcess",
@@ -358,6 +447,19 @@ func TestLogger(t *testing.T) {
 					Fact: MessageLoggedByProcess{
 						Handler:      process,
 						InstanceID:   "<instance>",
+						Root:         &ProcessRootStub{},
+						Envelope:     event,
+						LogFormat:    "<%s>",
+						LogArguments: []any{"message"},
+					},
+				},
+				{
+					Name:    "MessageLoggedByProcess (with description)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● <message>",
+					Fact: MessageLoggedByProcess{
+						Handler:      process,
+						InstanceID:   "<instance>",
+						Root:         processWithDescription,
 						Envelope:     event,
 						LogFormat:    "<%s>",
 						LogArguments: []any{"message"},

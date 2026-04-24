@@ -65,8 +65,6 @@ func (l *Logger) Notify(f Fact) {
 		l.processInstanceBegun(x)
 	case ProcessInstanceEnded:
 		l.processInstanceEnded(x)
-	case ProcessInstanceEndingReverted:
-		l.processInstanceEndingReverted(x)
 	case CommandExecutedByProcess:
 		l.commandExecutedByProcess(x)
 	case TimeoutScheduledByProcess:
@@ -213,6 +211,7 @@ func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.AggregateInstanceDescription(),
 		"loaded an existing instance",
 	)
 }
@@ -241,6 +240,7 @@ func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.AggregateInstanceDescription(),
 		"instance created",
 	)
 }
@@ -257,6 +257,7 @@ func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.AggregateInstanceDescription(),
 		"recorded an event",
 		mt.String()+mt.Kind().Symbol(),
 		f.EventEnvelope.Message.MessageDescription(),
@@ -273,6 +274,7 @@ func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.AggregateInstanceDescription(),
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
@@ -287,6 +289,7 @@ func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(false),
 		"loaded an existing instance",
 	)
 }
@@ -357,6 +360,7 @@ func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(false),
 		"instance begun",
 	)
 }
@@ -371,21 +375,8 @@ func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(true),
 		"instance ended",
-	)
-}
-
-// processInstanceEndingReverted returns the log message for f.
-func (l *Logger) processInstanceEndingReverted(f ProcessInstanceEndingReverted) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"reverted ending process instance",
 	)
 }
 
@@ -401,6 +392,7 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(false),
 		"executed a command",
 		mt.String()+mt.Kind().Symbol(),
 		f.CommandEnvelope.Message.MessageDescription(),
@@ -419,6 +411,7 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(false),
 		fmt.Sprintf(
 			"scheduled a timeout for %s",
 			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
@@ -438,6 +431,7 @@ func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
+		f.Root.ProcessInstanceDescription(f.Ended),
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }

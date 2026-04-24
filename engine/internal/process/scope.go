@@ -193,6 +193,7 @@ func (s *scope) Log(f string, v ...any) {
 		Handler:      s.config,
 		InstanceID:   s.instanceID,
 		Root:         s.instance.root,
+		Ended:        s.instance.ended,
 		Envelope:     s.env,
 		LogFormat:    f,
 		LogArguments: v,

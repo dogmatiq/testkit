@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+- Bumped Dogma to v0.22.0.
+
 ## [0.20.1] - 2026-04-06
 
 ### Added
