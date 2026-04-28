@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [0.21.1] - 2026-04-29
+
+### Changed
+
+- Bumped Dogma to v0.23.0 (generic handler interfaces).
+- Bumped Go to v1.16.
+
 ## [0.21.0] - 2026-04-25
 
 ### Added
@@ -535,6 +542,7 @@ guide][0.11.0 migration guide] for detailed instructions.
 [0.20.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.20.0
 [0.20.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.20.1
 [0.21.0]: https://github.com/dogmatiq/testkit/releases/tag/v0.21.0
+[0.21.1]: https://github.com/dogmatiq/testkit/releases/tag/v0.21.1
 
 <!-- contributors -->
 
