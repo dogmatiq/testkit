@@ -19,8 +19,8 @@ func TestScopeRecordEvent(t *testing.T) {
 	t.Run("records facts about instance creation and the event when the instance does not exist", func(t *testing.T) {
 		f := newScopeTestFixture()
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventA1)
@@ -86,8 +86,8 @@ func TestScopeRecordEvent(t *testing.T) {
 		f.messageIDs.Reset()
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventA1)
@@ -142,8 +142,8 @@ func TestScopeRecordEvent(t *testing.T) {
 		seedScopeInstance(t, f)
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventA1)
@@ -170,8 +170,8 @@ func TestScopeRecordEvent(t *testing.T) {
 		seedScopeInstance(t, f)
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventX1)
@@ -189,7 +189,7 @@ func TestScopeRecordEvent(t *testing.T) {
 		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
 		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
 		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
 		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 		xtesting.Expect(
 			t,
@@ -205,8 +205,8 @@ func TestScopeRecordEvent(t *testing.T) {
 		seedScopeInstance(t, f)
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(&stubs.EventStub[stubs.TypeA]{
@@ -226,7 +226,7 @@ func TestScopeRecordEvent(t *testing.T) {
 		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
 		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
 		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
 		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 		xtesting.Expect(
 			t,
@@ -243,8 +243,8 @@ func TestScopeInstanceID(t *testing.T) {
 	called := false
 
 	f.handler.HandleCommandFunc = func(
-		_ dogma.AggregateRoot,
-		s dogma.AggregateCommandScope,
+		_ *stubs.AggregateRootStub,
+		s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 		_ dogma.Command,
 	) {
 		called = true
@@ -267,8 +267,8 @@ func TestScopeInstanceID(t *testing.T) {
 func TestScopeLog(t *testing.T) {
 	f := newScopeTestFixture()
 	f.handler.HandleCommandFunc = func(
-		_ dogma.AggregateRoot,
-		s dogma.AggregateCommandScope,
+		_ *stubs.AggregateRootStub,
+		s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 		_ dogma.Command,
 	) {
 		s.Log("<format>", "<arg-1>", "<arg-2>")
@@ -312,7 +312,7 @@ func TestScopeLog(t *testing.T) {
 
 type scopeTestFixture struct {
 	messageIDs envelope.MessageIDGenerator
-	handler    *stubs.AggregateMessageHandlerStub
+	handler    *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
 	cfg        *config.Aggregate
 	ctrl       *aggregate.Controller
 	command    *envelope.Envelope
@@ -327,7 +327,7 @@ func newScopeTestFixture() *scopeTestFixture {
 		),
 	}
 
-	f.handler = &stubs.AggregateMessageHandlerStub{
+	f.handler = &stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]{
 		ConfigureFunc: func(c dogma.AggregateConfigurer) {
 			c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
 			c.Routes(
@@ -360,8 +360,8 @@ func seedScopeInstance(t *testing.T, f *scopeTestFixture) {
 	t.Helper()
 
 	f.handler.HandleCommandFunc = func(
-		_ dogma.AggregateRoot,
-		s dogma.AggregateCommandScope,
+		_ *stubs.AggregateRootStub,
+		s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 		_ dogma.Command,
 	) {
 		s.RecordEvent(stubs.EventA1)

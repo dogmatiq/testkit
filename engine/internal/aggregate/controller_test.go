@@ -10,7 +10,7 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
-	stubs "github.com/dogmatiq/enginekit/enginetest/stubs"
+	"github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/engine/internal/aggregate"
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
@@ -66,8 +66,8 @@ func TestControllerHandle(t *testing.T) {
 		called := false
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			_ dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			_ dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			m dogma.Command,
 		) {
 			called = true
@@ -91,8 +91,8 @@ func TestControllerHandle(t *testing.T) {
 		f := newControllerTestFixture()
 
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventA1)
@@ -161,7 +161,7 @@ func TestControllerHandle(t *testing.T) {
 		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
 		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
 		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
 		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 		xtesting.Expect(
 			t,
@@ -208,8 +208,8 @@ func TestControllerHandle(t *testing.T) {
 		called := false
 
 		f.handler.HandleCommandFunc = func(
-			r dogma.AggregateRoot,
-			_ dogma.AggregateCommandScope,
+			r *stubs.AggregateRootStub,
+			_ dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			called = true
@@ -231,7 +231,7 @@ func TestControllerHandle(t *testing.T) {
 
 	t.Run("panics if New returns nil when the instance does not exist", func(t *testing.T) {
 		f := newControllerTestFixture()
-		f.handler.NewFunc = func() dogma.AggregateRoot {
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
 			return nil
 		}
 
@@ -247,9 +247,9 @@ func TestControllerHandle(t *testing.T) {
 		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
 		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
 		xtesting.Expect(t, "unexpected method", x.Method, "New")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Source.Get())
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
 		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil AggregateRoot")
+		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
 		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
@@ -294,8 +294,8 @@ func TestControllerHandle(t *testing.T) {
 		called := false
 
 		f.handler.HandleCommandFunc = func(
-			r dogma.AggregateRoot,
-			_ dogma.AggregateCommandScope,
+			r *stubs.AggregateRootStub,
+			_ dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			called = true
@@ -346,8 +346,8 @@ func TestControllerHandle(t *testing.T) {
 	t.Run("provides more context to UnexpectedMessage panics from HandleCommand", func(t *testing.T) {
 		f := newControllerTestFixture()
 		f.handler.HandleCommandFunc = func(
-			dogma.AggregateRoot,
-			dogma.AggregateCommandScope,
+			*stubs.AggregateRootStub,
+			dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			dogma.Command,
 		) {
 			panic(dogma.UnexpectedMessage)
@@ -371,14 +371,14 @@ func TestControllerHandle(t *testing.T) {
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with new events", func(t *testing.T) {
 		f := newControllerTestFixture()
 		f.handler.HandleCommandFunc = func(
-			_ dogma.AggregateRoot,
-			s dogma.AggregateCommandScope,
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 			_ dogma.Command,
 		) {
 			s.RecordEvent(stubs.EventA1)
 		}
 
-		f.handler.NewFunc = func() dogma.AggregateRoot {
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
 			return &stubs.AggregateRootStub{
 				ApplyEventFunc: func(dogma.Event) {
 					panic(dogma.UnexpectedMessage)
@@ -405,7 +405,7 @@ func TestControllerHandle(t *testing.T) {
 		f := newControllerTestFixture()
 		seedControllerInstance(t, f)
 
-		f.handler.NewFunc = func() dogma.AggregateRoot {
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
 			return &stubs.AggregateRootStub{
 				ApplyEventFunc: func(dogma.Event) {
 					panic(dogma.UnexpectedMessage)
@@ -452,7 +452,7 @@ func TestControllerReset(t *testing.T) {
 
 type controllerTestFixture struct {
 	messageIDs envelope.MessageIDGenerator
-	handler    *stubs.AggregateMessageHandlerStub
+	handler    *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
 	cfg        *config.Aggregate
 	ctrl       *aggregate.Controller
 	command    *envelope.Envelope
@@ -467,7 +467,7 @@ func newControllerTestFixture() *controllerTestFixture {
 		),
 	}
 
-	f.handler = &stubs.AggregateMessageHandlerStub{
+	f.handler = &stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]{
 		ConfigureFunc: func(c dogma.AggregateConfigurer) {
 			c.Identity("<name>", "e8fd6bd4-c3a3-4eb4-bf0f-56862a123229")
 			c.Routes(
@@ -500,8 +500,8 @@ func seedControllerInstance(t *testing.T, f *controllerTestFixture) {
 	t.Helper()
 
 	f.handler.HandleCommandFunc = func(
-		_ dogma.AggregateRoot,
-		s dogma.AggregateCommandScope,
+		_ *stubs.AggregateRootStub,
+		s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
 		_ dogma.Command,
 	) {
 		s.RecordEvent(stubs.EventA1)
@@ -568,15 +568,15 @@ func expectLocation(t *testing.T, loc location.Location, fileSuffix string) {
 	t.Helper()
 
 	if loc.Func == "" {
-		t.Fatal("expected location func to be set")
+		t.Fatal("expected func to be set in location")
 	}
 
 	if !strings.HasSuffix(loc.File, fileSuffix) {
-		t.Fatalf("unexpected location file: %s", loc.File)
+		t.Fatalf("unexpected file in location: got %s, want suffix %s", loc.File, fileSuffix)
 	}
 
 	if loc.Line == 0 {
-		t.Fatal("expected location line to be set")
+		t.Fatal("expected line to be set in location")
 	}
 }
 

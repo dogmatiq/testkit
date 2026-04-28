@@ -110,7 +110,7 @@ func TestEnrichUnexpectedMessage(t *testing.T) {
 			xtesting.Expect(t, "unexpected handler", x.Handler, config)
 			xtesting.Expect(t, "unexpected interface", x.Interface, "<interface>")
 			xtesting.Expect(t, "unexpected method", x.Method, "<method>")
-			xtesting.Expect(t, "unexpected implementation", x.Implementation, config.Source.Get())
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, config.Implementation())
 			xtesting.Expect(t, "unexpected message", x.Message, EventX1)
 			xtesting.Expect(
 				t,

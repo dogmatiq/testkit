@@ -32,7 +32,7 @@ func TestToExecuteCommandMatching(t *testing.T) {
 			c.Identity("<app>", "95d4b9b2-a0ec-4dfb-aa57-c7e5ef5b1f02")
 
 			c.Routes(
-				dogma.ViaProcess(&ProcessMessageHandlerStub{
+				dogma.ViaProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "8b4c4701-be92-4b28-83b6-0d69b97fb451")
 						c.Routes(
@@ -54,8 +54,8 @@ func TestToExecuteCommandMatching(t *testing.T) {
 					},
 					HandleEventFunc: func(
 						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
+						_ *ProcessRootStub,
+						s dogma.ProcessEventScope[*ProcessRootStub],
 						m dogma.Event,
 					) error {
 						switch m := m.(type) {

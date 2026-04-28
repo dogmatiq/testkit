@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/google/go-cmp/cmp"
@@ -30,10 +31,14 @@ func defaultOptions(options []cmp.Option) []cmp.Option {
 			cmpopts.EquateErrors(),
 			cmp.Comparer(func(a, b message.Type) bool { return a == b }),
 			cmp.Comparer(func(a, b *stubs.ApplicationStub) bool { return a == b }),
-			cmp.Comparer(func(a, b *stubs.AggregateMessageHandlerStub) bool { return a == b }),
-			cmp.Comparer(func(a, b *stubs.ProcessMessageHandlerStub) bool { return a == b }),
+			cmp.Comparer(func(a, b *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]) bool { return a == b }),
+			cmp.Comparer(func(a, b *stubs.ProcessMessageHandlerStub[*stubs.ProcessRootStub]) bool { return a == b }),
 			cmp.Comparer(func(a, b *stubs.IntegrationMessageHandlerStub) bool { return a == b }),
 			cmp.Comparer(func(a, b *stubs.ProjectionMessageHandlerStub) bool { return a == b }),
+			cmp.Comparer(func(a, b *config.Aggregate) bool { return a == b }),
+			cmp.Comparer(func(a, b *config.Process) bool { return a == b }),
+			cmp.Comparer(func(a, b *config.Integration) bool { return a == b }),
+			cmp.Comparer(func(a, b *config.Projection) bool { return a == b }),
 			cmp.Exporter(
 				func(t reflect.Type) bool {
 					return t.PkgPath() == "github.com/dogmatiq/enginekit/optional"

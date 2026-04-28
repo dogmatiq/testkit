@@ -26,8 +26,8 @@ type (
 )
 
 type engineFixture struct {
-	aggregate   *AggregateMessageHandlerStub
-	process     *ProcessMessageHandlerStub
+	aggregate   *AggregateMessageHandlerStub[*AggregateRootStub]
+	process     *ProcessMessageHandlerStub[*ProcessRootStub]
 	integration *IntegrationMessageHandlerStub
 	projection  *ProjectionMessageHandlerStub
 	disabled    *ProjectionMessageHandlerStub
@@ -38,7 +38,7 @@ type engineFixture struct {
 func newEngineFixture() *engineFixture {
 	fx := &engineFixture{}
 
-	fx.aggregate = &AggregateMessageHandlerStub{
+	fx.aggregate = &AggregateMessageHandlerStub[*AggregateRootStub]{
 		ConfigureFunc: func(c dogma.AggregateConfigurer) {
 			c.Identity("<aggregate>", "c72c106b-771e-42f8-b3e6-05452d4002ed")
 			c.Routes(
@@ -51,7 +51,7 @@ func newEngineFixture() *engineFixture {
 		},
 	}
 
-	fx.process = &ProcessMessageHandlerStub{
+	fx.process = &ProcessMessageHandlerStub[*ProcessRootStub]{
 		ConfigureFunc: func(c dogma.ProcessConfigurer) {
 			c.Identity("<process>", "4721492d-7fa3-4cfa-9f0f-a3cb1f95933e")
 			c.Routes(
@@ -148,7 +148,7 @@ func TestEngine_Dispatch(t *testing.T) {
 	t.Run("it allows dispatching commands", func(t *testing.T) {
 		fx := newEngineFixture()
 		called := false
-		fx.aggregate.HandleCommandFunc = func(dogma.AggregateRoot, dogma.AggregateCommandScope, dogma.Command) {
+		fx.aggregate.HandleCommandFunc = func(*AggregateRootStub, dogma.AggregateCommandScope[*AggregateRootStub], dogma.Command) {
 			called = true
 		}
 
@@ -180,7 +180,7 @@ func TestEngine_Dispatch(t *testing.T) {
 
 	t.Run("it skips handlers that are disabled by type", func(t *testing.T) {
 		fx := newEngineFixture()
-		fx.aggregate.HandleCommandFunc = func(dogma.AggregateRoot, dogma.AggregateCommandScope, dogma.Command) {
+		fx.aggregate.HandleCommandFunc = func(*AggregateRootStub, dogma.AggregateCommandScope[*AggregateRootStub], dogma.Command) {
 			t.Fatal("unexpected call")
 		}
 
@@ -200,7 +200,6 @@ func TestEngine_Dispatch(t *testing.T) {
 		h, _ := fx.cfg.HandlerByName("<aggregate>")
 		xtesting.ExpectContains[fact.Fact](
 			t,
-
 			"expected HandlingSkipped fact",
 			buf.Facts(),
 			fact.HandlingSkipped{
@@ -219,7 +218,7 @@ func TestEngine_Dispatch(t *testing.T) {
 
 	t.Run("it skips handlers that are disabled by name", func(t *testing.T) {
 		fx := newEngineFixture()
-		fx.aggregate.HandleCommandFunc = func(dogma.AggregateRoot, dogma.AggregateCommandScope, dogma.Command) {
+		fx.aggregate.HandleCommandFunc = func(*AggregateRootStub, dogma.AggregateCommandScope[*AggregateRootStub], dogma.Command) {
 			t.Fatal("unexpected call")
 		}
 
@@ -259,7 +258,7 @@ func TestEngine_Dispatch(t *testing.T) {
 	t.Run("it does not skip handlers that are enabled by name", func(t *testing.T) {
 		fx := newEngineFixture()
 		called := false
-		fx.aggregate.HandleCommandFunc = func(dogma.AggregateRoot, dogma.AggregateCommandScope, dogma.Command) {
+		fx.aggregate.HandleCommandFunc = func(*AggregateRootStub, dogma.AggregateCommandScope[*AggregateRootStub], dogma.Command) {
 			called = true
 		}
 

@@ -28,7 +28,7 @@ func TestToRecordEvent(t *testing.T) {
 			c.Identity("<app>", "adb2ed1e-b1f4-4756-abfa-a5e3a3e08def")
 
 			c.Routes(
-				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+				dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
 						c.Routes(
@@ -43,8 +43,8 @@ func TestToRecordEvent(t *testing.T) {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
+						_ *AggregateRootStub,
+						s dogma.AggregateCommandScope[*AggregateRootStub],
 						m dogma.Command,
 					) {
 						switch m := m.(type) {
@@ -56,7 +56,7 @@ func TestToRecordEvent(t *testing.T) {
 					},
 				}),
 
-				dogma.ViaProcess(&ProcessMessageHandlerStub{
+				dogma.ViaProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "209c7f0f-49ad-4419-88a6-4e9ee1cf204a")
 						c.Routes(
@@ -73,8 +73,8 @@ func TestToRecordEvent(t *testing.T) {
 					},
 					HandleEventFunc: func(
 						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
+						_ *ProcessRootStub,
+						s dogma.ProcessEventScope[*ProcessRootStub],
 						m dogma.Event,
 					) error {
 						switch m.(type) {

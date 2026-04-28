@@ -26,7 +26,7 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 			c.Identity("<app>", "386480e5-4b83-4d3b-9b87-51e6d56e41e7")
 
 			c.Routes(
-				dogma.ViaProcess(&ProcessMessageHandlerStub{
+				dogma.ViaProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
 					ConfigureFunc: func(c dogma.ProcessConfigurer) {
 						c.Identity("<process>", "39869c73-5ff0-4ae6-8317-eb494c87167b")
 						c.Routes(
@@ -43,8 +43,8 @@ func TestToOnlyExecuteCommandsMatching(t *testing.T) {
 					},
 					HandleEventFunc: func(
 						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
+						_ *ProcessRootStub,
+						s dogma.ProcessEventScope[*ProcessRootStub],
 						m dogma.Event,
 					) error {
 						s.ExecuteCommand(CommandC1)

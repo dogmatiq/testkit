@@ -25,7 +25,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			c.Identity("<app>", "94f425c5-339a-4213-8309-16234225480e")
 
 			c.Routes(
-				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+				dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "bc64cfe4-3339-4eee-a9d2-364d33dff47d")
 						c.Routes(
@@ -38,8 +38,8 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
+						_ *AggregateRootStub,
+						s dogma.AggregateCommandScope[*AggregateRootStub],
 						m dogma.Command,
 					) {
 						s.RecordEvent(EventE1)

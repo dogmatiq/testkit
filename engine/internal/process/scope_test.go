@@ -23,8 +23,8 @@ func TestScope(t *testing.T) {
 
 		env.handler.HandleEventFunc = func(
 			_ context.Context,
-			_ dogma.ProcessRoot,
-			s dogma.ProcessEventScope,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
 			_ dogma.Event,
 		) error {
 			called = true
@@ -50,8 +50,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.End()
@@ -96,8 +96,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.End()
@@ -145,8 +145,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(CommandA1)
@@ -202,8 +202,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(CommandX1)
@@ -224,7 +224,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler",
 				},
@@ -236,8 +236,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ExecuteCommand(&CommandStub[TypeA]{
@@ -260,7 +260,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "executed an invalid *stubs.CommandStub[TypeA] command: <invalid>",
 				},
@@ -272,8 +272,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.End()
@@ -295,7 +295,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "executed a command of type *stubs.CommandStub[TypeA] on an ended process",
 				},
@@ -310,8 +310,8 @@ func TestScope(t *testing.T) {
 			scheduledFor := time.Now().Add(10 * time.Second)
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(TimeoutA1, scheduledFor)
@@ -368,8 +368,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(TimeoutX1, time.Now())
@@ -390,7 +390,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeX], which is not produced by this handler",
 				},
@@ -402,8 +402,8 @@ func TestScope(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(
@@ -429,7 +429,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "scheduled an invalid *stubs.TimeoutStub[TypeA] timeout: <invalid>",
 				},
@@ -442,8 +442,8 @@ func TestScope(t *testing.T) {
 			scheduledFor := time.Now().Add(10 * time.Second)
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.End()
@@ -465,7 +465,7 @@ func TestScope(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "HandleEvent",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeA] on an ended process",
 				},
@@ -499,8 +499,8 @@ func TestScope(t *testing.T) {
 
 		env.handler.HandleTimeoutFunc = func(
 			_ context.Context,
-			_ dogma.ProcessRoot,
-			s dogma.ProcessTimeoutScope,
+			_ *ProcessRootStub,
+			s dogma.ProcessTimeoutScope[*ProcessRootStub],
 			_ dogma.Timeout,
 		) error {
 			if !s.ScheduledFor().Equal(timeout.ScheduledFor) {
@@ -526,8 +526,8 @@ func TestScope(t *testing.T) {
 		env := newProcessScopeTestEnv()
 		env.handler.HandleEventFunc = func(
 			_ context.Context,
-			_ dogma.ProcessRoot,
-			s dogma.ProcessEventScope,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
 			_ dogma.Event,
 		) error {
 			s.Log("<format>", "<arg-1>", "<arg-2>")
@@ -576,7 +576,7 @@ func TestScope(t *testing.T) {
 
 type processScopeTestEnv struct {
 	messageIDs envelope.MessageIDGenerator
-	handler    *ProcessMessageHandlerStub
+	handler    *ProcessMessageHandlerStub[*ProcessRootStub]
 	cfg        *config.Process
 	ctrl       *Controller
 	event      *envelope.Envelope
@@ -589,7 +589,7 @@ func newProcessScopeTestEnv() *processScopeTestEnv {
 		time.Now(),
 	)
 
-	handler := &ProcessMessageHandlerStub{
+	handler := &ProcessMessageHandlerStub[*ProcessRootStub]{
 		ConfigureFunc: func(c dogma.ProcessConfigurer) {
 			c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
 			c.Routes(

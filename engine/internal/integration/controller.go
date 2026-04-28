@@ -65,7 +65,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"IntegrationMessageHandler",
 		"HandleCommand",
-		c.Config.Source.Get(),
+		c.Config.Implementation(),
 		env.Message,
 		func() {
 			err = c.Config.Source.Get().HandleCommand(
