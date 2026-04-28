@@ -225,7 +225,7 @@ func TestTest_DisableHandlers(t *testing.T) {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
 				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
@@ -237,8 +237,8 @@ func TestTest_DisableHandlers(t *testing.T) {
 							return "<instance>"
 						},
 						HandleCommandFunc: func(
-							dogma.AggregateRoot,
-							dogma.AggregateCommandScope,
+							*AggregateRootStub,
+							dogma.AggregateCommandScope[*AggregateRootStub],
 							dogma.Command,
 						) {
 							t.Fatal("unexpected call")
@@ -277,7 +277,7 @@ func TestTest_DisableHandlersLike(t *testing.T) {
 			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
 				c.Identity("<app>", "e79bcae1-8b9a-4755-a15a-dd56f2bb2fdb")
 				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "524f7944-a252-48e0-864b-503a903067c2")
 							c.Routes(
@@ -289,8 +289,8 @@ func TestTest_DisableHandlersLike(t *testing.T) {
 							return "<instance>"
 						},
 						HandleCommandFunc: func(
-							dogma.AggregateRoot,
-							dogma.AggregateCommandScope,
+							*AggregateRootStub,
+							dogma.AggregateCommandScope[*AggregateRootStub],
 							dogma.Command,
 						) {
 							t.Fatal("unexpected call")
@@ -330,7 +330,7 @@ func TestTest_Annotate(t *testing.T) {
 				c.Identity("<app>", "8ec6465c-d4e3-411c-a05b-898a4b608284")
 
 				c.Routes(
-					dogma.ViaAggregate(&AggregateMessageHandlerStub{
+					dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 						ConfigureFunc: func(c dogma.AggregateConfigurer) {
 							c.Identity("<aggregate>", "a9cdc28d-ec85-4130-af86-4a2ae86a43dd")
 							c.Routes(
@@ -342,8 +342,8 @@ func TestTest_Annotate(t *testing.T) {
 							return "<instance>"
 						},
 						HandleCommandFunc: func(
-							_ dogma.AggregateRoot,
-							s dogma.AggregateCommandScope,
+							_ *AggregateRootStub,
+							s dogma.AggregateCommandScope[*AggregateRootStub],
 							m dogma.Command,
 						) {
 							s.RecordEvent(EventA1)

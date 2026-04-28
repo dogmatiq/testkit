@@ -13,6 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/x/xreflect"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -149,15 +150,15 @@ func (c *Controller) instanceByID(
 		Envelope:   env,
 	})
 
-	if inst.root == nil {
+	if xreflect.IsNil(inst.root) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "ProcessMessageHandler",
 			Method:         "New",
-			Implementation: c.Config.Source.Get(),
+			Implementation: c.Config.Implementation(),
 			Message:        env.Message,
-			Description:    "returned a nil ProcessRoot",
-			Location:       location.OfMethod(c.Config.Source.Get(), "New"),
+			Description:    "returned a nil process root",
+			Location:       location.OfMethod(c.Config.Implementation(), "New"),
 		})
 	}
 
@@ -202,7 +203,7 @@ func (c *Controller) routeEvent(
 		c.Config,
 		"ProcessMessageHandler",
 		"RouteEventToInstance",
-		handler,
+		c.Config.Implementation(),
 		m,
 		func() {
 			id, ok, err = handler.RouteEventToInstance(ctx, m)
@@ -227,10 +228,10 @@ func (c *Controller) routeEvent(
 			Handler:        c.Config,
 			Interface:      "ProcessMessageHandler",
 			Method:         "RouteEventToInstance",
-			Implementation: handler,
+			Implementation: c.Config.Implementation(),
 			Message:        m,
 			Description:    fmt.Sprintf("routed an event of type %s to an empty ID", message.TypeOf(m)),
-			Location:       location.OfMethod(handler, "RouteEventToInstance"),
+			Location:       location.OfMethod(c.Config.Implementation(), "RouteEventToInstance"),
 		})
 	}
 
@@ -274,7 +275,7 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 		c.Config,
 		"ProcessMessageHandler",
 		s.handleMethod,
-		c.Config.Source.Get(),
+		c.Config.Implementation(),
 		s.env.Message,
 		func() {
 			switch m := s.env.Message.(type) {

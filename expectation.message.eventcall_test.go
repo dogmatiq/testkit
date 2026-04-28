@@ -24,7 +24,7 @@ func TestToRecordEvent_WhenUsedWithCallAction(t *testing.T) {
 			c.Identity("<app>", "58067ffe-c1d6-4097-8acb-c55a7936cb4b")
 
 			c.Routes(
-				dogma.ViaAggregate(&AggregateMessageHandlerStub{
+				dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 					ConfigureFunc: func(c dogma.AggregateConfigurer) {
 						c.Identity("<aggregate>", "8746651e-df4d-421c-9eea-177585e5b8eb")
 						c.Routes(
@@ -39,8 +39,8 @@ func TestToRecordEvent_WhenUsedWithCallAction(t *testing.T) {
 						return "<instance>"
 					},
 					HandleCommandFunc: func(
-						_ dogma.AggregateRoot,
-						s dogma.AggregateCommandScope,
+						_ *AggregateRootStub,
+						s dogma.AggregateCommandScope[*AggregateRootStub],
 						m dogma.Command,
 					) {
 						switch m := m.(type) {

@@ -42,8 +42,8 @@ func TestController(t *testing.T) {
 
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.ScheduleTimeout(TimeoutA3, t3Time)
@@ -150,8 +150,8 @@ func TestController(t *testing.T) {
 
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
-				_ dogma.ProcessRoot,
-				s dogma.ProcessEventScope,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
 				s.End()
@@ -212,8 +212,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					_ dogma.ProcessEventScope[*ProcessRootStub],
 					m dogma.Event,
 				) error {
 					called = true
@@ -240,8 +240,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					_ dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
 					return expected
@@ -263,8 +263,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
 					s.ExecuteCommand(CommandA1)
@@ -315,8 +315,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
 					s.ScheduleTimeout(TimeoutA1, now.Add(-1))
@@ -342,8 +342,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
 					s.ScheduleTimeout(TimeoutA1, now.Add(1))
@@ -375,8 +375,8 @@ func TestController(t *testing.T) {
 
 					env.handler.HandleEventFunc = func(
 						context.Context,
-						dogma.ProcessRoot,
-						dogma.ProcessEventScope,
+						*ProcessRootStub,
+						dogma.ProcessEventScope[*ProcessRootStub],
 						dogma.Event,
 					) error {
 						t.Fatal("unexpected call to HandleEvent()")
@@ -430,8 +430,8 @@ func TestController(t *testing.T) {
 					env := newProcessControllerTestEnv()
 					env.handler.HandleEventFunc = func(
 						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
+						_ *ProcessRootStub,
+						s dogma.ProcessEventScope[*ProcessRootStub],
 						_ dogma.Event,
 					) error {
 						s.End()
@@ -454,8 +454,8 @@ func TestController(t *testing.T) {
 					env := setup(t)
 					env.handler.HandleEventFunc = func(
 						context.Context,
-						dogma.ProcessRoot,
-						dogma.ProcessEventScope,
+						*ProcessRootStub,
+						dogma.ProcessEventScope[*ProcessRootStub],
 						dogma.Event,
 					) error {
 						t.Fatal("unexpected call to HandleEvent()")
@@ -505,8 +505,8 @@ func TestController(t *testing.T) {
 				env := newProcessControllerTestEnv()
 				env.handler.HandleEventFunc = func(
 					context.Context,
-					dogma.ProcessRoot,
-					dogma.ProcessEventScope,
+					*ProcessRootStub,
+					dogma.ProcessEventScope[*ProcessRootStub],
 					dogma.Event,
 				) error {
 					return nil
@@ -530,8 +530,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleTimeoutFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessTimeoutScope,
+					_ *ProcessRootStub,
+					_ dogma.ProcessTimeoutScope[*ProcessRootStub],
 					m dogma.Timeout,
 				) error {
 					called = true
@@ -558,8 +558,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleTimeoutFunc = func(
 					context.Context,
-					dogma.ProcessRoot,
-					dogma.ProcessTimeoutScope,
+					*ProcessRootStub,
+					dogma.ProcessTimeoutScope[*ProcessRootStub],
 					dogma.Timeout,
 				) error {
 					return expected
@@ -581,8 +581,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleTimeoutFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessTimeoutScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessTimeoutScope[*ProcessRootStub],
 					_ dogma.Timeout,
 				) error {
 					s.ExecuteCommand(CommandA1)
@@ -633,8 +633,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleTimeoutFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessTimeoutScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessTimeoutScope[*ProcessRootStub],
 					_ dogma.Timeout,
 				) error {
 					s.ScheduleTimeout(TimeoutA2, now.Add(-1))
@@ -660,8 +660,8 @@ func TestController(t *testing.T) {
 
 				env.handler.HandleTimeoutFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					s dogma.ProcessTimeoutScope,
+					_ *ProcessRootStub,
+					s dogma.ProcessTimeoutScope[*ProcessRootStub],
 					_ dogma.Timeout,
 				) error {
 					s.ScheduleTimeout(TimeoutA2, now.Add(1))
@@ -688,8 +688,8 @@ func TestController(t *testing.T) {
 					env := setup(t)
 					env.handler.HandleEventFunc = func(
 						_ context.Context,
-						_ dogma.ProcessRoot,
-						s dogma.ProcessEventScope,
+						_ *ProcessRootStub,
+						s dogma.ProcessEventScope[*ProcessRootStub],
 						_ dogma.Event,
 					) error {
 						s.End()
@@ -712,8 +712,8 @@ func TestController(t *testing.T) {
 					env := setupEnded(t)
 					env.handler.HandleTimeoutFunc = func(
 						context.Context,
-						dogma.ProcessRoot,
-						dogma.ProcessTimeoutScope,
+						*ProcessRootStub,
+						dogma.ProcessTimeoutScope[*ProcessRootStub],
 						dogma.Timeout,
 					) error {
 						t.Fatal("unexpected call to HandleTimeout()")
@@ -801,7 +801,7 @@ func TestController(t *testing.T) {
 					Handler:        env.cfg,
 					Interface:      "ProcessMessageHandler",
 					Method:         "RouteEventToInstance",
-					Implementation: env.cfg.Source.Get(),
+					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
 					Description:    "routed an event of type *stubs.EventStub[TypeA] to an empty ID",
 				},
@@ -843,7 +843,7 @@ func TestController(t *testing.T) {
 
 			t.Run("panics if New returns nil", func(t *testing.T) {
 				env := newProcessControllerTestEnv()
-				env.handler.NewFunc = func() dogma.ProcessRoot {
+				env.handler.NewFunc = func() *ProcessRootStub {
 					return nil
 				}
 
@@ -861,9 +861,9 @@ func TestController(t *testing.T) {
 						Handler:        env.cfg,
 						Interface:      "ProcessMessageHandler",
 						Method:         "New",
-						Implementation: env.cfg.Source.Get(),
+						Implementation: env.cfg.Implementation(),
 						Message:        env.event.Message,
-						Description:    "returned a nil ProcessRoot",
+						Description:    "returned a nil process root",
 					},
 					"/stubs/process.go",
 				)
@@ -877,8 +877,8 @@ func TestController(t *testing.T) {
 				env := newProcessControllerTestEnv()
 				env.handler.HandleEventFunc = func(
 					_ context.Context,
-					_ dogma.ProcessRoot,
-					_ dogma.ProcessEventScope,
+					_ *ProcessRootStub,
+					_ dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
 					return nil
@@ -924,7 +924,7 @@ func TestController(t *testing.T) {
 
 			t.Run("does not call New", func(t *testing.T) {
 				env := setup(t)
-				env.handler.NewFunc = func() dogma.ProcessRoot {
+				env.handler.NewFunc = func() *ProcessRootStub {
 					t.Fatal("unexpected call to New()")
 					return nil
 				}
@@ -968,8 +968,8 @@ func TestController(t *testing.T) {
 			env := newProcessControllerTestEnv()
 			env.handler.HandleEventFunc = func(
 				context.Context,
-				dogma.ProcessRoot,
-				dogma.ProcessEventScope,
+				*ProcessRootStub,
+				dogma.ProcessEventScope[*ProcessRootStub],
 				dogma.Event,
 			) error {
 				panic(dogma.UnexpectedMessage)
@@ -995,8 +995,8 @@ func TestController(t *testing.T) {
 			env := newProcessControllerTestEnv()
 			env.handler.HandleEventFunc = func(
 				context.Context,
-				dogma.ProcessRoot,
-				dogma.ProcessEventScope,
+				*ProcessRootStub,
+				dogma.ProcessEventScope[*ProcessRootStub],
 				dogma.Event,
 			) error {
 				return nil
@@ -1012,8 +1012,8 @@ func TestController(t *testing.T) {
 
 			env.handler.HandleTimeoutFunc = func(
 				context.Context,
-				dogma.ProcessRoot,
-				dogma.ProcessTimeoutScope,
+				*ProcessRootStub,
+				dogma.ProcessTimeoutScope[*ProcessRootStub],
 				dogma.Timeout,
 			) error {
 				panic(dogma.UnexpectedMessage)
@@ -1040,8 +1040,8 @@ func TestController(t *testing.T) {
 		env := newProcessControllerTestEnv()
 		env.handler.HandleEventFunc = func(
 			context.Context,
-			dogma.ProcessRoot,
-			dogma.ProcessEventScope,
+			*ProcessRootStub,
+			dogma.ProcessEventScope[*ProcessRootStub],
 			dogma.Event,
 		) error {
 			return nil
@@ -1089,7 +1089,7 @@ func TestController(t *testing.T) {
 
 type processControllerTestEnv struct {
 	messageIDs envelope.MessageIDGenerator
-	handler    *ProcessMessageHandlerStub
+	handler    *ProcessMessageHandlerStub[*ProcessRootStub]
 	cfg        *config.Process
 	ctrl       *Controller
 	event      *envelope.Envelope
@@ -1103,7 +1103,7 @@ func newProcessControllerTestEnv() *processControllerTestEnv {
 		time.Now(),
 	)
 
-	handler := &ProcessMessageHandlerStub{
+	handler := &ProcessMessageHandlerStub[*ProcessRootStub]{
 		ConfigureFunc: func(c dogma.ProcessConfigurer) {
 			c.Identity("<name>", "7db72921-b805-4db5-8287-0af94a768643")
 			c.Routes(
@@ -1248,7 +1248,7 @@ func expectUnexpectedMessage(
 		xtesting.Expect(t, "unexpected handler", x.Handler, handler)
 		xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
 		xtesting.Expect(t, "unexpected method", x.Method, method)
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, handler.Source.Get())
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, handler.Implementation())
 		xtesting.Expect(t, "unexpected message", x.Message, message)
 	}()
 

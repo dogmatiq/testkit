@@ -115,7 +115,7 @@ func TestScope(t *testing.T) {
 				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
 				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
 				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Implementation())
 				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
 				xtesting.Expect(
 					t,
@@ -165,7 +165,7 @@ func TestScope(t *testing.T) {
 				xtesting.Expect(t, "unexpected handler", x.Handler, cfg)
 				xtesting.Expect(t, "unexpected interface", x.Interface, "IntegrationMessageHandler")
 				xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Source.Get())
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, cfg.Implementation())
 				xtesting.Expect(t, "unexpected message", x.Message, command.Message)
 				xtesting.Expect(
 					t,

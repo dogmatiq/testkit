@@ -12,6 +12,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/x/xreflect"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -57,7 +58,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"AggregateMessageHandler",
 		"RouteCommandToInstance",
-		c.Config.Source.Get(),
+		c.Config.Implementation(),
 		env.Message,
 		func() {
 			id = c.Config.Source.Get().RouteCommandToInstance(
@@ -71,24 +72,24 @@ func (c *Controller) Handle(
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "RouteCommandToInstance",
-			Implementation: c.Config.Source.Get(),
+			Implementation: c.Config.Implementation(),
 			Message:        env.Message,
 			Description:    fmt.Sprintf("routed a command of type %s to an empty ID", mt),
-			Location:       location.OfMethod(c.Config.Source.Get(), "RouteCommandToInstance"),
+			Location:       location.OfMethod(c.Config.Implementation(), "RouteCommandToInstance"),
 		})
 	}
 
 	history, exists := c.history[id]
 	r := c.Config.Source.Get().New()
-	if r == nil {
+	if xreflect.IsNil(r) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
 			Method:         "New",
-			Implementation: c.Config.Source.Get(),
+			Implementation: c.Config.Implementation(),
 			Message:        env.Message,
-			Description:    "returned a nil AggregateRoot",
-			Location:       location.OfMethod(c.Config.Source.Get(), "New"),
+			Description:    "returned a nil aggregate root",
+			Location:       location.OfMethod(c.Config.Implementation(), "New"),
 		})
 	}
 
@@ -138,7 +139,7 @@ func (c *Controller) Handle(
 		c.Config,
 		"AggregateMessageHandler",
 		"HandleCommand",
-		c.Config.Source.Get(),
+		c.Config.Implementation(),
 		env.Message,
 		func() {
 			c.Config.Source.Get().HandleCommand(

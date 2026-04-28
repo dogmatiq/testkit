@@ -12,8 +12,8 @@ import (
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
-func newCommandExecutorFixture() (*AggregateMessageHandlerStub, *CommandExecutor) {
-	aggregate := &AggregateMessageHandlerStub{
+func newCommandExecutorFixture() (*AggregateMessageHandlerStub[*AggregateRootStub], *CommandExecutor) {
+	aggregate := &AggregateMessageHandlerStub[*AggregateRootStub]{
 		ConfigureFunc: func(c dogma.AggregateConfigurer) {
 			c.Identity("<aggregate>", "4acf3050-8d02-4052-a9af-abb9e67add78")
 			c.Routes(
@@ -46,7 +46,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 	t.Run("it dispatches to the engine", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
 		called := false
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, _ dogma.AggregateCommandScope, m dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, _ dogma.AggregateCommandScope[*AggregateRootStub], m dogma.Command) {
 			called = true
 			xtesting.Expect(t, "unexpected command", m, CommandA1)
 		}
@@ -74,7 +74,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 	t.Run("it deduplicates commands with the same idempotency key", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
 		callCount := 0
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, _ dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, _ dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			callCount++
 		}
 
@@ -94,7 +94,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 	t.Run("it does not deduplicate commands with different idempotency keys", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
 		callCount := 0
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, _ dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, _ dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			callCount++
 		}
 
@@ -111,7 +111,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it supports WithEventObserver()", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -137,7 +137,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it returns the observer error", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -157,7 +157,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it returns ErrEventObserverNotSatisfied when observer is not called", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -175,7 +175,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it returns ErrEventObserverNotSatisfied when observer returns false", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -199,7 +199,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it supports multiple event observers", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -224,7 +224,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it returns ErrEventObserverNotSatisfied when all observers return false", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 
@@ -257,7 +257,7 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 
 	t.Run("it returns success when any observer is satisfied among multiple", func(t *testing.T) {
 		aggregate, executor := newCommandExecutorFixture()
-		aggregate.HandleCommandFunc = func(_ dogma.AggregateRoot, s dogma.AggregateCommandScope, _ dogma.Command) {
+		aggregate.HandleCommandFunc = func(_ *AggregateRootStub, s dogma.AggregateCommandScope[*AggregateRootStub], _ dogma.Command) {
 			s.RecordEvent(EventA1)
 		}
 

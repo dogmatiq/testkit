@@ -21,7 +21,7 @@ func TestLogger(t *testing.T) {
 			panic(err)
 		}
 
-		aggregate := runtimeconfig.FromAggregate(&AggregateMessageHandlerStub{
+		aggregate := runtimeconfig.FromAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
 			ConfigureFunc: func(c dogma.AggregateConfigurer) {
 				c.Identity("<aggregate>", "986495b4-c878-4e3a-b16b-73f8aefbc2ca")
 				c.Routes(
@@ -41,7 +41,7 @@ func TestLogger(t *testing.T) {
 			},
 		})
 
-		process := runtimeconfig.FromProcess(&ProcessMessageHandlerStub{
+		process := runtimeconfig.FromProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
 			ConfigureFunc: func(c dogma.ProcessConfigurer) {
 				c.Identity("<process>", "570684db-0144-4628-a58f-ae815c55dea3")
 				c.Routes(
