@@ -139,14 +139,19 @@ func OfCall() Location {
 	return loc
 }
 
-// OfCallSkip returns the location n frames above where its caller was called.
-// OfCallSkip(0) is equivalent to OfCall().
-func OfCallSkip(n int) Location {
+// OfCallOutsidePackage returns the location where the call chain first leaves
+// the given package. It skips any frames whose function name begins with pkg.
+// This is useful when an intermediate adapter from pkg sits between the caller
+// of interest and the code that calls this function.
+func OfCallOutsidePackage(pkg string) Location {
 	var loc Location
 
 	eachFrame(
-		2+n, // skip OfCallSkip() and its caller, plus n additional frames.
+		2, // skip OfCallOutsidePackage() and its caller.
 		func(fr runtime.Frame) bool {
+			if strings.HasPrefix(fr.Function, pkg+".") {
+				return true
+			}
 			loc = Location{
 				Func: fr.Function,
 				File: fr.File,

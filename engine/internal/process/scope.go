@@ -58,10 +58,7 @@ func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
 			Implementation: s.config.Implementation(),
 			Message:        s.env.Message,
 			Description:    "mutated an ended process instance",
-			// Skip 1 extra frame to account for dogma's typed adapter
-			// (untypedProcessEventScope/untypedProcessDeadlineScope.Mutate)
-			// that sits between the handler code and this method.
-			Location: location.OfCallSkip(1),
+			Location:       location.OfCallOutsidePackage("github.com/dogmatiq/dogma"),
 		})
 	}
 
