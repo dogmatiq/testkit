@@ -58,7 +58,7 @@ func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
 			Implementation: s.config.Implementation(),
 			Message:        s.env.Message,
 			Description:    "mutated an ended process instance",
-			Location:       location.OfCallOutsidePackage("github.com/dogmatiq/dogma"),
+			Location:       location.OfCall(),
 		})
 	}
 

@@ -121,35 +121,18 @@ func OfMethod(recv any, m string) Location {
 }
 
 // OfCall returns the location where its caller was called itself.
+//
+// Frames belonging to github.com/dogmatiq/dogma are skipped, so that the
+// reported location is always in user-authored handler code rather than in any
+// dogma-provided typed adapter that sits between the handler and the scope
+// method.
 func OfCall() Location {
 	var loc Location
 
 	eachFrame(
 		2, // skip OfCall() and its caller.
 		func(fr runtime.Frame) bool {
-			loc = Location{
-				Func: fr.Function,
-				File: fr.File,
-				Line: fr.Line,
-			}
-			return false
-		},
-	)
-
-	return loc
-}
-
-// OfCallOutsidePackage returns the location where the call chain first leaves
-// the given package. It skips any frames whose function name begins with pkg.
-// This is useful when an intermediate adapter from pkg sits between the caller
-// of interest and the code that calls this function.
-func OfCallOutsidePackage(pkg string) Location {
-	var loc Location
-
-	eachFrame(
-		2, // skip OfCallOutsidePackage() and its caller.
-		func(fr runtime.Frame) bool {
-			if strings.HasPrefix(fr.Function, pkg+".") {
+			if strings.HasPrefix(fr.Function, "github.com/dogmatiq/dogma.") {
 				return true
 			}
 			loc = Location{
