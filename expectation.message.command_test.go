@@ -15,15 +15,15 @@ import (
 
 func TestToExecuteCommand(t *testing.T) {
 	type (
-		EventThatIsIgnored        = EventStub[TypeX]
-		EventThatExecutesCommand  = EventStub[TypeC]
-		EventThatSchedulesTimeout = EventStub[TypeT]
+		EventThatIsIgnored         = EventStub[TypeX]
+		EventThatExecutesCommand   = EventStub[TypeC]
+		EventThatSchedulesDeadline = EventStub[TypeT]
 
 		CommandThatIsExecuted      = CommandStub[TypeC]
 		CommandThatIsNeverExecuted = CommandStub[TypeX]
 		CommandThatIsOnlyConsumed  = CommandStub[TypeO]
 
-		TimeoutThatIsScheduled = TimeoutStub[TypeT]
+		DeadlineThatIsScheduled = DeadlineStub[TypeT]
 	)
 
 	app := &ApplicationStub{
@@ -41,8 +41,8 @@ func TestToExecuteCommand(t *testing.T) {
 							dogma.ExecutesCommand[*CommandThatIsExecuted](),
 							dogma.ExecutesCommand[*CommandThatIsNeverExecuted](),
 
-							dogma.HandlesEvent[*EventThatSchedulesTimeout](),
-							dogma.SchedulesTimeout[*TimeoutThatIsScheduled](),
+							dogma.HandlesEvent[*EventThatSchedulesDeadline](),
+							dogma.SchedulesDeadline[*DeadlineThatIsScheduled](),
 						)
 					},
 					RouteEventToInstanceFunc: func(
@@ -64,9 +64,9 @@ func TestToExecuteCommand(t *testing.T) {
 									Content: m.Content,
 								},
 							)
-						case *EventThatSchedulesTimeout:
-							s.ScheduleTimeout(
-								&TimeoutThatIsScheduled{
+						case *EventThatSchedulesDeadline:
+							s.ScheduleDeadline(
+								&DeadlineThatIsScheduled{
 									Content: m.Content,
 								},
 								time.Now().Add(1*time.Hour),
@@ -148,7 +148,7 @@ func TestToExecuteCommand(t *testing.T) {
 		{
 			"no commands produced at all",
 			func(t *testing.T, tc *Test) Action {
-				return RecordEvent(&EventThatSchedulesTimeout{})
+				return RecordEvent(&EventThatSchedulesDeadline{})
 			},
 			ToExecuteCommand(&CommandThatIsExecuted{}),
 			false,

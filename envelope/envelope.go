@@ -27,8 +27,8 @@ type Envelope struct {
 	// CreatedAt is the time at which the message was created.
 	CreatedAt time.Time
 
-	// ScheduledFor holds the time at which a timeout message is scheduled to
-	// occur. Its value is undefined for commands and events.
+	// ScheduledFor holds the time for which a deadline message is scheduled.
+	// Its value is undefined for commands and events.
 	ScheduledFor time.Time
 
 	// Origin describes the message handler that produced this message.
@@ -136,14 +136,14 @@ func (e *Envelope) NewEvent(
 	}
 }
 
-// NewTimeout constructs a new envelope as a child of e, indicating that the
-// timeout message m is caused by e.Message.
+// NewDeadline constructs a new envelope as a child of e, indicating that the
+// deadline message m is caused by e.Message.
 //
-// t is the time at which the message was created. s is the time at which the
-// timeout is scheduled to occur.
-func (e *Envelope) NewTimeout(
+// t is the time at which the message was created. s is the time for which the
+// deadline is scheduled.
+func (e *Envelope) NewDeadline(
 	id string,
-	m dogma.Timeout,
+	m dogma.Deadline,
 	t time.Time,
 	s time.Time,
 	o Origin,

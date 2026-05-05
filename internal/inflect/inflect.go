@@ -26,9 +26,9 @@ var substitutions = map[message.Kind]map[string]string{
 		"<producing>":  "recording",
 		"<dispatcher>": "dogma.EventRecorder",
 	},
-	message.TimeoutKind: {
-		"<message>":   "timeout",
-		"<messages>":  "timeouts",
+	message.DeadlineKind: {
+		"<message>":   "deadline",
+		"<messages>":  "deadlines",
 		"<produce>":   "schedule",
 		"<produced>":  "scheduled",
 		"<producing>": "scheduling",
@@ -36,12 +36,12 @@ var substitutions = map[message.Kind]map[string]string{
 }
 
 var corrections = map[string]string{
-	"an command": "a command",
-	"a event":    "an event",
-	"an timeout": "a timeout",
-	"1 commands": "1 command",
-	"1 events":   "1 event",
-	"1 timeouts": "1 timeout",
+	"an command":  "a command",
+	"a event":     "an event",
+	"an deadline": "a deadline",
+	"1 commands":  "1 command",
+	"1 events":    "1 event",
+	"1 deadlines": "1 deadline",
 }
 
 // Sprint formats a string, inflecting words in s match the message kind k.

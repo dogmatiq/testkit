@@ -15,7 +15,7 @@ import (
 )
 
 // scope is an implementation of dogma.ProcessEventScope and
-// dogma.ProcessTimeoutScope.
+// dogma.ProcessDeadlineScope.
 type scope struct {
 	instanceID   string
 	instance     *instance
@@ -24,10 +24,10 @@ type scope struct {
 	messageIDs   *envelope.MessageIDGenerator
 	observer     fact.Observer
 	now          time.Time
-	env          *envelope.Envelope // event or timeout
+	env          *envelope.Envelope // event or deadline
 	commands     []*envelope.Envelope
-	ready        []*envelope.Envelope // timeouts <= now
-	pending      []*envelope.Envelope // timeouts > now
+	ready        []*envelope.Envelope // deadlines <= now
+	pending      []*envelope.Envelope // deadlines > now
 }
 
 func (s *scope) InstanceID() string {
@@ -47,6 +47,22 @@ func (s *scope) End() {
 		Root:       s.instance.root,
 		Envelope:   s.env,
 	})
+}
+
+func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
+	if s.instance.ended {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Implementation(),
+			Message:        s.env.Message,
+			Description:    "mutated an ended process instance",
+			Location:       location.OfCall(),
+		})
+	}
+
+	fn(s.instance.root)
 }
 
 func (s *scope) ExecuteCommand(m dogma.Command) {
@@ -114,7 +130,7 @@ func (s *scope) RecordedAt() time.Time {
 	return s.env.CreatedAt
 }
 
-func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
+func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 	mt := message.TypeOf(m)
 
 	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
@@ -124,7 +140,7 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 			Method:         s.handleMethod,
 			Implementation: s.config.Implementation(),
 			Message:        s.env.Message,
-			Description:    fmt.Sprintf("scheduled a timeout of type %s, which is not produced by this handler", mt),
+			Description:    fmt.Sprintf("scheduled a deadline of type %s, which is not produced by this handler", mt),
 			Location:       location.OfCall(),
 		})
 	}
@@ -136,24 +152,24 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 			Method:         s.handleMethod,
 			Implementation: s.config.Implementation(),
 			Message:        s.env.Message,
-			Description:    fmt.Sprintf("scheduled a timeout of type %s on an ended process", mt),
+			Description:    fmt.Sprintf("scheduled a deadline of type %s on an ended process", mt),
 			Location:       location.OfCall(),
 		})
 	}
 
-	if err := m.Validate(validation.TimeoutValidationScope()); err != nil {
+	if err := m.Validate(validation.DeadlineValidationScope()); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
 			Method:         s.handleMethod,
 			Message:        s.env.Message,
 			Implementation: s.config.Implementation(),
-			Description:    fmt.Sprintf("scheduled an invalid %s timeout: %s", mt, err),
+			Description:    fmt.Sprintf("scheduled an invalid %s deadline: %s", mt, err),
 			Location:       location.OfCall(),
 		})
 	}
 
-	env := s.env.NewTimeout(
+	env := s.env.NewDeadline(
 		s.messageIDs.Next(),
 		m,
 		s.now,
@@ -171,12 +187,12 @@ func (s *scope) ScheduleTimeout(m dogma.Timeout, t time.Time) {
 		s.ready = append(s.ready, env)
 	}
 
-	s.observer.Notify(fact.TimeoutScheduledByProcess{
-		Handler:         s.config,
-		InstanceID:      s.instanceID,
-		Root:            s.instance.root,
-		Envelope:        s.env,
-		TimeoutEnvelope: env,
+	s.observer.Notify(fact.DeadlineScheduledByProcess{
+		Handler:          s.config,
+		InstanceID:       s.instanceID,
+		Root:             s.instance.root,
+		Envelope:         s.env,
+		DeadlineEnvelope: env,
 	})
 }
 

@@ -57,8 +57,8 @@ func (l *Logger) Notify(f Fact) {
 		l.processEventIgnored(x)
 	case ProcessEventRoutedToEndedInstance:
 		l.processEventRoutedToEndedInstance(x)
-	case ProcessTimeoutRoutedToEndedInstance:
-		l.processTimeoutRoutedToEndedInstance(x)
+	case ProcessDeadlineRoutedToEndedInstance:
+		l.processDeadlineRoutedToEndedInstance(x)
 	case ProcessInstanceNotFound:
 		l.processInstanceNotFound(x)
 	case ProcessInstanceBegun:
@@ -67,8 +67,8 @@ func (l *Logger) Notify(f Fact) {
 		l.processInstanceEnded(x)
 	case CommandExecutedByProcess:
 		l.commandExecutedByProcess(x)
-	case TimeoutScheduledByProcess:
-		l.timeoutScheduledByProcess(x)
+	case DeadlineScheduledByProcess:
+		l.deadlineScheduledByProcess(x)
 	case MessageLoggedByProcess:
 		l.messageLoggedByProcess(x)
 	case EventRecordedByIntegration:
@@ -322,8 +322,8 @@ func (l *Logger) processEventRoutedToEndedInstance(f ProcessEventRoutedToEndedIn
 	)
 }
 
-// processTimeoutRoutedToEndedInstance returns the log message for f.
-func (l *Logger) processTimeoutRoutedToEndedInstance(f ProcessTimeoutRoutedToEndedInstance) {
+// processDeadlineRoutedToEndedInstance returns the log message for f.
+func (l *Logger) processDeadlineRoutedToEndedInstance(f ProcessDeadlineRoutedToEndedInstance) {
 	l.log(
 		f.Envelope,
 		[]logging.Icon{
@@ -332,7 +332,7 @@ func (l *Logger) processTimeoutRoutedToEndedInstance(f ProcessTimeoutRoutedToEnd
 			"",
 		},
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"timeout ignored because the target instance has ended",
+		"deadline ignored because the target instance has ended",
 	)
 }
 
@@ -399,12 +399,12 @@ func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 	)
 }
 
-// timeoutScheduledByProcess returns the log message for f.
-func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
-	mt := message.TypeOf(f.TimeoutEnvelope.Message)
+// deadlineScheduledByProcess returns the log message for f.
+func (l *Logger) deadlineScheduledByProcess(f DeadlineScheduledByProcess) {
+	mt := message.TypeOf(f.DeadlineEnvelope.Message)
 
 	l.log(
-		f.TimeoutEnvelope,
+		f.DeadlineEnvelope,
 		[]logging.Icon{
 			logging.OutboundIcon,
 			logging.ProcessIcon,
@@ -413,11 +413,11 @@ func (l *Logger) timeoutScheduledByProcess(f TimeoutScheduledByProcess) {
 		f.Handler.Identity().GetName()+" "+f.InstanceID,
 		f.Root.ProcessInstanceDescription(false),
 		fmt.Sprintf(
-			"scheduled a timeout for %s",
-			f.TimeoutEnvelope.ScheduledFor.Format(time.RFC3339),
+			"scheduled a deadline for %s",
+			f.DeadlineEnvelope.ScheduledFor.Format(time.RFC3339),
 		),
 		mt.String()+mt.Kind().Symbol(),
-		f.TimeoutEnvelope.Message.MessageDescription(),
+		f.DeadlineEnvelope.Message.MessageDescription(),
 	)
 }
 

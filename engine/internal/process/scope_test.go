@@ -304,7 +304,7 @@ func TestScope(t *testing.T) {
 		})
 	})
 
-	t.Run("ScheduleTimeout", func(t *testing.T) {
+	t.Run("ScheduleDeadline", func(t *testing.T) {
 		t.Run("records a fact", func(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			scheduledFor := time.Now().Add(10 * time.Second)
@@ -314,7 +314,7 @@ func TestScope(t *testing.T) {
 				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(TimeoutA1, scheduledFor)
+				s.ScheduleDeadline(DeadlineA1, scheduledFor)
 				return nil
 			}
 
@@ -343,14 +343,14 @@ func TestScope(t *testing.T) {
 						Root:       &ProcessRootStub{},
 						Envelope:   env.event,
 					},
-					fact.TimeoutScheduledByProcess{
+					fact.DeadlineScheduledByProcess{
 						Handler:    env.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
 						Envelope:   env.event,
-						TimeoutEnvelope: env.event.NewTimeout(
+						DeadlineEnvelope: env.event.NewDeadline(
 							"1",
-							TimeoutA1,
+							DeadlineA1,
 							now,
 							scheduledFor,
 							envelope.Origin{
@@ -364,7 +364,7 @@ func TestScope(t *testing.T) {
 			)
 		})
 
-		t.Run("panics if the timeout type is not configured to be scheduled", func(t *testing.T) {
+		t.Run("panics if the deadline type is not configured to be scheduled", func(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
@@ -372,7 +372,7 @@ func TestScope(t *testing.T) {
 				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(TimeoutX1, time.Now())
+				s.ScheduleDeadline(DeadlineX1, time.Now())
 				return nil
 			}
 
@@ -392,13 +392,13 @@ func TestScope(t *testing.T) {
 					Method:         "HandleEvent",
 					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
-					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeX], which is not produced by this handler",
+					Description:    "scheduled a deadline of type *stubs.DeadlineStub[TypeX], which is not produced by this handler",
 				},
 				"/engine/internal/process/scope_test.go",
 			)
 		})
 
-		t.Run("panics if the timeout is invalid", func(t *testing.T) {
+		t.Run("panics if the deadline is invalid", func(t *testing.T) {
 			env := newProcessScopeTestEnv()
 			env.handler.HandleEventFunc = func(
 				_ context.Context,
@@ -406,8 +406,8 @@ func TestScope(t *testing.T) {
 				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(
-					&TimeoutStub[TypeA]{
+				s.ScheduleDeadline(
+					&DeadlineStub[TypeA]{
 						ValidationError: "<invalid>",
 					},
 					time.Now(),
@@ -431,7 +431,7 @@ func TestScope(t *testing.T) {
 					Method:         "HandleEvent",
 					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
-					Description:    "scheduled an invalid *stubs.TimeoutStub[TypeA] timeout: <invalid>",
+					Description:    "scheduled an invalid *stubs.DeadlineStub[TypeA] deadline: <invalid>",
 				},
 				"/engine/internal/process/scope_test.go",
 			)
@@ -447,7 +447,7 @@ func TestScope(t *testing.T) {
 				_ dogma.Event,
 			) error {
 				s.End()
-				s.ScheduleTimeout(TimeoutA1, scheduledFor)
+				s.ScheduleDeadline(DeadlineA1, scheduledFor)
 				return nil
 			}
 
@@ -467,7 +467,7 @@ func TestScope(t *testing.T) {
 					Method:         "HandleEvent",
 					Implementation: env.cfg.Implementation(),
 					Message:        env.event.Message,
-					Description:    "scheduled a timeout of type *stubs.TimeoutStub[TypeA] on an ended process",
+					Description:    "scheduled a deadline of type *stubs.DeadlineStub[TypeA] on an ended process",
 				},
 				"/engine/internal/process/scope_test.go",
 			)
@@ -485,9 +485,9 @@ func TestScope(t *testing.T) {
 		)
 		expectNoError(t, err)
 
-		timeout := env.event.NewTimeout(
+		deadline := env.event.NewDeadline(
 			"2000",
-			TimeoutA1,
+			DeadlineA1,
 			time.Now(),
 			time.Now().Add(10*time.Second),
 			envelope.Origin{
@@ -497,17 +497,17 @@ func TestScope(t *testing.T) {
 			},
 		)
 
-		env.handler.HandleTimeoutFunc = func(
+		env.handler.HandleDeadlineFunc = func(
 			_ context.Context,
 			_ *ProcessRootStub,
-			s dogma.ProcessTimeoutScope[*ProcessRootStub],
-			_ dogma.Timeout,
+			s dogma.ProcessDeadlineScope[*ProcessRootStub],
+			_ dogma.Deadline,
 		) error {
-			if !s.ScheduledFor().Equal(timeout.ScheduledFor) {
+			if !s.ScheduledFor().Equal(deadline.ScheduledFor) {
 				t.Fatalf(
 					"unexpected scheduled time: got %s, want %s",
 					s.ScheduledFor(),
-					timeout.ScheduledFor,
+					deadline.ScheduledFor,
 				)
 			}
 			return nil
@@ -517,7 +517,7 @@ func TestScope(t *testing.T) {
 			context.Background(),
 			fact.Ignore,
 			time.Now(),
-			timeout,
+			deadline,
 		)
 		expectNoError(t, err)
 	})
@@ -595,7 +595,7 @@ func newProcessScopeTestEnv() *processScopeTestEnv {
 			c.Routes(
 				dogma.HandlesEvent[*EventStub[TypeA]](),
 				dogma.ExecutesCommand[*CommandStub[TypeA]](),
-				dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
+				dogma.SchedulesDeadline[*DeadlineStub[TypeA]](),
 			)
 		},
 		RouteEventToInstanceFunc: func(

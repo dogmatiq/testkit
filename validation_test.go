@@ -15,7 +15,7 @@ func TestValidationScopeCreation(t *testing.T) {
 		t.Errorf("EventValidationScope() returned nil")
 	}
 
-	if TimeoutValidationScope() == nil {
-		t.Errorf("TimeoutValidationScope() returned nil")
+	if DeadlineValidationScope() == nil {
+		t.Errorf("DeadlineValidationScope() returned nil")
 	}
 }

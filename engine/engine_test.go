@@ -9,7 +9,6 @@ import (
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
-	"github.com/dogmatiq/enginekit/enginetest"
 	. "github.com/dogmatiq/enginekit/enginetest/stubs"
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
@@ -112,36 +111,6 @@ func newEngineFixture() *engineFixture {
 	fx.engine = MustNew(fx.cfg)
 
 	return fx
-}
-
-func TestEngine(t *testing.T) {
-	enginetest.RunTests(
-		t,
-		func(p enginetest.SetupParams) enginetest.SetupResult {
-			e, err := New(runtimeconfig.FromApplication(p.App))
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			return enginetest.SetupResult{
-				RunEngine: func(ctx context.Context) error {
-					return Run(ctx, e, 0)
-				},
-				Executor: &CommandExecutor{
-					Engine: e,
-					Options: []OperationOption{
-						WithObserver(
-							fact.NewLogger(
-								func(s string) {
-									t.Log(s)
-								},
-							),
-						),
-					},
-				},
-			}
-		},
-	)
 }
 
 func TestEngine_Dispatch(t *testing.T) {

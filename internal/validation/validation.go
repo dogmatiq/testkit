@@ -12,7 +12,7 @@ func EventValidationScope() dogma.EventValidationScope {
 	return struct{ dogma.EventValidationScope }{}
 }
 
-// TimeoutValidationScope returns the validation scope for timeout messages.
-func TimeoutValidationScope() dogma.TimeoutValidationScope {
-	return struct{ dogma.TimeoutValidationScope }{}
+// DeadlineValidationScope returns the validation scope for deadline messages.
+func DeadlineValidationScope() dogma.DeadlineValidationScope {
+	return struct{ dogma.DeadlineValidationScope }{}
 }

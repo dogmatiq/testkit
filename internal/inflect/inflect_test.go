@@ -17,67 +17,67 @@ func TestInflect(t *testing.T) {
 			Template string
 			Command  string
 			Event    string
-			Timeout  string
+			Deadline string
 		}{
 			{
 				Template: "a <message>",
 				Command:  "a command",
 				Event:    "an event",
-				Timeout:  "a timeout",
+				Deadline: "a deadline",
 			},
 			{
 				Template: "an <message>",
 				Command:  "a command",
 				Event:    "an event",
-				Timeout:  "a timeout",
+				Deadline: "a deadline",
 			},
 			{
 				Template: "the <messages>",
 				Command:  "the commands",
 				Event:    "the events",
-				Timeout:  "the timeouts",
+				Deadline: "the deadlines",
 			},
 			{
 				Template: "1 <messages>",
 				Command:  "1 command",
 				Event:    "1 event",
-				Timeout:  "1 timeout",
+				Deadline: "1 deadline",
 			},
 			{
 				Template: "21 <messages>",
 				Command:  "21 commands",
 				Event:    "21 events",
-				Timeout:  "21 timeouts",
+				Deadline: "21 deadlines",
 			},
 			{
 				Template: "only 1 <messages>",
 				Command:  "only 1 command",
 				Event:    "only 1 event",
-				Timeout:  "only 1 timeout",
+				Deadline: "only 1 deadline",
 			},
 			{
 				Template: "only 21 <messages>",
 				Command:  "only 21 commands",
 				Event:    "only 21 events",
-				Timeout:  "only 21 timeouts",
+				Deadline: "only 21 deadlines",
 			},
 			{
 				Template: "<produce> a specific <message>",
 				Command:  "execute a specific command",
 				Event:    "record a specific event",
-				Timeout:  "schedule a specific timeout",
+				Deadline: "schedule a specific deadline",
 			},
 			{
 				Template: "the <message> was <produced>",
 				Command:  "the command was executed",
 				Event:    "the event was recorded",
-				Timeout:  "the timeout was scheduled",
+				Deadline: "the deadline was scheduled",
 			},
 			{
 				Template: "via a <dispatcher>",
 				Command:  "via a dogma.CommandExecutor",
 				Event:    "via a dogma.EventRecorder",
-				Timeout:  "via a <dispatcher>",
+				Deadline: "via a <dispatcher>",
 			},
 		}
 
@@ -89,7 +89,7 @@ func TestInflect(t *testing.T) {
 				}{
 					{message.CommandKind, c.Command},
 					{message.EventKind, c.Event},
-					{message.TimeoutKind, c.Timeout},
+					{message.DeadlineKind, c.Deadline},
 				}
 
 				for _, x := range tests {

@@ -46,9 +46,9 @@ func TestController(t *testing.T) {
 				s dogma.ProcessEventScope[*ProcessRootStub],
 				_ dogma.Event,
 			) error {
-				s.ScheduleTimeout(TimeoutA3, t3Time)
-				s.ScheduleTimeout(TimeoutA2, t2Time)
-				s.ScheduleTimeout(TimeoutA1, t1Time)
+				s.ScheduleDeadline(DeadlineA3, t3Time)
+				s.ScheduleDeadline(DeadlineA2, t2Time)
+				s.ScheduleDeadline(DeadlineA1, t1Time)
 				return nil
 			}
 
@@ -65,10 +65,10 @@ func TestController(t *testing.T) {
 			return env, createdTime, t1Time, t2Time, t3Time
 		}
 
-		t.Run("returns timeouts that are ready to be handled", func(t *testing.T) {
+		t.Run("returns deadlines that are ready to be handled", func(t *testing.T) {
 			env, createdTime, t1Time, t2Time, _ := setup(t)
 
-			timeouts, err := env.ctrl.Tick(
+			deadlines, err := env.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -77,11 +77,11 @@ func TestController(t *testing.T) {
 
 			expectEnvelopeSet(
 				t,
-				timeouts,
+				deadlines,
 				[]*envelope.Envelope{
-					env.event.NewTimeout(
+					env.event.NewDeadline(
 						"3",
-						TimeoutA1,
+						DeadlineA1,
 						createdTime,
 						t1Time,
 						envelope.Origin{
@@ -90,9 +90,9 @@ func TestController(t *testing.T) {
 							InstanceID:  "<instance-A1>",
 						},
 					),
-					env.event.NewTimeout(
+					env.event.NewDeadline(
 						"2",
-						TimeoutA2,
+						DeadlineA2,
 						createdTime,
 						t2Time,
 						envelope.Origin{
@@ -105,33 +105,33 @@ func TestController(t *testing.T) {
 			)
 		})
 
-		t.Run("does not return the same timeouts multiple times", func(t *testing.T) {
+		t.Run("does not return the same deadlines multiple times", func(t *testing.T) {
 			env, _, _, t2Time, _ := setup(t)
 
-			timeouts, err := env.ctrl.Tick(
+			deadlines, err := env.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
 			)
 			expectNoError(t, err)
 
-			if got, want := len(timeouts), 2; got != want {
-				t.Fatalf("unexpected timeout count: got %d, want %d", got, want)
+			if got, want := len(deadlines), 2; got != want {
+				t.Fatalf("unexpected deadline count: got %d, want %d", got, want)
 			}
 
-			timeouts, err = env.ctrl.Tick(
+			deadlines, err = env.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
 			)
 			expectNoError(t, err)
 
-			if len(timeouts) != 0 {
-				t.Fatalf("unexpected timeouts: got %d, want 0", len(timeouts))
+			if len(deadlines) != 0 {
+				t.Fatalf("unexpected deadlines: got %d, want 0", len(deadlines))
 			}
 		})
 
-		t.Run("does not return timeouts for instances that have been ended", func(t *testing.T) {
+		t.Run("does not return deadlines for instances that have been ended", func(t *testing.T) {
 			env, createdTime, t1Time, t2Time, _ := setup(t)
 
 			secondInstanceEvent := envelope.NewEvent(
@@ -166,7 +166,7 @@ func TestController(t *testing.T) {
 			)
 			expectNoError(t, err)
 
-			timeouts, err := env.ctrl.Tick(
+			deadlines, err := env.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -175,11 +175,11 @@ func TestController(t *testing.T) {
 
 			expectEnvelopeSet(
 				t,
-				timeouts,
+				deadlines,
 				[]*envelope.Envelope{
-					secondInstanceEvent.NewTimeout(
+					secondInstanceEvent.NewDeadline(
 						"3",
-						TimeoutA1,
+						DeadlineA1,
 						createdTime,
 						t1Time,
 						envelope.Origin{
@@ -188,9 +188,9 @@ func TestController(t *testing.T) {
 							InstanceID:  "<instance-A2>",
 						},
 					),
-					secondInstanceEvent.NewTimeout(
+					secondInstanceEvent.NewDeadline(
 						"2",
-						TimeoutA2,
+						DeadlineA2,
 						createdTime,
 						t2Time,
 						envelope.Origin{
@@ -257,7 +257,7 @@ func TestController(t *testing.T) {
 				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
-			t.Run("returns both commands and timeouts", func(t *testing.T) {
+			t.Run("returns both commands and deadlines", func(t *testing.T) {
 				env := newProcessControllerTestEnv()
 				now := time.Now()
 
@@ -268,7 +268,7 @@ func TestController(t *testing.T) {
 					_ dogma.Event,
 				) error {
 					s.ExecuteCommand(CommandA1)
-					s.ScheduleTimeout(TimeoutA1, now)
+					s.ScheduleDeadline(DeadlineA1, now)
 					return nil
 				}
 
@@ -294,9 +294,9 @@ func TestController(t *testing.T) {
 								InstanceID:  "<instance-A1>",
 							},
 						),
-						env.event.NewTimeout(
+						env.event.NewDeadline(
 							"2",
-							TimeoutA1,
+							DeadlineA1,
 							now,
 							now,
 							envelope.Origin{
@@ -309,7 +309,7 @@ func TestController(t *testing.T) {
 				)
 			})
 
-			t.Run("returns timeouts scheduled in the past", func(t *testing.T) {
+			t.Run("returns deadlines scheduled in the past", func(t *testing.T) {
 				env := newProcessControllerTestEnv()
 				now := time.Now()
 
@@ -319,7 +319,7 @@ func TestController(t *testing.T) {
 					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
-					s.ScheduleTimeout(TimeoutA1, now.Add(-1))
+					s.ScheduleDeadline(DeadlineA1, now.Add(-1))
 					return nil
 				}
 
@@ -336,7 +336,7 @@ func TestController(t *testing.T) {
 				}
 			})
 
-			t.Run("does not return timeouts scheduled in the future", func(t *testing.T) {
+			t.Run("does not return deadlines scheduled in the future", func(t *testing.T) {
 				env := newProcessControllerTestEnv()
 				now := time.Now()
 
@@ -346,7 +346,7 @@ func TestController(t *testing.T) {
 					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
-					s.ScheduleTimeout(TimeoutA1, now.Add(1))
+					s.ScheduleDeadline(DeadlineA1, now.Add(1))
 					return nil
 				}
 
@@ -498,7 +498,7 @@ func TestController(t *testing.T) {
 			})
 		})
 
-		t.Run("handling a timeout", func(t *testing.T) {
+		t.Run("handling a deadline", func(t *testing.T) {
 			setup := func(t *testing.T) *processControllerTestEnv {
 				t.Helper()
 
@@ -528,14 +528,14 @@ func TestController(t *testing.T) {
 				env := setup(t)
 				called := false
 
-				env.handler.HandleTimeoutFunc = func(
+				env.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
-					_ dogma.ProcessTimeoutScope[*ProcessRootStub],
-					m dogma.Timeout,
+					_ dogma.ProcessDeadlineScope[*ProcessRootStub],
+					m dogma.Deadline,
 				) error {
 					called = true
-					xtesting.Expect(t, "unexpected timeout", m, TimeoutA1)
+					xtesting.Expect(t, "unexpected deadline", m, DeadlineA1)
 					return nil
 				}
 
@@ -543,12 +543,12 @@ func TestController(t *testing.T) {
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.timeout,
+					env.deadline,
 				)
 				expectNoError(t, err)
 
 				if !called {
-					t.Fatal("expected HandleTimeout() to be called")
+					t.Fatal("expected HandleDeadline() to be called")
 				}
 			})
 
@@ -556,11 +556,11 @@ func TestController(t *testing.T) {
 				env := setup(t)
 				expected := errors.New("<error>")
 
-				env.handler.HandleTimeoutFunc = func(
+				env.handler.HandleDeadlineFunc = func(
 					context.Context,
 					*ProcessRootStub,
-					dogma.ProcessTimeoutScope[*ProcessRootStub],
-					dogma.Timeout,
+					dogma.ProcessDeadlineScope[*ProcessRootStub],
+					dogma.Deadline,
 				) error {
 					return expected
 				}
@@ -569,24 +569,24 @@ func TestController(t *testing.T) {
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.timeout,
+					env.deadline,
 				)
 
 				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
-			t.Run("returns both commands and timeouts", func(t *testing.T) {
+			t.Run("returns both commands and deadlines", func(t *testing.T) {
 				env := setup(t)
 				now := time.Now()
 
-				env.handler.HandleTimeoutFunc = func(
+				env.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
-					s dogma.ProcessTimeoutScope[*ProcessRootStub],
-					_ dogma.Timeout,
+					s dogma.ProcessDeadlineScope[*ProcessRootStub],
+					_ dogma.Deadline,
 				) error {
 					s.ExecuteCommand(CommandA1)
-					s.ScheduleTimeout(TimeoutA1, now)
+					s.ScheduleDeadline(DeadlineA1, now)
 					return nil
 				}
 
@@ -594,7 +594,7 @@ func TestController(t *testing.T) {
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.timeout,
+					env.deadline,
 				)
 				expectNoError(t, err)
 
@@ -602,7 +602,7 @@ func TestController(t *testing.T) {
 					t,
 					envelopes,
 					[]*envelope.Envelope{
-						env.timeout.NewCommand(
+						env.deadline.NewCommand(
 							"1",
 							CommandA1,
 							now,
@@ -612,9 +612,9 @@ func TestController(t *testing.T) {
 								InstanceID:  "<instance-A1>",
 							},
 						),
-						env.timeout.NewTimeout(
+						env.deadline.NewDeadline(
 							"2",
-							TimeoutA1,
+							DeadlineA1,
 							now,
 							now,
 							envelope.Origin{
@@ -627,17 +627,17 @@ func TestController(t *testing.T) {
 				)
 			})
 
-			t.Run("returns timeouts scheduled in the past", func(t *testing.T) {
+			t.Run("returns deadlines scheduled in the past", func(t *testing.T) {
 				env := setup(t)
 				now := time.Now()
 
-				env.handler.HandleTimeoutFunc = func(
+				env.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
-					s dogma.ProcessTimeoutScope[*ProcessRootStub],
-					_ dogma.Timeout,
+					s dogma.ProcessDeadlineScope[*ProcessRootStub],
+					_ dogma.Deadline,
 				) error {
-					s.ScheduleTimeout(TimeoutA2, now.Add(-1))
+					s.ScheduleDeadline(DeadlineA2, now.Add(-1))
 					return nil
 				}
 
@@ -645,7 +645,7 @@ func TestController(t *testing.T) {
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.timeout,
+					env.deadline,
 				)
 				expectNoError(t, err)
 
@@ -654,17 +654,17 @@ func TestController(t *testing.T) {
 				}
 			})
 
-			t.Run("does not return timeouts scheduled in the future", func(t *testing.T) {
+			t.Run("does not return deadlines scheduled in the future", func(t *testing.T) {
 				env := setup(t)
 				now := time.Now()
 
-				env.handler.HandleTimeoutFunc = func(
+				env.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
-					s dogma.ProcessTimeoutScope[*ProcessRootStub],
-					_ dogma.Timeout,
+					s dogma.ProcessDeadlineScope[*ProcessRootStub],
+					_ dogma.Deadline,
 				) error {
-					s.ScheduleTimeout(TimeoutA2, now.Add(1))
+					s.ScheduleDeadline(DeadlineA2, now.Add(1))
 					return nil
 				}
 
@@ -672,7 +672,7 @@ func TestController(t *testing.T) {
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.timeout,
+					env.deadline,
 				)
 				expectNoError(t, err)
 
@@ -681,7 +681,7 @@ func TestController(t *testing.T) {
 				}
 			})
 
-			t.Run("when the instance that created the timeout has ended", func(t *testing.T) {
+			t.Run("when the instance that created the deadline has ended", func(t *testing.T) {
 				setupEnded := func(t *testing.T) *processControllerTestEnv {
 					t.Helper()
 
@@ -710,13 +710,13 @@ func TestController(t *testing.T) {
 
 				t.Run("does not forward the message to the handler", func(t *testing.T) {
 					env := setupEnded(t)
-					env.handler.HandleTimeoutFunc = func(
+					env.handler.HandleDeadlineFunc = func(
 						context.Context,
 						*ProcessRootStub,
-						dogma.ProcessTimeoutScope[*ProcessRootStub],
-						dogma.Timeout,
+						dogma.ProcessDeadlineScope[*ProcessRootStub],
+						dogma.Deadline,
 					) error {
-						t.Fatal("unexpected call to HandleTimeout()")
+						t.Fatal("unexpected call to HandleDeadline()")
 						return nil
 					}
 
@@ -724,7 +724,7 @@ func TestController(t *testing.T) {
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.timeout,
+						env.deadline,
 					)
 					expectNoError(t, err)
 				})
@@ -737,7 +737,7 @@ func TestController(t *testing.T) {
 						context.Background(),
 						buf,
 						time.Now(),
-						env.timeout,
+						env.deadline,
 					)
 					expectNoError(t, err)
 
@@ -745,10 +745,10 @@ func TestController(t *testing.T) {
 						t,
 						buf.Facts(),
 						[]fact.Fact{
-							fact.ProcessTimeoutRoutedToEndedInstance{
+							fact.ProcessDeadlineRoutedToEndedInstance{
 								Handler:    env.cfg,
 								InstanceID: "<instance-A1>",
-								Envelope:   env.timeout,
+								Envelope:   env.deadline,
 							},
 						},
 					)
@@ -991,7 +991,7 @@ func TestController(t *testing.T) {
 			)
 		})
 
-		t.Run("provides more context to UnexpectedMessage panics from HandleTimeout", func(t *testing.T) {
+		t.Run("provides more context to UnexpectedMessage panics from HandleDeadline", func(t *testing.T) {
 			env := newProcessControllerTestEnv()
 			env.handler.HandleEventFunc = func(
 				context.Context,
@@ -1010,11 +1010,11 @@ func TestController(t *testing.T) {
 			)
 			expectNoError(t, err)
 
-			env.handler.HandleTimeoutFunc = func(
+			env.handler.HandleDeadlineFunc = func(
 				context.Context,
 				*ProcessRootStub,
-				dogma.ProcessTimeoutScope[*ProcessRootStub],
-				dogma.Timeout,
+				dogma.ProcessDeadlineScope[*ProcessRootStub],
+				dogma.Deadline,
 			) error {
 				panic(dogma.UnexpectedMessage)
 			}
@@ -1026,12 +1026,12 @@ func TestController(t *testing.T) {
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.timeout,
+						env.deadline,
 					)
 				},
 				env.cfg,
-				"HandleTimeout",
-				env.timeout.Message,
+				"HandleDeadline",
+				env.deadline.Message,
 			)
 		})
 	})
@@ -1093,7 +1093,7 @@ type processControllerTestEnv struct {
 	cfg        *config.Process
 	ctrl       *Controller
 	event      *envelope.Envelope
-	timeout    *envelope.Envelope
+	deadline   *envelope.Envelope
 }
 
 func newProcessControllerTestEnv() *processControllerTestEnv {
@@ -1109,7 +1109,7 @@ func newProcessControllerTestEnv() *processControllerTestEnv {
 			c.Routes(
 				dogma.HandlesEvent[*EventStub[TypeA]](),
 				dogma.ExecutesCommand[*CommandStub[TypeA]](),
-				dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
+				dogma.SchedulesDeadline[*DeadlineStub[TypeA]](),
 			)
 		},
 		RouteEventToInstanceFunc: func(
@@ -1126,9 +1126,9 @@ func newProcessControllerTestEnv() *processControllerTestEnv {
 	}
 
 	cfg := runtimeconfig.FromProcess(handler)
-	timeout := event.NewTimeout(
+	deadline := event.NewDeadline(
 		"2000",
-		TimeoutA1,
+		DeadlineA1,
 		time.Now(),
 		time.Now().Add(10*time.Second),
 		envelope.Origin{
@@ -1139,10 +1139,10 @@ func newProcessControllerTestEnv() *processControllerTestEnv {
 	)
 
 	env := &processControllerTestEnv{
-		handler: handler,
-		cfg:     cfg,
-		event:   event,
-		timeout: timeout,
+		handler:  handler,
+		cfg:      cfg,
+		event:    event,
+		deadline: deadline,
 	}
 
 	env.ctrl = &Controller{

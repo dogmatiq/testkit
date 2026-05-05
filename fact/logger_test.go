@@ -72,9 +72,9 @@ func TestLogger(t *testing.T) {
 			time.Now(),
 		)
 
-		timeout := event.NewTimeout(
+		deadline := event.NewDeadline(
 			"20",
-			TimeoutA1,
+			DeadlineA1,
 			time.Now(),
 			now,
 			envelope.Origin{
@@ -370,9 +370,9 @@ func TestLogger(t *testing.T) {
 					Fact:    ProcessEventRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
 				{
-					Name:    "ProcessTimeoutRoutedToEndedInstance",
-					Message: "= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● timeout ignored because the target instance has ended",
-					Fact:    ProcessTimeoutRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: timeout},
+					Name:    "ProcessDeadlineRoutedToEndedInstance",
+					Message: "= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● deadline ignored because the target instance has ended",
+					Fact:    ProcessDeadlineRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: deadline},
 				},
 				{
 					Name:    "ProcessInstanceNotFound",
@@ -432,14 +432,14 @@ func TestLogger(t *testing.T) {
 					},
 				},
 				{
-					Name:    "TimeoutScheduledByProcess",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
-					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, TimeoutEnvelope: timeout},
+					Name:    "DeadlineScheduledByProcess",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
+					Fact:    DeadlineScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, DeadlineEnvelope: deadline},
 				},
 				{
-					Name:    "TimeoutScheduledByProcess (with description)",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● scheduled a timeout for 2006-01-02T15:04:05+07:00 ● *stubs.TimeoutStub[TypeA]@ ● timeout(stubs.TypeA:A1, valid)",
-					Fact:    TimeoutScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: processWithDescription, TimeoutEnvelope: timeout},
+					Name:    "DeadlineScheduledByProcess (with description)",
+					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
+					Fact:    DeadlineScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: processWithDescription, DeadlineEnvelope: deadline},
 				},
 				{
 					Name:    "MessageLoggedByProcess",

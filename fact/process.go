@@ -7,7 +7,7 @@ import (
 )
 
 // ProcessInstanceLoaded indicates that a process message handler has loaded an
-// existing instance in order to handle an event or timeout.
+// existing instance in order to handle an event or deadline.
 type ProcessInstanceLoaded struct {
 	Handler    *config.Process
 	InstanceID string
@@ -31,16 +31,16 @@ type ProcessEventRoutedToEndedInstance struct {
 	Envelope   *envelope.Envelope
 }
 
-// ProcessTimeoutRoutedToEndedInstance indicates that a process message handler
-// ignored a timeout message because its instance no longer exists.
-type ProcessTimeoutRoutedToEndedInstance struct {
+// ProcessDeadlineRoutedToEndedInstance indicates that a process message handler
+// ignored a deadline message because its instance no longer exists.
+type ProcessDeadlineRoutedToEndedInstance struct {
 	Handler    *config.Process
 	InstanceID string
 	Envelope   *envelope.Envelope
 }
 
 // ProcessInstanceNotFound indicates that a process message handler was unable
-// to load an existing instance while handling an event or timeout.
+// to load an existing instance while handling an event or deadline.
 type ProcessInstanceNotFound struct {
 	Handler    *config.Process
 	InstanceID string
@@ -57,7 +57,7 @@ type ProcessInstanceBegun struct {
 }
 
 // ProcessInstanceEnded indicates that a process message handler destroyed a
-// process instance while handling an event or timeout.
+// process instance while handling an event or deadline.
 type ProcessInstanceEnded struct {
 	Handler    *config.Process
 	InstanceID string
@@ -66,7 +66,7 @@ type ProcessInstanceEnded struct {
 }
 
 // CommandExecutedByProcess indicates that a process executed a command while
-// handling an event or timeout.
+// handling an event or deadline.
 type CommandExecutedByProcess struct {
 	Handler         *config.Process
 	InstanceID      string
@@ -75,18 +75,18 @@ type CommandExecutedByProcess struct {
 	CommandEnvelope *envelope.Envelope
 }
 
-// TimeoutScheduledByProcess indicates that a process scheduled a timeout while
-// handling an event or timeout.
-type TimeoutScheduledByProcess struct {
-	Handler         *config.Process
-	InstanceID      string
-	Root            dogma.ProcessRoot
-	Envelope        *envelope.Envelope
-	TimeoutEnvelope *envelope.Envelope
+// DeadlineScheduledByProcess indicates that a process scheduled a deadline while
+// handling an event or deadline.
+type DeadlineScheduledByProcess struct {
+	Handler          *config.Process
+	InstanceID       string
+	Root             dogma.ProcessRoot
+	Envelope         *envelope.Envelope
+	DeadlineEnvelope *envelope.Envelope
 }
 
 // MessageLoggedByProcess indicates that a process wrote a log message while
-// handling an event or timeout.
+// handling an event or deadline.
 type MessageLoggedByProcess struct {
 	Handler      *config.Process
 	InstanceID   string
