@@ -125,7 +125,27 @@ func OfCall() Location {
 	var loc Location
 
 	eachFrame(
-		2, // skip LocationOfCall() and its caller.
+		2, // skip OfCall() and its caller.
+		func(fr runtime.Frame) bool {
+			loc = Location{
+				Func: fr.Function,
+				File: fr.File,
+				Line: fr.Line,
+			}
+			return false
+		},
+	)
+
+	return loc
+}
+
+// OfCallSkip returns the location n frames above where its caller was called.
+// OfCallSkip(0) is equivalent to OfCall().
+func OfCallSkip(n int) Location {
+	var loc Location
+
+	eachFrame(
+		2+n, // skip OfCallSkip() and its caller, plus n additional frames.
 		func(fr runtime.Frame) bool {
 			loc = Location{
 				Func: fr.Function,

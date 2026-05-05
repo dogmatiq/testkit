@@ -522,6 +522,73 @@ func TestScope(t *testing.T) {
 		expectNoError(t, err)
 	})
 
+	t.Run("Mutate", func(t *testing.T) {
+		t.Run("calls the function with the instance root", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			called := false
+
+			env.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(r *ProcessRootStub) {
+					called = true
+					r.Value = "<mutated>"
+				})
+				return nil
+			}
+
+			_, err := env.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				env.event,
+			)
+			expectNoError(t, err)
+
+			if !called {
+				t.Fatal("expected Mutate() to call the function")
+			}
+		})
+
+		t.Run("panics if the process has ended", func(t *testing.T) {
+			env := newProcessScopeTestEnv()
+			env.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.End()
+				s.Mutate(func(*ProcessRootStub) {})
+				return nil
+			}
+
+			expectUnexpectedBehavior(
+				t,
+				func() {
+					_, _ = env.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						env.event,
+					)
+				},
+				panicx.UnexpectedBehavior{
+					Handler:        env.cfg,
+					Interface:      "ProcessMessageHandler",
+					Method:         "HandleEvent",
+					Implementation: env.cfg.Implementation(),
+					Message:        env.event.Message,
+					Description:    "mutated an ended process instance",
+				},
+				"/engine/internal/process/scope_test.go",
+			)
+		})
+	})
+
 	t.Run("Log", func(t *testing.T) {
 		env := newProcessScopeTestEnv()
 		env.handler.HandleEventFunc = func(
