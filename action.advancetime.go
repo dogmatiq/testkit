@@ -13,7 +13,7 @@ import (
 // the test's virtual clock.
 //
 // This allows testing of application logic that depends on time, such as
-// processes that use timeout messages and projections that use the "recorded
+// processes that use deadline messages and projections that use the "recorded
 // at" time of events.
 //
 // It accepts a TimeAdjustment which calculates the amount of time that the

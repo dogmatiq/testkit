@@ -29,7 +29,7 @@ type Controller struct {
 	MessageIDs *envelope.MessageIDGenerator
 
 	instances map[string]*instance
-	timeouts  []*envelope.Envelope
+	deadlines []*envelope.Envelope
 }
 
 // HandlerConfig returns the config of the handler that is managed by this
@@ -38,7 +38,7 @@ func (c *Controller) HandlerConfig() config.Handler {
 	return c.Config
 }
 
-// Tick returns the timeout messages that are ready to be handled.
+// Tick returns the deadline messages that are ready to be handled.
 func (c *Controller) Tick(
 	_ context.Context,
 	_ fact.Observer,
@@ -46,8 +46,8 @@ func (c *Controller) Tick(
 ) ([]*envelope.Envelope, error) {
 	var i int
 
-	// find the index of the first timeout that is AFTER now
-	for _, env := range c.timeouts {
+	// find the index of the first deadline that is AFTER now
+	for _, env := range c.deadlines {
 		if env.ScheduledFor.After(now) {
 			break
 		}
@@ -56,10 +56,10 @@ func (c *Controller) Tick(
 	}
 
 	// anything up to that index is ready to be executed
-	ready := c.timeouts[:i]
+	ready := c.deadlines[:i]
 
 	// anything else is still pending
-	c.timeouts = c.timeouts[i:]
+	c.deadlines = c.deadlines[i:]
 
 	return ready, nil
 }
@@ -92,7 +92,7 @@ func (c *Controller) Handle(
 			env.Message,
 			nil,
 			func(dogma.Event) string { return "HandleEvent" },
-			func(dogma.Timeout) string { return "HandleTimeout" },
+			func(dogma.Deadline) string { return "HandleDeadline" },
 		),
 		messageIDs: c.MessageIDs,
 		observer:   obs,
@@ -105,11 +105,11 @@ func (c *Controller) Handle(
 	}
 
 	if inst.ended {
-		c.cancelTimeouts(id)
+		c.cancelDeadlines(id)
 		return s.commands, nil
 	}
 
-	c.scheduleTimeouts(s)
+	c.scheduleDeadlines(s)
 	return append(s.commands, s.ready...), nil
 }
 
@@ -168,7 +168,7 @@ func (c *Controller) instanceByID(
 // Reset clears the state of the controller.
 func (c *Controller) Reset() {
 	c.instances = nil
-	c.timeouts = nil
+	c.deadlines = nil
 }
 
 // route returns the ID of the instance that a message should be routed to.
@@ -181,7 +181,7 @@ func (c *Controller) route(
 		env.Message,
 		nil,
 		func(m dogma.Event) { id, ok, err = c.routeEvent(ctx, obs, env, m) },
-		func(_ dogma.Timeout) { id, ok, err = c.routeTimeout(ctx, obs, env) },
+		func(_ dogma.Deadline) { id, ok, err = c.routeDeadline(ctx, obs, env) },
 	)
 	return id, ok, err
 }
@@ -248,7 +248,7 @@ func (c *Controller) routeEvent(
 	return id, true, nil
 }
 
-func (c *Controller) routeTimeout(
+func (c *Controller) routeDeadline(
 	_ context.Context,
 	obs fact.Observer,
 	env *envelope.Envelope,
@@ -259,7 +259,7 @@ func (c *Controller) routeTimeout(
 		}
 	}
 
-	obs.Notify(fact.ProcessTimeoutRoutedToEndedInstance{
+	obs.Notify(fact.ProcessDeadlineRoutedToEndedInstance{
 		Handler:    c.Config,
 		InstanceID: env.Origin.InstanceID,
 		Envelope:   env,
@@ -286,8 +286,8 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 					s,
 					m,
 				)
-			case dogma.Timeout:
-				err = c.Config.Source.Get().HandleTimeout(
+			case dogma.Deadline:
+				err = c.Config.Source.Get().HandleDeadline(
 					ctx,
 					s.instance.root,
 					s,
@@ -300,24 +300,24 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 	return err
 }
 
-// scheduleTimeouts enqueues pending timeouts from the given scope.
-func (c *Controller) scheduleTimeouts(s *scope) {
-	c.timeouts = append(c.timeouts, s.pending...)
+// scheduleDeadlines enqueues pending deadlines from the given scope.
+func (c *Controller) scheduleDeadlines(s *scope) {
+	c.deadlines = append(c.deadlines, s.pending...)
 
 	sort.Slice(
-		c.timeouts,
+		c.deadlines,
 		func(i, j int) bool {
-			ti := c.timeouts[i].ScheduledFor
-			tj := c.timeouts[j].ScheduledFor
+			ti := c.deadlines[i].ScheduledFor
+			tj := c.deadlines[j].ScheduledFor
 			return ti.Before(tj)
 		},
 	)
 }
 
-// cancelTimeouts removes an instance's timeouts.
-func (c *Controller) cancelTimeouts(id string) {
-	c.timeouts = slices.DeleteFunc(
-		c.timeouts,
+// cancelDeadlines removes an instance's deadlines.
+func (c *Controller) cancelDeadlines(id string) {
+	c.deadlines = slices.DeleteFunc(
+		c.deadlines,
 		func(env *envelope.Envelope) bool {
 			return env.Origin.InstanceID == id
 		},

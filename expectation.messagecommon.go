@@ -180,9 +180,9 @@ func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 	case fact.CommandExecutedByProcess:
 		t.messageProduced(x.CommandEnvelope)
 		return x.CommandEnvelope, true
-	case fact.TimeoutScheduledByProcess:
-		t.messageProduced(x.TimeoutEnvelope)
-		return x.TimeoutEnvelope, true
+	case fact.DeadlineScheduledByProcess:
+		t.messageProduced(x.DeadlineEnvelope)
+		return x.DeadlineEnvelope, true
 	}
 
 	return nil, false

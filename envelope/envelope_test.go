@@ -162,7 +162,7 @@ func TestEnvelope(t *testing.T) {
 		})
 	})
 
-	t.Run("func (Envelope) NewTimeout()", func(t *testing.T) {
+	t.Run("func (Envelope) NewDeadline()", func(t *testing.T) {
 		t.Run("it returns the expected envelope", func(t *testing.T) {
 			handler := runtimeconfig.FromProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
 				ConfigureFunc: func(c dogma.ProcessConfigurer) {
@@ -170,7 +170,7 @@ func TestEnvelope(t *testing.T) {
 					c.Routes(
 						dogma.HandlesEvent[*EventStub[TypeA]](),
 						dogma.ExecutesCommand[*CommandStub[TypeA]](),
-						dogma.SchedulesTimeout[*TimeoutStub[TypeA]](),
+						dogma.SchedulesDeadline[*DeadlineStub[TypeA]](),
 					)
 				},
 			})
@@ -187,9 +187,9 @@ func TestEnvelope(t *testing.T) {
 			}
 			now := time.Now()
 			s := time.Now()
-			child := parent.NewTimeout(
+			child := parent.NewDeadline(
 				"200",
-				TimeoutA1,
+				DeadlineA1,
 				now,
 				s,
 				origin,
@@ -203,7 +203,7 @@ func TestEnvelope(t *testing.T) {
 					MessageID:     "200",
 					CorrelationID: "100",
 					CausationID:   "100",
-					Message:       TimeoutA1,
+					Message:       DeadlineA1,
 					CreatedAt:     now,
 					ScheduledFor:  s,
 					Origin:        &origin,

@@ -17,10 +17,10 @@ func EventValidationScope(...EventValidationScopeOption) dogma.EventValidationSc
 	return validation.EventValidationScope()
 }
 
-// TimeoutValidationScope returns a [dogma.TimeoutValidationScope] that can be
-// used when testing timeout validation logic.
-func TimeoutValidationScope(...TimeoutValidationScopeOption) dogma.TimeoutValidationScope {
-	return validation.TimeoutValidationScope()
+// DeadlineValidationScope returns a [dogma.DeadlineValidationScope] that can be
+// used when testing deadline validation logic.
+func DeadlineValidationScope(...DeadlineValidationScopeOption) dogma.DeadlineValidationScope {
+	return validation.DeadlineValidationScope()
 }
 
 // CommandValidationScopeOption is an option that changes the behavior of a
@@ -35,8 +35,8 @@ type EventValidationScopeOption interface {
 	reservedEventValidationScopeOption()
 }
 
-// TimeoutValidationScopeOption is an option that changes the behavior of a
-// [dogma.TimeoutValidationScope] created by calling [TimeoutValidationScope].
-type TimeoutValidationScopeOption interface {
-	reservedTimeoutValidationScopeOption()
+// DeadlineValidationScopeOption is an option that changes the behavior of a
+// [dogma.DeadlineValidationScope] created by calling [DeadlineValidationScope].
+type DeadlineValidationScopeOption interface {
+	reservedDeadlineValidationScopeOption()
 }

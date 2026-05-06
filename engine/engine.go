@@ -176,7 +176,7 @@ func (e *Engine) tick(
 
 // Dispatch processes a [dogma.Command] or [dogma.Event].
 //
-// It panics if the message is a [dogma.Timeout], or is otherwise invalid.
+// It panics if the message is a [dogma.Deadline], or is otherwise invalid.
 func (e *Engine) Dispatch(
 	ctx context.Context,
 	m dogma.Message,
@@ -271,8 +271,8 @@ func (e *Engine) dispatch(
 
 		mt := message.TypeOf(env.Message)
 
-		if mt.Kind() == message.TimeoutKind {
-			// always dispatch timeouts back to their origin handler
+		if mt.Kind() == message.DeadlineKind {
+			// always dispatch deadline messages back to their origin handler
 			controllers = []controller{
 				e.controllers[env.Origin.Handler.Identity().GetName()],
 			}
