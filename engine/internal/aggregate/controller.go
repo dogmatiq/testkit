@@ -233,15 +233,6 @@ func (c *Controller) takeSnapshot(
 		})
 	}
 
-	// TODO(https://github.com/dogmatiq/enginekit/issues/143): Remove this
-	// round-trip verification once AggregateRootStub properly implements
-	// MarshalBinary/UnmarshalBinary. This is a workaround that must not be
-	// merged into main.
-	probe := c.Config.Source.Get().New()
-	if err := probe.UnmarshalBinary(data); err != nil {
-		return
-	}
-
 	inst.snapshot = data
 	inst.snapshotOffset = len(inst.history)
 }

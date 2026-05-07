@@ -2,6 +2,7 @@ package aggregate_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -253,6 +254,32 @@ func TestControllerHandle(t *testing.T) {
 		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
+	t.Run("panics if New returns nil when the instance exists", func(t *testing.T) {
+		f := newControllerTestFixture()
+		seedControllerInstance(t, f)
+
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return nil
+		}
+
+		x := mustPanicUnexpectedBehavior(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		})
+
+		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+		xtesting.Expect(t, "unexpected method", x.Method, "New")
+		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
+		expectLocation(t, x.Location, "/stubs/aggregate.go")
+	})
+
 	t.Run("records AggregateInstanceLoaded when the instance exists", func(t *testing.T) {
 		f := newControllerTestFixture()
 		seedControllerInstance(t, f)
@@ -403,6 +430,16 @@ func TestControllerHandle(t *testing.T) {
 
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with historical events", func(t *testing.T) {
 		f := newControllerTestFixture()
+
+		// Prevent snapshot so that historical events are replayed.
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return nil, dogma.ErrNotSupported
+				},
+			}
+		}
+
 		seedControllerInstance(t, f)
 
 		f.handler.NewFunc = func() *stubs.AggregateRootStub {
@@ -426,6 +463,91 @@ func TestControllerHandle(t *testing.T) {
 		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
 		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
 		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
+	})
+
+	t.Run("panics if MarshalBinary fails with a non-ErrNotSupported error", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return nil, errors.New("<marshal error>")
+				},
+			}
+		}
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		xtesting.ExpectPanic(
+			t,
+			"the '<name>' aggregate message handler behaved unexpectedly in *stubs.AggregateRootStub.MarshalBinary(): unable to marshal the aggregate root: <marshal error>",
+			func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.command,
+				)
+			},
+		)
+	})
+
+	t.Run("does not panic if MarshalBinary returns ErrNotSupported", func(t *testing.T) {
+		f := newControllerTestFixture()
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return nil, dogma.ErrNotSupported
+				},
+			}
+		}
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("panics if UnmarshalBinary fails when loading a snapshot", func(t *testing.T) {
+		f := newControllerTestFixture()
+		seedControllerInstance(t, f)
+
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				UnmarshalBinaryFunc: func([]byte) error {
+					return errors.New("<unmarshal error>")
+				},
+			}
+		}
+
+		xtesting.ExpectPanic(
+			t,
+			"the '<name>' aggregate message handler behaved unexpectedly in *stubs.AggregateRootStub.UnmarshalBinary(): unable to unmarshal the aggregate root: <unmarshal error>",
+			func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.command,
+				)
+			},
+		)
 	})
 }
 
