@@ -18,7 +18,14 @@ import (
 )
 
 type instance struct {
-	data  []byte
+	// mutated is true if the process root has been mutated at least once.
+	mutated bool
+
+	// data is the serialized process root state, populated by MarshalBinary()
+	// after a call to the handler that mutates the root. nil/empty is valid.
+	data []byte
+
+	// ended is true if the process instance has been ended.
 	ended bool
 }
 
@@ -123,6 +130,7 @@ func (c *Controller) Handle(
 				Location:       location.OfMethod(s.root, "MarshalBinary"),
 			})
 		}
+		inst.mutated = true
 		inst.data = data
 	}
 
@@ -150,7 +158,7 @@ func (c *Controller) instanceByID(
 	}
 
 	if inst, ok := c.instances[id]; ok {
-		if inst.data != nil {
+		if inst.mutated {
 			if err := root.UnmarshalBinary(inst.data); err != nil {
 				panic(panicx.UnexpectedBehavior{
 					Handler:        c.Config,

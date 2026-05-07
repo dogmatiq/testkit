@@ -1167,6 +1167,96 @@ func TestController(t *testing.T) {
 				},
 			)
 		})
+
+		t.Run("calls UnmarshalBinary when MarshalBinary returns nil", func(t *testing.T) {
+			env := newControllerTestFixture()
+			env.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(r *ProcessRootStub) {
+					r.MarshalBinaryFunc = func() ([]byte, error) {
+						return nil, nil
+					}
+				})
+				return nil
+			}
+
+			_, err := env.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				env.event,
+			)
+			expectNoError(t, err)
+
+			called := false
+			env.handler.NewFunc = func() *ProcessRootStub {
+				return &ProcessRootStub{
+					UnmarshalBinaryFunc: func([]byte) error {
+						called = true
+						return nil
+					},
+				}
+			}
+
+			_, err = env.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				env.event,
+			)
+			expectNoError(t, err)
+
+			xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
+		})
+
+		t.Run("calls UnmarshalBinary when MarshalBinary returns an empty slice", func(t *testing.T) {
+			env := newControllerTestFixture()
+			env.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(r *ProcessRootStub) {
+					r.MarshalBinaryFunc = func() ([]byte, error) {
+						return []byte{}, nil
+					}
+				})
+				return nil
+			}
+
+			_, err := env.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				env.event,
+			)
+			expectNoError(t, err)
+
+			called := false
+			env.handler.NewFunc = func() *ProcessRootStub {
+				return &ProcessRootStub{
+					UnmarshalBinaryFunc: func([]byte) error {
+						called = true
+						return nil
+					},
+				}
+			}
+
+			_, err = env.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				env.event,
+			)
+			expectNoError(t, err)
+
+			xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
+		})
 	})
 
 	t.Run("Reset", func(t *testing.T) {

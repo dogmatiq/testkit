@@ -18,8 +18,20 @@ import (
 )
 
 type instance struct {
-	history        []*envelope.Envelope
-	snapshot       []byte
+	// history is the set of event envelopes recorded by this instance.
+	history []*envelope.Envelope
+
+	// snapshotted is true if a snapshot of the aggregate root has been taken.
+	snapshotted bool
+
+	// snapshot is the serialized aggregate root state, populated by
+	// MarshalBinary() after a successful call to the handler that produces
+	// events. nil/empty is valid.
+	snapshot []byte
+
+	// snapshotOffset is the index into history at which the snapshot was
+	// taken. Events before this offset are covered by the snapshot and do not
+	// need to be replayed.
 	snapshotOffset int
 }
 
@@ -155,7 +167,7 @@ func (c *Controller) instanceByID(
 	}
 
 	if inst, ok := c.instances[id]; ok {
-		if inst.snapshot != nil {
+		if inst.snapshotted {
 			if err := root.UnmarshalBinary(inst.snapshot); err != nil {
 				panic(panicx.UnexpectedBehavior{
 					Handler:        c.Config,
@@ -233,6 +245,7 @@ func (c *Controller) takeSnapshot(
 		})
 	}
 
+	inst.snapshotted = true
 	inst.snapshot = data
 	inst.snapshotOffset = len(inst.history)
 }

@@ -549,6 +549,108 @@ func TestControllerHandle(t *testing.T) {
 			},
 		)
 	})
+
+	t.Run("calls UnmarshalBinary when MarshalBinary returns nil", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return nil, nil
+				},
+			}
+		}
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		called := false
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				UnmarshalBinaryFunc: func([]byte) error {
+					called = true
+					return nil
+				},
+			}
+		}
+
+		_, err = f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
+	})
+
+	t.Run("calls UnmarshalBinary when MarshalBinary returns an empty slice", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return []byte{}, nil
+				},
+			}
+		}
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		called := false
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				UnmarshalBinaryFunc: func([]byte) error {
+					called = true
+					return nil
+				},
+			}
+		}
+
+		_, err = f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
+	})
 }
 
 func TestControllerReset(t *testing.T) {
