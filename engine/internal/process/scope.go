@@ -19,6 +19,8 @@ import (
 type scope struct {
 	instanceID   string
 	instance     *instance
+	root         dogma.ProcessRoot
+	mutated      bool
 	config       *config.Process
 	handleMethod string
 	messageIDs   *envelope.MessageIDGenerator
@@ -44,7 +46,7 @@ func (s *scope) End() {
 	s.observer.Notify(fact.ProcessInstanceEnded{
 		Handler:    s.config,
 		InstanceID: s.instanceID,
-		Root:       s.instance.root,
+		Root:       s.root,
 		Envelope:   s.env,
 	})
 }
@@ -62,7 +64,8 @@ func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
 		})
 	}
 
-	fn(s.instance.root)
+	s.mutated = true
+	fn(s.root)
 }
 
 func (s *scope) ExecuteCommand(m dogma.Command) {
@@ -120,7 +123,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 	s.observer.Notify(fact.CommandExecutedByProcess{
 		Handler:         s.config,
 		InstanceID:      s.instanceID,
-		Root:            s.instance.root,
+		Root:            s.root,
 		Envelope:        s.env,
 		CommandEnvelope: env,
 	})
@@ -190,7 +193,7 @@ func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 	s.observer.Notify(fact.DeadlineScheduledByProcess{
 		Handler:          s.config,
 		InstanceID:       s.instanceID,
-		Root:             s.instance.root,
+		Root:             s.root,
 		Envelope:         s.env,
 		DeadlineEnvelope: env,
 	})
@@ -208,7 +211,7 @@ func (s *scope) Log(f string, v ...any) {
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		Handler:      s.config,
 		InstanceID:   s.instanceID,
-		Root:         s.instance.root,
+		Root:         s.root,
 		Ended:        s.instance.ended,
 		Envelope:     s.env,
 		LogFormat:    f,

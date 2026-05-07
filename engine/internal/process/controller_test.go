@@ -922,10 +922,18 @@ func TestController(t *testing.T) {
 				)
 			})
 
-			t.Run("does not call New", func(t *testing.T) {
-				env := setup(t)
-				env.handler.NewFunc = func() *ProcessRootStub {
-					t.Fatal("unexpected call to New()")
+			t.Run("provides the root with state from the prior Handle() call", func(t *testing.T) {
+				env := newProcessControllerTestEnv()
+
+				env.handler.HandleEventFunc = func(
+					_ context.Context,
+					r *ProcessRootStub,
+					s dogma.ProcessEventScope[*ProcessRootStub],
+					_ dogma.Event,
+				) error {
+					s.Mutate(func(r *ProcessRootStub) {
+						r.Value = "<mutated>"
+					})
 					return nil
 				}
 
@@ -936,6 +944,29 @@ func TestController(t *testing.T) {
 					env.event,
 				)
 				expectNoError(t, err)
+
+				var got string
+				env.handler.HandleEventFunc = func(
+					_ context.Context,
+					r *ProcessRootStub,
+					_ dogma.ProcessEventScope[*ProcessRootStub],
+					_ dogma.Event,
+				) error {
+					got = r.Value.(string)
+					return nil
+				}
+
+				_, err = env.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					env.event,
+				)
+				expectNoError(t, err)
+
+				if got != "<mutated>" {
+					t.Fatalf("expected root state to persist, got %q", got)
+				}
 			})
 		})
 
