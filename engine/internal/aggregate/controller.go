@@ -2,6 +2,7 @@ package aggregate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -16,13 +17,19 @@ import (
 	"github.com/dogmatiq/testkit/location"
 )
 
+type instance struct {
+	history        []*envelope.Envelope
+	snapshot       []byte
+	snapshotOffset int
+}
+
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
 	Config     *config.Aggregate
 	MessageIDs *envelope.MessageIDGenerator
 
-	history map[string][]*envelope.Envelope
+	instances map[string]*instance
 }
 
 // HandlerConfig returns the config of the handler that is managed by this
@@ -53,6 +60,51 @@ func (c *Controller) Handle(
 		panic(fmt.Sprintf("%s does not handle %s messages", c.Config.Identity(), mt))
 	}
 
+	id := c.route(env, mt)
+	inst, root := c.instanceByID(obs, env, id)
+
+	s := &scope{
+		instanceID: id,
+		config:     c.Config,
+		messageIDs: c.MessageIDs,
+		observer:   obs,
+		now:        now,
+		root:       root,
+		command:    env,
+		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsString(),
+		offset:     uint64(len(inst.history)),
+	}
+
+	panicx.EnrichUnexpectedMessage(
+		c.Config,
+		"AggregateMessageHandler",
+		"HandleCommand",
+		c.Config.Implementation(),
+		env.Message,
+		func() {
+			c.Config.Source.Get().HandleCommand(
+				root,
+				s,
+				env.Message.(dogma.Command),
+			)
+		},
+	)
+
+	if len(s.events) != 0 {
+		inst.history = append(inst.history, s.events...)
+		c.takeSnapshot(root, inst, env)
+	}
+
+	return s.events, nil
+}
+
+// Reset clears the state of the controller.
+func (c *Controller) Reset() {
+	c.instances = nil
+}
+
+// route returns the instance ID that the command should be routed to.
+func (c *Controller) route(env *envelope.Envelope, mt message.Type) string {
 	var id string
 	panicx.EnrichUnexpectedMessage(
 		c.Config,
@@ -79,9 +131,18 @@ func (c *Controller) Handle(
 		})
 	}
 
-	history, exists := c.history[id]
-	r := c.Config.Source.Get().New()
-	if xreflect.IsNil(r) {
+	return id
+}
+
+// instanceByID returns the instance and root for the given instance ID.
+func (c *Controller) instanceByID(
+	obs fact.Observer,
+	env *envelope.Envelope,
+	id string,
+) (*instance, dogma.AggregateRoot) {
+	root := c.Config.Source.Get().New()
+
+	if xreflect.IsNil(root) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
@@ -93,17 +154,31 @@ func (c *Controller) Handle(
 		})
 	}
 
-	if exists {
-		for _, env := range history {
+	if inst, ok := c.instances[id]; ok {
+		if inst.snapshot != nil {
+			if err := root.UnmarshalBinary(inst.snapshot); err != nil {
+				panic(panicx.UnexpectedBehavior{
+					Handler:        c.Config,
+					Interface:      "AggregateRoot",
+					Method:         "UnmarshalBinary",
+					Implementation: root,
+					Message:        env.Message,
+					Description:    fmt.Sprintf("unable to unmarshal the aggregate root: %s", err),
+					Location:       location.OfMethod(root, "UnmarshalBinary"),
+				})
+			}
+		}
+
+		for _, ev := range inst.history[inst.snapshotOffset:] {
 			panicx.EnrichUnexpectedMessage(
 				c.Config,
 				"AggregateRoot",
 				"ApplyEvent",
-				r,
-				env.Message,
+				root,
+				ev.Message,
 				func() {
-					r.ApplyEvent(
-						env.Message.(dogma.Event),
+					root.ApplyEvent(
+						ev.Message.(dogma.Event),
 					)
 				},
 			)
@@ -112,55 +187,61 @@ func (c *Controller) Handle(
 		obs.Notify(fact.AggregateInstanceLoaded{
 			Handler:    c.Config,
 			InstanceID: id,
-			Root:       r,
+			Root:       root,
 			Envelope:   env,
 		})
-	} else {
-		obs.Notify(fact.AggregateInstanceNotFound{
-			Handler:    c.Config,
-			InstanceID: id,
-			Envelope:   env,
-		})
+
+		return inst, root
 	}
 
-	s := &scope{
-		instanceID: id,
-		config:     c.Config,
-		messageIDs: c.MessageIDs,
-		observer:   obs,
-		now:        now,
-		root:       r,
-		command:    env,
-		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsString(),
-		offset:     uint64(len(history)),
+	obs.Notify(fact.AggregateInstanceNotFound{
+		Handler:    c.Config,
+		InstanceID: id,
+		Envelope:   env,
+	})
+
+	if c.instances == nil {
+		c.instances = map[string]*instance{}
 	}
 
-	panicx.EnrichUnexpectedMessage(
-		c.Config,
-		"AggregateMessageHandler",
-		"HandleCommand",
-		c.Config.Implementation(),
-		env.Message,
-		func() {
-			c.Config.Source.Get().HandleCommand(
-				r,
-				s,
-				env.Message.(dogma.Command),
-			)
-		},
-	)
+	inst := &instance{}
+	c.instances[id] = inst
 
-	if len(s.events) != 0 {
-		if c.history == nil {
-			c.history = map[string][]*envelope.Envelope{}
-		}
-		c.history[id] = append(c.history[id], s.events...)
-	}
-
-	return s.events, nil
+	return inst, root
 }
 
-// Reset clears the state of the controller.
-func (c *Controller) Reset() {
-	c.history = nil
+// takeSnapshot attempts to store a snapshot of the aggregate root.
+func (c *Controller) takeSnapshot(
+	r dogma.AggregateRoot,
+	inst *instance,
+	env *envelope.Envelope,
+) {
+	data, err := r.MarshalBinary()
+	if err != nil {
+		if errors.Is(err, dogma.ErrNotSupported) {
+			return
+		}
+
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "AggregateRoot",
+			Method:         "MarshalBinary",
+			Implementation: r,
+			Message:        env.Message,
+			Description:    fmt.Sprintf("unable to marshal the aggregate root: %s", err),
+			Location:       location.OfMethod(r, "MarshalBinary"),
+		})
+	}
+
+	// TODO(https://github.com/dogmatiq/enginekit/issues/143): Remove this
+	// round-trip verification once AggregateRootStub properly implements
+	// MarshalBinary/UnmarshalBinary. This is a workaround that must not be
+	// merged into main.
+	probe := c.Config.Source.Get().New()
+	if err := probe.UnmarshalBinary(data); err != nil {
+		return
+	}
+
+	inst.snapshot = data
+	inst.snapshotOffset = len(inst.history)
 }

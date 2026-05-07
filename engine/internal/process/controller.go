@@ -120,7 +120,7 @@ func (c *Controller) Handle(
 				Implementation: s.root,
 				Message:        env.Message,
 				Description:    fmt.Sprintf("unable to marshal the process root: %s", err),
-				Location:       location.OfMethod(c.Config.Implementation(), "MarshalBinary"),
+				Location:       location.OfMethod(s.root, "MarshalBinary"),
 			})
 		}
 		inst.data = data
@@ -135,9 +135,21 @@ func (c *Controller) instanceByID(
 	env *envelope.Envelope,
 	id string,
 ) (*instance, dogma.ProcessRoot) {
-	if inst, ok := c.instances[id]; ok {
-		root := c.Config.Source.Get().New()
+	root := c.Config.Source.Get().New()
 
+	if xreflect.IsNil(root) {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "ProcessMessageHandler",
+			Method:         "New",
+			Implementation: c.Config.Implementation(),
+			Message:        env.Message,
+			Description:    "returned a nil process root",
+			Location:       location.OfMethod(c.Config.Implementation(), "New"),
+		})
+	}
+
+	if inst, ok := c.instances[id]; ok {
 		if inst.data != nil {
 			if err := root.UnmarshalBinary(inst.data); err != nil {
 				panic(panicx.UnexpectedBehavior{
@@ -147,7 +159,7 @@ func (c *Controller) instanceByID(
 					Implementation: root,
 					Message:        env.Message,
 					Description:    fmt.Sprintf("unable to unmarshal the process root: %s", err),
-					Location:       location.OfMethod(c.Config.Implementation(), "UnmarshalBinary"),
+					Location:       location.OfMethod(root, "UnmarshalBinary"),
 				})
 			}
 		}
@@ -169,20 +181,6 @@ func (c *Controller) instanceByID(
 
 	if c.instances == nil {
 		c.instances = map[string]*instance{}
-	}
-
-	root := c.Config.Source.Get().New()
-
-	if xreflect.IsNil(root) {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        c.Config,
-			Interface:      "ProcessMessageHandler",
-			Method:         "New",
-			Implementation: c.Config.Implementation(),
-			Message:        env.Message,
-			Description:    "returned a nil process root",
-			Location:       location.OfMethod(c.Config.Implementation(), "New"),
-		})
 	}
 
 	inst := &instance{}
