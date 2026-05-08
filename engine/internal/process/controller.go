@@ -18,7 +18,14 @@ import (
 )
 
 type instance struct {
-	root  dogma.ProcessRoot
+	// mutated is true if the process root has been mutated at least once.
+	mutated bool
+
+	// data is the serialized process root state, populated by MarshalBinary()
+	// after a call to the handler that mutates the root. nil/empty is valid.
+	data []byte
+
+	// ended is true if the process instance has been ended.
 	ended bool
 }
 
@@ -82,11 +89,12 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	inst := c.instanceByID(obs, env, id)
+	inst, root := c.instanceByID(obs, env, id)
 
 	s := &scope{
 		instanceID: id,
 		instance:   inst,
+		root:       root,
 		config:     c.Config,
 		handleMethod: message.MapByKindOf(
 			env.Message,
@@ -109,6 +117,23 @@ func (c *Controller) Handle(
 		return s.commands, nil
 	}
 
+	if s.mutated {
+		data, err := s.root.MarshalBinary()
+		if err != nil {
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "ProcessRoot",
+				Method:         "MarshalBinary",
+				Implementation: s.root,
+				Message:        env.Message,
+				Description:    fmt.Sprintf("unable to marshal the process root: %s", err),
+				Location:       location.OfMethod(s.root, "MarshalBinary"),
+			})
+		}
+		inst.mutated = true
+		inst.data = data
+	}
+
 	c.scheduleDeadlines(s)
 	return append(s.commands, s.ready...), nil
 }
@@ -117,15 +142,43 @@ func (c *Controller) instanceByID(
 	obs fact.Observer,
 	env *envelope.Envelope,
 	id string,
-) *instance {
+) (*instance, dogma.ProcessRoot) {
+	root := c.Config.Source.Get().New()
+
+	if xreflect.IsNil(root) {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "ProcessMessageHandler",
+			Method:         "New",
+			Implementation: c.Config.Implementation(),
+			Message:        env.Message,
+			Description:    "returned a nil process root",
+			Location:       location.OfMethod(c.Config.Implementation(), "New"),
+		})
+	}
+
 	if inst, ok := c.instances[id]; ok {
+		if inst.mutated {
+			if err := root.UnmarshalBinary(inst.data); err != nil {
+				panic(panicx.UnexpectedBehavior{
+					Handler:        c.Config,
+					Interface:      "ProcessRoot",
+					Method:         "UnmarshalBinary",
+					Implementation: root,
+					Message:        env.Message,
+					Description:    fmt.Sprintf("unable to unmarshal the process root: %s", err),
+					Location:       location.OfMethod(root, "UnmarshalBinary"),
+				})
+			}
+		}
+
 		obs.Notify(fact.ProcessInstanceLoaded{
 			Handler:    c.Config,
 			InstanceID: id,
-			Root:       inst.root,
+			Root:       root,
 			Envelope:   env,
 		})
-		return inst
+		return inst, root
 	}
 
 	obs.Notify(fact.ProcessInstanceNotFound{
@@ -138,31 +191,17 @@ func (c *Controller) instanceByID(
 		c.instances = map[string]*instance{}
 	}
 
-	inst := &instance{
-		root: c.Config.Source.Get().New(),
-	}
+	inst := &instance{}
 	c.instances[id] = inst
 
 	obs.Notify(fact.ProcessInstanceBegun{
 		Handler:    c.Config,
 		InstanceID: id,
-		Root:       inst.root,
+		Root:       root,
 		Envelope:   env,
 	})
 
-	if xreflect.IsNil(inst.root) {
-		panic(panicx.UnexpectedBehavior{
-			Handler:        c.Config,
-			Interface:      "ProcessMessageHandler",
-			Method:         "New",
-			Implementation: c.Config.Implementation(),
-			Message:        env.Message,
-			Description:    "returned a nil process root",
-			Location:       location.OfMethod(c.Config.Implementation(), "New"),
-		})
-	}
-
-	return inst
+	return inst, root
 }
 
 // Reset clears the state of the controller.
@@ -282,14 +321,14 @@ func (c *Controller) handle(ctx context.Context, s *scope) error {
 			case dogma.Event:
 				err = c.Config.Source.Get().HandleEvent(
 					ctx,
-					s.instance.root,
+					s.root,
 					s,
 					m,
 				)
 			case dogma.Deadline:
 				err = c.Config.Source.Get().HandleDeadline(
 					ctx,
-					s.instance.root,
+					s.root,
 					s,
 					m,
 				)
