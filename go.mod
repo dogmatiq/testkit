@@ -12,7 +12,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/sergi/go-diff v1.4.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/text v0.36.0
+	golang.org/x/text v0.37.0
 	google.golang.org/protobuf v1.36.11
 )
 
