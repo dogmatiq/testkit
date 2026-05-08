@@ -103,7 +103,11 @@ func (c *Controller) Handle(
 	)
 
 	if len(s.events) != 0 {
+		if c.instances == nil {
+			c.instances = map[string]*instance{}
+		}
 		inst.history = append(inst.history, s.events...)
+		c.instances[id] = inst
 		c.takeSnapshot(root, inst, env)
 	}
 
@@ -212,14 +216,7 @@ func (c *Controller) instanceByID(
 		Envelope:   env,
 	})
 
-	if c.instances == nil {
-		c.instances = map[string]*instance{}
-	}
-
-	inst := &instance{}
-	c.instances[id] = inst
-
-	return inst, root
+	return &instance{}, root
 }
 
 // takeSnapshot attempts to store a snapshot of the aggregate root.
