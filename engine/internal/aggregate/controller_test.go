@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
-	"github.com/dogmatiq/testkit/location"
 )
 
 func TestControllerHandlerConfig(t *testing.T) {
@@ -150,27 +148,27 @@ func TestControllerHandle(t *testing.T) {
 			return ""
 		}
 
-		x := mustPanicUnexpectedBehavior(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+			xtesting.Expect(
+				t,
+				"unexpected description",
+				x.Description,
+				"routed a command of type *stubs.CommandStub[TypeA] to an empty ID",
+			)
+			xtesting.ExpectLocation(t, x.Location, "/stubs/aggregate.go")
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(
-			t,
-			"unexpected description",
-			x.Description,
-			"routed a command of type *stubs.CommandStub[TypeA] to an empty ID",
-		)
-		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
 	t.Run("records AggregateInstanceNotFound when the instance does not exist", func(t *testing.T) {
@@ -236,22 +234,22 @@ func TestControllerHandle(t *testing.T) {
 			return nil
 		}
 
-		x := mustPanicUnexpectedBehavior(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "New")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+			xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
+			xtesting.ExpectLocation(t, x.Location, "/stubs/aggregate.go")
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "New")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
-		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
 	t.Run("panics if New returns nil when the instance exists", func(t *testing.T) {
@@ -262,22 +260,22 @@ func TestControllerHandle(t *testing.T) {
 			return nil
 		}
 
-		x := mustPanicUnexpectedBehavior(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "New")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+			xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
+			xtesting.ExpectLocation(t, x.Location, "/stubs/aggregate.go")
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "New")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(t, "unexpected description", x.Description, "returned a nil aggregate root")
-		expectLocation(t, x.Location, "/stubs/aggregate.go")
 	})
 
 	t.Run("records AggregateInstanceLoaded when the instance exists", func(t *testing.T) {
@@ -310,7 +308,8 @@ func TestControllerHandle(t *testing.T) {
 				Root: &stubs.AggregateRootStub{
 					AppliedEvents: []dogma.Event{stubs.EventA1},
 				},
-				Envelope: f.command,
+				Envelope:       f.command,
+				SnapshotOffset: 1,
 			},
 		)
 	})
@@ -355,19 +354,19 @@ func TestControllerHandle(t *testing.T) {
 			panic(dogma.UnexpectedMessage)
 		}
 
-		x := mustPanicUnexpectedMessage(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedMessage) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "RouteCommandToInstance")
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from HandleCommand", func(t *testing.T) {
@@ -380,19 +379,19 @@ func TestControllerHandle(t *testing.T) {
 			panic(dogma.UnexpectedMessage)
 		}
 
-		x := mustPanicUnexpectedMessage(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedMessage) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with new events", func(t *testing.T) {
@@ -413,19 +412,19 @@ func TestControllerHandle(t *testing.T) {
 			}
 		}
 
-		x := mustPanicUnexpectedMessage(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedMessage) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+			xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+			xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
-		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
-		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 	})
 
 	t.Run("provides more context to UnexpectedMessage panics from ApplyEvent when called with historical events", func(t *testing.T) {
@@ -450,19 +449,19 @@ func TestControllerHandle(t *testing.T) {
 			}
 		}
 
-		x := mustPanicUnexpectedMessage(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedMessage) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
+			xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
+			xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateRoot")
-		xtesting.Expect(t, "unexpected method", x.Method, "ApplyEvent")
-		xtesting.Expect(t, "unexpected message", x.Message, stubs.EventA1)
 	})
 
 	t.Run("panics if MarshalBinary fails with a non-ErrNotSupported error", func(t *testing.T) {
@@ -550,106 +549,72 @@ func TestControllerHandle(t *testing.T) {
 		)
 	})
 
-	t.Run("calls UnmarshalBinary when MarshalBinary returns nil", func(t *testing.T) {
-		f := newControllerTestFixture()
-
-		f.handler.NewFunc = func() *stubs.AggregateRootStub {
-			return &stubs.AggregateRootStub{
-				MarshalBinaryFunc: func() ([]byte, error) {
-					return nil, nil
-				},
-			}
-		}
-		f.handler.HandleCommandFunc = func(
-			_ *stubs.AggregateRootStub,
-			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
-			_ dogma.Command,
-		) {
-			s.RecordEvent(stubs.EventA1)
+	t.Run("calls UnmarshalBinary when MarshalBinary returns empty data", func(t *testing.T) {
+		cases := []struct {
+			Name string
+			Data []byte
+		}{
+			{"nil", nil},
+			{"empty slice", []byte{}},
 		}
 
-		_, err := f.ctrl.Handle(
-			context.Background(),
-			fact.Ignore,
-			time.Now(),
-			f.command,
-		)
-		if err != nil {
-			t.Fatal(err)
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				f := newControllerTestFixture()
+
+				f.handler.NewFunc = func() *stubs.AggregateRootStub {
+					return &stubs.AggregateRootStub{
+						MarshalBinaryFunc: func() ([]byte, error) {
+							return c.Data, nil
+						},
+					}
+				}
+				f.handler.HandleCommandFunc = func(
+					_ *stubs.AggregateRootStub,
+					s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+					_ dogma.Command,
+				) {
+					s.RecordEvent(stubs.EventA1)
+				}
+
+				_, err := f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.command,
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				called := false
+				f.handler.NewFunc = func() *stubs.AggregateRootStub {
+					r := &stubs.AggregateRootStub{}
+					r.UnmarshalBinaryFunc = func([]byte) error {
+						called = true
+						// Populate AppliedEvents to match what event replay
+						// would produce, otherwise the controller detects a
+						// mismatch between the snapshot-based and event-based
+						// root states.
+						r.AppliedEvents = []dogma.Event{stubs.EventA1}
+						return nil
+					}
+					return r
+				}
+
+				_, err = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.command,
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
+			})
 		}
-
-		called := false
-		f.handler.NewFunc = func() *stubs.AggregateRootStub {
-			return &stubs.AggregateRootStub{
-				UnmarshalBinaryFunc: func([]byte) error {
-					called = true
-					return nil
-				},
-			}
-		}
-
-		_, err = f.ctrl.Handle(
-			context.Background(),
-			fact.Ignore,
-			time.Now(),
-			f.command,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
-	})
-
-	t.Run("calls UnmarshalBinary when MarshalBinary returns an empty slice", func(t *testing.T) {
-		f := newControllerTestFixture()
-
-		f.handler.NewFunc = func() *stubs.AggregateRootStub {
-			return &stubs.AggregateRootStub{
-				MarshalBinaryFunc: func() ([]byte, error) {
-					return []byte{}, nil
-				},
-			}
-		}
-		f.handler.HandleCommandFunc = func(
-			_ *stubs.AggregateRootStub,
-			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
-			_ dogma.Command,
-		) {
-			s.RecordEvent(stubs.EventA1)
-		}
-
-		_, err := f.ctrl.Handle(
-			context.Background(),
-			fact.Ignore,
-			time.Now(),
-			f.command,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		called := false
-		f.handler.NewFunc = func() *stubs.AggregateRootStub {
-			return &stubs.AggregateRootStub{
-				UnmarshalBinaryFunc: func([]byte) error {
-					called = true
-					return nil
-				},
-			}
-		}
-
-		_, err = f.ctrl.Handle(
-			context.Background(),
-			fact.Ignore,
-			time.Now(),
-			f.command,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
 	})
 }
 
@@ -742,66 +707,6 @@ func seedControllerInstance(t *testing.T, f *controllerTestFixture) {
 	}
 
 	f.handler.HandleCommandFunc = nil
-}
-
-func mustPanicUnexpectedBehavior(t *testing.T, fn func()) panicx.UnexpectedBehavior {
-	t.Helper()
-
-	r := recoverPanic(t, fn)
-	x, ok := r.(panicx.UnexpectedBehavior)
-	if !ok {
-		t.Fatalf("expected UnexpectedBehavior panic, got %T", r)
-	}
-
-	return x
-}
-
-func mustPanicUnexpectedMessage(t *testing.T, fn func()) panicx.UnexpectedMessage {
-	t.Helper()
-
-	r := recoverPanic(t, fn)
-	x, ok := r.(panicx.UnexpectedMessage)
-	if !ok {
-		t.Fatalf("expected UnexpectedMessage panic, got %T", r)
-	}
-
-	return x
-}
-
-func recoverPanic(t *testing.T, fn func()) any {
-	t.Helper()
-
-	var r any
-
-	func() {
-		defer func() {
-			r = recover()
-		}()
-
-		fn()
-	}()
-
-	if r == nil {
-		t.Fatal("expected panic")
-	}
-
-	return r
-}
-
-func expectLocation(t *testing.T, loc location.Location, fileSuffix string) {
-	t.Helper()
-
-	if loc.Func == "" {
-		t.Fatal("expected func to be set in location")
-	}
-
-	if !strings.HasSuffix(loc.File, fileSuffix) {
-		t.Fatalf("unexpected file in location: got %s, want suffix %s", loc.File, fileSuffix)
-	}
-
-	if loc.Line == 0 {
-		t.Fatal("expected line to be set in location")
-	}
 }
 
 func findFact[T any](facts []fact.Fact) (T, bool) {

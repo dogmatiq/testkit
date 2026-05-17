@@ -2,6 +2,7 @@ package process_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,10 +19,10 @@ import (
 
 func TestScope(t *testing.T) {
 	t.Run("InstanceID", func(t *testing.T) {
-		env := newProcessScopeTestEnv()
+		f := newProcessTestFixture()
 		called := false
 
-		env.handler.HandleEventFunc = func(
+		f.handler.HandleEventFunc = func(
 			_ context.Context,
 			_ *ProcessRootStub,
 			s dogma.ProcessEventScope[*ProcessRootStub],
@@ -32,11 +33,11 @@ func TestScope(t *testing.T) {
 			return nil
 		}
 
-		_, err := env.ctrl.Handle(
+		_, err := f.ctrl.Handle(
 			context.Background(),
 			fact.Ignore,
 			time.Now(),
-			env.event,
+			f.event,
 		)
 		expectNoError(t, err)
 
@@ -47,8 +48,8 @@ func TestScope(t *testing.T) {
 
 	t.Run("End", func(t *testing.T) {
 		t.Run("records a fact", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -59,11 +60,11 @@ func TestScope(t *testing.T) {
 			}
 
 			buf := &fact.Buffer{}
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -72,29 +73,29 @@ func TestScope(t *testing.T) {
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceBegun{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceEnded{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 				},
 			)
 		})
 
 		t.Run("does nothing if the instance has already been ended", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -106,11 +107,11 @@ func TestScope(t *testing.T) {
 			}
 
 			buf := &fact.Buffer{}
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				buf,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -119,21 +120,21 @@ func TestScope(t *testing.T) {
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceBegun{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceEnded{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 				},
 			)
@@ -142,8 +143,8 @@ func TestScope(t *testing.T) {
 
 	t.Run("ExecuteCommand", func(t *testing.T) {
 		t.Run("records a fact", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -155,11 +156,11 @@ func TestScope(t *testing.T) {
 
 			buf := &fact.Buffer{}
 			now := time.Now()
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				buf,
 				now,
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -168,27 +169,27 @@ func TestScope(t *testing.T) {
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceBegun{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.CommandExecutedByProcess{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
-						CommandEnvelope: env.event.NewCommand(
+						Envelope:   f.event,
+						CommandEnvelope: f.event.NewCommand(
 							"1",
 							CommandA1,
 							now,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},
@@ -199,8 +200,8 @@ func TestScope(t *testing.T) {
 		})
 
 		t.Run("panics if the command type is not configured to be produced", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -210,31 +211,27 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "executed a command of type *stubs.CommandStub[TypeX], which is not produced by this handler")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 
 		t.Run("panics if the command is invalid", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -246,31 +243,27 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "executed an invalid *stubs.CommandStub[TypeA] command: <invalid>",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "executed an invalid *stubs.CommandStub[TypeA] command: <invalid>")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 
 		t.Run("panics if the process has ended", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -281,34 +274,30 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "executed a command of type *stubs.CommandStub[TypeA] on an ended process",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "executed a command of type *stubs.CommandStub[TypeA] on an ended process")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 	})
 
 	t.Run("ScheduleDeadline", func(t *testing.T) {
 		t.Run("records a fact", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
+			f := newProcessTestFixture()
 			scheduledFor := time.Now().Add(10 * time.Second)
-			env.handler.HandleEventFunc = func(
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -320,11 +309,11 @@ func TestScope(t *testing.T) {
 
 			buf := &fact.Buffer{}
 			now := time.Now()
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				buf,
 				now,
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -333,28 +322,28 @@ func TestScope(t *testing.T) {
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.ProcessInstanceBegun{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
+						Envelope:   f.event,
 					},
 					fact.DeadlineScheduledByProcess{
-						Handler:    env.cfg,
+						Handler:    f.cfg,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
-						Envelope:   env.event,
-						DeadlineEnvelope: env.event.NewDeadline(
+						Envelope:   f.event,
+						DeadlineEnvelope: f.event.NewDeadline(
 							"1",
 							DeadlineA1,
 							now,
 							scheduledFor,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance>",
 							},
@@ -365,8 +354,8 @@ func TestScope(t *testing.T) {
 		})
 
 		t.Run("panics if the deadline type is not configured to be scheduled", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -376,31 +365,27 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "scheduled a deadline of type *stubs.DeadlineStub[TypeX], which is not produced by this handler",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "scheduled a deadline of type *stubs.DeadlineStub[TypeX], which is not produced by this handler")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 
 		t.Run("panics if the deadline is invalid", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -415,32 +400,28 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "scheduled an invalid *stubs.DeadlineStub[TypeA] deadline: <invalid>",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "scheduled an invalid *stubs.DeadlineStub[TypeA] deadline: <invalid>")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 
 		t.Run("panics if the process has ended", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
+			f := newProcessTestFixture()
 			scheduledFor := time.Now().Add(10 * time.Second)
-			env.handler.HandleEventFunc = func(
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -451,53 +432,49 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "scheduled a deadline of type *stubs.DeadlineStub[TypeA] on an ended process",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "scheduled a deadline of type *stubs.DeadlineStub[TypeA] on an ended process")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 	})
 
 	t.Run("ScheduledFor", func(t *testing.T) {
-		env := newProcessScopeTestEnv()
+		f := newProcessTestFixture()
 
-		_, err := env.ctrl.Handle(
+		_, err := f.ctrl.Handle(
 			context.Background(),
 			fact.Ignore,
 			time.Now(),
-			env.event,
+			f.event,
 		)
 		expectNoError(t, err)
 
-		deadline := env.event.NewDeadline(
+		deadline := f.event.NewDeadline(
 			"2000",
 			DeadlineA1,
 			time.Now(),
 			time.Now().Add(10*time.Second),
 			envelope.Origin{
-				Handler:     env.cfg,
+				Handler:     f.cfg,
 				HandlerType: config.ProcessHandlerType,
 				InstanceID:  "<instance>",
 			},
 		)
 
-		env.handler.HandleDeadlineFunc = func(
+		f.handler.HandleDeadlineFunc = func(
 			_ context.Context,
 			_ *ProcessRootStub,
 			s dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -513,7 +490,7 @@ func TestScope(t *testing.T) {
 			return nil
 		}
 
-		_, err = env.ctrl.Handle(
+		_, err = f.ctrl.Handle(
 			context.Background(),
 			fact.Ignore,
 			time.Now(),
@@ -524,10 +501,10 @@ func TestScope(t *testing.T) {
 
 	t.Run("Mutate", func(t *testing.T) {
 		t.Run("calls the function with the instance root", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
+			f := newProcessTestFixture()
 			called := false
 
-			env.handler.HandleEventFunc = func(
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -540,11 +517,11 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -554,8 +531,8 @@ func TestScope(t *testing.T) {
 		})
 
 		t.Run("panics if the process has ended", func(t *testing.T) {
-			env := newProcessScopeTestEnv()
-			env.handler.HandleEventFunc = func(
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -566,32 +543,28 @@ func TestScope(t *testing.T) {
 				return nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "HandleEvent",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "mutated an ended process instance",
-				},
-				"/engine/internal/process/scope_test.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "mutated an ended process instance")
+				xtesting.ExpectLocation(t, x.Location, "/engine/internal/process/scope_test.go")
+			})
 		})
 	})
 
 	t.Run("Log", func(t *testing.T) {
-		env := newProcessScopeTestEnv()
-		env.handler.HandleEventFunc = func(
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
 			_ context.Context,
 			_ *ProcessRootStub,
 			s dogma.ProcessEventScope[*ProcessRootStub],
@@ -602,11 +575,11 @@ func TestScope(t *testing.T) {
 		}
 
 		buf := &fact.Buffer{}
-		_, err := env.ctrl.Handle(
+		_, err := f.ctrl.Handle(
 			context.Background(),
 			buf,
 			time.Now(),
-			env.event,
+			f.event,
 		)
 		expectNoError(t, err)
 
@@ -615,21 +588,21 @@ func TestScope(t *testing.T) {
 			buf.Facts(),
 			[]fact.Fact{
 				fact.ProcessInstanceNotFound{
-					Handler:    env.cfg,
+					Handler:    f.cfg,
 					InstanceID: "<instance>",
-					Envelope:   env.event,
+					Envelope:   f.event,
 				},
 				fact.ProcessInstanceBegun{
-					Handler:    env.cfg,
+					Handler:    f.cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
-					Envelope:   env.event,
+					Envelope:   f.event,
 				},
 				fact.MessageLoggedByProcess{
-					Handler:    env.cfg,
+					Handler:    f.cfg,
 					InstanceID: "<instance>",
 					Root:       &ProcessRootStub{},
-					Envelope:   env.event,
+					Envelope:   f.event,
 					LogFormat:  "<format>",
 					LogArguments: []any{
 						"<arg-1>",
@@ -641,7 +614,293 @@ func TestScope(t *testing.T) {
 	})
 }
 
-type processScopeTestEnv struct {
+func TestMutationDetection(t *testing.T) {
+	t.Run("panics if the handler modifies the root before calling ExecuteCommand", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.ExecuteCommand(CommandA1)
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to ExecuteCommand() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling InstanceID", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.InstanceID()
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to InstanceID() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling Now", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.Now()
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to Now() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling Log", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.Log("hello")
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to Log() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling End", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.End()
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to End() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling Mutate", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.Mutate(func(*ProcessRootStub) {})
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to Mutate() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling ScheduleDeadline", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.ScheduleDeadline(DeadlineA1, time.Now())
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), before call to ScheduleDeadline() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root between two scope calls", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			s.InstanceID()
+			r.Value = "<mutated>"
+			s.ExecuteCommand(CommandA1)
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root without using Mutate(), between call to InstanceID() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics at end of handler if the root was modified without a scope call", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			_ dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root without using Mutate()")
+		})
+	})
+}
+
+func TestNonDeterministicMutate(t *testing.T) {
+	t.Run("panics if Mutate callback produces different state on each call", func(t *testing.T) {
+		f := newProcessTestFixture()
+
+		callCount := 0
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			s.Mutate(func(r *ProcessRootStub) {
+				callCount++
+				if callCount == 1 {
+					r.Value = "<first>"
+				} else {
+					r.Value = "<second>"
+				}
+			})
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected description", x.Description, "non-deterministic implementation of Mutate() callback detected")
+		})
+	})
+}
+
+type processTestFixture struct {
 	messageIDs envelope.MessageIDGenerator
 	handler    *ProcessMessageHandlerStub[*ProcessRootStub]
 	cfg        *config.Process
@@ -649,7 +908,7 @@ type processScopeTestEnv struct {
 	event      *envelope.Envelope
 }
 
-func newProcessScopeTestEnv() *processScopeTestEnv {
+func newProcessTestFixture() *processTestFixture {
 	event := envelope.NewEvent(
 		"1000",
 		EventA1,
@@ -679,18 +938,18 @@ func newProcessScopeTestEnv() *processScopeTestEnv {
 	}
 
 	cfg := runtimeconfig.FromProcess(handler)
-	env := &processScopeTestEnv{
+	f := &processTestFixture{
 		handler: handler,
 		cfg:     cfg,
 		event:   event,
 	}
 
-	env.ctrl = &Controller{
+	f.ctrl = &Controller{
 		Config:     cfg,
-		MessageIDs: &env.messageIDs,
+		MessageIDs: &f.messageIDs,
 	}
 
-	env.messageIDs.Reset()
+	f.messageIDs.Reset()
 
-	return env
+	return f
 }

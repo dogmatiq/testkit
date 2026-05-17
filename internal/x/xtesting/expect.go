@@ -8,6 +8,7 @@ import (
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/enginekit/message"
+	"github.com/dogmatiq/testkit/location"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -137,4 +138,62 @@ func ExpectPanic(
 	}()
 
 	fn()
+}
+
+// ExpectPanicMatching asserts that fn panics with a value of type T, then
+// calls match to make further assertions about the panic value.
+func ExpectPanicMatching[T any](
+	t TestingT,
+	fn func(),
+	match func(T),
+) {
+	t.Helper()
+
+	defer func() {
+		t.Helper()
+
+		r := recover()
+		if r == nil {
+			t.Fatal("expected a panic")
+			return
+		}
+
+		v, ok := r.(T)
+		if !ok {
+			t.Fatal(
+				fmt.Sprintf(
+					"expected a panic of type %s, got %T",
+					reflect.TypeFor[T](),
+					r,
+				),
+			)
+			return
+		}
+
+		match(v)
+	}()
+
+	fn()
+}
+
+// ExpectLocation asserts that loc has a non-empty Func, a non-zero Line, and
+// that its File ends with the given suffix.
+func ExpectLocation(
+	t TestingT,
+	loc location.Location,
+	fileSuffix string,
+) {
+	t.Helper()
+
+	if loc.Func == "" {
+		t.Fatal("expected func to be set in location")
+	}
+
+	if !strings.HasSuffix(loc.File, fileSuffix) {
+		t.Fatal(fmt.Sprintf("unexpected file in location: got %s, want suffix %s", loc.File, fileSuffix))
+	}
+
+	if loc.Line == 0 {
+		t.Fatal("expected line to be set in location")
+	}
 }

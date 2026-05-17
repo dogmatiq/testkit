@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -17,16 +16,15 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
-	"github.com/dogmatiq/testkit/location"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestController(t *testing.T) {
 	t.Run("HandlerConfig", func(t *testing.T) {
-		env := newControllerTestFixture()
+		f := newControllerTestFixture()
 
-		if got := env.ctrl.HandlerConfig(); got != env.cfg {
-			t.Fatalf("unexpected handler config: got %p, want %p", got, env.cfg)
+		if got := f.ctrl.HandlerConfig(); got != f.cfg {
+			t.Fatalf("unexpected handler config: got %p, want %p", got, f.cfg)
 		}
 	})
 
@@ -34,13 +32,13 @@ func TestController(t *testing.T) {
 		setup := func(t *testing.T) (*controllerTestFixture, time.Time, time.Time, time.Time, time.Time) {
 			t.Helper()
 
-			env := newControllerTestFixture()
+			f := newControllerTestFixture()
 			createdTime := time.Now()
 			t1Time := createdTime.Add(1 * time.Hour)
 			t2Time := createdTime.Add(2 * time.Hour)
 			t3Time := createdTime.Add(3 * time.Hour)
 
-			env.handler.HandleEventFunc = func(
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -52,23 +50,23 @@ func TestController(t *testing.T) {
 				return nil
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				createdTime,
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
-			env.messageIDs.Reset()
+			f.messageIDs.Reset()
 
-			return env, createdTime, t1Time, t2Time, t3Time
+			return f, createdTime, t1Time, t2Time, t3Time
 		}
 
 		t.Run("returns deadlines that are ready to be handled", func(t *testing.T) {
-			env, createdTime, t1Time, t2Time, _ := setup(t)
+			f, createdTime, t1Time, t2Time, _ := setup(t)
 
-			deadlines, err := env.ctrl.Tick(
+			deadlines, err := f.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -79,24 +77,24 @@ func TestController(t *testing.T) {
 				t,
 				deadlines,
 				[]*envelope.Envelope{
-					env.event.NewDeadline(
+					f.event.NewDeadline(
 						"3",
 						DeadlineA1,
 						createdTime,
 						t1Time,
 						envelope.Origin{
-							Handler:     env.cfg,
+							Handler:     f.cfg,
 							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance-A1>",
 						},
 					),
-					env.event.NewDeadline(
+					f.event.NewDeadline(
 						"2",
 						DeadlineA2,
 						createdTime,
 						t2Time,
 						envelope.Origin{
-							Handler:     env.cfg,
+							Handler:     f.cfg,
 							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance-A1>",
 						},
@@ -106,9 +104,9 @@ func TestController(t *testing.T) {
 		})
 
 		t.Run("does not return the same deadlines multiple times", func(t *testing.T) {
-			env, _, _, t2Time, _ := setup(t)
+			f, _, _, t2Time, _ := setup(t)
 
-			deadlines, err := env.ctrl.Tick(
+			deadlines, err := f.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -119,7 +117,7 @@ func TestController(t *testing.T) {
 				t.Fatalf("unexpected deadline count: got %d, want %d", got, want)
 			}
 
-			deadlines, err = env.ctrl.Tick(
+			deadlines, err = f.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -132,7 +130,7 @@ func TestController(t *testing.T) {
 		})
 
 		t.Run("does not return deadlines for instances that have been ended", func(t *testing.T) {
-			env, createdTime, t1Time, t2Time, _ := setup(t)
+			f, createdTime, t1Time, t2Time, _ := setup(t)
 
 			secondInstanceEvent := envelope.NewEvent(
 				"3000",
@@ -140,7 +138,7 @@ func TestController(t *testing.T) {
 				time.Now(),
 			)
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				createdTime,
@@ -148,7 +146,7 @@ func TestController(t *testing.T) {
 			)
 			expectNoError(t, err)
 
-			env.handler.HandleEventFunc = func(
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -158,15 +156,15 @@ func TestController(t *testing.T) {
 				return nil
 			}
 
-			_, err = env.ctrl.Handle(
+			_, err = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
-			deadlines, err := env.ctrl.Tick(
+			deadlines, err := f.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
@@ -183,7 +181,7 @@ func TestController(t *testing.T) {
 						createdTime,
 						t1Time,
 						envelope.Origin{
-							Handler:     env.cfg,
+							Handler:     f.cfg,
 							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance-A2>",
 						},
@@ -194,7 +192,7 @@ func TestController(t *testing.T) {
 						createdTime,
 						t2Time,
 						envelope.Origin{
-							Handler:     env.cfg,
+							Handler:     f.cfg,
 							HandlerType: config.ProcessHandlerType,
 							InstanceID:  "<instance-A2>",
 						},
@@ -207,10 +205,10 @@ func TestController(t *testing.T) {
 	t.Run("Handle", func(t *testing.T) {
 		t.Run("handling an event", func(t *testing.T) {
 			t.Run("forwards the message to the handler", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				called := false
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					_ dogma.ProcessEventScope[*ProcessRootStub],
@@ -221,11 +219,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -235,10 +233,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("propagates handler errors", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				expected := errors.New("<error>")
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					_ dogma.ProcessEventScope[*ProcessRootStub],
@@ -247,21 +245,21 @@ func TestController(t *testing.T) {
 					return expected
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 
 				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
 			t.Run("returns both commands and deadlines", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				now := time.Now()
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessEventScope[*ProcessRootStub],
@@ -272,11 +270,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -284,23 +282,23 @@ func TestController(t *testing.T) {
 					t,
 					envelopes,
 					[]*envelope.Envelope{
-						env.event.NewCommand(
+						f.event.NewCommand(
 							"1",
 							CommandA1,
 							now,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance-A1>",
 							},
 						),
-						env.event.NewDeadline(
+						f.event.NewDeadline(
 							"2",
 							DeadlineA1,
 							now,
 							now,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance-A1>",
 							},
@@ -310,10 +308,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("returns deadlines scheduled in the past", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				now := time.Now()
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessEventScope[*ProcessRootStub],
@@ -323,11 +321,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -337,10 +335,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("does not return deadlines scheduled in the future", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				now := time.Now()
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessEventScope[*ProcessRootStub],
@@ -350,11 +348,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -365,15 +363,15 @@ func TestController(t *testing.T) {
 
 			t.Run("when the event is not routed to an instance", func(t *testing.T) {
 				t.Run("does not forward the message to the handler", func(t *testing.T) {
-					env := newControllerTestFixture()
-					env.handler.RouteEventToInstanceFunc = func(
+					f := newControllerTestFixture()
+					f.handler.RouteEventToInstanceFunc = func(
 						context.Context,
 						dogma.Event,
 					) (string, bool, error) {
 						return "", false, nil
 					}
 
-					env.handler.HandleEventFunc = func(
+					f.handler.HandleEventFunc = func(
 						context.Context,
 						*ProcessRootStub,
 						dogma.ProcessEventScope[*ProcessRootStub],
@@ -383,18 +381,18 @@ func TestController(t *testing.T) {
 						return nil
 					}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
-					env := newControllerTestFixture()
-					env.handler.RouteEventToInstanceFunc = func(
+					f := newControllerTestFixture()
+					f.handler.RouteEventToInstanceFunc = func(
 						context.Context,
 						dogma.Event,
 					) (string, bool, error) {
@@ -402,11 +400,11 @@ func TestController(t *testing.T) {
 					}
 
 					buf := &fact.Buffer{}
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						buf,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 
@@ -415,8 +413,8 @@ func TestController(t *testing.T) {
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessEventIgnored{
-								Handler:  env.cfg,
-								Envelope: env.event,
+								Handler:  f.cfg,
+								Envelope: f.event,
 							},
 						},
 					)
@@ -427,8 +425,8 @@ func TestController(t *testing.T) {
 				setup := func(t *testing.T) *controllerTestFixture {
 					t.Helper()
 
-					env := newControllerTestFixture()
-					env.handler.HandleEventFunc = func(
+					f := newControllerTestFixture()
+					f.handler.HandleEventFunc = func(
 						_ context.Context,
 						_ *ProcessRootStub,
 						s dogma.ProcessEventScope[*ProcessRootStub],
@@ -438,21 +436,21 @@ func TestController(t *testing.T) {
 						return nil
 					}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 
-					env.messageIDs.Reset()
-					return env
+					f.messageIDs.Reset()
+					return f
 				}
 
 				t.Run("does not forward the message to the handler", func(t *testing.T) {
-					env := setup(t)
-					env.handler.HandleEventFunc = func(
+					f := setup(t)
+					f.handler.HandleEventFunc = func(
 						context.Context,
 						*ProcessRootStub,
 						dogma.ProcessEventScope[*ProcessRootStub],
@@ -462,24 +460,24 @@ func TestController(t *testing.T) {
 						return nil
 					}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
-					env := setup(t)
+					f := setup(t)
 					buf := &fact.Buffer{}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						buf,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 
@@ -488,9 +486,9 @@ func TestController(t *testing.T) {
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessEventRoutedToEndedInstance{
-								Handler:    env.cfg,
+								Handler:    f.cfg,
 								InstanceID: "<instance-A1>",
-								Envelope:   env.event,
+								Envelope:   f.event,
 							},
 						},
 					)
@@ -502,8 +500,8 @@ func TestController(t *testing.T) {
 			setup := func(t *testing.T) *controllerTestFixture {
 				t.Helper()
 
-				env := newControllerTestFixture()
-				env.handler.HandleEventFunc = func(
+				f := newControllerTestFixture()
+				f.handler.HandleEventFunc = func(
 					context.Context,
 					*ProcessRootStub,
 					dogma.ProcessEventScope[*ProcessRootStub],
@@ -512,23 +510,23 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
-				env.messageIDs.Reset()
-				return env
+				f.messageIDs.Reset()
+				return f
 			}
 
 			t.Run("forwards the message to the handler", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				called := false
 
-				env.handler.HandleDeadlineFunc = func(
+				f.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					_ dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -539,11 +537,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.deadline,
+					f.deadline,
 				)
 				expectNoError(t, err)
 
@@ -553,10 +551,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("propagates handler errors", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				expected := errors.New("<error>")
 
-				env.handler.HandleDeadlineFunc = func(
+				f.handler.HandleDeadlineFunc = func(
 					context.Context,
 					*ProcessRootStub,
 					dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -565,21 +563,21 @@ func TestController(t *testing.T) {
 					return expected
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.deadline,
+					f.deadline,
 				)
 
 				xtesting.Expect(t, "unexpected error", err, expected)
 			})
 
 			t.Run("returns both commands and deadlines", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				now := time.Now()
 
-				env.handler.HandleDeadlineFunc = func(
+				f.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -590,11 +588,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.deadline,
+					f.deadline,
 				)
 				expectNoError(t, err)
 
@@ -602,23 +600,23 @@ func TestController(t *testing.T) {
 					t,
 					envelopes,
 					[]*envelope.Envelope{
-						env.deadline.NewCommand(
+						f.deadline.NewCommand(
 							"1",
 							CommandA1,
 							now,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance-A1>",
 							},
 						),
-						env.deadline.NewDeadline(
+						f.deadline.NewDeadline(
 							"2",
 							DeadlineA1,
 							now,
 							now,
 							envelope.Origin{
-								Handler:     env.cfg,
+								Handler:     f.cfg,
 								HandlerType: config.ProcessHandlerType,
 								InstanceID:  "<instance-A1>",
 							},
@@ -628,10 +626,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("returns deadlines scheduled in the past", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				now := time.Now()
 
-				env.handler.HandleDeadlineFunc = func(
+				f.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -641,11 +639,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.deadline,
+					f.deadline,
 				)
 				expectNoError(t, err)
 
@@ -655,10 +653,10 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("does not return deadlines scheduled in the future", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				now := time.Now()
 
-				env.handler.HandleDeadlineFunc = func(
+				f.handler.HandleDeadlineFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					s dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -668,11 +666,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				envelopes, err := env.ctrl.Handle(
+				envelopes, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					now,
-					env.deadline,
+					f.deadline,
 				)
 				expectNoError(t, err)
 
@@ -685,8 +683,8 @@ func TestController(t *testing.T) {
 				setupEnded := func(t *testing.T) *controllerTestFixture {
 					t.Helper()
 
-					env := setup(t)
-					env.handler.HandleEventFunc = func(
+					f := setup(t)
+					f.handler.HandleEventFunc = func(
 						_ context.Context,
 						_ *ProcessRootStub,
 						s dogma.ProcessEventScope[*ProcessRootStub],
@@ -696,21 +694,21 @@ func TestController(t *testing.T) {
 						return nil
 					}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 					expectNoError(t, err)
 
-					env.messageIDs.Reset()
-					return env
+					f.messageIDs.Reset()
+					return f
 				}
 
 				t.Run("does not forward the message to the handler", func(t *testing.T) {
-					env := setupEnded(t)
-					env.handler.HandleDeadlineFunc = func(
+					f := setupEnded(t)
+					f.handler.HandleDeadlineFunc = func(
 						context.Context,
 						*ProcessRootStub,
 						dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -720,24 +718,24 @@ func TestController(t *testing.T) {
 						return nil
 					}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.deadline,
+						f.deadline,
 					)
 					expectNoError(t, err)
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
-					env := setupEnded(t)
+					f := setupEnded(t)
 					buf := &fact.Buffer{}
 
-					_, err := env.ctrl.Handle(
+					_, err := f.ctrl.Handle(
 						context.Background(),
 						buf,
 						time.Now(),
-						env.deadline,
+						f.deadline,
 					)
 					expectNoError(t, err)
 
@@ -746,9 +744,9 @@ func TestController(t *testing.T) {
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessDeadlineRoutedToEndedInstance{
-								Handler:    env.cfg,
+								Handler:    f.cfg,
 								InstanceID: "<instance-A1>",
-								Envelope:   env.deadline,
+								Envelope:   f.deadline,
 							},
 						},
 					)
@@ -757,68 +755,64 @@ func TestController(t *testing.T) {
 		})
 
 		t.Run("propagates routing errors", func(t *testing.T) {
-			env := newControllerTestFixture()
+			f := newControllerTestFixture()
 			expected := errors.New("<error>")
 
-			env.handler.RouteEventToInstanceFunc = func(
+			f.handler.RouteEventToInstanceFunc = func(
 				context.Context,
 				dogma.Event,
 			) (string, bool, error) {
 				return "<instance>", true, expected
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 
 			xtesting.Expect(t, "unexpected error", err, expected)
 		})
 
 		t.Run("panics when the handler routes to an empty instance ID", func(t *testing.T) {
-			env := newControllerTestFixture()
+			f := newControllerTestFixture()
 
-			env.handler.RouteEventToInstanceFunc = func(
+			f.handler.RouteEventToInstanceFunc = func(
 				context.Context,
 				dogma.Event,
 			) (string, bool, error) {
 				return "", true, nil
 			}
 
-			expectUnexpectedBehavior(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				panicx.UnexpectedBehavior{
-					Handler:        env.cfg,
-					Interface:      "ProcessMessageHandler",
-					Method:         "RouteEventToInstance",
-					Implementation: env.cfg.Implementation(),
-					Message:        env.event.Message,
-					Description:    "routed an event of type *stubs.EventStub[TypeA] to an empty ID",
-				},
-				"/stubs/process.go",
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedBehavior) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "RouteEventToInstance")
+				xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+				xtesting.Expect(t, "unexpected description", x.Description, "routed an event of type *stubs.EventStub[TypeA] to an empty ID")
+				xtesting.ExpectLocation(t, x.Location, "/stubs/process.go")
+			})
 		})
 
 		t.Run("when the instance does not exist", func(t *testing.T) {
 			t.Run("records facts", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 				buf := &fact.Buffer{}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -827,46 +821,42 @@ func TestController(t *testing.T) {
 					buf.Facts(),
 					[]fact.Fact{
 						fact.ProcessInstanceNotFound{
-							Handler:    env.cfg,
+							Handler:    f.cfg,
 							InstanceID: "<instance-A1>",
-							Envelope:   env.event,
+							Envelope:   f.event,
 						},
 						fact.ProcessInstanceBegun{
-							Handler:    env.cfg,
+							Handler:    f.cfg,
 							InstanceID: "<instance-A1>",
 							Root:       &ProcessRootStub{},
-							Envelope:   env.event,
+							Envelope:   f.event,
 						},
 					},
 				)
 			})
 
 			t.Run("panics if New returns nil", func(t *testing.T) {
-				env := newControllerTestFixture()
-				env.handler.NewFunc = func() *ProcessRootStub {
+				f := newControllerTestFixture()
+				f.handler.NewFunc = func() *ProcessRootStub {
 					return nil
 				}
 
-				expectUnexpectedBehavior(
-					t,
-					func() {
-						_, _ = env.ctrl.Handle(
-							context.Background(),
-							fact.Ignore,
-							time.Now(),
-							env.event,
-						)
-					},
-					panicx.UnexpectedBehavior{
-						Handler:        env.cfg,
-						Interface:      "ProcessMessageHandler",
-						Method:         "New",
-						Implementation: env.cfg.Implementation(),
-						Message:        env.event.Message,
-						Description:    "returned a nil process root",
-					},
-					"/stubs/process.go",
-				)
+				xtesting.ExpectPanicMatching(t, func() {
+					_, _ = f.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						f.event,
+					)
+				}, func(x panicx.UnexpectedBehavior) {
+					xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+					xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+					xtesting.Expect(t, "unexpected method", x.Method, "New")
+					xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+					xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+					xtesting.Expect(t, "unexpected description", x.Description, "returned a nil process root")
+					xtesting.ExpectLocation(t, x.Location, "/stubs/process.go")
+				})
 			})
 		})
 
@@ -874,8 +864,8 @@ func TestController(t *testing.T) {
 			setup := func(t *testing.T) *controllerTestFixture {
 				t.Helper()
 
-				env := newControllerTestFixture()
-				env.handler.HandleEventFunc = func(
+				f := newControllerTestFixture()
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
 					_ dogma.ProcessEventScope[*ProcessRootStub],
@@ -884,27 +874,27 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
-				env.messageIDs.Reset()
-				return env
+				f.messageIDs.Reset()
+				return f
 			}
 
 			t.Run("records a fact", func(t *testing.T) {
-				env := setup(t)
+				f := setup(t)
 				buf := &fact.Buffer{}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					buf,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -913,19 +903,19 @@ func TestController(t *testing.T) {
 					buf.Facts(),
 					[]fact.Fact{
 						fact.ProcessInstanceLoaded{
-							Handler:    env.cfg,
+							Handler:    f.cfg,
 							InstanceID: "<instance-A1>",
 							Root:       &ProcessRootStub{},
-							Envelope:   env.event,
+							Envelope:   f.event,
 						},
 					},
 				)
 			})
 
 			t.Run("provides the root with state from the prior Handle() call", func(t *testing.T) {
-				env := newControllerTestFixture()
+				f := newControllerTestFixture()
 
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					r *ProcessRootStub,
 					s dogma.ProcessEventScope[*ProcessRootStub],
@@ -937,16 +927,16 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err := env.ctrl.Handle(
+				_, err := f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
 				var got string
-				env.handler.HandleEventFunc = func(
+				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					r *ProcessRootStub,
 					_ dogma.ProcessEventScope[*ProcessRootStub],
@@ -956,11 +946,11 @@ func TestController(t *testing.T) {
 					return nil
 				}
 
-				_, err = env.ctrl.Handle(
+				_, err = f.ctrl.Handle(
 					context.Background(),
 					fact.Ignore,
 					time.Now(),
-					env.event,
+					f.event,
 				)
 				expectNoError(t, err)
 
@@ -970,62 +960,57 @@ func TestController(t *testing.T) {
 			})
 
 			t.Run("panics if New() returns nil", func(t *testing.T) {
-				env := setup(t)
-				env.handler.NewFunc = func() *ProcessRootStub {
+				f := setup(t)
+				f.handler.NewFunc = func() *ProcessRootStub {
 					return nil
 				}
 
-				expectUnexpectedBehavior(
-					t,
-					func() {
-						_, _ = env.ctrl.Handle(
-							context.Background(),
-							fact.Ignore,
-							time.Now(),
-							env.event,
-						)
-					},
-					panicx.UnexpectedBehavior{
-						Handler:        env.cfg,
-						Interface:      "ProcessMessageHandler",
-						Method:         "New",
-						Implementation: env.cfg.Implementation(),
-						Message:        env.event.Message,
-						Description:    "returned a nil process root",
-					},
-					"/stubs/process.go",
-				)
+				xtesting.ExpectPanicMatching(t, func() {
+					_, _ = f.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						f.event,
+					)
+				}, func(x panicx.UnexpectedBehavior) {
+					xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+					xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+					xtesting.Expect(t, "unexpected method", x.Method, "New")
+					xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+					xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+					xtesting.Expect(t, "unexpected description", x.Description, "returned a nil process root")
+					xtesting.ExpectLocation(t, x.Location, "/stubs/process.go")
+				})
 			})
 		})
 
 		t.Run("provides more context to UnexpectedMessage panics from RouteEventToInstance", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.RouteEventToInstanceFunc = func(
+			f := newControllerTestFixture()
+			f.handler.RouteEventToInstanceFunc = func(
 				context.Context,
 				dogma.Event,
 			) (string, bool, error) {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			expectUnexpectedMessage(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				env.cfg,
-				"RouteEventToInstance",
-				env.event.Message,
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedMessage) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "RouteEventToInstance")
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+			})
 		})
 
 		t.Run("provides more context to UnexpectedMessage panics from HandleEvent", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				context.Context,
 				*ProcessRootStub,
 				dogma.ProcessEventScope[*ProcessRootStub],
@@ -1034,25 +1019,24 @@ func TestController(t *testing.T) {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			expectUnexpectedMessage(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.event,
-					)
-				},
-				env.cfg,
-				"HandleEvent",
-				env.event.Message,
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+			}, func(x panicx.UnexpectedMessage) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleEvent")
+				xtesting.Expect(t, "unexpected message", x.Message, f.event.Message)
+			})
 		})
 
 		t.Run("provides more context to UnexpectedMessage panics from HandleDeadline", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				context.Context,
 				*ProcessRootStub,
 				dogma.ProcessEventScope[*ProcessRootStub],
@@ -1061,15 +1045,15 @@ func TestController(t *testing.T) {
 				return nil
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
-			env.handler.HandleDeadlineFunc = func(
+			f.handler.HandleDeadlineFunc = func(
 				context.Context,
 				*ProcessRootStub,
 				dogma.ProcessDeadlineScope[*ProcessRootStub],
@@ -1078,25 +1062,24 @@ func TestController(t *testing.T) {
 				panic(dogma.UnexpectedMessage)
 			}
 
-			expectUnexpectedMessage(
-				t,
-				func() {
-					_, _ = env.ctrl.Handle(
-						context.Background(),
-						fact.Ignore,
-						time.Now(),
-						env.deadline,
-					)
-				},
-				env.cfg,
-				"HandleDeadline",
-				env.deadline.Message,
-			)
+			xtesting.ExpectPanicMatching(t, func() {
+				_, _ = f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.deadline,
+				)
+			}, func(x panicx.UnexpectedMessage) {
+				xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+				xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
+				xtesting.Expect(t, "unexpected method", x.Method, "HandleDeadline")
+				xtesting.Expect(t, "unexpected message", x.Message, f.deadline.Message)
+			})
 		})
 
 		t.Run("panics if MarshalBinary() fails", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -1114,19 +1097,19 @@ func TestController(t *testing.T) {
 				t,
 				"the '<name>' process message handler behaved unexpectedly in *stubs.ProcessRootStub.MarshalBinary(): unable to marshal the process root: <marshal error>",
 				func() {
-					_, _ = env.ctrl.Handle(
+					_, _ = f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 				},
 			)
 		})
 
 		t.Run("panics if UnmarshalBinary fails", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -1137,16 +1120,16 @@ func TestController(t *testing.T) {
 			}
 
 			// First Handle: creates instance, mutates, marshal succeeds.
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
 			// Second Handle: loads instance, unmarshal fails.
-			env.handler.NewFunc = func() *ProcessRootStub {
+			f.handler.NewFunc = func() *ProcessRootStub {
 				return &ProcessRootStub{
 					UnmarshalBinaryFunc: func([]byte) error {
 						return errors.New("<unmarshal error>")
@@ -1158,19 +1141,19 @@ func TestController(t *testing.T) {
 				t,
 				"the '<name>' process message handler behaved unexpectedly in *stubs.ProcessRootStub.UnmarshalBinary(): unable to unmarshal the process root: <unmarshal error>",
 				func() {
-					_, _ = env.ctrl.Handle(
+					_, _ = f.ctrl.Handle(
 						context.Background(),
 						fact.Ignore,
 						time.Now(),
-						env.event,
+						f.event,
 					)
 				},
 			)
 		})
 
 		t.Run("calls UnmarshalBinary when MarshalBinary returns nil", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -1184,16 +1167,16 @@ func TestController(t *testing.T) {
 				return nil
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
 			called := false
-			env.handler.NewFunc = func() *ProcessRootStub {
+			f.handler.NewFunc = func() *ProcessRootStub {
 				return &ProcessRootStub{
 					UnmarshalBinaryFunc: func([]byte) error {
 						called = true
@@ -1202,11 +1185,11 @@ func TestController(t *testing.T) {
 				}
 			}
 
-			_, err = env.ctrl.Handle(
+			_, err = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -1214,8 +1197,8 @@ func TestController(t *testing.T) {
 		})
 
 		t.Run("calls UnmarshalBinary when MarshalBinary returns an empty slice", func(t *testing.T) {
-			env := newControllerTestFixture()
-			env.handler.HandleEventFunc = func(
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
 				_ context.Context,
 				_ *ProcessRootStub,
 				s dogma.ProcessEventScope[*ProcessRootStub],
@@ -1229,16 +1212,16 @@ func TestController(t *testing.T) {
 				return nil
 			}
 
-			_, err := env.ctrl.Handle(
+			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
 			called := false
-			env.handler.NewFunc = func() *ProcessRootStub {
+			f.handler.NewFunc = func() *ProcessRootStub {
 				return &ProcessRootStub{
 					UnmarshalBinaryFunc: func([]byte) error {
 						called = true
@@ -1247,11 +1230,11 @@ func TestController(t *testing.T) {
 				}
 			}
 
-			_, err = env.ctrl.Handle(
+			_, err = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
-				env.event,
+				f.event,
 			)
 			expectNoError(t, err)
 
@@ -1260,8 +1243,8 @@ func TestController(t *testing.T) {
 	})
 
 	t.Run("Reset", func(t *testing.T) {
-		env := newControllerTestFixture()
-		env.handler.HandleEventFunc = func(
+		f := newControllerTestFixture()
+		f.handler.HandleEventFunc = func(
 			context.Context,
 			*ProcessRootStub,
 			dogma.ProcessEventScope[*ProcessRootStub],
@@ -1270,23 +1253,23 @@ func TestController(t *testing.T) {
 			return nil
 		}
 
-		_, err := env.ctrl.Handle(
+		_, err := f.ctrl.Handle(
 			context.Background(),
 			fact.Ignore,
 			time.Now(),
-			env.event,
+			f.event,
 		)
 		expectNoError(t, err)
 
-		env.messageIDs.Reset()
-		env.ctrl.Reset()
+		f.messageIDs.Reset()
+		f.ctrl.Reset()
 
 		buf := &fact.Buffer{}
-		_, err = env.ctrl.Handle(
+		_, err = f.ctrl.Handle(
 			context.Background(),
 			buf,
 			time.Now(),
-			env.event,
+			f.event,
 		)
 		expectNoError(t, err)
 
@@ -1295,15 +1278,15 @@ func TestController(t *testing.T) {
 			buf.Facts(),
 			[]fact.Fact{
 				fact.ProcessInstanceNotFound{
-					Handler:    env.cfg,
+					Handler:    f.cfg,
 					InstanceID: "<instance-A1>",
-					Envelope:   env.event,
+					Envelope:   f.event,
 				},
 				fact.ProcessInstanceBegun{
-					Handler:    env.cfg,
+					Handler:    f.cfg,
 					InstanceID: "<instance-A1>",
 					Root:       &ProcessRootStub{},
-					Envelope:   env.event,
+					Envelope:   f.event,
 				},
 			},
 		)
@@ -1361,21 +1344,21 @@ func newControllerTestFixture() *controllerTestFixture {
 		},
 	)
 
-	env := &controllerTestFixture{
+	f := &controllerTestFixture{
 		handler:  handler,
 		cfg:      cfg,
 		event:    event,
 		deadline: deadline,
 	}
 
-	env.ctrl = &Controller{
+	f.ctrl = &Controller{
 		Config:     cfg,
-		MessageIDs: &env.messageIDs,
+		MessageIDs: &f.messageIDs,
 	}
 
-	env.messageIDs.Reset()
+	f.messageIDs.Reset()
 
-	return env
+	return f
 }
 
 func expectNoError(t *testing.T, err error) {
@@ -1405,75 +1388,4 @@ func expectEnvelopeSet(t *testing.T, got, want []*envelope.Envelope) {
 func expectFacts(t *testing.T, got, want []fact.Fact) {
 	t.Helper()
 	xtesting.Expect(t, "unexpected facts", got, want)
-}
-
-func expectUnexpectedBehavior(
-	t *testing.T,
-	fn func(),
-	want panicx.UnexpectedBehavior,
-	wantFileSuffix string,
-) {
-	t.Helper()
-
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatal("expected panicx.UnexpectedBehavior panic, got nil")
-		}
-
-		x, ok := r.(panicx.UnexpectedBehavior)
-		if !ok {
-			t.Fatalf("expected panicx.UnexpectedBehavior panic, got %T", r)
-		}
-
-		loc := x.Location
-		x.Location = location.Location{}
-		want.Location = location.Location{}
-
-		xtesting.Expect(t, "unexpected panic", x, want)
-
-		if loc.Func == "" {
-			t.Fatal("unexpected empty panic location func")
-		}
-
-		if !strings.HasSuffix(loc.File, wantFileSuffix) {
-			t.Fatalf("unexpected panic location file: %s", loc.File)
-		}
-
-		if loc.Line == 0 {
-			t.Fatal("unexpected zero panic location line")
-		}
-	}()
-
-	fn()
-}
-
-func expectUnexpectedMessage(
-	t *testing.T,
-	fn func(),
-	handler *config.Process,
-	method string,
-	message dogma.Message,
-) {
-	t.Helper()
-
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatal("expected panicx.UnexpectedMessage panic, got nil")
-		}
-
-		x, ok := r.(panicx.UnexpectedMessage)
-		if !ok {
-			t.Fatalf("expected panicx.UnexpectedMessage panic, got %T", r)
-		}
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, handler)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "ProcessMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, method)
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, handler.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, message)
-	}()
-
-	fn()
 }

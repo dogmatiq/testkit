@@ -89,12 +89,13 @@ func (c *Controller) Handle(
 		return nil, err
 	}
 
-	inst, root := c.instanceByID(obs, env, id)
+	inst, root, shadowRoot := c.instanceByID(obs, env, id)
 
 	s := &scope{
 		instanceID: id,
 		instance:   inst,
 		root:       root,
+		shadowRoot: shadowRoot,
 		config:     c.Config,
 		handleMethod: message.MapByKindOf(
 			env.Message,
@@ -111,6 +112,8 @@ func (c *Controller) Handle(
 	if err := c.handle(ctx, s); err != nil {
 		return nil, err
 	}
+
+	s.guardAgainstDirectMutation("", location.Location{})
 
 	if inst.ended {
 		c.cancelDeadlines(id)
@@ -142,10 +145,11 @@ func (c *Controller) instanceByID(
 	obs fact.Observer,
 	env *envelope.Envelope,
 	id string,
-) (*instance, dogma.ProcessRoot) {
-	root := c.Config.Source.Get().New()
+) (inst *instance, root, shadowRoot dogma.ProcessRoot) {
+	root = c.Config.Source.Get().New()
+	shadowRoot = c.Config.Source.Get().New()
 
-	if xreflect.IsNil(root) {
+	if xreflect.IsNil(root) || xreflect.IsNil(shadowRoot) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "ProcessMessageHandler",
@@ -157,51 +161,65 @@ func (c *Controller) instanceByID(
 		})
 	}
 
-	if inst, ok := c.instances[id]; ok {
-		if inst.mutated {
-			if err := root.UnmarshalBinary(inst.data); err != nil {
-				panic(panicx.UnexpectedBehavior{
-					Handler:        c.Config,
-					Interface:      "ProcessRoot",
-					Method:         "UnmarshalBinary",
-					Implementation: root,
-					Message:        env.Message,
-					Description:    fmt.Sprintf("unable to unmarshal the process root: %s", err),
-					Location:       location.OfMethod(root, "UnmarshalBinary"),
-				})
-			}
+	inst, ok := c.instances[id]
+	if !ok {
+		obs.Notify(fact.ProcessInstanceNotFound{
+			Handler:    c.Config,
+			InstanceID: id,
+			Envelope:   env,
+		})
+
+		if c.instances == nil {
+			c.instances = map[string]*instance{}
 		}
 
-		obs.Notify(fact.ProcessInstanceLoaded{
+		inst = &instance{}
+		c.instances[id] = inst
+
+		obs.Notify(fact.ProcessInstanceBegun{
 			Handler:    c.Config,
 			InstanceID: id,
 			Root:       root,
 			Envelope:   env,
 		})
-		return inst, root
+
+		return inst, root, shadowRoot
 	}
 
-	obs.Notify(fact.ProcessInstanceNotFound{
-		Handler:    c.Config,
-		InstanceID: id,
-		Envelope:   env,
-	})
+	if inst.mutated {
+		if err := root.UnmarshalBinary(inst.data); err != nil {
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "ProcessRoot",
+				Method:         "UnmarshalBinary",
+				Implementation: root,
+				Message:        env.Message,
+				Description:    fmt.Sprintf("unable to unmarshal the process root: %s", err),
+				Location:       location.OfMethod(root, "UnmarshalBinary"),
+			})
+		}
 
-	if c.instances == nil {
-		c.instances = map[string]*instance{}
+		if err := shadowRoot.UnmarshalBinary(inst.data); err != nil {
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "ProcessRoot",
+				Method:         "UnmarshalBinary",
+				Implementation: shadowRoot,
+				Message:        env.Message,
+				Description:    fmt.Sprintf("unable to unmarshal the process root: %s", err),
+				Location:       location.OfMethod(shadowRoot, "UnmarshalBinary"),
+			})
+		}
 	}
 
-	inst := &instance{}
-	c.instances[id] = inst
-
-	obs.Notify(fact.ProcessInstanceBegun{
+	obs.Notify(fact.ProcessInstanceLoaded{
 		Handler:    c.Config,
 		InstanceID: id,
 		Root:       root,
 		Envelope:   env,
 	})
 
-	return inst, root
+	return inst, root, shadowRoot
 }
 
 // Reset clears the state of the controller.
