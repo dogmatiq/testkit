@@ -36,6 +36,10 @@ func Equal(a, b any) bool {
 }
 
 func deepEqual(a, b reflect.Value) bool {
+	if !a.IsValid() || !b.IsValid() {
+		return a.IsValid() == b.IsValid()
+	}
+
 	if a.Type() != b.Type() {
 		return false
 	}
@@ -56,7 +60,7 @@ func deepEqual(a, b reflect.Value) bool {
 		return funcEqual(a, b)
 	case reflect.Pointer, reflect.Interface:
 		return deepEqual(a.Elem(), b.Elem())
-	case reflect.Slice:
+	case reflect.Array, reflect.Slice:
 		return sliceEqual(a, b)
 	case reflect.Map:
 		return mapEqual(a, b)

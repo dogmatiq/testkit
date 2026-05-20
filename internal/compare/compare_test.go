@@ -102,11 +102,20 @@ func TestEqual(t *testing.T) {
 		{"nil vs non-nil map", map[string]ExampleType(nil), map[string]ExampleType{}, false},
 		{"both nil maps", map[string]ExampleType(nil), map[string]ExampleType(nil), true},
 
+		// Arrays.
+		{"equal arrays", [2]ExampleType{{Value: "a", CallFunc: fn1}, {Value: "b"}}, [2]ExampleType{{Value: "a", CallFunc: fn2}, {Value: "b"}}, true},
+		{"non-equal arrays", [1]ExampleType{{Value: "a"}}, [1]ExampleType{{Value: "b"}}, false},
+
 		// Interfaces (via []any).
 		{"equal interface elements", []any{&ExampleType{Value: "x", CallFunc: fn1}}, []any{&ExampleType{Value: "x", CallFunc: fn2}}, true},
 		{"non-equal interface elements", []any{&ExampleType{Value: "x"}}, []any{&ExampleType{Value: "y"}}, false},
 		{"nil interface element", []any{nil}, []any{nil}, true},
 		{"nil vs non-nil interface element", []any{nil}, []any{&ExampleType{}}, false},
+
+		// Nil (untyped).
+		{"both nil", nil, nil, true},
+		{"nil vs non-nil", nil, "x", false},
+		{"non-nil vs nil", "x", nil, false},
 	}
 
 	for _, c := range cases {

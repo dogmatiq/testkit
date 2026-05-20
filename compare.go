@@ -14,7 +14,9 @@ type MessageComparator func(a, b dogma.Message) bool
 // It is the default implementation of the MessageComparator type.
 //
 // It supports comparison of protocol buffers messages using the proto.Equal()
-// function. All other types are compared using reflect.DeepEqual().
+// function. All other types are compared using semantics equivalent to
+// reflect.DeepEqual(), except that function values are compared by their
+// definition site rather than by pointer identity.
 func DefaultMessageComparator(a, b dogma.Message) bool {
 	return compare.Equal(a, b)
 }
