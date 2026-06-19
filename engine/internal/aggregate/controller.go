@@ -119,6 +119,11 @@ func (c *Controller) Handle(
 	s.guardAgainstDirectMutation("", location.Location{})
 
 	if len(s.events) != 0 {
+		if c.instances == nil {
+			c.instances = map[string]*instance{}
+		}
+
+		c.instances[id] = inst
 		inst.history = append(inst.history, s.events...)
 		c.takeSnapshot(root, inst, env)
 	}
@@ -193,12 +198,7 @@ func (c *Controller) instanceByID(
 			Envelope:   env,
 		})
 
-		if c.instances == nil {
-			c.instances = map[string]*instance{}
-		}
-
 		inst = &instance{}
-		c.instances[id] = inst
 
 		return inst, root, shadowRoot
 	}

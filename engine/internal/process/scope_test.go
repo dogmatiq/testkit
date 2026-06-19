@@ -39,7 +39,9 @@ func TestScope(t *testing.T) {
 			time.Now(),
 			f.event,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		if !called {
 			t.Fatal("expected HandleEvent() to be called")
@@ -66,10 +68,13 @@ func TestScope(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectFacts(
+			xtesting.Expect(
 				t,
+				"unexpected facts",
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
@@ -113,10 +118,13 @@ func TestScope(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectFacts(
+			xtesting.Expect(
 				t,
+				"unexpected facts",
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
@@ -162,10 +170,13 @@ func TestScope(t *testing.T) {
 				now,
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectFacts(
+			xtesting.Expect(
 				t,
+				"unexpected facts",
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
@@ -315,10 +326,13 @@ func TestScope(t *testing.T) {
 				now,
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectFacts(
+			xtesting.Expect(
 				t,
+				"unexpected facts",
 				buf.Facts(),
 				[]fact.Fact{
 					fact.ProcessInstanceNotFound{
@@ -460,7 +474,9 @@ func TestScope(t *testing.T) {
 			time.Now(),
 			f.event,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		deadline := f.event.NewDeadline(
 			"2000",
@@ -496,7 +512,9 @@ func TestScope(t *testing.T) {
 			time.Now(),
 			deadline,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 	})
 
 	t.Run("Mutate", func(t *testing.T) {
@@ -523,7 +541,9 @@ func TestScope(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			if !called {
 				t.Fatal("expected Mutate() to call the function")
@@ -581,10 +601,13 @@ func TestScope(t *testing.T) {
 			time.Now(),
 			f.event,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		expectFacts(
+		xtesting.Expect(
 			t,
+			"unexpected facts",
 			buf.Facts(),
 			[]fact.Fact{
 				fact.ProcessInstanceNotFound{

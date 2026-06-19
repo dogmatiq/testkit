@@ -16,7 +16,6 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestController(t *testing.T) {
@@ -56,7 +55,9 @@ func TestController(t *testing.T) {
 				createdTime,
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			f.messageIDs.Reset()
 
@@ -71,10 +72,13 @@ func TestController(t *testing.T) {
 				fact.Ignore,
 				t2Time,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectEnvelopeSet(
+			xtesting.ExpectSet(
 				t,
+				"unexpected envelopes",
 				deadlines,
 				[]*envelope.Envelope{
 					f.event.NewDeadline(
@@ -100,6 +104,7 @@ func TestController(t *testing.T) {
 						},
 					),
 				},
+				func(a, b *envelope.Envelope) bool { return a.MessageID < b.MessageID },
 			)
 		})
 
@@ -111,7 +116,9 @@ func TestController(t *testing.T) {
 				fact.Ignore,
 				t2Time,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			if got, want := len(deadlines), 2; got != want {
 				t.Fatalf("unexpected deadline count: got %d, want %d", got, want)
@@ -122,7 +129,9 @@ func TestController(t *testing.T) {
 				fact.Ignore,
 				t2Time,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			if len(deadlines) != 0 {
 				t.Fatalf("unexpected deadlines: got %d, want 0", len(deadlines))
@@ -144,7 +153,9 @@ func TestController(t *testing.T) {
 				createdTime,
 				secondInstanceEvent,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			f.handler.HandleEventFunc = func(
 				_ context.Context,
@@ -162,17 +173,22 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			deadlines, err := f.ctrl.Tick(
 				context.Background(),
 				fact.Ignore,
 				t2Time,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			expectEnvelopeSet(
+			xtesting.ExpectSet(
 				t,
+				"unexpected envelopes",
 				deadlines,
 				[]*envelope.Envelope{
 					secondInstanceEvent.NewDeadline(
@@ -197,6 +213,9 @@ func TestController(t *testing.T) {
 							InstanceID:  "<instance-A2>",
 						},
 					),
+				},
+				func(a, b *envelope.Envelope) bool {
+					return a.MessageID < b.MessageID
 				},
 			)
 		})
@@ -225,7 +244,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if !called {
 					t.Fatal("expected HandleEvent() to be called")
@@ -276,10 +297,13 @@ func TestController(t *testing.T) {
 					now,
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-				expectEnvelopeSet(
+				xtesting.ExpectSet(
 					t,
+					"unexpected envelopes",
 					envelopes,
 					[]*envelope.Envelope{
 						f.event.NewCommand(
@@ -304,6 +328,9 @@ func TestController(t *testing.T) {
 							},
 						),
 					},
+					func(a, b *envelope.Envelope) bool {
+						return a.MessageID < b.MessageID
+					},
 				)
 			})
 
@@ -327,7 +354,9 @@ func TestController(t *testing.T) {
 					now,
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if got, want := len(envelopes), 1; got != want {
 					t.Fatalf("unexpected envelope count: got %d, want %d", got, want)
@@ -354,7 +383,9 @@ func TestController(t *testing.T) {
 					now,
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if len(envelopes) != 0 {
 					t.Fatalf("unexpected envelopes: got %d, want 0", len(envelopes))
@@ -387,7 +418,9 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
@@ -406,10 +439,13 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-					expectFacts(
+					xtesting.Expect(
 						t,
+						"unexpected facts",
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessEventIgnored{
@@ -442,7 +478,9 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
 					f.messageIDs.Reset()
 					return f
@@ -466,7 +504,9 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
@@ -479,10 +519,13 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-					expectFacts(
+					xtesting.Expect(
 						t,
+						"unexpected facts",
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessEventRoutedToEndedInstance{
@@ -516,7 +559,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				f.messageIDs.Reset()
 				return f
@@ -543,7 +588,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.deadline,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if !called {
 					t.Fatal("expected HandleDeadline() to be called")
@@ -594,10 +641,13 @@ func TestController(t *testing.T) {
 					now,
 					f.deadline,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-				expectEnvelopeSet(
+				xtesting.ExpectSet(
 					t,
+					"unexpected envelopes",
 					envelopes,
 					[]*envelope.Envelope{
 						f.deadline.NewCommand(
@@ -622,6 +672,9 @@ func TestController(t *testing.T) {
 							},
 						),
 					},
+					func(a, b *envelope.Envelope) bool {
+						return a.MessageID < b.MessageID
+					},
 				)
 			})
 
@@ -645,7 +698,9 @@ func TestController(t *testing.T) {
 					now,
 					f.deadline,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if got, want := len(envelopes), 1; got != want {
 					t.Fatalf("unexpected envelope count: got %d, want %d", got, want)
@@ -672,7 +727,9 @@ func TestController(t *testing.T) {
 					now,
 					f.deadline,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if len(envelopes) != 0 {
 					t.Fatalf("unexpected envelopes: got %d, want 0", len(envelopes))
@@ -700,7 +757,9 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.event,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
 					f.messageIDs.Reset()
 					return f
@@ -724,7 +783,9 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.deadline,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 				})
 
 				t.Run("records a fact", func(t *testing.T) {
@@ -737,10 +798,13 @@ func TestController(t *testing.T) {
 						time.Now(),
 						f.deadline,
 					)
-					expectNoError(t, err)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-					expectFacts(
+					xtesting.Expect(
 						t,
+						"unexpected facts",
 						buf.Facts(),
 						[]fact.Fact{
 							fact.ProcessDeadlineRoutedToEndedInstance{
@@ -814,10 +878,13 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-				expectFacts(
+				xtesting.Expect(
 					t,
+					"unexpected facts",
 					buf.Facts(),
 					[]fact.Fact{
 						fact.ProcessInstanceNotFound{
@@ -880,7 +947,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				f.messageIDs.Reset()
 				return f
@@ -896,10 +965,13 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-				expectFacts(
+				xtesting.Expect(
 					t,
+					"unexpected facts",
 					buf.Facts(),
 					[]fact.Fact{
 						fact.ProcessInstanceLoaded{
@@ -933,7 +1005,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				var got string
 				f.handler.HandleEventFunc = func(
@@ -952,7 +1026,9 @@ func TestController(t *testing.T) {
 					time.Now(),
 					f.event,
 				)
-				expectNoError(t, err)
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				if got != "<mutated>" {
 					t.Fatalf("expected root state to persist, got %q", got)
@@ -1051,7 +1127,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			f.handler.HandleDeadlineFunc = func(
 				context.Context,
@@ -1126,7 +1204,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// Second Handle: loads instance, unmarshal fails.
 			f.handler.NewFunc = func() *ProcessRootStub {
@@ -1173,7 +1253,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			called := false
 			f.handler.NewFunc = func() *ProcessRootStub {
@@ -1191,7 +1273,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
 		})
@@ -1218,7 +1302,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			called := false
 			f.handler.NewFunc = func() *ProcessRootStub {
@@ -1236,7 +1322,9 @@ func TestController(t *testing.T) {
 				time.Now(),
 				f.event,
 			)
-			expectNoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			xtesting.Expect(t, "expected UnmarshalBinary to be called", called, true)
 		})
@@ -1259,7 +1347,9 @@ func TestController(t *testing.T) {
 			time.Now(),
 			f.event,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		f.messageIDs.Reset()
 		f.ctrl.Reset()
@@ -1271,10 +1361,13 @@ func TestController(t *testing.T) {
 			time.Now(),
 			f.event,
 		)
-		expectNoError(t, err)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		expectFacts(
+		xtesting.Expect(
 			t,
+			"unexpected facts",
 			buf.Facts(),
 			[]fact.Fact{
 				fact.ProcessInstanceNotFound{
@@ -1359,33 +1452,4 @@ func newControllerTestFixture() *controllerTestFixture {
 	f.messageIDs.Reset()
 
 	return f
-}
-
-func expectNoError(t *testing.T, err error) {
-	t.Helper()
-
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-}
-
-func expectEnvelopeSet(t *testing.T, got, want []*envelope.Envelope) {
-	t.Helper()
-
-	xtesting.Expect(
-		t,
-		"unexpected envelopes",
-		got,
-		want,
-		cmpopts.SortSlices(
-			func(a, b *envelope.Envelope) bool {
-				return a.MessageID < b.MessageID
-			},
-		),
-	)
-}
-
-func expectFacts(t *testing.T, got, want []fact.Fact) {
-	t.Helper()
-	xtesting.Expect(t, "unexpected facts", got, want)
 }

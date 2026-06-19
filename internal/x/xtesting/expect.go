@@ -82,6 +82,39 @@ func ExpectContains[T any](
 	t.Fatal(w.String())
 }
 
+// ExpectSet compares two slices as unordered sets, failing the test if they
+// differ. The less function determines sort order for comparison.
+func ExpectSet[T any](
+	t TestingT,
+	failMessage string,
+	got, want []T,
+	less func(T, T) bool,
+	options ...cmp.Option,
+) {
+	t.Helper()
+
+	options = defaultOptions(options)
+	options = append(options, cmpopts.SortSlices(less))
+
+	if diff := cmp.Diff(want, got, options...); diff != "" {
+		w := &strings.Builder{}
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, "===", failMessage, "===")
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, "--- got ---")
+		fmt.Fprintln(w, got)
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, "--- want ---")
+		fmt.Fprintln(w, want)
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, "--- diff ---")
+		fmt.Fprintln(w, diff)
+
+		t.Fatal(w.String())
+	}
+}
+
 // Expect compares two values and fails the test if they are different.
 func Expect(
 	t TestingT,

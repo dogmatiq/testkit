@@ -185,21 +185,47 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, ok := findFact[fact.AggregateInstanceNotFound](buf.Facts())
-		if !ok {
-			t.Fatal("expected AggregateInstanceNotFound fact")
-		}
-
-		xtesting.Expect(
+		xtesting.ExpectContains[fact.Fact](
 			t,
-			"unexpected fact",
-			got,
+			"expected AggregateInstanceNotFound fact",
+			buf.Facts(),
 			fact.AggregateInstanceNotFound{
 				Handler:    f.cfg,
 				InstanceID: "<instance-A1>",
 				Envelope:   f.command,
 			},
 		)
+	})
+
+	t.Run("does not persist the instance when no events are recorded", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		// First command records no events.
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Second command to the same instance should still get NotFound.
+		buf := &fact.Buffer{}
+		_, err = f.ctrl.Handle(
+			context.Background(),
+			buf,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if _, ok := findFact[fact.AggregateInstanceNotFound](buf.Facts()); !ok {
+			t.Fatal("expected AggregateInstanceNotFound fact")
+		}
 	})
 
 	t.Run("passes a new aggregate root when the instance does not exist", func(t *testing.T) {
@@ -293,15 +319,10 @@ func TestControllerHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, ok := findFact[fact.AggregateInstanceLoaded](buf.Facts())
-		if !ok {
-			t.Fatal("expected AggregateInstanceLoaded fact")
-		}
-
-		xtesting.Expect(
+		xtesting.ExpectContains[fact.Fact](
 			t,
-			"unexpected fact",
-			got,
+			"expected AggregateInstanceLoaded fact",
+			buf.Facts(),
 			fact.AggregateInstanceLoaded{
 				Handler:    f.cfg,
 				InstanceID: "<instance-A1>",

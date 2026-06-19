@@ -107,15 +107,10 @@ func TestScopeRecordEvent(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, ok := findFact[fact.EventRecordedByAggregate](buf.Facts())
-		if !ok {
-			t.Fatal("expected EventRecordedByAggregate fact")
-		}
-
-		xtesting.Expect(
+		xtesting.ExpectContains[fact.Fact](
 			t,
-			"unexpected fact",
-			got,
+			"expected EventRecordedByAggregate fact",
+			buf.Facts(),
 			fact.EventRecordedByAggregate{
 				Handler:    f.cfg,
 				InstanceID: "<instance>",
