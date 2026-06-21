@@ -1231,6 +1231,59 @@ func TestController(t *testing.T) {
 			)
 		})
 
+		t.Run("panics if shadow root UnmarshalBinary fails", func(t *testing.T) {
+			f := newControllerTestFixture()
+			f.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(*ProcessRootStub) {})
+				return nil
+			}
+
+			// First Handle: creates instance, mutates, marshal succeeds.
+			_, err := f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Second Handle: loads instance. New() is called twice (root
+			// then shadowRoot). The first unmarshal succeeds, the second
+			// fails.
+			newCount := 0
+			f.handler.NewFunc = func() *ProcessRootStub {
+				newCount++
+				if newCount == 1 {
+					return &ProcessRootStub{}
+				}
+				return &ProcessRootStub{
+					UnmarshalBinaryFunc: func([]byte) error {
+						return errors.New("<shadow unmarshal error>")
+					},
+				}
+			}
+
+			xtesting.ExpectPanic(
+				t,
+				"the '<name>' process message handler behaved unexpectedly in *stubs.ProcessRootStub.UnmarshalBinary(): unable to unmarshal the process root: <shadow unmarshal error>",
+				func() {
+					_, _ = f.ctrl.Handle(
+						context.Background(),
+						fact.Ignore,
+						time.Now(),
+						f.event,
+					)
+				},
+			)
+		})
+
 		t.Run("calls UnmarshalBinary when MarshalBinary returns nil", func(t *testing.T) {
 			f := newControllerTestFixture()
 			f.handler.HandleEventFunc = func(
