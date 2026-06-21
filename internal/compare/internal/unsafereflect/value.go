@@ -88,7 +88,7 @@ func computeFlagOffset() (uintptr, error) {
 // produced by the reflect package.
 func checkFlagValues() error {
 	// Create a test type containing a combination of exported, unexported and
-	// embedded fields. These are used to guess the flag values to ensure or
+	// embedded fields. These are used to guess the flag values to ensure our
 	// local definitions are correct.
 	type t struct{}
 	var v struct {

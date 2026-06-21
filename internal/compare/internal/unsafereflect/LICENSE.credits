@@ -1,4 +1,4 @@
-Portions of the "unsafereflect" package were heavily influenced by Dave Collin's
+Portions of the "unsafereflect" package were heavily influenced by Dave Collins'
 Spew package.
 
 https://github.com/davecgh/go-spew
