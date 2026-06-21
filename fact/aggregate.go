@@ -9,10 +9,11 @@ import (
 // AggregateInstanceLoaded indicates that an aggregate message handler has
 // loaded an existing instance in order to handle a command.
 type AggregateInstanceLoaded struct {
-	Handler    *config.Aggregate
-	InstanceID string
-	Root       dogma.AggregateRoot
-	Envelope   *envelope.Envelope
+	Handler        *config.Aggregate
+	InstanceID     string
+	Root           dogma.AggregateRoot
+	Envelope       *envelope.Envelope
+	SnapshotOffset int
 }
 
 // AggregateInstanceNotFound indicates that an aggregate message handler was

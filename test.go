@@ -15,6 +15,7 @@ import (
 	"github.com/dogmatiq/iago/must"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/compare"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -145,7 +146,7 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 						return ""
 					}
 
-					if !equal(a.Value, v.Value.Interface()) {
+					if !compare.Equal(a.Value, v.Value.Interface()) {
 						return ""
 					}
 

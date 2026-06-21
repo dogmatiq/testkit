@@ -13,6 +13,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/compare"
 	"github.com/dogmatiq/testkit/internal/x/xreflect"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -73,7 +74,7 @@ func (c *Controller) Handle(
 	}
 
 	id := c.route(env, mt)
-	inst, root := c.instanceByID(obs, env, id)
+	inst, root, shadowRoot := c.instanceByID(obs, env, id)
 
 	s := &scope{
 		instanceID: id,
@@ -82,9 +83,22 @@ func (c *Controller) Handle(
 		observer:   obs,
 		now:        now,
 		root:       root,
+		shadowRoot: shadowRoot,
 		command:    env,
 		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsString(),
 		offset:     uint64(len(inst.history)),
+	}
+
+	if inst.snapshotted && !compare.Equal(root, shadowRoot) {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        c.Config,
+			Interface:      "AggregateRoot",
+			Method:         "UnmarshalBinary",
+			Implementation: root,
+			Message:        env.Message,
+			Description:    "aggregate root state differs when built from events versus snapshot",
+			Location:       location.OfMethod(root, "UnmarshalBinary"),
+		})
 	}
 
 	panicx.EnrichUnexpectedMessage(
@@ -102,12 +116,15 @@ func (c *Controller) Handle(
 		},
 	)
 
+	s.guardAgainstDirectMutation("", location.Location{})
+
 	if len(s.events) != 0 {
 		if c.instances == nil {
 			c.instances = map[string]*instance{}
 		}
-		inst.history = append(inst.history, s.events...)
+
 		c.instances[id] = inst
+		inst.history = append(inst.history, s.events...)
 		c.takeSnapshot(root, inst, env)
 	}
 
@@ -150,15 +167,18 @@ func (c *Controller) route(env *envelope.Envelope, mt message.Type) string {
 	return id
 }
 
-// instanceByID returns the instance and root for the given instance ID.
+// instanceByID returns the instance, root, and shadow root for the given
+// instance ID. The shadow root is built by replaying the full event history
+// from New(), ignoring any snapshot.
 func (c *Controller) instanceByID(
 	obs fact.Observer,
 	env *envelope.Envelope,
 	id string,
-) (*instance, dogma.AggregateRoot) {
-	root := c.Config.Source.Get().New()
+) (inst *instance, root, shadowRoot dogma.AggregateRoot) {
+	root = c.Config.Source.Get().New()
+	shadowRoot = c.Config.Source.Get().New()
 
-	if xreflect.IsNil(root) {
+	if xreflect.IsNil(root) || xreflect.IsNil(shadowRoot) {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        c.Config,
 			Interface:      "AggregateMessageHandler",
@@ -170,53 +190,68 @@ func (c *Controller) instanceByID(
 		})
 	}
 
-	if inst, ok := c.instances[id]; ok {
-		if inst.snapshotted {
-			if err := root.UnmarshalBinary(inst.snapshot); err != nil {
-				panic(panicx.UnexpectedBehavior{
-					Handler:        c.Config,
-					Interface:      "AggregateRoot",
-					Method:         "UnmarshalBinary",
-					Implementation: root,
-					Message:        env.Message,
-					Description:    fmt.Sprintf("unable to unmarshal the aggregate root: %s", err),
-					Location:       location.OfMethod(root, "UnmarshalBinary"),
-				})
-			}
-		}
-
-		for _, ev := range inst.history[inst.snapshotOffset:] {
-			panicx.EnrichUnexpectedMessage(
-				c.Config,
-				"AggregateRoot",
-				"ApplyEvent",
-				root,
-				ev.Message,
-				func() {
-					root.ApplyEvent(
-						ev.Message.(dogma.Event),
-					)
-				},
-			)
-		}
-
-		obs.Notify(fact.AggregateInstanceLoaded{
+	inst, ok := c.instances[id]
+	if !ok {
+		obs.Notify(fact.AggregateInstanceNotFound{
 			Handler:    c.Config,
 			InstanceID: id,
-			Root:       root,
 			Envelope:   env,
 		})
 
-		return inst, root
+		inst = &instance{}
+
+		return inst, root, shadowRoot
 	}
 
-	obs.Notify(fact.AggregateInstanceNotFound{
-		Handler:    c.Config,
-		InstanceID: id,
-		Envelope:   env,
+	for _, ev := range inst.history {
+		panicx.EnrichUnexpectedMessage(
+			c.Config,
+			"AggregateRoot",
+			"ApplyEvent",
+			shadowRoot,
+			ev.Message,
+			func() {
+				shadowRoot.ApplyEvent(ev.Message.(dogma.Event))
+			},
+		)
+	}
+
+	if inst.snapshotted {
+		if err := root.UnmarshalBinary(inst.snapshot); err != nil {
+			panic(panicx.UnexpectedBehavior{
+				Handler:        c.Config,
+				Interface:      "AggregateRoot",
+				Method:         "UnmarshalBinary",
+				Implementation: root,
+				Message:        env.Message,
+				Description:    fmt.Sprintf("unable to unmarshal the aggregate root: %s", err),
+				Location:       location.OfMethod(root, "UnmarshalBinary"),
+			})
+		}
+	}
+
+	for _, ev := range inst.history[inst.snapshotOffset:] {
+		panicx.EnrichUnexpectedMessage(
+			c.Config,
+			"AggregateRoot",
+			"ApplyEvent",
+			root,
+			ev.Message,
+			func() {
+				root.ApplyEvent(ev.Message.(dogma.Event))
+			},
+		)
+	}
+
+	obs.Notify(fact.AggregateInstanceLoaded{
+		Handler:        c.Config,
+		InstanceID:     id,
+		Root:           root,
+		Envelope:       env,
+		SnapshotOffset: inst.snapshotOffset,
 	})
 
-	return &instance{}, root
+	return inst, root, shadowRoot
 }
 
 // takeSnapshot attempts to store a snapshot of the aggregate root.

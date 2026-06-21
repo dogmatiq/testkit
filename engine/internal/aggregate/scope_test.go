@@ -2,6 +2,7 @@ package aggregate_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/dogmatiq/enginekit/config/runtimeconfig"
 	stubs "github.com/dogmatiq/enginekit/enginetest/stubs"
 	"github.com/dogmatiq/testkit/engine/internal/aggregate"
+	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
@@ -105,15 +107,10 @@ func TestScopeRecordEvent(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, ok := findFact[fact.EventRecordedByAggregate](buf.Facts())
-		if !ok {
-			t.Fatal("expected EventRecordedByAggregate fact")
-		}
-
-		xtesting.Expect(
+		xtesting.ExpectContains[fact.Fact](
 			t,
-			"unexpected fact",
-			got,
+			"expected EventRecordedByAggregate fact",
+			buf.Facts(),
 			fact.EventRecordedByAggregate{
 				Handler:    f.cfg,
 				InstanceID: "<instance>",
@@ -177,27 +174,27 @@ func TestScopeRecordEvent(t *testing.T) {
 			s.RecordEvent(stubs.EventX1)
 		}
 
-		x := mustPanicUnexpectedBehavior(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+			xtesting.Expect(
+				t,
+				"unexpected description",
+				x.Description,
+				"recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler",
+			)
+			xtesting.ExpectLocation(t, x.Location, "/engine/internal/aggregate/scope_test.go")
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(
-			t,
-			"unexpected description",
-			x.Description,
-			"recorded an event of type *stubs.EventStub[TypeX], which is not produced by this handler",
-		)
-		expectLocation(t, x.Location, "/engine/internal/aggregate/scope_test.go")
 	})
 
 	t.Run("panics if the event is invalid", func(t *testing.T) {
@@ -214,27 +211,27 @@ func TestScopeRecordEvent(t *testing.T) {
 			})
 		}
 
-		x := mustPanicUnexpectedBehavior(t, func() {
+		xtesting.ExpectPanicMatching(t, func() {
 			_, _ = f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
 				time.Now(),
 				f.command,
 			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
+			xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
+			xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
+			xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
+			xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
+			xtesting.Expect(
+				t,
+				"unexpected description",
+				x.Description,
+				"recorded an invalid *stubs.EventStub[TypeA] event: <invalid>",
+			)
+			xtesting.ExpectLocation(t, x.Location, "/engine/internal/aggregate/scope_test.go")
 		})
-
-		xtesting.Expect(t, "unexpected handler", x.Handler, f.cfg)
-		xtesting.Expect(t, "unexpected interface", x.Interface, "AggregateMessageHandler")
-		xtesting.Expect(t, "unexpected method", x.Method, "HandleCommand")
-		xtesting.Expect(t, "unexpected implementation", x.Implementation, f.cfg.Implementation())
-		xtesting.Expect(t, "unexpected message", x.Message, f.command.Message)
-		xtesting.Expect(
-			t,
-			"unexpected description",
-			x.Description,
-			"recorded an invalid *stubs.EventStub[TypeA] event: <invalid>",
-		)
-		expectLocation(t, x.Location, "/engine/internal/aggregate/scope_test.go")
 	})
 }
 
@@ -382,4 +379,215 @@ func seedScopeInstance(t *testing.T, f *scopeTestFixture) {
 	}
 
 	f.messageIDs.Reset()
+}
+
+func TestMutationDetection(t *testing.T) {
+	t.Run("panics if the handler modifies the root before calling RecordEvent", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to RecordEvent() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling InstanceID", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.InstanceID()
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to InstanceID() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling Now", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.Now()
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to Now() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling Log", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.Log("hello")
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to Log() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root after a scope call", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.InstanceID()
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root without using RecordEvent(), between call to InstanceID() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics at end of handler if the root was modified without a scope call", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			_ dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(
+				t,
+				"unexpected panic description",
+				x.Description,
+				"modified the aggregate root without using RecordEvent()",
+			)
+		})
+	})
+}
+
+func TestNonDeterministicApplyEvent(t *testing.T) {
+	t.Run("panics if ApplyEvent produces different state on each call", func(t *testing.T) {
+		f := newScopeTestFixture()
+
+		// Track the total number of ApplyEvent calls across all roots.
+		// The first call (on root) appends an extra event; the second
+		// call (on shadowRoot) does not, making the roots diverge.
+		applyCount := 0
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			r := &stubs.AggregateRootStub{}
+			r.ApplyEventFunc = func(dogma.Event) {
+				applyCount++
+				if applyCount == 1 {
+					r.AppliedEvents = append(r.AppliedEvents, stubs.EventA2)
+				}
+			}
+			return r
+		}
+
+		f.cfg = runtimeconfig.FromAggregate(f.handler)
+		f.ctrl = &aggregate.Controller{
+			Config:     f.cfg,
+			MessageIDs: &f.messageIDs,
+		}
+
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(
+				t,
+				"unexpected panic description",
+				x.Description,
+				"non-deterministic implementation of ApplyEvent detected",
+			)
+		})
+	})
 }

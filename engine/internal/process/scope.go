@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/compare"
 	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"
 )
@@ -17,26 +18,30 @@ import (
 // scope is an implementation of dogma.ProcessEventScope and
 // dogma.ProcessDeadlineScope.
 type scope struct {
-	instanceID   string
-	instance     *instance
-	root         dogma.ProcessRoot
-	mutated      bool
-	config       *config.Process
-	handleMethod string
-	messageIDs   *envelope.MessageIDGenerator
-	observer     fact.Observer
-	now          time.Time
-	env          *envelope.Envelope // event or deadline
-	commands     []*envelope.Envelope
-	ready        []*envelope.Envelope // deadlines <= now
-	pending      []*envelope.Envelope // deadlines > now
+	instanceID       string
+	instance         *instance
+	root, shadowRoot dogma.ProcessRoot
+	mutated          bool
+	lastOp           string
+	config           *config.Process
+	handleMethod     string
+	messageIDs       *envelope.MessageIDGenerator
+	observer         fact.Observer
+	now              time.Time
+	env              *envelope.Envelope // event or deadline
+	commands         []*envelope.Envelope
+	ready            []*envelope.Envelope // deadlines <= now
+	pending          []*envelope.Envelope // deadlines > now
 }
 
 func (s *scope) InstanceID() string {
+	s.guardAgainstDirectMutation("InstanceID", location.OfCall())
 	return s.instanceID
 }
 
 func (s *scope) End() {
+	s.guardAgainstDirectMutation("End", location.OfCall())
+
 	if s.instance.ended {
 		return
 	}
@@ -52,6 +57,8 @@ func (s *scope) End() {
 }
 
 func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
+	s.guardAgainstDirectMutation("Mutate", location.OfCall())
+
 	if s.instance.ended {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
@@ -66,9 +73,24 @@ func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
 
 	s.mutated = true
 	fn(s.root)
+	fn(s.shadowRoot)
+
+	if !compare.Equal(s.root, s.shadowRoot) {
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Implementation(),
+			Message:        s.env.Message,
+			Description:    "non-deterministic implementation of Mutate() callback detected",
+			Location:       location.OfFunc(fn),
+		})
+	}
 }
 
 func (s *scope) ExecuteCommand(m dogma.Command) {
+	s.guardAgainstDirectMutation("ExecuteCommand", location.OfCall())
+
 	mt := message.TypeOf(m)
 
 	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
@@ -130,10 +152,13 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 }
 
 func (s *scope) RecordedAt() time.Time {
+	s.guardAgainstDirectMutation("RecordedAt", location.OfCall())
 	return s.env.CreatedAt
 }
 
 func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
+	s.guardAgainstDirectMutation("ScheduleDeadline", location.OfCall())
+
 	mt := message.TypeOf(m)
 
 	if !s.config.RouteSet().DirectionOf(mt).Has(config.OutboundDirection) {
@@ -200,14 +225,18 @@ func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 }
 
 func (s *scope) ScheduledFor() time.Time {
+	s.guardAgainstDirectMutation("ScheduledFor", location.OfCall())
 	return s.env.ScheduledFor
 }
 
 func (s *scope) Now() time.Time {
+	s.guardAgainstDirectMutation("Now", location.OfCall())
 	return s.now
 }
 
 func (s *scope) Log(f string, v ...any) {
+	s.guardAgainstDirectMutation("Log", location.OfCall())
+
 	s.observer.Notify(fact.MessageLoggedByProcess{
 		Handler:      s.config,
 		InstanceID:   s.instanceID,
@@ -217,4 +246,36 @@ func (s *scope) Log(f string, v ...any) {
 		LogFormat:    f,
 		LogArguments: v,
 	})
+}
+
+func (s *scope) guardAgainstDirectMutation(method string, loc location.Location) {
+	thisOp := ""
+	if method != "" {
+		thisOp = fmt.Sprintf("call to %s() at %s", method, loc)
+	}
+
+	if !compare.Equal(s.root, s.shadowRoot) {
+		desc := "modified the process root without using Mutate()"
+
+		switch {
+		case s.lastOp != "" && thisOp != "":
+			desc += ", between " + s.lastOp + " and " + thisOp
+		case s.lastOp != "":
+			desc += ", after " + s.lastOp
+		case thisOp != "":
+			desc += ", before " + thisOp
+		}
+
+		panic(panicx.UnexpectedBehavior{
+			Handler:        s.config,
+			Interface:      "ProcessMessageHandler",
+			Method:         s.handleMethod,
+			Implementation: s.config.Implementation(),
+			Message:        s.env.Message,
+			Description:    desc,
+			Location:       location.OfCall(),
+		})
+	}
+
+	s.lastOp = thisOp
 }

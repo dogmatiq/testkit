@@ -1,10 +1,8 @@
 package testkit
 
 import (
-	"reflect"
-
 	"github.com/dogmatiq/dogma"
-	"google.golang.org/protobuf/proto"
+	"github.com/dogmatiq/testkit/internal/compare"
 )
 
 // A MessageComparator is a function that returns true if two messages are
@@ -16,9 +14,11 @@ type MessageComparator func(a, b dogma.Message) bool
 // It is the default implementation of the MessageComparator type.
 //
 // It supports comparison of protocol buffers messages using the proto.Equal()
-// function. All other types are compared using reflect.DeepEqual().
+// function. All other types are compared using semantics equivalent to
+// reflect.DeepEqual(), except that function values are compared by their
+// definition site rather than by pointer identity.
 func DefaultMessageComparator(a, b dogma.Message) bool {
-	return equal(a, b)
+	return compare.Equal(a, b)
 }
 
 // WithMessageComparator returns a test option that sets the comparator
@@ -31,15 +31,4 @@ func WithMessageComparator(c MessageComparator) TestOption {
 	return testOptionFunc(func(t *Test) {
 		t.predicateOptions.MessageComparator = c
 	})
-}
-
-// equal returns true if a and b are considered equal.
-func equal(a, b any) bool {
-	if pa, ok := a.(proto.Message); ok {
-		if pb, ok := b.(proto.Message); ok {
-			return proto.Equal(pa, pb)
-		}
-	}
-
-	return reflect.DeepEqual(a, b)
 }
