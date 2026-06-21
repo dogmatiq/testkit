@@ -742,3 +742,159 @@ func findFact[T any](facts []fact.Fact) (T, bool) {
 
 	return zero, false
 }
+
+func TestSnapshotDivergence(t *testing.T) {
+	t.Run("panics if aggregate root state built from snapshot differs from events", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				UnmarshalBinaryFunc: func([]byte) error {
+					// Deliberately does not restore the state that
+					// MarshalBinary produced. The shadow root will have
+					// events applied, but the snapshot-based root will be
+					// empty, causing divergence.
+					return nil
+				},
+			}
+		}
+
+		f.cfg = runtimeconfig.FromAggregate(f.handler)
+		f.ctrl = &aggregate.Controller{
+			Config:     f.cfg,
+			MessageIDs: &f.messageIDs,
+		}
+
+		// Seed an instance that records an event, triggering a snapshot.
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Send another command to the same instance. This time the
+		// controller loads the snapshot via UnmarshalBinary (which is
+		// broken) and compares against the event-replayed shadow root.
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			xtesting.Expect(
+				t,
+				"unexpected panic description",
+				x.Description,
+				"aggregate root state differs when built from events versus snapshot",
+			)
+			xtesting.Expect(
+				t,
+				"unexpected panic interface",
+				x.Interface,
+				"AggregateRoot",
+			)
+			xtesting.Expect(
+				t,
+				"unexpected panic method",
+				x.Method,
+				"UnmarshalBinary",
+			)
+		})
+	})
+}
+
+func TestStaleSnapshot(t *testing.T) {
+	t.Run("replays events after the snapshot offset when snapshot is stale", func(t *testing.T) {
+		f := newControllerTestFixture()
+
+		// First command: records an event. Default MarshalBinary serializes
+		// the root (with one applied event), creating a valid snapshot at
+		// offset 1.
+		f.handler.HandleCommandFunc = func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(stubs.EventA1)
+		}
+
+		_, err := f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Now override NewFunc to return roots whose MarshalBinary returns
+		// ErrNotSupported. This means the second command's snapshot attempt
+		// fails, leaving the snapshot stale at offset 1 while history grows
+		// to 2 events.
+		f.handler.NewFunc = func() *stubs.AggregateRootStub {
+			return &stubs.AggregateRootStub{
+				MarshalBinaryFunc: func() ([]byte, error) {
+					return nil, dogma.ErrNotSupported
+				},
+			}
+		}
+		f.cfg = runtimeconfig.FromAggregate(f.handler)
+		f.ctrl.Config = f.cfg
+
+		// Second command: records another event. MarshalBinary returns
+		// ErrNotSupported, so snapshotOffset stays at 1 while history
+		// grows to 2.
+		_, err = f.ctrl.Handle(
+			context.Background(),
+			fact.Ignore,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Third command: instanceByID loads the snapshot (offset 1) via
+		// UnmarshalBinary, then replays inst.history[1:] (the second
+		// event) via ApplyEvent. This exercises the previously-uncovered
+		// "replay events after snapshot offset" path.
+		buf := &fact.Buffer{}
+		_, err = f.ctrl.Handle(
+			context.Background(),
+			buf,
+			time.Now(),
+			f.command,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var found bool
+		for _, f := range buf.Facts() {
+			loaded, ok := f.(fact.AggregateInstanceLoaded)
+			if !ok {
+				continue
+			}
+			found = true
+			xtesting.Expect(t, "unexpected snapshot offset", loaded.SnapshotOffset, 1)
+		}
+		if !found {
+			t.Fatal("expected AggregateInstanceLoaded fact")
+		}
+	})
+}
