@@ -11,12 +11,37 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Added
+
+- Added detection of direct aggregate root modification outside of
+  `AggregateRoot.ApplyEvent()`.
+- Added detection of direct process root modification outside of
+  `ProcessScope.Mutate()`.
+- Added detection of non-deterministic `ProcessScope.Mutate()` callbacks.
+
+### Changed
+
+- **[BC]** Bumped Dogma to v0.25.0 (timeout-to-deadline rename,
+  `ProcessScope.Mutate()` support).
+- **[BC]** Renamed `TimeoutValidationScope()` to `DeadlineValidationScope()`.
+- **[BC]** Renamed `TimeoutValidationScopeOption` to
+  `DeadlineValidationScopeOption`.
+- **[BC]** Renamed `fact.TimeoutScheduledByProcess` to
+  `fact.DeadlineScheduledByProcess`.
+- **[BC]** Renamed `fact.ProcessTimeoutRoutedToEndedInstance` to
+  `fact.ProcessDeadlineRoutedToEndedInstance`.
+- **[BC]** Renamed `Envelope.NewTimeout()` to `Envelope.NewDeadline()`.
+- `DefaultMessageComparator()` now considers function values with the same
+  definition site to be equal.
+
 ## [0.21.1] - 2026-04-29
 
 ### Changed
 
 - Bumped Dogma to v0.23.0 (generic handler interfaces).
-- Bumped Go to v1.16.
+- Bumped Go to v1.26.
 
 ## [0.21.0] - 2026-04-25
 
