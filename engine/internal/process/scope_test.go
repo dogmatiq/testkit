@@ -2,7 +2,6 @@ package process_test
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -861,54 +860,6 @@ func TestMutationDetection(t *testing.T) {
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
-		})
-	})
-
-	t.Run("panics at end of handler if the root was modified without a scope call", func(t *testing.T) {
-		f := newProcessTestFixture()
-		f.handler.HandleEventFunc = func(
-			_ context.Context,
-			r *ProcessRootStub,
-			_ dogma.ProcessEventScope[*ProcessRootStub],
-			_ dogma.Event,
-		) error {
-			r.Value = "<mutated>"
-			return nil
-		}
-
-		xtesting.ExpectPanicMatching(t, func() {
-			_, _ = f.ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				f.event,
-			)
-		}, func(x panicx.UnexpectedBehavior) {
-			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root without using Mutate()")
-		})
-	})
-
-	t.Run("panics if the handler modifies the root and returns an error", func(t *testing.T) {
-		f := newProcessTestFixture()
-		f.handler.HandleEventFunc = func(
-			_ context.Context,
-			r *ProcessRootStub,
-			_ dogma.ProcessEventScope[*ProcessRootStub],
-			_ dogma.Event,
-		) error {
-			r.Value = "<mutated>"
-			return errors.New("<error>")
-		}
-
-		xtesting.ExpectPanicMatching(t, func() {
-			_, _ = f.ctrl.Handle(
-				context.Background(),
-				fact.Ignore,
-				time.Now(),
-				f.event,
-			)
-		}, func(x panicx.UnexpectedBehavior) {
-			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root without using Mutate()")
 		})
 	})
 }

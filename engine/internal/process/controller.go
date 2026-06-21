@@ -109,12 +109,13 @@ func (c *Controller) Handle(
 		env:        env,
 	}
 
-	if err := c.handle(ctx, s); err != nil {
-		s.guardAgainstDirectMutation("", location.Location{})
-		return nil, err
-	}
+	err = c.handle(ctx, s)
 
 	s.guardAgainstDirectMutation("", location.Location{})
+
+	if err != nil {
+		return nil, err
+	}
 
 	if inst.ended {
 		c.cancelDeadlines(id)
