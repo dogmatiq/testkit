@@ -110,6 +110,7 @@ func (c *Controller) Handle(
 	}
 
 	if err := c.handle(ctx, s); err != nil {
+		s.guardAgainstDirectMutation("", location.Location{})
 		return nil, err
 	}
 
