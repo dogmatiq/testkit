@@ -1,6 +1,6 @@
 module github.com/dogmatiq/testkit
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/dogmatiq/cosyne v0.2.0
@@ -12,7 +12,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/sergi/go-diff v1.4.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/text v0.41.0
+	golang.org/x/text v0.42.0
 	google.golang.org/protobuf v1.36.12
 )
 
