@@ -255,7 +255,7 @@ func (s *scope) guardAgainstDirectMutation(method string, loc location.Location)
 	}
 
 	if !compare.Equal(s.root, s.shadowRoot) {
-		desc := "modified the process root without using Mutate()"
+		desc := "modified the process root outside of Mutate()"
 
 		switch {
 		case s.lastOp != "" && thisOp != "":

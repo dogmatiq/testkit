@@ -401,7 +401,7 @@ func TestMutationDetection(t *testing.T) {
 				f.command,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to RecordEvent() at"
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to RecordEvent() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -427,7 +427,7 @@ func TestMutationDetection(t *testing.T) {
 				f.command,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to InstanceID() at"
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to InstanceID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -453,7 +453,7 @@ func TestMutationDetection(t *testing.T) {
 				f.command,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to Now() at"
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to Now() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -479,7 +479,7 @@ func TestMutationDetection(t *testing.T) {
 				f.command,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the aggregate root without using RecordEvent(), before call to Log() at"
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to Log() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -506,7 +506,7 @@ func TestMutationDetection(t *testing.T) {
 				f.command,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the aggregate root without using RecordEvent(), between call to InstanceID() at"
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), between call to InstanceID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -535,7 +535,7 @@ func TestMutationDetection(t *testing.T) {
 				t,
 				"unexpected panic description",
 				x.Description,
-				"modified the aggregate root without using RecordEvent()",
+				"modified the aggregate root outside of ApplyEvent()",
 			)
 		})
 	})

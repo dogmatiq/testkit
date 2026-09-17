@@ -1460,7 +1460,7 @@ func TestPostHandlerMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root without using Mutate()")
+			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root outside of Mutate()")
 		})
 	})
 
@@ -1484,7 +1484,7 @@ func TestPostHandlerMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root without using Mutate()")
+			xtesting.Expect(t, "unexpected description", x.Description, "modified the process root outside of Mutate()")
 		})
 	})
 }

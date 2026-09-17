@@ -151,7 +151,7 @@ func (s *scope) Log(f string, v ...any) {
 }
 
 // guardAgainstDirectMutation panics if the aggregate root has been modified
-// directly (without using RecordEvent), then records the current scope method
+// directly (outside of ApplyEvent), then records the current scope method
 // call for use in diagnostic messages.
 func (s *scope) guardAgainstDirectMutation(method string, loc location.Location) {
 	thisOp := ""
@@ -160,7 +160,7 @@ func (s *scope) guardAgainstDirectMutation(method string, loc location.Location)
 	}
 
 	if !compare.Equal(s.root, s.shadowRoot) {
-		desc := "modified the aggregate root without using RecordEvent()"
+		desc := "modified the aggregate root outside of ApplyEvent()"
 
 		switch {
 		case s.lastOp != "" && thisOp != "":

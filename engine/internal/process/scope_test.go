@@ -659,7 +659,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to ExecuteCommand() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to ExecuteCommand() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -687,7 +687,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to InstanceID() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to InstanceID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -715,7 +715,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to Now() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to Now() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -743,7 +743,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to Log() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to Log() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -771,7 +771,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to End() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to End() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -799,7 +799,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to Mutate() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to Mutate() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -827,7 +827,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), before call to ScheduleDeadline() at"
+			wantPrefix := "modified the process root outside of Mutate(), before call to ScheduleDeadline() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -856,7 +856,7 @@ func TestMutationDetection(t *testing.T) {
 				f.event,
 			)
 		}, func(x panicx.UnexpectedBehavior) {
-			wantPrefix := "modified the process root without using Mutate(), between call to InstanceID() at"
+			wantPrefix := "modified the process root outside of Mutate(), between call to InstanceID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
