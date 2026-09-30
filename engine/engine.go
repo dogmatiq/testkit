@@ -3,8 +3,8 @@ package engine
 import (
 	"context"
 	"fmt"
+	"sync"
 
-	"github.com/dogmatiq/cosyne"
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
@@ -21,7 +21,7 @@ type Engine struct {
 	// The controllers and routes maps are static and may be read without
 	// acquiring the mutex, but m must be held to call any method on a
 	// controller, to call a resetter, or to read or write idempotencyKeys.
-	m               cosyne.Mutex
+	m               sync.Mutex
 	controllers     map[string]controller
 	routes          map[message.Type][]controller
 	resetters       []func()
@@ -60,7 +60,7 @@ func MustNew(app *config.Application, options ...Option) *Engine {
 
 // Reset clears the engine's state, such as aggregate and process roots.
 func (e *Engine) Reset() {
-	_ = e.m.Lock(context.Background())
+	e.m.Lock()
 	defer e.m.Unlock()
 
 	e.messageIDs.Reset()
@@ -93,11 +93,9 @@ func (e *Engine) Tick(
 		},
 	)
 
-	err := e.m.Lock(ctx)
-	if err == nil {
-		defer e.m.Unlock()
-		err = e.tick(ctx, oo)
-	}
+	e.m.Lock()
+	defer e.m.Unlock()
+	err := e.tick(ctx, oo)
 
 	oo.observers.Notify(
 		fact.TickCycleCompleted{
@@ -215,11 +213,9 @@ func (e *Engine) Dispatch(
 		},
 	)
 
-	err = e.m.Lock(ctx)
-	if err == nil {
-		defer e.m.Unlock()
-		err = e.dispatchUnlessDuplicate(ctx, oo, env)
-	}
+	e.m.Lock()
+	defer e.m.Unlock()
+	err = e.dispatchUnlessDuplicate(ctx, oo, env)
 
 	oo.observers.Notify(
 		fact.DispatchCycleCompleted{
