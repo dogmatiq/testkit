@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/dogmatiq/dapper v0.6.1
 	github.com/dogmatiq/dogma v0.25.0
-	github.com/dogmatiq/enginekit v0.26.5
+	github.com/dogmatiq/enginekit v0.27.0
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/google/go-cmp v0.7.0
@@ -18,6 +18,4 @@ require (
 require (
 	github.com/dogmatiq/jumble v0.1.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	golang.org/x/net v0.55.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
 )
