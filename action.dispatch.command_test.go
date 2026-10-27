@@ -134,6 +134,16 @@ func TestExecuteCommand(t *testing.T) {
 		)
 	})
 
+	t.Run("it panics if the message is invalid", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			"ExecuteCommand(*stubs.CommandStub[TypeA]): <invalid>",
+			func() {
+				ExecuteCommand(&CommandStub[TypeA]{ValidationError: "<invalid>"})
+			},
+		)
+	})
+
 	t.Run("it captures the location that the action was created", func(t *testing.T) {
 		act := executeCommand(CommandA1)
 		loc := act.Location()

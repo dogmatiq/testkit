@@ -164,4 +164,24 @@ func TestToRepeatedly(t *testing.T) {
 			},
 		)
 	})
+
+	t.Run("it panics if the function returns a nil expectation", func(t *testing.T) {
+		_, tc := newFixture()
+
+		xtesting.ExpectPanic(
+			t,
+			`ToRepeatedly("<description>", 2, <func>): factory returned a nil expectation on iteration 1`,
+			func() {
+				tc.Expect(
+					noop,
+					ToRepeatedly("<description>", 2, func(i int) Expectation {
+						if i == 0 {
+							return pass
+						}
+						return nil
+					}),
+				)
+			},
+		)
+	})
 }

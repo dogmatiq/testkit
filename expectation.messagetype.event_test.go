@@ -9,6 +9,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToRecordEventType(t *testing.T) {
@@ -275,4 +276,10 @@ func TestToRecordEventType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestToRecordEventOfType_NilMessage(t *testing.T) {
+	xtesting.ExpectPanic(t, "ToRecordEventOfType(<nil>): message must not be nil", func() {
+		ToRecordEventOfType(nil) //nolint:staticcheck // testing deprecated function
+	})
 }

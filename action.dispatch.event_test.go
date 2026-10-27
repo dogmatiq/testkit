@@ -140,6 +140,16 @@ func TestRecordEvent(t *testing.T) {
 		)
 	})
 
+	t.Run("it panics if the message is invalid", func(t *testing.T) {
+		xtesting.ExpectPanic(
+			t,
+			"RecordEvent(*stubs.EventStub[TypeA]): <invalid>",
+			func() {
+				RecordEvent(&EventStub[TypeA]{ValidationError: "<invalid>"})
+			},
+		)
+	})
+
 	t.Run("it captures the location that the action was created", func(t *testing.T) {
 		act := recordEvent(EventA1)
 		loc := act.Location()

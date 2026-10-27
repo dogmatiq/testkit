@@ -20,7 +20,7 @@ func ExecuteCommand(m dogma.Command) Action {
 	mt := message.TypeOf(m)
 
 	if err := m.Validate(validation.CommandValidationScope()); err != nil {
-		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
+		panic(fmt.Sprintf("ExecuteCommand(%s): %s", mt, err))
 	}
 
 	return dispatchAction{

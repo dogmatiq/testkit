@@ -10,6 +10,7 @@ import (
 	. "github.com/dogmatiq/testkit"
 	"github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/internal/testingmock"
+	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
 func TestToExecuteCommandType(t *testing.T) {
@@ -247,4 +248,10 @@ func TestToExecuteCommandType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestToExecuteCommandOfType_NilMessage(t *testing.T) {
+	xtesting.ExpectPanic(t, "ToExecuteCommandOfType(<nil>): message must not be nil", func() {
+		ToExecuteCommandOfType(nil) //nolint:staticcheck // testing deprecated function
+	})
 }

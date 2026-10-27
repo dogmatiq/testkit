@@ -310,3 +310,11 @@ func TestToRecordEvent_NilMessage(t *testing.T) {
 		ToRecordEvent(nil)
 	})
 }
+
+func TestToRecordEvent_InvalidMessage(t *testing.T) {
+	xtesting.ExpectPanic(t, "ToRecordEvent(*stubs.EventStub[TypeA]): <invalid>", func() {
+		ToRecordEvent(&EventStub[TypeA]{
+			ValidationError: "<invalid>",
+		})
+	})
+}

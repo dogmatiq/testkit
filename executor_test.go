@@ -199,3 +199,23 @@ func TestInterceptCommandExecutor(t *testing.T) {
 		})
 	})
 }
+
+func TestCommandExecutor(t *testing.T) {
+	t.Run("it panics if used outside of a test action", func(t *testing.T) {
+		app := &ApplicationStub{
+			ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+				c.Identity("<app>", "7b0f2a39-4f6e-4d6c-9a1e-3c8d5b2f1a40")
+			},
+		}
+
+		tc := Begin(&testingmock.T{}, app)
+
+		xtesting.ExpectPanic(
+			t,
+			"ExecuteCommand(): cannot be called outside of a test",
+			func() {
+				tc.CommandExecutor().ExecuteCommand(context.Background(), CommandA1) //nolint:errcheck
+			},
+		)
+	})
+}

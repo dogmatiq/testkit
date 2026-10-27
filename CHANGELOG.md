@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the panic message produced by `ExecuteCommand()` when passed an invalid
+  command, which incorrectly referred to `ToRecordEvent()`.
+
 ## [0.22.2] - 2026-10-01
 
 ### Changed
