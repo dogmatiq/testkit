@@ -118,13 +118,10 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 	// Expectation and Predicate interfaces which state that p.Done() must
 	// be called exactly once, and that it must be called before calling
 	// p.Report().
-	if err := func() error {
+	err := func() error {
 		defer p.Done()
 		return t.doAction(act, engine.WithObserver(p))
-	}(); err != nil {
-		t.testingT.Fatal(err)
-		return t // required when using a mock testingT that does not panic
-	}
+	}()
 
 	options := []dapper.Option{
 		dapper.WithPackagePaths(false),
@@ -156,8 +153,11 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 		)
 	}
 
+	// If the action failed the test can not pass, but the report is still
+	// logged so that the expectation can explain what it observed, which
+	// typically includes why the action failed.
 	ctx := ReportGenerationContext{
-		TreeOk:  p.Ok(),
+		TreeOk:  err == nil && p.Ok(),
 		printer: dapper.NewPrinter(options...),
 	}
 
@@ -168,7 +168,9 @@ func (t *Test) Expect(act Action, e Expectation) *Test {
 	must.WriteTo(buf, rep)
 	t.testingT.Log(buf.String())
 
-	if !ctx.TreeOk {
+	if err != nil {
+		t.testingT.Fatal(err)
+	} else if !ctx.TreeOk {
 		t.testingT.FailNow()
 	}
 

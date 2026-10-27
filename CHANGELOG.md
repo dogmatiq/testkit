@@ -13,8 +13,27 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Added `fact.DispatchCycleSkipped`, which the engine emits in place of
+  `fact.DispatchCycleBegun` when a dispatched message can not be routed to any
+  handler. Its `Reason` is either `fact.UnroutedMessageType` or
+  `fact.OutboundOnlyMessageType`.
+
+### Changed
+
+- **[BC]** `engine.Engine.Dispatch()` and `engine.CommandExecutor` now return
+  an error, instead of panicking, when the message type is not handled by any
+  handler.
+- `Test.Expect()` now logs the expectation's test report before failing the
+  test when the action returns an error. For a message that is not handled by
+  any handler, the report explains why and suggests the route to add.
+
 ### Fixed
 
+- `ExecuteCommand()` and `RecordEvent()` no longer cause an engine panic when
+  the message type only appears in outbound routes, such as a command that a
+  process executes but that no aggregate or integration handles.
 - Fixed the panic message produced by `ExecuteCommand()` when passed an invalid
   command, which incorrectly referred to `ToRecordEvent()`.
 

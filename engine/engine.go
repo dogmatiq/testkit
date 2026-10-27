@@ -10,6 +10,7 @@ import (
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/validation"
 	"go.uber.org/multierr"
 )
@@ -172,7 +173,21 @@ func (e *Engine) tick(
 	)
 }
 
+// isProduced returns true if any handler has an outbound route for the given
+// message type.
+func (e *Engine) isProduced(mt message.Type) bool {
+	for _, c := range e.controllers {
+		if c.HandlerConfig().RouteSet().HasMessageType(mt) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Dispatch processes a [dogma.Command] or [dogma.Event].
+//
+// It returns an error if no handler has an inbound route for the message type.
 //
 // It panics if the message is a [dogma.Deadline], or is otherwise invalid.
 func (e *Engine) Dispatch(
@@ -201,7 +216,22 @@ func (e *Engine) Dispatch(
 	}
 
 	if _, ok := e.routes[mt]; !ok {
-		panic(fmt.Sprintf("the %s message type is not consumed by any handlers", mt))
+		reason := fact.UnroutedMessageType
+		err := inflect.Errorf(mt.Kind(), "no handlers within the application have routes for the %s <message>", mt)
+
+		if e.isProduced(mt) {
+			reason = fact.OutboundOnlyMessageType
+			err = inflect.Errorf(mt.Kind(), "no handlers within the application have inbound routes for the %s <message>, it is only ever <produced>", mt)
+		}
+
+		oo.observers.Notify(
+			fact.DispatchCycleSkipped{
+				Envelope: env,
+				Reason:   reason,
+			},
+		)
+
+		return err
 	}
 
 	oo.observers.Notify(

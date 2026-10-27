@@ -60,14 +60,17 @@ func TestCommandExecutor_ExecuteCommand(t *testing.T) {
 		}
 	})
 
-	t.Run("it panics if the message is unrecognized", func(t *testing.T) {
+	t.Run("it returns an error if the message type is not handled", func(t *testing.T) {
 		_, executor := newCommandExecutorFixture()
-		xtesting.ExpectPanic(
+		err := executor.ExecuteCommand(context.Background(), CommandX1)
+		if err == nil {
+			t.Fatal("expected an error")
+		}
+		xtesting.Expect(
 			t,
-			"the *stubs.CommandStub[TypeX] message type is not consumed by any handlers",
-			func() {
-				executor.ExecuteCommand(context.Background(), CommandX1) //nolint:errcheck
-			},
+			"unexpected error",
+			err.Error(),
+			"no handlers within the application have routes for the *stubs.CommandStub[TypeX] command",
 		)
 	})
 

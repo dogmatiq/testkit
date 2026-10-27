@@ -16,6 +16,16 @@ type DispatchCycleBegun struct {
 	EnabledHandlers     map[string]bool
 }
 
+// DispatchCycleSkipped indicates that Engine.Dispatch() has been called with a
+// message that can not be routed to any handler.
+//
+// It is emitted in place of DispatchCycleBegun, and no DispatchCycleCompleted
+// fact follows it.
+type DispatchCycleSkipped struct {
+	Envelope *envelope.Envelope
+	Reason   DispatchCycleSkipReason
+}
+
 // DispatchCycleCompleted indicates that a call Engine.Dispatch() has completed.
 type DispatchCycleCompleted struct {
 	Envelope            *envelope.Envelope

@@ -18,3 +18,18 @@ const (
 	// method.
 	IndividualHandlerDisabledByConfiguration HandlerSkipReason = 'C'
 )
+
+// DispatchCycleSkipReason is an enumeration of the reasons a dispatch cycle can
+// be skipped.
+type DispatchCycleSkipReason byte
+
+const (
+	// UnroutedMessageType indicates that a dispatch cycle was skipped because
+	// the application does not have any routes for the message type.
+	UnroutedMessageType DispatchCycleSkipReason = 'U'
+
+	// OutboundOnlyMessageType indicates that a dispatch cycle was skipped
+	// because the message type is produced by one or more handlers, but is not
+	// handled by any of them.
+	OutboundOnlyMessageType DispatchCycleSkipReason = 'O'
+)

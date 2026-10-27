@@ -17,10 +17,15 @@ import (
 func reportNoMatch(rep *Report, t *tracker) {
 	s := rep.Section(suggestionsSection)
 
+	if t.dispatchSkipped != nil {
+		reportDispatchSkipped(rep, *t.dispatchSkipped)
+		return
+	}
+
 	allDisabled := true
 	var relevant []string
 
-	if t.cycleBegun {
+	if t.dispatchBegun {
 		for ht := range config.HandlerTypes() {
 			e := t.enabled[ht]
 
@@ -71,6 +76,53 @@ func reportNoMatch(rep *Report, t *tracker) {
 	if t.options.MatchDispatchCycleStartedFacts {
 		s.AppendListItem(inflect.Sprint(t.kind, "verify the logic within the code that uses the <dispatcher>"))
 	}
+}
+
+// reportDispatchSkipped populates rep when the message that was dispatched by
+// the action could not be routed to any handler, and hence nothing happened.
+func reportDispatchSkipped(rep *Report, f fact.DispatchCycleSkipped) {
+	mt := message.TypeOf(f.Envelope.Message)
+
+	switch f.Reason {
+	case fact.UnroutedMessageType:
+		rep.Explanation = inflect.Sprintf(
+			mt.Kind(),
+			"no handlers within the application have routes for the %s <message>",
+			mt,
+		)
+	case fact.OutboundOnlyMessageType:
+		rep.Explanation = inflect.Sprintf(
+			mt.Kind(),
+			"no handlers within the application have inbound routes for the %s <message>, it is only ever <produced>",
+			mt,
+		)
+	}
+
+	// Name the handler types that are able to handle this kind of message so
+	// that the suggestion doesn't read as though any handler will do.
+	var handlerTypes []string
+	for ht := range config.HandlerTypes() {
+		if ht.RouteCapabilities().DirectionOf(mt.Kind()).Has(config.InboundDirection) {
+			handlerTypes = append(handlerTypes, ht.String())
+		}
+	}
+
+	// A command is handled by exactly one handler, whereas an event may be
+	// handled by any number of them.
+	quantifier := "the"
+	if mt.Kind() == message.EventKind {
+		quantifier = "each"
+	}
+
+	rep.Section(suggestionsSection).AppendListItem(
+		inflect.Sprintf(
+			mt.Kind(),
+			"add a <handles-route>[%s]() route to %s %s that should handle this <message>",
+			mt,
+			quantifier,
+			strings.Join(handlerTypes, " or "),
+		),
+	)
 }
 
 // reportImpossible populates rep for expectations that can never be satisfied
@@ -135,8 +187,12 @@ type tracker struct {
 	// options is the set of options passed to the predicate.
 	options PredicateOptions
 
-	// cycleBegun is true if at least one dispatch or tick cycle was started.
-	cycleBegun bool
+	// dispatchBegun is true if at least one dispatch or tick cycle was started.
+	dispatchBegun bool
+
+	// dispatchSkipped is the fact describing why a dispatch cycle was
+	// dispatchSkipped, if any.
+	dispatchSkipped *fact.DispatchCycleSkipped
 
 	// total is the total number of messages that were produced.
 	total int
@@ -160,12 +216,14 @@ type tracker struct {
 func (t *tracker) Notify(f fact.Fact) (*envelope.Envelope, bool) {
 	switch x := f.(type) {
 	case fact.DispatchCycleBegun:
-		t.cycleBegun = true
+		t.dispatchBegun = true
 		t.enabled = x.EnabledHandlerTypes
 		if t.options.MatchDispatchCycleStartedFacts {
 			t.messageProduced(x.Envelope)
 			return x.Envelope, true
 		}
+	case fact.DispatchCycleSkipped:
+		t.dispatchSkipped = &x
 	case fact.HandlingBegun:
 		t.updateEngaged(
 			x.Handler.Identity().GetName(),

@@ -79,6 +79,12 @@ func TestInflect(t *testing.T) {
 				Event:    "via a dogma.EventRecorder",
 				Deadline: "via a <dispatcher>",
 			},
+			{
+				Template: "a <handles-route>[T]() route",
+				Command:  "a HandlesCommand[T]() route",
+				Event:    "a HandlesEvent[T]() route",
+				Deadline: "a SchedulesDeadline[T]() route",
+			},
 		}
 
 		for _, c := range cases {

@@ -284,15 +284,58 @@ func TestEngine_Dispatch(t *testing.T) {
 		)
 	})
 
-	t.Run("it panics if the message type is unrecognized", func(t *testing.T) {
-		fx := newEngineFixture()
-		xtesting.ExpectPanic(
-			t,
-			"the *stubs.CommandStub[TypeX] message type is not consumed by any handlers",
-			func() {
-				fx.engine.Dispatch(context.Background(), CommandX1) //nolint:errcheck
+	t.Run("it skips the dispatch cycle if the message type is not handled", func(t *testing.T) {
+		cases := []struct {
+			Name    string
+			Message dogma.Message
+			Reason  fact.DispatchCycleSkipReason
+			Error   string
+		}{
+			{
+				Name:    "unrouted type",
+				Message: CommandX1,
+				Reason:  fact.UnroutedMessageType,
+				Error:   "no handlers within the application have routes for the *stubs.CommandStub[TypeX] command",
 			},
-		)
+			{
+				Name:    "type that is only produced",
+				Message: EventB1,
+				Reason:  fact.OutboundOnlyMessageType,
+				Error:   "no handlers within the application have inbound routes for the *stubs.EventStub[TypeB] event, it is only ever recorded",
+			},
+		}
+
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				fx := newEngineFixture()
+				buf := &fact.Buffer{}
+
+				err := fx.engine.Dispatch(
+					context.Background(),
+					c.Message,
+					WithObserver(buf),
+				)
+				if err == nil {
+					t.Fatal("expected an error")
+				}
+				xtesting.Expect(t, "unexpected error", err.Error(), c.Error)
+
+				var skipped []fact.DispatchCycleSkipped
+				for _, f := range buf.Facts() {
+					switch x := f.(type) {
+					case fact.DispatchCycleSkipped:
+						skipped = append(skipped, x)
+					case fact.DispatchCycleBegun, fact.DispatchCycleCompleted:
+						t.Fatalf("unexpected fact: %T", f)
+					}
+				}
+				if len(skipped) != 1 {
+					t.Fatalf("expected exactly 1 DispatchCycleSkipped fact, got %d", len(skipped))
+				}
+				xtesting.Expect(t, "unexpected message", skipped[0].Envelope.Message, c.Message)
+				xtesting.Expect(t, "unexpected reason", skipped[0].Reason, c.Reason)
+			})
+		}
 	})
 }
 

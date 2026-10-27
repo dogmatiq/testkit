@@ -1,6 +1,7 @@
 package testkit_test
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -29,6 +30,18 @@ func TestExecuteCommand(t *testing.T) {
 								dogma.HandlesCommand[*CommandStub[TypeA]](),
 								dogma.RecordsEvent[*EventStub[TypeA]](),
 							)
+						},
+					}),
+					dogma.ViaProcess(&ProcessMessageHandlerStub[*ProcessRootStub]{
+						ConfigureFunc: func(c dogma.ProcessConfigurer) {
+							c.Identity("<process>", "5b7f8a1e-3c2d-4e9f-8a6b-1d2c3e4f5a6b")
+							c.Routes(
+								dogma.HandlesEvent[*EventStub[TypeA]](),
+								dogma.ExecutesCommand[*CommandStub[TypeB]](),
+							)
+						},
+						RouteEventToInstanceFunc: func(context.Context, dogma.Event) (string, bool, error) {
+							return "<instance>", true, nil
 						},
 					}),
 				)
@@ -80,21 +93,97 @@ func TestExecuteCommand(t *testing.T) {
 		)
 	})
 
-	t.Run("it fails the test if the message type is unrecognized", func(t *testing.T) {
-		tm, _, _, tc := newFixture()
-		tm.FailSilently = true
-
-		tc.Prepare(ExecuteCommand(CommandX1))
-
-		if !tm.Failed() {
-			t.Fatal("expected test to fail")
+	t.Run("it fails the test if the message type is not handled", func(t *testing.T) {
+		cases := []struct {
+			Name    string
+			Message dogma.Command
+			Error   string
+		}{
+			{
+				Name:    "unrouted type",
+				Message: CommandX1,
+				Error:   "no handlers within the application have routes for the *stubs.CommandStub[TypeX] command",
+			},
+			{
+				Name:    "type that is only produced",
+				Message: CommandB1,
+				Error:   "no handlers within the application have inbound routes for the *stubs.CommandStub[TypeB] command, it is only ever executed",
+			},
 		}
-		xtesting.ExpectContains(
-			t,
-			"expected error log",
-			tm.Logs,
-			"cannot execute command, *stubs.CommandStub[TypeX] is not a recognized message type",
-		)
+
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				tm, _, _, tc := newFixture()
+				tm.FailSilently = true
+
+				tc.Prepare(ExecuteCommand(c.Message))
+
+				if !tm.Failed() {
+					t.Fatal("expected test to fail")
+				}
+				xtesting.ExpectContains(t, "expected error log", tm.Logs, c.Error)
+			})
+		}
+	})
+
+	t.Run("it fails the test if the message type is not handled, regardless of the expectation", func(t *testing.T) {
+		cases := []struct {
+			Name        string
+			Expectation Expectation
+			Report      []string
+		}{
+			{
+				Name:        "expectation that would fail",
+				Expectation: ToRecordEvent(EventA1),
+				Report: []string{
+					`✗ record a specific '*stubs.EventStub[TypeA]' event`,
+					``,
+					`  | EXPLANATION`,
+					`  |     no handlers within the application have routes for the *stubs.CommandStub[TypeX] command`,
+					`  | `,
+					`  | SUGGESTIONS`,
+					`  |     • add a HandlesCommand[*stubs.CommandStub[TypeX]]() route to the aggregate or integration that should handle this command`,
+				},
+			},
+			{
+				Name:        "negated expectation",
+				Expectation: Not(ToRecordEvent(EventA1)),
+				Report: []string{
+					`✓ do not record a specific '*stubs.EventStub[TypeA]' event`,
+				},
+			},
+			{
+				Name:        "expectation that always passes",
+				Expectation: pass,
+				Report: []string{
+					`✓ <always pass>`,
+				},
+			},
+		}
+
+		for _, c := range cases {
+			t.Run(c.Name, func(t *testing.T) {
+				tm, _, _, tc := newFixture()
+				tm.FailSilently = true
+
+				tc.Expect(ExecuteCommand(CommandX1), c.Expectation)
+
+				if !tm.Failed() {
+					t.Fatal("expected test to fail")
+				}
+
+				// The report is logged first, followed by the error that failed
+				// the test.
+				n := len(tm.Logs)
+				xtesting.Expect(
+					t,
+					"unexpected error log",
+					tm.Logs[n-1],
+					"no handlers within the application have routes for the *stubs.CommandStub[TypeX] command",
+				)
+				expectReport(c.Report...)(t, &testingmock.T{Logs: tm.Logs[:n-1]})
+			})
+		}
 	})
 
 	t.Run("it does not satisfy its own expectations", func(t *testing.T) {

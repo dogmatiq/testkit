@@ -160,6 +160,16 @@ func TestLogger(t *testing.T) {
 					Fact:    DispatchCycleCompleted{Envelope: command, Error: errors.New("<error>")},
 				},
 				{
+					Name:    "DispatchCycleSkipped (unrouted message type)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatch skipped because no handlers within the application have routes for the *stubs.CommandStub[TypeA] command",
+					Fact:    DispatchCycleSkipped{Envelope: command, Reason: UnroutedMessageType},
+				},
+				{
+					Name:    "DispatchCycleSkipped (outbound-only message type)",
+					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatch skipped because no handlers within the application have inbound routes for the *stubs.CommandStub[TypeA] command, it is only ever executed",
+					Fact:    DispatchCycleSkipped{Envelope: command, Reason: OutboundOnlyMessageType},
+				},
+				{
 					Name:    "DispatchBegun",
 					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 					Fact:    DispatchBegun{Envelope: command},
