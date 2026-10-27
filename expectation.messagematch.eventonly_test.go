@@ -245,7 +245,7 @@ func TestToOnlyRecordEventsMatching(t *testing.T) {
 			}
 
 			preReportCount := len(mt.Logs)
-			c.Report(mt)
+			c.Report(t, mt)
 			if len(mt.Logs) > preReportCount {
 				t.Fatalf("report content mismatch:\n%v", mt.Logs[preReportCount:])
 			}

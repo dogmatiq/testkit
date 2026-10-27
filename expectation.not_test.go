@@ -70,7 +70,7 @@ func TestNot(t *testing.T) {
 			t.Run(c.Name, func(t *testing.T) {
 				mt, tc := newFixture()
 				tc.Expect(ExecuteCommand(CommandA1), c.Expectation)
-				c.Report(mt)
+				c.Report(t, mt)
 				if mt.Failed() != !c.Passes {
 					t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
 				}

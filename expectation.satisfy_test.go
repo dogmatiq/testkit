@@ -213,7 +213,7 @@ func TestToSatisfy(t *testing.T) {
 			}
 
 			preReportCount := len(mt.Logs)
-			c.Report(mt)
+			c.Report(t, mt)
 			if len(mt.Logs) > preReportCount {
 				t.Fatalf("report content mismatch:\n%v", mt.Logs[preReportCount:])
 			}
@@ -236,7 +236,7 @@ func TestToSatisfy(t *testing.T) {
 			`    ✓ <always pass>`,
 			`    ✗ <always fail> (the expectation failed)`,
 		)
-		rm(mt)
+		rm(t, mt)
 
 		if !mt.Failed() {
 			t.Fatal("expected test to fail")

@@ -265,7 +265,7 @@ func TestToExecuteCommand(t *testing.T) {
 			mt := &testingmock.T{FailSilently: true}
 			tc := Begin(mt, app, c.Options...)
 			tc.Expect(c.Action(t, tc), c.Expectation)
-			c.Report(mt)
+			c.Report(t, mt)
 			if mt.Failed() != !c.Passes {
 				t.Fatalf(
 					"expectation should have %s but %s",

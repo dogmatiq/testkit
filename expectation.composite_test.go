@@ -71,7 +71,7 @@ func TestAllOf(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)
-			c.Report(mt)
+			c.Report(t, mt)
 			if mt.Failed() != !c.Passes {
 				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
 			}
@@ -149,7 +149,7 @@ func TestAnyOf(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)
-			c.Report(mt)
+			c.Report(t, mt)
 			if mt.Failed() != !c.Passes {
 				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
 			}
@@ -228,7 +228,7 @@ func TestNoneOf(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			mt, tc := newCompositeFixture()
 			tc.Expect(noop, c.Expectation)
-			c.Report(mt)
+			c.Report(t, mt)
 			if mt.Failed() != !c.Passes {
 				t.Fatalf("testingT.Failed() = %v, want %v", mt.Failed(), !c.Passes)
 			}

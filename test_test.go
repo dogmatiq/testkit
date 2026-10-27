@@ -377,6 +377,6 @@ func TestTest_Annotate(t *testing.T) {
 			`  |         Content:         "A[-2-]{+1+}" <<[-bob-]{+anna+}'s customer ID>>`,
 			`  |         ValidationError: ""`,
 			`  |     }`,
-		)(mt)
+		)(t, mt)
 	})
 }
