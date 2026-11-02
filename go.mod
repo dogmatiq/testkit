@@ -5,7 +5,7 @@ go 1.27
 require (
 	github.com/dogmatiq/dapper v0.7.0
 	github.com/dogmatiq/dogma v0.25.0
-	github.com/dogmatiq/enginekit v0.28.1-0.20261102034251-6adbd12ace24
+	github.com/dogmatiq/enginekit v0.29.0
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
 	github.com/dogmatiq/protobuf v0.2.0
