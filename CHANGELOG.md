@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Changed
 
 - **[BC]** Updated minimum Go version to v1.27.
+- **[BC]** Updated to enginekit v0.29.0. Projects that use testkit with runkit
+  must also update runkit to a version that uses enginekit v0.29.0 or later.
 
 ## [0.23.0] - 2026-10-28
 
