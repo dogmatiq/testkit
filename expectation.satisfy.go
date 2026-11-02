@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sync"
 
 	"github.com/dogmatiq/testkit/fact"
@@ -364,8 +365,8 @@ func (t *SatisfyT) explain(fn string) {
 
 // close calls any functions registered via Cleanup().
 func (t *SatisfyT) close() {
-	for i := len(t.cleanup) - 1; i >= 0; i-- {
-		t.cleanup[i]()
+	for _, v := range slices.Backward(t.cleanup) {
+		v()
 	}
 }
 
