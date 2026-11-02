@@ -53,16 +53,14 @@ var (
 // flags returns a pointer to the "flag" field of *v.
 func flags(v *reflect.Value) *flag {
 	return (*flag)(
-		unsafe.Pointer(
-			uintptr(unsafe.Pointer(v)) + flagOffset,
-		),
+		unsafe.Add(unsafe.Pointer(v), flagOffset),
 	)
 }
 
 // computeFlagOffset checks for the presence of the "flag" field within the
 // reflect.Value type and returns its offset.
 func computeFlagOffset() (uintptr, error) {
-	rt := reflect.TypeOf(reflect.Value{})
+	rt := reflect.TypeFor[reflect.Value]()
 
 	// Ensure that reflect.Value even has a "flag" field.
 	f, ok := rt.FieldByName("flag")

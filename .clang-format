@@ -1,0 +1,3 @@
+BasedOnStyle: Google
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true

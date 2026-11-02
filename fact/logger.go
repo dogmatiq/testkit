@@ -3,6 +3,7 @@ package fact
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/dogmatiq/enginekit/config"
@@ -590,17 +591,17 @@ func formatEnabledHandlers(
 	byType map[config.HandlerType]bool,
 	byName map[string]bool,
 ) string {
-	var s string
+	var s strings.Builder
 
 	for ht := range config.HandlerTypes() {
 		if byType[ht] {
-			s += config.MapByHandlerType(
+			s.WriteString(config.MapByHandlerType(
 				ht,
 				" +aggregates",
 				" +processes",
 				" +integrations",
 				" +projections",
-			)
+			))
 		}
 	}
 
@@ -613,11 +614,11 @@ func formatEnabledHandlers(
 
 	for _, n := range sorted {
 		if byName[n] {
-			s += " +" + n
+			s.WriteString(" +" + n)
 		} else {
-			s += " -" + n
+			s.WriteString(" -" + n)
 		}
 	}
 
-	return "enabled:" + s
+	return "enabled:" + s.String()
 }
