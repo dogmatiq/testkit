@@ -1,13 +1,14 @@
 module github.com/dogmatiq/testkit
 
-go 1.26.0
+go 1.27
 
 require (
 	github.com/dogmatiq/dapper v0.7.0
 	github.com/dogmatiq/dogma v0.25.0
-	github.com/dogmatiq/enginekit v0.27.7
+	github.com/dogmatiq/enginekit v0.28.1-0.20261102034251-6adbd12ace24
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
+	github.com/dogmatiq/protobuf v0.2.0
 	github.com/google/go-cmp v0.7.0
 	github.com/sergi/go-diff v1.4.0
 	go.uber.org/multierr v1.11.0
