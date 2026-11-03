@@ -20,3 +20,5 @@ require (
 	github.com/dogmatiq/jumble v0.1.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 )
+
+tool google.golang.org/protobuf/cmd/protoc-gen-go
