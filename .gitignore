@@ -1,3 +1,5 @@
 /artifacts/
 /.makefiles/
 /.vscode/
+apm_modules/
+/apm.lock.yaml
