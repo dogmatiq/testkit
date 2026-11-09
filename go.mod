@@ -8,7 +8,7 @@ require (
 	github.com/dogmatiq/enginekit v0.30.0
 	github.com/dogmatiq/iago v0.4.0
 	github.com/dogmatiq/linger v1.1.0
-	github.com/dogmatiq/protobuf v0.2.0
+	github.com/dogmatiq/protobuf v0.7.0
 	github.com/google/go-cmp v0.7.0
 	github.com/sergi/go-diff v1.4.0
 	go.uber.org/multierr v1.11.0
