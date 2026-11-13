@@ -76,6 +76,8 @@ func (s *scope) Mutate(fn func(r dogma.ProcessRoot)) {
 		})
 	}
 
+	s.begin()
+
 	s.mutated = true
 	fn(s.root)
 	fn(s.shadowRoot)
@@ -133,6 +135,8 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 			Location:       location.OfCall(),
 		})
 	}
+
+	s.begin()
 
 	env := s.env.NewCommand(
 		uuid.NewV4(),
@@ -202,6 +206,8 @@ func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 		})
 	}
 
+	s.begin()
+
 	env := s.env.NewDeadline(
 		uuid.NewV4(),
 		m,
@@ -250,6 +256,23 @@ func (s *scope) Log(f string, v ...any) {
 		Envelope:     s.env,
 		LogFormat:    f,
 		LogArguments: v,
+	})
+}
+
+// begin marks the process instance as begun and notifies the observer. It does
+// nothing if the instance has already begun.
+func (s *scope) begin() {
+	if s.instance.begun {
+		return
+	}
+
+	s.instance.begun = true
+
+	s.observer.Notify(fact.ProcessInstanceBegun{
+		Handler:    s.config,
+		InstanceID: s.instanceID,
+		Root:       s.root,
+		Envelope:   s.env,
 	})
 }
 

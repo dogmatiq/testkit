@@ -49,6 +49,9 @@ type ProcessInstanceNotFound struct {
 
 // ProcessInstanceBegun indicates that a process message handler began a process
 // instance while handling an event.
+//
+// A process instance begins the first time that the handler mutates the
+// process root, executes a command or schedules a deadline for the instance.
 type ProcessInstanceBegun struct {
 	Handler    *config.Process
 	InstanceID string
@@ -56,7 +59,7 @@ type ProcessInstanceBegun struct {
 	Envelope   *envelope.Envelope
 }
 
-// ProcessInstanceEnded indicates that a process message handler destroyed a
+// ProcessInstanceEnded indicates that a process message handler ended a
 // process instance while handling an event or deadline.
 type ProcessInstanceEnded struct {
 	Handler    *config.Process

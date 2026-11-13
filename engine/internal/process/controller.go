@@ -18,6 +18,11 @@ import (
 )
 
 type instance struct {
+	// begun is true if the process instance has begun, which happens the first
+	// time that the handler mutates the process root, executes a command or
+	// schedules a deadline for the instance.
+	begun bool
+
 	// mutated is true if the process root has been mutated at least once.
 	mutated bool
 
@@ -163,23 +168,18 @@ func (c *Controller) instanceByID(
 
 	inst, ok := c.instances[id]
 	if !ok {
-		obs.Notify(fact.ProcessInstanceNotFound{
-			Handler:    c.Config,
-			InstanceID: id,
-			Envelope:   env,
-		})
-
 		if c.instances == nil {
 			c.instances = map[string]*instance{}
 		}
 
 		inst = &instance{}
 		c.instances[id] = inst
+	}
 
-		obs.Notify(fact.ProcessInstanceBegun{
+	if !inst.begun {
+		obs.Notify(fact.ProcessInstanceNotFound{
 			Handler:    c.Config,
 			InstanceID: id,
-			Root:       root,
 			Envelope:   env,
 		})
 

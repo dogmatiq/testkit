@@ -548,11 +548,12 @@ func TestController(t *testing.T) {
 
 				f := newControllerTestFixture()
 				f.handler.HandleEventFunc = func(
-					context.Context,
-					*ProcessRootStub,
-					dogma.ProcessEventScope[*ProcessRootStub],
-					dogma.Event,
+					_ context.Context,
+					_ *ProcessRootStub,
+					s dogma.ProcessEventScope[*ProcessRootStub],
+					_ dogma.Event,
 				) error {
+					s.Mutate(func(*ProcessRootStub) {})
 					return nil
 				}
 
@@ -868,7 +869,7 @@ func TestController(t *testing.T) {
 		})
 
 		t.Run("when the instance does not exist", func(t *testing.T) {
-			t.Run("records facts", func(t *testing.T) {
+			t.Run("records a fact", func(t *testing.T) {
 				f := newControllerTestFixture()
 				buf := &fact.Buffer{}
 
@@ -892,10 +893,42 @@ func TestController(t *testing.T) {
 							InstanceID: "<instance-A1>",
 							Envelope:   f.event,
 						},
-						fact.ProcessInstanceBegun{
+					},
+				)
+			})
+
+			t.Run("does not begin the instance if the handler does nothing", func(t *testing.T) {
+				f := newControllerTestFixture()
+
+				_, err := f.ctrl.Handle(
+					context.Background(),
+					fact.Ignore,
+					time.Now(),
+					f.event,
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				buf := &fact.Buffer{}
+				_, err = f.ctrl.Handle(
+					context.Background(),
+					buf,
+					time.Now(),
+					f.event,
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				xtesting.Expect(
+					t,
+					"unexpected facts",
+					buf.Facts(),
+					[]fact.Fact{
+						fact.ProcessInstanceNotFound{
 							Handler:    f.cfg,
 							InstanceID: "<instance-A1>",
-							Root:       &ProcessRootStub{},
 							Envelope:   f.event,
 						},
 					},
@@ -935,9 +968,10 @@ func TestController(t *testing.T) {
 				f.handler.HandleEventFunc = func(
 					_ context.Context,
 					_ *ProcessRootStub,
-					_ dogma.ProcessEventScope[*ProcessRootStub],
+					s dogma.ProcessEventScope[*ProcessRootStub],
 					_ dogma.Event,
 				) error {
+					s.Mutate(func(*ProcessRootStub) {})
 					return nil
 				}
 
@@ -1111,11 +1145,12 @@ func TestController(t *testing.T) {
 		t.Run("provides more context to UnexpectedMessage panics from HandleDeadline", func(t *testing.T) {
 			f := newControllerTestFixture()
 			f.handler.HandleEventFunc = func(
-				context.Context,
-				*ProcessRootStub,
-				dogma.ProcessEventScope[*ProcessRootStub],
-				dogma.Event,
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
 			) error {
+				s.Mutate(func(*ProcessRootStub) {})
 				return nil
 			}
 
@@ -1384,11 +1419,12 @@ func TestController(t *testing.T) {
 	t.Run("Reset", func(t *testing.T) {
 		f := newControllerTestFixture()
 		f.handler.HandleEventFunc = func(
-			context.Context,
-			*ProcessRootStub,
-			dogma.ProcessEventScope[*ProcessRootStub],
-			dogma.Event,
+			_ context.Context,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
 		) error {
+			s.Mutate(func(*ProcessRootStub) {})
 			return nil
 		}
 

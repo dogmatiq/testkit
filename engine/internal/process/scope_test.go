@@ -83,12 +83,6 @@ func TestScope(t *testing.T) {
 						InstanceID: "<instance>",
 						Envelope:   f.event,
 					},
-					fact.ProcessInstanceBegun{
-						Handler:    f.cfg,
-						InstanceID: "<instance>",
-						Root:       &ProcessRootStub{},
-						Envelope:   f.event,
-					},
 					fact.ProcessInstanceEnded{
 						Handler:    f.cfg,
 						InstanceID: "<instance>",
@@ -131,12 +125,6 @@ func TestScope(t *testing.T) {
 					fact.ProcessInstanceNotFound{
 						Handler:    f.cfg,
 						InstanceID: "<instance>",
-						Envelope:   f.event,
-					},
-					fact.ProcessInstanceBegun{
-						Handler:    f.cfg,
-						InstanceID: "<instance>",
-						Root:       &ProcessRootStub{},
 						Envelope:   f.event,
 					},
 					fact.ProcessInstanceEnded{
@@ -209,6 +197,56 @@ func TestScope(t *testing.T) {
 					},
 				},
 				xtesting.IgnoreMessageID,
+			)
+		})
+
+		t.Run("begins the instance", func(t *testing.T) {
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.ExecuteCommand(CommandA1)
+				return nil
+			}
+
+			_, err := f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			f.handler.HandleEventFunc = nil
+
+			buf := &fact.Buffer{}
+			_, err = f.ctrl.Handle(
+				context.Background(),
+				buf,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			xtesting.Expect(
+				t,
+				"unexpected facts",
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceLoaded{
+						Handler:    f.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   f.event,
+					},
+				},
 			)
 		})
 
@@ -502,6 +540,16 @@ func TestScope(t *testing.T) {
 		t.Run("returns the ID of the deadline", func(t *testing.T) {
 			f := newProcessTestFixture()
 
+			f.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(*ProcessRootStub) {})
+				return nil
+			}
+
 			_, err := f.ctrl.Handle(
 				context.Background(),
 				fact.Ignore,
@@ -554,6 +602,16 @@ func TestScope(t *testing.T) {
 
 	t.Run("ScheduledFor", func(t *testing.T) {
 		f := newProcessTestFixture()
+
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			s.Mutate(func(*ProcessRootStub) {})
+			return nil
+		}
 
 		_, err := f.ctrl.Handle(
 			context.Background(),
@@ -637,6 +695,50 @@ func TestScope(t *testing.T) {
 			}
 		})
 
+		t.Run("begins the instance", func(t *testing.T) {
+			f := newProcessTestFixture()
+			f.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				s.Mutate(func(*ProcessRootStub) {})
+				s.Mutate(func(*ProcessRootStub) {})
+				return nil
+			}
+
+			buf := &fact.Buffer{}
+			_, err := f.ctrl.Handle(
+				context.Background(),
+				buf,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			xtesting.Expect(
+				t,
+				"unexpected facts",
+				buf.Facts(),
+				[]fact.Fact{
+					fact.ProcessInstanceNotFound{
+						Handler:    f.cfg,
+						InstanceID: "<instance>",
+						Envelope:   f.event,
+					},
+					fact.ProcessInstanceBegun{
+						Handler:    f.cfg,
+						InstanceID: "<instance>",
+						Root:       &ProcessRootStub{},
+						Envelope:   f.event,
+					},
+				},
+			)
+		})
+
 		t.Run("panics if the process has ended", func(t *testing.T) {
 			f := newProcessTestFixture()
 			f.handler.HandleEventFunc = func(
@@ -700,12 +802,6 @@ func TestScope(t *testing.T) {
 				fact.ProcessInstanceNotFound{
 					Handler:    f.cfg,
 					InstanceID: "<instance>",
-					Envelope:   f.event,
-				},
-				fact.ProcessInstanceBegun{
-					Handler:    f.cfg,
-					InstanceID: "<instance>",
-					Root:       &ProcessRootStub{},
 					Envelope:   f.event,
 				},
 				fact.MessageLoggedByProcess{
