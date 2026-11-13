@@ -75,12 +75,8 @@ func TestRecordEvent(t *testing.T) {
 			buf.Facts(),
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
-					MessageID:         "1",
-					CausationID:       "1",
-					CorrelationID:     "1",
 					Message:           EventA1,
 					CreatedAt:         startTime,
-					EventStreamID:     "ef0750de-15cd-5d0c-932e-adee5e8ebf47",
 					EventStreamOffset: 0,
 				},
 				EngineTime: startTime,
@@ -92,7 +88,17 @@ func TestRecordEvent(t *testing.T) {
 				},
 				EnabledHandlers: map[string]bool{},
 			},
+			xtesting.IgnoreEnvelopeIDs,
 		)
+
+		// The engine gives the dispatched message a random ID, so check how
+		// its IDs relate instead of their values.
+		for _, f := range buf.Facts() {
+			if f, ok := f.(fact.DispatchCycleBegun); ok {
+				xtesting.Expect(t, "unexpected causation ID", f.Envelope.CausationID, f.Envelope.MessageID)
+				xtesting.Expect(t, "unexpected correlation ID", f.Envelope.CorrelationID, f.Envelope.MessageID)
+			}
+		}
 	})
 
 	t.Run("it fails the test if the message type is not handled", func(t *testing.T) {

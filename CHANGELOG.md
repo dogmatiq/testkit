@@ -11,6 +11,28 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Added
+
+- The test engine now implements `MessageID()` on each handler scope, as
+  required by Dogma v0.26.0.
+
+### Changed
+
+- **[BC]** Updated to Dogma v0.26.0.
+- **[BC]** Updated to enginekit v0.32.0.
+- **[BC]** The `MessageID`, `CausationID`, `CorrelationID` and
+  `EventStreamID` fields of `envelope.Envelope`, and the ID parameters of the
+  envelope constructors, are now `uuid.UUID`.
+- The test engine now gives each message a random version 4 UUID as its ID,
+  instead of a sequential number. The test log shows the first 8 hexadecimal
+  digits of each ID.
+
+### Removed
+
+- **[BC]** Removed `envelope.MessageIDGenerator`.
+
 ## [0.24.0] - 2026-11-02
 
 ### Changed

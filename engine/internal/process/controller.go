@@ -32,8 +32,7 @@ type instance struct {
 // Controller is an implementation of engine.Controller for
 // dogma.ProcessMessageHandler implementations.
 type Controller struct {
-	Config     *config.Process
-	MessageIDs *envelope.MessageIDGenerator
+	Config *config.Process
 
 	instances map[string]*instance
 	deadlines []*envelope.Envelope
@@ -103,10 +102,9 @@ func (c *Controller) Handle(
 			func(dogma.Event) string { return "HandleEvent" },
 			func(dogma.Deadline) string { return "HandleDeadline" },
 		),
-		messageIDs: c.MessageIDs,
-		observer:   obs,
-		now:        now,
-		env:        env,
+		observer: obs,
+		now:      now,
+		env:      env,
 	}
 
 	err = c.handle(ctx, s)

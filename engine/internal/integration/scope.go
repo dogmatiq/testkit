@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -16,14 +17,17 @@ import (
 
 // scope is an implementation of dogma.IntegrationCommandScope.
 type scope struct {
-	config     *config.Integration
-	messageIDs *envelope.MessageIDGenerator
-	observer   fact.Observer
-	now        time.Time
-	command    *envelope.Envelope
-	streamID   string
-	offset     uint64
-	events     []*envelope.Envelope
+	config   *config.Integration
+	observer fact.Observer
+	now      time.Time
+	command  *envelope.Envelope
+	streamID uuid.UUID
+	offset   uint64
+	events   []*envelope.Envelope
+}
+
+func (s *scope) MessageID() uuid.UUID {
+	return s.command.MessageID
 }
 
 func (s *scope) RecordEvent(m dogma.Event) {
@@ -54,7 +58,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 	}
 
 	env := s.command.NewEvent(
-		s.messageIDs.Next(),
+		uuid.NewV4(),
 		m,
 		s.now,
 		envelope.Origin{

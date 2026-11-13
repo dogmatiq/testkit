@@ -10,6 +10,33 @@ import (
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
+func TestScopeMessageID(t *testing.T) {
+	fx := newControllerTestFixture()
+	called := false
+
+	fx.handler.HandleEventFunc = func(
+		_ context.Context,
+		s dogma.ProjectionEventScope,
+		_ dogma.Event,
+	) (uint64, error) {
+		called = true
+		xtesting.Expect(t, "unexpected message ID", s.MessageID(), fx.event.MessageID)
+		return s.Offset() + 1, nil
+	}
+
+	_, err := fx.ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		time.Now(),
+		fx.event,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	xtesting.Expect(t, "expected handler to be called", called, true)
+}
+
 func TestScopeRecordedAt(t *testing.T) {
 	fx := newControllerTestFixture()
 

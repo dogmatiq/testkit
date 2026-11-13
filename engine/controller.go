@@ -64,8 +64,7 @@ func registerControllers(
 				registerController(
 					e,
 					&aggregate.Controller{
-						Config:     h,
-						MessageIDs: &e.messageIDs,
+						Config: h,
 					},
 				)
 			},
@@ -73,8 +72,7 @@ func registerControllers(
 				registerController(
 					e,
 					&process.Controller{
-						Config:     h,
-						MessageIDs: &e.messageIDs,
+						Config: h,
 					},
 				)
 			},
@@ -82,8 +80,7 @@ func registerControllers(
 				registerController(
 					e,
 					&integration.Controller{
-						Config:     h,
-						MessageIDs: &e.messageIDs,
+						Config: h,
 					},
 				)
 			},

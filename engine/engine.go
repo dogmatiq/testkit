@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -17,8 +18,6 @@ import (
 
 // Engine is an in-memory Dogma engine that is used to execute tests.
 type Engine struct {
-	messageIDs envelope.MessageIDGenerator
-
 	// The controllers and routes maps are static and may be read without
 	// acquiring the mutex, but m must be held to call any method on a
 	// controller, to call a resetter, or to read or write idempotencyKeys.
@@ -64,7 +63,6 @@ func (e *Engine) Reset() {
 	e.m.Lock()
 	defer e.m.Unlock()
 
-	e.messageIDs.Reset()
 	clear(e.idempotencyKeys)
 
 	for _, c := range e.controllers {
@@ -196,7 +194,7 @@ func (e *Engine) Dispatch(
 	options ...OperationOption,
 ) error {
 	mt := message.TypeOf(m)
-	id := e.messageIDs.Next()
+	id := uuid.NewV4()
 	oo := newOperationOptions(e, options)
 
 	env, err := message.MapByKindOfWithErr(
@@ -206,7 +204,9 @@ func (e *Engine) Dispatch(
 				m.Validate(validation.CommandValidationScope())
 		},
 		func(m dogma.Event) (*envelope.Envelope, error) {
-			return envelope.NewEvent(id, m, oo.now),
+			// Each event that doesn't come from a handler is the only event in
+			// its own stream.
+			return envelope.NewEvent(id, m, oo.now, uuid.NewV4()),
 				m.Validate(validation.EventValidationScope())
 		},
 		nil,

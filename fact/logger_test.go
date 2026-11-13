@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -12,6 +13,11 @@ import (
 	"github.com/dogmatiq/testkit/envelope"
 	. "github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
+)
+
+var (
+	messageID = uuid.MustParse("6b1d0e3a-4c2f-4a7e-9b15-3e8d2c6f0a47")
+	childID   = uuid.MustParse("f2c84a91-7d3e-4b09-8c6a-1f5e9b2d4c83")
 )
 
 func TestLogger(t *testing.T) {
@@ -61,19 +67,20 @@ func TestLogger(t *testing.T) {
 		})
 
 		command := envelope.NewCommand(
-			"10",
+			messageID,
 			CommandA1,
 			time.Now(),
 		)
 
 		event := envelope.NewEvent(
-			"10",
+			messageID,
 			EventA1,
 			time.Now(),
+			uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 		)
 
 		deadline := event.NewDeadline(
-			"20",
+			childID,
 			DeadlineA1,
 			time.Now(),
 			now,
@@ -135,7 +142,7 @@ func TestLogger(t *testing.T) {
 			run(t, []logCase{
 				{
 					Name:    "DispatchCycleBegun",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatching ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ⚙    dispatching ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 					Fact: DispatchCycleBegun{
 						Envelope:   command,
 						EngineTime: now,
@@ -161,22 +168,22 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "DispatchCycleSkipped (unrouted message type)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatch skipped because no handlers within the application have routes for the *stubs.CommandStub[TypeA] command",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ⚙    dispatch skipped because no handlers within the application have routes for the *stubs.CommandStub[TypeA] command",
 					Fact:    DispatchCycleSkipped{Envelope: command, Reason: UnroutedMessageType},
 				},
 				{
 					Name:    "DispatchCycleSkipped (outbound-only message type)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    dispatch skipped because no handlers within the application have inbound routes for the *stubs.CommandStub[TypeA] command, it is only ever executed",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ⚙    dispatch skipped because no handlers within the application have inbound routes for the *stubs.CommandStub[TypeA] command, it is only ever executed",
 					Fact:    DispatchCycleSkipped{Envelope: command, Reason: OutboundOnlyMessageType},
 				},
 				{
 					Name:    "DispatchBegun",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ⚙    *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 					Fact:    DispatchBegun{Envelope: command},
 				},
 				{
 					Name:    "CommandDeduplicated",
-					Message: `= 10  ∵ 10  ⋲ 10  ↻ ⚙    *stubs.CommandStub[TypeA]? ● command ignored because it's idempotency key "<key>" has already been used`,
+					Message: `= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ↻ ⚙    *stubs.CommandStub[TypeA]? ● command ignored because it's idempotency key "<key>" has already been used`,
 					Fact:    CommandDeduplicated{Envelope: command, Key: "<key>"},
 				},
 				{
@@ -201,22 +208,22 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "HandlingCompleted (failure)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▽ ∴ ✖  <aggregate> ● <error>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▽ ∴ ✖  <aggregate> ● <error>",
 					Fact:    HandlingCompleted{Handler: aggregate, Envelope: command, Error: errors.New("<error>")},
 				},
 				{
 					Name:    "HandlingSkipped (handler type)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> ● handler skipped because aggregate handlers are disabled",
 					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: HandlerTypeDisabled},
 				},
 				{
 					Name:    "HandlingSkipped (individual handler)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled during this tick of the test engine",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> ● handler skipped because it is disabled during this tick of the test engine",
 					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: IndividualHandlerDisabled},
 				},
 				{
 					Name:    "HandlingSkipped (individual handler via configuration)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> ● handler skipped because it is disabled by its Configure() method",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> ● handler skipped because it is disabled by its Configure() method",
 					Fact:    HandlingSkipped{Handler: aggregate, Envelope: command, Reason: IndividualHandlerDisabledByConfiguration},
 				},
 			})
@@ -226,7 +233,7 @@ func TestLogger(t *testing.T) {
 			run(t, []logCase{
 				{
 					Name:    "TickCycleBegun",
-					Message: "= --  ∵ --  ⋲ --    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
+					Message: "= --------  ∵ --------  ⋲ --------    ⚙    ticking ● 2006-01-02T15:04:05+07:00 ● enabled: +aggregates +processes -<disabled> +<enabled>",
 					Fact: TickCycleBegun{
 						EngineTime: now,
 						EnabledHandlerTypes: map[config.HandlerType]bool{
@@ -261,7 +268,7 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "TickCompleted (failure)",
-					Message: "= --  ∵ --  ⋲ --    ∴ ✖  <aggregate> ● <error>",
+					Message: "= --------  ∵ --------  ⋲ --------    ∴ ✖  <aggregate> ● <error>",
 					Fact:    TickCompleted{Handler: aggregate, Error: errors.New("<error>")},
 				},
 			})
@@ -271,68 +278,68 @@ func TestLogger(t *testing.T) {
 			run(t, []logCase{
 				{
 					Name:    "AggregateInstanceLoaded",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● loaded an existing instance",
 					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Root: &AggregateRootStub{}, Envelope: command},
 				},
 				{
 					Name:    "AggregateInstanceLoaded (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● loaded an existing instance",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● <description> ● loaded an existing instance",
 					Fact:    AggregateInstanceLoaded{Handler: aggregate, InstanceID: "<instance>", Root: aggregateWithDescription, Envelope: command},
 				},
 				{
 					Name:    "AggregateInstanceNotFound",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● instance does not yet exist",
 					Fact:    AggregateInstanceNotFound{Handler: aggregate, InstanceID: "<instance>", Envelope: command},
 				},
 				{
 					Name:    "AggregateInstanceCreated",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● instance created",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● instance created",
 					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Root: &AggregateRootStub{}, Envelope: command},
 				},
 				{
 					Name:    "AggregateInstanceCreated (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● instance created",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● <description> ● instance created",
 					Fact:    AggregateInstanceCreated{Handler: aggregate, InstanceID: "<instance>", Root: aggregateWithDescription, Envelope: command},
 				},
 				{
 					Name:    "EventRecordedByAggregate",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ∴    <aggregate> <instance> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 					Fact: EventRecordedByAggregate{
 						Handler:    aggregate,
 						InstanceID: "<instance>",
 						Root:       &AggregateRootStub{},
 						Envelope:   command,
 						EventEnvelope: command.NewEvent(
-							"20",
+							childID,
 							EventA1,
 							time.Now(),
 							envelope.Origin{},
-							"a4dea2c6-6499-441c-94ad-686334880c1c",
+							uuid.MustParse("a4dea2c6-6499-441c-94ad-686334880c1c"),
 							42,
 						),
 					},
 				},
 				{
 					Name:    "EventRecordedByAggregate (with description)",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ∴    <aggregate> <instance> ● <description> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ∴    <aggregate> <instance> ● <description> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 					Fact: EventRecordedByAggregate{
 						Handler:    aggregate,
 						InstanceID: "<instance>",
 						Root:       aggregateWithDescription,
 						Envelope:   command,
 						EventEnvelope: command.NewEvent(
-							"20",
+							childID,
 							EventA1,
 							time.Now(),
 							envelope.Origin{},
-							"a4dea2c6-6499-441c-94ad-686334880c1c",
+							uuid.MustParse("a4dea2c6-6499-441c-94ad-686334880c1c"),
 							42,
 						),
 					},
 				},
 				{
 					Name:    "MessageLoggedByAggregate",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● <message>",
 					Fact: MessageLoggedByAggregate{
 						Handler:      aggregate,
 						InstanceID:   "<instance>",
@@ -344,7 +351,7 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "MessageLoggedByAggregate (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ∴    <aggregate> <instance> ● <description> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ∴    <aggregate> <instance> ● <description> ● <message>",
 					Fact: MessageLoggedByAggregate{
 						Handler:      aggregate,
 						InstanceID:   "<instance>",
@@ -361,64 +368,64 @@ func TestLogger(t *testing.T) {
 			run(t, []logCase{
 				{
 					Name:    "ProcessInstanceLoaded",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● loaded an existing instance",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● loaded an existing instance",
 					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceLoaded (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● loaded an existing instance",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● <not ended> ● loaded an existing instance",
 					Fact:    ProcessInstanceLoaded{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "ProcessEventIgnored",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> ● event ignored because it was not routed to any instance",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> ● event ignored because it was not routed to any instance",
 					Fact:    ProcessEventIgnored{Handler: process, Envelope: event},
 				},
 				{
 					Name:    "ProcessEventRoutedToEndedInstance",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● event ignored because the target instance has ended",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● event ignored because the target instance has ended",
 					Fact:    ProcessEventRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
 				{
 					Name:    "ProcessDeadlineRoutedToEndedInstance",
-					Message: "= 20  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● deadline ignored because the target instance has ended",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● deadline ignored because the target instance has ended",
 					Fact:    ProcessDeadlineRoutedToEndedInstance{Handler: process, InstanceID: "<instance>", Envelope: deadline},
 				},
 				{
 					Name:    "ProcessInstanceNotFound",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance does not yet exist",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● instance does not yet exist",
 					Fact:    ProcessInstanceNotFound{Handler: process, InstanceID: "<instance>", Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceBegun",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance begun",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● instance begun",
 					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceBegun (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● instance begun",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● <not ended> ● instance begun",
 					Fact:    ProcessInstanceBegun{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceEnded",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● instance ended",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● instance ended",
 					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, Envelope: event},
 				},
 				{
 					Name:    "ProcessInstanceEnded (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <ended> ● instance ended",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● <ended> ● instance ended",
 					Fact:    ProcessInstanceEnded{Handler: process, InstanceID: "<instance>", Root: processWithDescription, Envelope: event},
 				},
 				{
 					Name:    "CommandExecutedByProcess",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ≡    <process> <instance> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 					Fact: CommandExecutedByProcess{
 						Handler:    process,
 						InstanceID: "<instance>",
 						Root:       &ProcessRootStub{},
 						Envelope:   event,
 						CommandEnvelope: event.NewCommand(
-							"20",
+							childID,
 							CommandA1,
 							time.Now(),
 							envelope.Origin{},
@@ -427,14 +434,14 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "CommandExecutedByProcess (with description)",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ≡    <process> <instance> ● <not ended> ● executed a command ● *stubs.CommandStub[TypeA]? ● command(stubs.TypeA:A1, valid)",
 					Fact: CommandExecutedByProcess{
 						Handler:    process,
 						InstanceID: "<instance>",
 						Root:       processWithDescription,
 						Envelope:   event,
 						CommandEnvelope: event.NewCommand(
-							"20",
+							childID,
 							CommandA1,
 							time.Now(),
 							envelope.Origin{},
@@ -443,17 +450,17 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "DeadlineScheduledByProcess",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ≡    <process> <instance> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
 					Fact:    DeadlineScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: &ProcessRootStub{}, DeadlineEnvelope: deadline},
 				},
 				{
 					Name:    "DeadlineScheduledByProcess (with description)",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ≡    <process> <instance> ● <not ended> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ≡    <process> <instance> ● <not ended> ● scheduled a deadline for 2006-01-02T15:04:05+07:00 ● *stubs.DeadlineStub[TypeA]@ ● deadline(stubs.TypeA:A1, valid)",
 					Fact:    DeadlineScheduledByProcess{Handler: process, InstanceID: "<instance>", Root: processWithDescription, DeadlineEnvelope: deadline},
 				},
 				{
 					Name:    "MessageLoggedByProcess",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● <message>",
 					Fact: MessageLoggedByProcess{
 						Handler:      process,
 						InstanceID:   "<instance>",
@@ -465,7 +472,7 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "MessageLoggedByProcess (with description)",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ≡    <process> <instance> ● <not ended> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ≡    <process> <instance> ● <not ended> ● <message>",
 					Fact: MessageLoggedByProcess{
 						Handler:      process,
 						InstanceID:   "<instance>",
@@ -482,23 +489,23 @@ func TestLogger(t *testing.T) {
 			run(t, []logCase{
 				{
 					Name:    "EventRecordedByIntegration",
-					Message: "= 20  ∵ 10  ⋲ 10  ▲ ⨝    <integration> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
+					Message: "= f2c84a91  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▲ ⨝    <integration> ● recorded an event ● *stubs.EventStub[TypeA]! ● event(stubs.TypeA:A1, valid)",
 					Fact: EventRecordedByIntegration{
 						Handler:  integration,
 						Envelope: command,
 						EventEnvelope: command.NewEvent(
-							"20",
+							childID,
 							EventA1,
 							time.Now(),
 							envelope.Origin{},
-							"1494ce69-b98c-41b4-9617-7fa45aa1ed21",
+							uuid.MustParse("1494ce69-b98c-41b4-9617-7fa45aa1ed21"),
 							42,
 						),
 					},
 				},
 				{
 					Name:    "MessageLoggedByIntegration",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ ⨝    <integration> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ ⨝    <integration> ● <message>",
 					Fact: MessageLoggedByIntegration{
 						Handler:      integration,
 						Envelope:     command,
@@ -518,17 +525,17 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "ProjectionCompactionCompleted (success)",
-					Message: "= --  ∵ --  ⋲ --    Σ    <projection> ● compacted",
+					Message: "= --------  ∵ --------  ⋲ --------    Σ    <projection> ● compacted",
 					Fact:    ProjectionCompactionCompleted{Handler: projection},
 				},
 				{
 					Name:    "ProjectionCompactionCompleted (failure)",
-					Message: "= --  ∵ --  ⋲ --    Σ ✖  <projection> ● compaction failed: <error>",
+					Message: "= --------  ∵ --------  ⋲ --------    Σ ✖  <projection> ● compaction failed: <error>",
 					Fact:    ProjectionCompactionCompleted{Handler: projection, Error: errors.New("<error>")},
 				},
 				{
 					Name:    "MessageLoggedByProjection",
-					Message: "= 10  ∵ 10  ⋲ 10  ▼ Σ    <projection> ● <message>",
+					Message: "= 6b1d0e3a  ∵ 6b1d0e3a  ⋲ 6b1d0e3a  ▼ Σ    <projection> ● <message>",
 					Fact: MessageLoggedByProjection{
 						Handler:      projection,
 						Envelope:     command,
@@ -538,7 +545,7 @@ func TestLogger(t *testing.T) {
 				},
 				{
 					Name:    "MessageLoggedByProjection (compacting)",
-					Message: "= --  ∵ --  ⋲ --    Σ    <projection> ● <message>",
+					Message: "= --------  ∵ --------  ⋲ --------    Σ    <projection> ● <message>",
 					Fact: MessageLoggedByProjection{
 						Handler:      projection,
 						LogFormat:    "<%s>",

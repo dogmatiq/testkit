@@ -16,8 +16,7 @@ import (
 // Controller is an implementation of engine.Controller for
 // dogma.IntegrationMessageHandler implementations.
 type Controller struct {
-	Config     *config.Integration
-	MessageIDs *envelope.MessageIDGenerator
+	Config *config.Integration
 
 	offset uint64
 }
@@ -51,13 +50,12 @@ func (c *Controller) Handle(
 	}
 
 	s := &scope{
-		config:     c.Config,
-		messageIDs: c.MessageIDs,
-		observer:   obs,
-		now:        now,
-		command:    env,
-		streamID:   c.Config.Identity().GetKey().AsString(),
-		offset:     c.offset,
+		config:   c.Config,
+		observer: obs,
+		now:      now,
+		command:  env,
+		streamID: c.Config.Identity().GetKey().AsStd(),
+		offset:   c.offset,
 	}
 
 	var err error

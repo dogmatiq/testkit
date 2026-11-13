@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -66,7 +67,7 @@ func TestScopeRecordEvent(t *testing.T) {
 					},
 					Envelope: f.command,
 					EventEnvelope: f.command.NewEvent(
-						"1",
+						uuid.Nil(),
 						stubs.EventA1,
 						now,
 						envelope.Origin{
@@ -74,18 +75,18 @@ func TestScopeRecordEvent(t *testing.T) {
 							HandlerType: config.AggregateHandlerType,
 							InstanceID:  "<instance>",
 						},
-						"aa9aa868-af3f-5dbb-a718-223782f4c77c",
+						uuid.MustParse("aa9aa868-af3f-5dbb-a718-223782f4c77c"),
 						0,
 					),
 				},
 			},
+			xtesting.IgnoreMessageID,
 		)
 	})
 
 	t.Run("records a fact when the instance exists", func(t *testing.T) {
 		f := newScopeTestFixture()
 		seedScopeInstance(t, f)
-		f.messageIDs.Reset()
 
 		f.handler.HandleCommandFunc = func(
 			_ *stubs.AggregateRootStub,
@@ -119,7 +120,7 @@ func TestScopeRecordEvent(t *testing.T) {
 				},
 				Envelope: f.command,
 				EventEnvelope: f.command.NewEvent(
-					"1",
+					uuid.Nil(),
 					stubs.EventA1,
 					now,
 					envelope.Origin{
@@ -127,10 +128,11 @@ func TestScopeRecordEvent(t *testing.T) {
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance>",
 					},
-					"aa9aa868-af3f-5dbb-a718-223782f4c77c",
+					uuid.MustParse("aa9aa868-af3f-5dbb-a718-223782f4c77c"),
 					1,
 				),
 			},
+			xtesting.IgnoreMessageID,
 		)
 	})
 
@@ -235,6 +237,32 @@ func TestScopeRecordEvent(t *testing.T) {
 	})
 }
 
+func TestScopeMessageID(t *testing.T) {
+	f := newScopeTestFixture()
+	called := false
+
+	f.handler.HandleCommandFunc = func(
+		_ *stubs.AggregateRootStub,
+		s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+		_ dogma.Command,
+	) {
+		called = true
+		xtesting.Expect(t, "unexpected message ID", s.MessageID(), f.command.MessageID)
+	}
+
+	_, err := f.ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		time.Now(),
+		f.command,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	xtesting.Expect(t, "expected handler to be called", called, true)
+}
+
 func TestScopeInstanceID(t *testing.T) {
 	f := newScopeTestFixture()
 	called := false
@@ -308,17 +336,16 @@ func TestScopeLog(t *testing.T) {
 }
 
 type scopeTestFixture struct {
-	messageIDs envelope.MessageIDGenerator
-	handler    *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
-	cfg        *config.Aggregate
-	ctrl       *aggregate.Controller
-	command    *envelope.Envelope
+	handler *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
+	cfg     *config.Aggregate
+	ctrl    *aggregate.Controller
+	command *envelope.Envelope
 }
 
 func newScopeTestFixture() *scopeTestFixture {
 	f := &scopeTestFixture{
 		command: envelope.NewCommand(
-			"1000",
+			uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 			stubs.CommandA1,
 			time.Now(),
 		),
@@ -344,11 +371,8 @@ func newScopeTestFixture() *scopeTestFixture {
 
 	f.cfg = runtimeconfig.FromAggregate(f.handler)
 	f.ctrl = &aggregate.Controller{
-		Config:     f.cfg,
-		MessageIDs: &f.messageIDs,
+		Config: f.cfg,
 	}
-
-	f.messageIDs.Reset()
 
 	return f
 }
@@ -369,7 +393,7 @@ func seedScopeInstance(t *testing.T, f *scopeTestFixture) {
 		fact.Ignore,
 		time.Now(),
 		envelope.NewCommand(
-			"2000",
+			uuid.MustParse("9d4f2b7e-1a6c-4e38-b5f0-2c8e7a1d4b96"),
 			stubs.CommandA2,
 			time.Now(),
 		),
@@ -377,8 +401,6 @@ func seedScopeInstance(t *testing.T, f *scopeTestFixture) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	f.messageIDs.Reset()
 }
 
 func TestMutationDetection(t *testing.T) {
@@ -402,6 +424,32 @@ func TestMutationDetection(t *testing.T) {
 			)
 		}, func(x panicx.UnexpectedBehavior) {
 			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to RecordEvent() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling MessageID", func(t *testing.T) {
+		f := newScopeTestFixture()
+		f.handler.HandleCommandFunc = func(
+			r *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			r.AppliedEvents = append(r.AppliedEvents, stubs.EventA1)
+			s.MessageID()
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.command,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the aggregate root outside of ApplyEvent(), before call to MessageID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -562,8 +610,7 @@ func TestNonDeterministicApplyEvent(t *testing.T) {
 
 		f.cfg = runtimeconfig.FromAggregate(f.handler)
 		f.ctrl = &aggregate.Controller{
-			Config:     f.cfg,
-			MessageIDs: &f.messageIDs,
+			Config: f.cfg,
 		}
 
 		f.handler.HandleCommandFunc = func(

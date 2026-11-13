@@ -3,6 +3,7 @@ package aggregate
 import (
 	"fmt"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -19,15 +20,19 @@ import (
 type scope struct {
 	instanceID       string
 	config           *config.Aggregate
-	messageIDs       *envelope.MessageIDGenerator
 	observer         fact.Observer
 	root, shadowRoot dogma.AggregateRoot
 	lastOp           string
 	events           []*envelope.Envelope
 	now              time.Time
 	command          *envelope.Envelope
-	streamID         string
+	streamID         uuid.UUID
 	offset           uint64
+}
+
+func (s *scope) MessageID() uuid.UUID {
+	s.guardAgainstDirectMutation("MessageID", location.OfCall())
+	return s.command.MessageID
 }
 
 func (s *scope) InstanceID() string {
@@ -108,7 +113,7 @@ func (s *scope) RecordEvent(m dogma.Event) {
 	}
 
 	env := s.command.NewEvent(
-		s.messageIDs.Next(),
+		uuid.NewV4(),
 		m,
 		s.now,
 		envelope.Origin{

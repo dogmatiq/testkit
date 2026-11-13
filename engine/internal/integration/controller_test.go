@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -19,10 +20,8 @@ import (
 
 func TestController(t *testing.T) {
 	newController := func() (*IntegrationMessageHandlerStub, *config.Integration, *Controller, *envelope.Envelope) {
-		var messageIDs envelope.MessageIDGenerator
-
 		command := envelope.NewCommand(
-			"1000",
+			uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 			CommandA1,
 			time.Now(),
 		)
@@ -39,11 +38,8 @@ func TestController(t *testing.T) {
 
 		cfg := runtimeconfig.FromIntegration(handler)
 		ctrl := &Controller{
-			Config:     cfg,
-			MessageIDs: &messageIDs,
+			Config: cfg,
 		}
-
-		messageIDs.Reset()
 
 		return handler, cfg, ctrl, command
 	}
@@ -137,28 +133,29 @@ func TestController(t *testing.T) {
 				events,
 				[]*envelope.Envelope{
 					command.NewEvent(
-						"1",
+						uuid.Nil(),
 						EventA1,
 						now,
 						envelope.Origin{
 							Handler:     cfg,
 							HandlerType: config.IntegrationHandlerType,
 						},
-						"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+						uuid.MustParse("8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca"),
 						0,
 					),
 					command.NewEvent(
-						"2",
+						uuid.Nil(),
 						EventA2,
 						now,
 						envelope.Origin{
 							Handler:     cfg,
 							HandlerType: config.IntegrationHandlerType,
 						},
-						"8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca",
+						uuid.MustParse("8cbb8bca-b5eb-4c94-a877-dfc8dc9968ca"),
 						1,
 					),
 				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 

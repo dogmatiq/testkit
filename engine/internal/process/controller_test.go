@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -59,8 +60,6 @@ func TestController(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			f.messageIDs.Reset()
-
 			return f, createdTime, t1Time, t2Time, t3Time
 		}
 
@@ -82,7 +81,7 @@ func TestController(t *testing.T) {
 				deadlines,
 				[]*envelope.Envelope{
 					f.event.NewDeadline(
-						"3",
+						uuid.Nil(),
 						DeadlineA1,
 						createdTime,
 						t1Time,
@@ -93,7 +92,7 @@ func TestController(t *testing.T) {
 						},
 					),
 					f.event.NewDeadline(
-						"2",
+						uuid.Nil(),
 						DeadlineA2,
 						createdTime,
 						t2Time,
@@ -104,7 +103,10 @@ func TestController(t *testing.T) {
 						},
 					),
 				},
-				func(a, b *envelope.Envelope) bool { return a.MessageID < b.MessageID },
+				func(a, b *envelope.Envelope) bool {
+					return a.Message.MessageDescription() < b.Message.MessageDescription()
+				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 
@@ -142,9 +144,10 @@ func TestController(t *testing.T) {
 			f, createdTime, t1Time, t2Time, _ := setup(t)
 
 			secondInstanceEvent := envelope.NewEvent(
-				"3000",
+				uuid.MustParse("e6a1c8d3-5f2b-4a97-8c0e-7b3d9f6a1c42"),
 				EventA2,
 				time.Now(),
+				uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 			)
 
 			_, err := f.ctrl.Handle(
@@ -192,7 +195,7 @@ func TestController(t *testing.T) {
 				deadlines,
 				[]*envelope.Envelope{
 					secondInstanceEvent.NewDeadline(
-						"3",
+						uuid.Nil(),
 						DeadlineA1,
 						createdTime,
 						t1Time,
@@ -203,7 +206,7 @@ func TestController(t *testing.T) {
 						},
 					),
 					secondInstanceEvent.NewDeadline(
-						"2",
+						uuid.Nil(),
 						DeadlineA2,
 						createdTime,
 						t2Time,
@@ -215,8 +218,9 @@ func TestController(t *testing.T) {
 					),
 				},
 				func(a, b *envelope.Envelope) bool {
-					return a.MessageID < b.MessageID
+					return a.Message.MessageDescription() < b.Message.MessageDescription()
 				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 	})
@@ -307,7 +311,7 @@ func TestController(t *testing.T) {
 					envelopes,
 					[]*envelope.Envelope{
 						f.event.NewCommand(
-							"1",
+							uuid.Nil(),
 							CommandA1,
 							now,
 							envelope.Origin{
@@ -317,7 +321,7 @@ func TestController(t *testing.T) {
 							},
 						),
 						f.event.NewDeadline(
-							"2",
+							uuid.Nil(),
 							DeadlineA1,
 							now,
 							now,
@@ -329,8 +333,9 @@ func TestController(t *testing.T) {
 						),
 					},
 					func(a, b *envelope.Envelope) bool {
-						return a.MessageID < b.MessageID
+						return a.Message.MessageDescription() < b.Message.MessageDescription()
 					},
+					xtesting.IgnoreMessageID,
 				)
 			})
 
@@ -481,8 +486,6 @@ func TestController(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-
-					f.messageIDs.Reset()
 					return f
 				}
 
@@ -562,8 +565,6 @@ func TestController(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-
-				f.messageIDs.Reset()
 				return f
 			}
 
@@ -651,7 +652,7 @@ func TestController(t *testing.T) {
 					envelopes,
 					[]*envelope.Envelope{
 						f.deadline.NewCommand(
-							"1",
+							uuid.Nil(),
 							CommandA1,
 							now,
 							envelope.Origin{
@@ -661,7 +662,7 @@ func TestController(t *testing.T) {
 							},
 						),
 						f.deadline.NewDeadline(
-							"2",
+							uuid.Nil(),
 							DeadlineA1,
 							now,
 							now,
@@ -673,8 +674,9 @@ func TestController(t *testing.T) {
 						),
 					},
 					func(a, b *envelope.Envelope) bool {
-						return a.MessageID < b.MessageID
+						return a.Message.MessageDescription() < b.Message.MessageDescription()
 					},
+					xtesting.IgnoreMessageID,
 				)
 			})
 
@@ -760,8 +762,6 @@ func TestController(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-
-					f.messageIDs.Reset()
 					return f
 				}
 
@@ -950,8 +950,6 @@ func TestController(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-
-				f.messageIDs.Reset()
 				return f
 			}
 
@@ -1403,8 +1401,6 @@ func TestController(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		f.messageIDs.Reset()
 		f.ctrl.Reset()
 
 		buf := &fact.Buffer{}
@@ -1490,19 +1486,19 @@ func TestPostHandlerMutationDetection(t *testing.T) {
 }
 
 type controllerTestFixture struct {
-	messageIDs envelope.MessageIDGenerator
-	handler    *ProcessMessageHandlerStub[*ProcessRootStub]
-	cfg        *config.Process
-	ctrl       *Controller
-	event      *envelope.Envelope
-	deadline   *envelope.Envelope
+	handler  *ProcessMessageHandlerStub[*ProcessRootStub]
+	cfg      *config.Process
+	ctrl     *Controller
+	event    *envelope.Envelope
+	deadline *envelope.Envelope
 }
 
 func newControllerTestFixture() *controllerTestFixture {
 	event := envelope.NewEvent(
-		"1000",
+		uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 		EventA1,
 		time.Now(),
+		uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 	)
 
 	handler := &ProcessMessageHandlerStub[*ProcessRootStub]{
@@ -1529,7 +1525,7 @@ func newControllerTestFixture() *controllerTestFixture {
 
 	cfg := runtimeconfig.FromProcess(handler)
 	deadline := event.NewDeadline(
-		"2000",
+		uuid.MustParse("9d4f2b7e-1a6c-4e38-b5f0-2c8e7a1d4b96"),
 		DeadlineA1,
 		time.Now(),
 		time.Now().Add(10*time.Second),
@@ -1548,11 +1544,8 @@ func newControllerTestFixture() *controllerTestFixture {
 	}
 
 	f.ctrl = &Controller{
-		Config:     cfg,
-		MessageIDs: &f.messageIDs,
+		Config: cfg,
 	}
-
-	f.messageIDs.Reset()
 
 	return f
 }

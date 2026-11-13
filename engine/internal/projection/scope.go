@@ -2,6 +2,7 @@ package projection
 
 import (
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/testkit/envelope"
@@ -18,11 +19,15 @@ type scope struct {
 	now        time.Time
 }
 
+func (s *scope) MessageID() uuid.UUID {
+	return s.event.MessageID
+}
+
 func (s *scope) RecordedAt() time.Time {
 	return s.event.CreatedAt
 }
 
-func (s *scope) StreamID() string {
+func (s *scope) StreamID() uuid.UUID {
 	return s.event.EventStreamID
 }
 

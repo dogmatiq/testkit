@@ -75,11 +75,8 @@ func TestExecuteCommand(t *testing.T) {
 			buf.Facts(),
 			fact.DispatchCycleBegun{
 				Envelope: &envelope.Envelope{
-					MessageID:     "1",
-					CausationID:   "1",
-					CorrelationID: "1",
-					Message:       CommandA1,
-					CreatedAt:     startTime,
+					Message:   CommandA1,
+					CreatedAt: startTime,
 				},
 				EngineTime: startTime,
 				EnabledHandlerTypes: map[config.HandlerType]bool{
@@ -90,7 +87,17 @@ func TestExecuteCommand(t *testing.T) {
 				},
 				EnabledHandlers: map[string]bool{},
 			},
+			xtesting.IgnoreEnvelopeIDs,
 		)
+
+		// The engine gives the dispatched message a random ID, so check how
+		// its IDs relate instead of their values.
+		for _, f := range buf.Facts() {
+			if f, ok := f.(fact.DispatchCycleBegun); ok {
+				xtesting.Expect(t, "unexpected causation ID", f.Envelope.CausationID, f.Envelope.MessageID)
+				xtesting.Expect(t, "unexpected correlation ID", f.Envelope.CorrelationID, f.Envelope.MessageID)
+			}
+		}
 	})
 
 	t.Run("it fails the test if the message type is not handled", func(t *testing.T) {

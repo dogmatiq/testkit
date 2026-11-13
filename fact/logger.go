@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
@@ -548,7 +549,7 @@ func (l *Logger) log(
 	icons []logging.Icon,
 	text ...string,
 ) {
-	var messageID, causationID, correlationID string
+	var messageID, causationID, correlationID uuid.UUID
 	if env != nil {
 		messageID = env.MessageID
 		causationID = env.CausationID
@@ -575,12 +576,14 @@ func (l *Logger) log(
 	))
 }
 
-func formatMessageID(id string) string {
-	if id == "" {
-		return "--"
+// formatMessageID returns the first 8 hexadecimal digits of id, or 8 hyphens
+// if id is the nil UUID, so that log columns line up.
+func formatMessageID(id uuid.UUID) string {
+	if id == uuid.Nil() {
+		return "--------"
 	}
 
-	return fmt.Sprintf("%02s", id)
+	return id.String()[:8]
 }
 
 func formatEngineTime(t time.Time) string {

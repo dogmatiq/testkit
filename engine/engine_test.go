@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -147,6 +148,46 @@ func TestEngine_Dispatch(t *testing.T) {
 		}
 	})
 
+	t.Run("it passes the same message ID to every handler of a message", func(t *testing.T) {
+		fx := newEngineFixture()
+		fx.aggregate.HandleCommandFunc = func(
+			_ *AggregateRootStub,
+			s dogma.AggregateCommandScope[*AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(&engineAggregateEvent{})
+		}
+
+		var processID, projectionID uuid.UUID
+		fx.process.HandleEventFunc = func(
+			_ context.Context,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			processID = s.MessageID()
+			return nil
+		}
+		fx.projection.HandleEventFunc = func(
+			_ context.Context,
+			s dogma.ProjectionEventScope,
+			_ dogma.Event,
+		) (uint64, error) {
+			projectionID = s.MessageID()
+			return s.Offset() + 1, nil
+		}
+
+		err := fx.engine.Dispatch(context.Background(), &engineAggregateCommand{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if processID == uuid.Nil() {
+			t.Fatal("expected the process to receive a message ID that is not the nil UUID")
+		}
+		xtesting.Expect(t, "unexpected message ID", projectionID, processID)
+	})
+
 	t.Run("it skips handlers that are disabled by type", func(t *testing.T) {
 		fx := newEngineFixture()
 		fx.aggregate.HandleCommandFunc = func(*AggregateRootStub, dogma.AggregateCommandScope[*AggregateRootStub], dogma.Command) {
@@ -174,15 +215,22 @@ func TestEngine_Dispatch(t *testing.T) {
 			fact.HandlingSkipped{
 				Handler: h,
 				Envelope: &envelope.Envelope{
-					MessageID:     "1",
-					CausationID:   "1",
-					CorrelationID: "1",
-					Message:       &engineAggregateCommand{},
-					CreatedAt:     now,
+					Message:   &engineAggregateCommand{},
+					CreatedAt: now,
 				},
 				Reason: fact.HandlerTypeDisabled,
 			},
+			xtesting.IgnoreEnvelopeIDs,
 		)
+
+		// The engine gives the dispatched message a random ID, so check how
+		// its IDs relate instead of their values.
+		for _, f := range buf.Facts() {
+			if f, ok := f.(fact.HandlingSkipped); ok {
+				xtesting.Expect(t, "unexpected causation ID", f.Envelope.CausationID, f.Envelope.MessageID)
+				xtesting.Expect(t, "unexpected correlation ID", f.Envelope.CorrelationID, f.Envelope.MessageID)
+			}
+		}
 	})
 
 	t.Run("it skips handlers that are disabled by name", func(t *testing.T) {
@@ -213,15 +261,22 @@ func TestEngine_Dispatch(t *testing.T) {
 			fact.HandlingSkipped{
 				Handler: h,
 				Envelope: &envelope.Envelope{
-					MessageID:     "1",
-					CausationID:   "1",
-					CorrelationID: "1",
-					Message:       &engineAggregateCommand{},
-					CreatedAt:     now,
+					Message:   &engineAggregateCommand{},
+					CreatedAt: now,
 				},
 				Reason: fact.IndividualHandlerDisabled,
 			},
+			xtesting.IgnoreEnvelopeIDs,
 		)
+
+		// The engine gives the dispatched message a random ID, so check how
+		// its IDs relate instead of their values.
+		for _, f := range buf.Facts() {
+			if f, ok := f.(fact.HandlingSkipped); ok {
+				xtesting.Expect(t, "unexpected causation ID", f.Envelope.CausationID, f.Envelope.MessageID)
+				xtesting.Expect(t, "unexpected correlation ID", f.Envelope.CorrelationID, f.Envelope.MessageID)
+			}
+		}
 	})
 
 	t.Run("it does not skip handlers that are enabled by name", func(t *testing.T) {

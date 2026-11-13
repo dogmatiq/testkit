@@ -3,6 +3,7 @@ package envelope_test
 import (
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -12,12 +13,18 @@ import (
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
+var (
+	messageID = uuid.MustParse("5e8b1d64-0c3a-4f92-b7e1-8a6d2c9f3b05")
+	parentID  = uuid.MustParse("7a0f3c52-9e1d-4b86-a3c4-5d2e8f1b6c09")
+	childID   = uuid.MustParse("c41e9d07-2b6a-4f38-8e5d-9a1c3b7f2e64")
+)
+
 func TestEnvelope(t *testing.T) {
 	t.Run("func NewCommand()", func(t *testing.T) {
 		t.Run("it returns the expected envelope", func(t *testing.T) {
 			now := time.Now()
 			env := NewCommand(
-				"100",
+				messageID,
 				CommandA1,
 				now,
 			)
@@ -27,9 +34,9 @@ func TestEnvelope(t *testing.T) {
 				"unexpected envelope",
 				env,
 				&Envelope{
-					MessageID:     "100",
-					CorrelationID: "100",
-					CausationID:   "100",
+					MessageID:     messageID,
+					CorrelationID: messageID,
+					CausationID:   messageID,
 					Message:       CommandA1,
 					CreatedAt:     now,
 				},
@@ -40,10 +47,12 @@ func TestEnvelope(t *testing.T) {
 	t.Run("func NewEvent()", func(t *testing.T) {
 		t.Run("it returns the expected envelope", func(t *testing.T) {
 			now := time.Now()
+			streamID := uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90")
 			env := NewEvent(
-				"100",
+				messageID,
 				EventA1,
 				now,
+				streamID,
 			)
 
 			xtesting.Expect(
@@ -51,12 +60,12 @@ func TestEnvelope(t *testing.T) {
 				"unexpected envelope",
 				env,
 				&Envelope{
-					MessageID:         "100",
-					CorrelationID:     "100",
-					CausationID:       "100",
+					MessageID:         messageID,
+					CorrelationID:     messageID,
+					CausationID:       messageID,
 					Message:           EventA1,
 					CreatedAt:         now,
-					EventStreamID:     "87d0e883-8f15-5eaf-9601-fe3a7dd517a4",
+					EventStreamID:     streamID,
 					EventStreamOffset: 0,
 				},
 			)
@@ -76,9 +85,10 @@ func TestEnvelope(t *testing.T) {
 			})
 
 			parent := NewEvent(
-				"100",
+				parentID,
 				EventP1,
 				time.Now(),
+				uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 			)
 			origin := Origin{
 				Handler:     handler,
@@ -87,7 +97,7 @@ func TestEnvelope(t *testing.T) {
 			}
 			now := time.Now()
 			child := parent.NewCommand(
-				"200",
+				childID,
 				CommandA1,
 				now,
 				origin,
@@ -98,9 +108,9 @@ func TestEnvelope(t *testing.T) {
 				"unexpected envelope",
 				child,
 				&Envelope{
-					MessageID:     "200",
-					CorrelationID: "100",
-					CausationID:   "100",
+					MessageID:     childID,
+					CorrelationID: parentID,
+					CausationID:   parentID,
 					Message:       CommandA1,
 					CreatedAt:     now,
 					Origin:        &origin,
@@ -121,11 +131,11 @@ func TestEnvelope(t *testing.T) {
 				},
 			})
 
-			const streamID = "10208426-7df8-4f47-ac2a-a83f55c3b1c0"
+			streamID := uuid.MustParse("10208426-7df8-4f47-ac2a-a83f55c3b1c0")
 			const offset = 42
 
 			parent := NewCommand(
-				"100",
+				parentID,
 				CommandP1,
 				time.Now(),
 			)
@@ -136,7 +146,7 @@ func TestEnvelope(t *testing.T) {
 			}
 			now := time.Now()
 			child := parent.NewEvent(
-				"200",
+				childID,
 				EventA1,
 				now,
 				origin,
@@ -149,9 +159,9 @@ func TestEnvelope(t *testing.T) {
 				"unexpected envelope",
 				child,
 				&Envelope{
-					MessageID:         "200",
-					CorrelationID:     "100",
-					CausationID:       "100",
+					MessageID:         childID,
+					CorrelationID:     parentID,
+					CausationID:       parentID,
 					Message:           EventA1,
 					CreatedAt:         now,
 					Origin:            &origin,
@@ -176,7 +186,7 @@ func TestEnvelope(t *testing.T) {
 			})
 
 			parent := NewCommand(
-				"100",
+				parentID,
 				CommandP1,
 				time.Now(),
 			)
@@ -188,7 +198,7 @@ func TestEnvelope(t *testing.T) {
 			now := time.Now()
 			s := time.Now()
 			child := parent.NewDeadline(
-				"200",
+				childID,
 				DeadlineA1,
 				now,
 				s,
@@ -200,9 +210,9 @@ func TestEnvelope(t *testing.T) {
 				"unexpected envelope",
 				child,
 				&Envelope{
-					MessageID:     "200",
-					CorrelationID: "100",
-					CausationID:   "100",
+					MessageID:     childID,
+					CorrelationID: parentID,
+					CausationID:   parentID,
 					Message:       DeadlineA1,
 					CreatedAt:     now,
 					ScheduledFor:  s,

@@ -39,8 +39,7 @@ type instance struct {
 // Controller is an implementation of engine.Controller for
 // dogma.AggregateMessageHandler implementations.
 type Controller struct {
-	Config     *config.Aggregate
-	MessageIDs *envelope.MessageIDGenerator
+	Config *config.Aggregate
 
 	instances map[string]*instance
 }
@@ -79,13 +78,12 @@ func (c *Controller) Handle(
 	s := &scope{
 		instanceID: id,
 		config:     c.Config,
-		messageIDs: c.MessageIDs,
 		observer:   obs,
 		now:        now,
 		root:       root,
 		shadowRoot: shadowRoot,
 		command:    env,
-		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsString(),
+		streamID:   uuidpb.Derive(c.Config.Identity().GetKey(), id).AsStd(),
 		offset:     uint64(len(inst.history)),
 	}
 

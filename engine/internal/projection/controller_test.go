@@ -3,8 +3,10 @@ package projection_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -26,9 +28,10 @@ type controllerTestFixture struct {
 
 func newControllerTestFixture() controllerTestFixture {
 	event := envelope.NewEvent(
-		"1000",
+		uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 		EventA1,
 		time.Now(),
+		uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 	)
 
 	handler := &ProjectionMessageHandlerStub{
@@ -208,7 +211,7 @@ func TestControllerHandle(t *testing.T) {
 
 		fx.handler.CheckpointOffsetFunc = func(
 			context.Context,
-			string,
+			uuid.UUID,
 		) (uint64, error) {
 			return 0, expected
 		}
@@ -229,7 +232,7 @@ func TestControllerHandle(t *testing.T) {
 
 		fx.handler.CheckpointOffsetFunc = func(
 			_ context.Context,
-			streamID string,
+			streamID uuid.UUID,
 		) (uint64, error) {
 			if streamID != fx.event.EventStreamID {
 				t.Fatalf("unexpected stream ID: %s", streamID)
@@ -284,7 +287,7 @@ func TestControllerHandle(t *testing.T) {
 
 		fx.handler.CheckpointOffsetFunc = func(
 			_ context.Context,
-			_ string,
+			_ uuid.UUID,
 		) (uint64, error) {
 			return 1, nil
 		}
@@ -327,7 +330,10 @@ func TestControllerHandle(t *testing.T) {
 			fx.event,
 		)
 
-		const expected = "optimistic concurrency conflict when handling event at offset 0 of stream ea2763d3-11d4-5f81-aa9f-e666d13bff4f: expected checkpoint offset of 1, handler returned 123"
+		expected := fmt.Sprintf(
+			"optimistic concurrency conflict when handling event at offset 0 of stream %s: expected checkpoint offset of 1, handler returned 123",
+			fx.event.EventStreamID,
+		)
 		if err == nil || err.Error() != expected {
 			t.Fatalf("expected concurrency conflict %q, got %v", expected, err)
 		}

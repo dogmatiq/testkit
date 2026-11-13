@@ -3,6 +3,7 @@ package process
 import (
 	"fmt"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -25,13 +26,17 @@ type scope struct {
 	lastOp           string
 	config           *config.Process
 	handleMethod     string
-	messageIDs       *envelope.MessageIDGenerator
 	observer         fact.Observer
 	now              time.Time
 	env              *envelope.Envelope // event or deadline
 	commands         []*envelope.Envelope
 	ready            []*envelope.Envelope // deadlines <= now
 	pending          []*envelope.Envelope // deadlines > now
+}
+
+func (s *scope) MessageID() uuid.UUID {
+	s.guardAgainstDirectMutation("MessageID", location.OfCall())
+	return s.env.MessageID
 }
 
 func (s *scope) InstanceID() string {
@@ -130,7 +135,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 	}
 
 	env := s.env.NewCommand(
-		s.messageIDs.Next(),
+		uuid.NewV4(),
 		m,
 		s.now,
 		envelope.Origin{
@@ -198,7 +203,7 @@ func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 	}
 
 	env := s.env.NewDeadline(
-		s.messageIDs.Next(),
+		uuid.NewV4(),
 		m,
 		s.now,
 		t,

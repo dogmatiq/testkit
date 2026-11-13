@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -19,10 +20,8 @@ import (
 
 func TestScope(t *testing.T) {
 	newController := func() (*IntegrationMessageHandlerStub, *config.Integration, *Controller, *envelope.Envelope) {
-		var messageIDs envelope.MessageIDGenerator
-
 		command := envelope.NewCommand(
-			"1000",
+			uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 			CommandA1,
 			time.Now(),
 		)
@@ -39,14 +38,38 @@ func TestScope(t *testing.T) {
 
 		cfg := runtimeconfig.FromIntegration(handler)
 		ctrl := &Controller{
-			Config:     cfg,
-			MessageIDs: &messageIDs,
+			Config: cfg,
 		}
-
-		messageIDs.Reset()
 
 		return handler, cfg, ctrl, command
 	}
+
+	t.Run("func MessageID()", func(t *testing.T) {
+		t.Run("it returns the ID of the command", func(t *testing.T) {
+			handler, _, ctrl, command := newController()
+			called := false
+
+			handler.HandleCommandFunc = func(
+				_ context.Context,
+				s dogma.IntegrationCommandScope,
+				_ dogma.Command,
+			) error {
+				called = true
+				xtesting.Expect(t, "unexpected message ID", s.MessageID(), command.MessageID)
+				return nil
+			}
+
+			_, err := ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				command,
+			)
+
+			xtesting.Expect(t, "unexpected error", err, nil)
+			xtesting.Expect(t, "expected handler to be called", called, true)
+		})
+	})
 
 	t.Run("func RecordEvent()", func(t *testing.T) {
 		t.Run("it records a fact", func(t *testing.T) {
@@ -79,18 +102,19 @@ func TestScope(t *testing.T) {
 						Handler:  cfg,
 						Envelope: command,
 						EventEnvelope: command.NewEvent(
-							"1",
+							uuid.Nil(),
 							EventA1,
 							now,
 							envelope.Origin{
 								Handler:     cfg,
 								HandlerType: config.IntegrationHandlerType,
 							},
-							"24ec3839-5d51-4904-9b45-34b5282e7f24",
+							uuid.MustParse("24ec3839-5d51-4904-9b45-34b5282e7f24"),
 							0,
 						),
 					},
 				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 

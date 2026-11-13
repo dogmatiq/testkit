@@ -2,24 +2,26 @@ package envelope
 
 import (
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
-	"github.com/dogmatiq/protobuf/uuidpb"
 )
 
 // Envelope is a container for a message that is handled by the test engine.
 type Envelope struct {
-	// MessageID is a unique identifier for the message.
-	MessageID string
+	// MessageID is the [RFC 9562] UUID that identifies the message.
+	//
+	// [RFC 9562]: https://www.rfc-editor.org/rfc/rfc9562.html
+	MessageID uuid.UUID
 
 	// CausationID is the ID of the message that was being handled when the
 	// message identified by MessageID was produced.
-	CausationID string
+	CausationID uuid.UUID
 
 	// CorrelationID is the ID of the "root" message that entered the
 	// application to cause the message identified by MessageID, either directly
 	// or indirectly.
-	CorrelationID string
+	CorrelationID uuid.UUID
 
 	// Message is the application-defined message that the envelope represents.
 	Message dogma.Message
@@ -35,9 +37,11 @@ type Envelope struct {
 	// It is nil if the message was not produced by a handler.
 	Origin *Origin
 
-	// EventStreamID is the ID of the event stream to which this message
-	// belongs, if it is a [dogma.Event].
-	EventStreamID string
+	// EventStreamID is the [RFC 9562] UUID that identifies the event stream
+	// to which this message belongs, if it is a [dogma.Event].
+	//
+	// [RFC 9562]: https://www.rfc-editor.org/rfc/rfc9562.html
+	EventStreamID uuid.UUID
 
 	// EventStreamOffset is the offset of the message within its event stream.
 	EventStreamOffset uint64
@@ -47,12 +51,12 @@ type Envelope struct {
 //
 // t is the time at which the message was created.
 func NewCommand(
-	id string,
+	id uuid.UUID,
 	m dogma.Command,
 	t time.Time,
 ) *Envelope {
-	if id == "" {
-		panic("message ID must not be empty")
+	if id == uuid.Nil() {
+		panic("message ID must not be the nil UUID")
 	}
 
 	return &Envelope{
@@ -66,14 +70,17 @@ func NewCommand(
 
 // NewEvent constructs a new envelope containing the given event message.
 //
-// t is the time at which the message was created.
+// t is the time at which the message was created. streamID is the ID of the
+// event stream to which the event belongs. The event is the first event in
+// that stream, at offset 0.
 func NewEvent(
-	id string,
+	id uuid.UUID,
 	m dogma.Event,
 	t time.Time,
+	streamID uuid.UUID,
 ) *Envelope {
-	if id == "" {
-		panic("message ID must not be empty")
+	if id == uuid.Nil() {
+		panic("message ID must not be the nil UUID")
 	}
 
 	return &Envelope{
@@ -82,22 +89,16 @@ func NewEvent(
 		CorrelationID: id,
 		Message:       m,
 		CreatedAt:     t,
-
-		// Events that don't originate from a handler appear on their own event
-		// stream.
-		EventStreamID:     uuidpb.Derive(eventStreamNamespace, id).AsString(),
-		EventStreamOffset: 0,
+		EventStreamID: streamID,
 	}
 }
-
-var eventStreamNamespace = uuidpb.MustParse("8c1f42ee-d693-4e21-837e-54662b1c9ba3")
 
 // NewCommand constructs a new envelope as a child of e, indicating that the
 // command message m is caused by e.Message.
 //
 // t is the time at which the message was created.
 func (e *Envelope) NewCommand(
-	id string,
+	id uuid.UUID,
 	m dogma.Command,
 	t time.Time,
 	o Origin,
@@ -117,11 +118,11 @@ func (e *Envelope) NewCommand(
 //
 // t is the time at which the message was created.
 func (e *Envelope) NewEvent(
-	id string,
+	id uuid.UUID,
 	m dogma.Event,
 	t time.Time,
 	o Origin,
-	streamID string,
+	streamID uuid.UUID,
 	offset uint64,
 ) *Envelope {
 	return &Envelope{
@@ -142,7 +143,7 @@ func (e *Envelope) NewEvent(
 // t is the time at which the message was created. s is the time for which the
 // deadline is scheduled.
 func (e *Envelope) NewDeadline(
-	id string,
+	id uuid.UUID,
 	m dogma.Deadline,
 	t time.Time,
 	s time.Time,

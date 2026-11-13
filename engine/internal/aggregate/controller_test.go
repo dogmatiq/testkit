@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -115,7 +116,7 @@ func TestControllerHandle(t *testing.T) {
 			events,
 			[]*envelope.Envelope{
 				f.command.NewEvent(
-					"1",
+					uuid.Nil(),
 					stubs.EventA1,
 					now,
 					envelope.Origin{
@@ -123,11 +124,11 @@ func TestControllerHandle(t *testing.T) {
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
-					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
+					uuid.MustParse("78e27a08-0ae8-52cf-8f46-79e448ed5bf6"),
 					0,
 				),
 				f.command.NewEvent(
-					"2",
+					uuid.Nil(),
 					stubs.EventA2,
 					now,
 					envelope.Origin{
@@ -135,10 +136,11 @@ func TestControllerHandle(t *testing.T) {
 						HandlerType: config.AggregateHandlerType,
 						InstanceID:  "<instance-A1>",
 					},
-					"78e27a08-0ae8-52cf-8f46-79e448ed5bf6",
+					uuid.MustParse("78e27a08-0ae8-52cf-8f46-79e448ed5bf6"),
 					1,
 				),
 			},
+			xtesting.IgnoreMessageID,
 		)
 	})
 
@@ -661,17 +663,16 @@ func TestControllerReset(t *testing.T) {
 }
 
 type controllerTestFixture struct {
-	messageIDs envelope.MessageIDGenerator
-	handler    *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
-	cfg        *config.Aggregate
-	ctrl       *aggregate.Controller
-	command    *envelope.Envelope
+	handler *stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]
+	cfg     *config.Aggregate
+	ctrl    *aggregate.Controller
+	command *envelope.Envelope
 }
 
 func newControllerTestFixture() *controllerTestFixture {
 	f := &controllerTestFixture{
 		command: envelope.NewCommand(
-			"1000",
+			uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 			stubs.CommandA1,
 			time.Now(),
 		),
@@ -697,11 +698,8 @@ func newControllerTestFixture() *controllerTestFixture {
 
 	f.cfg = runtimeconfig.FromAggregate(f.handler)
 	f.ctrl = &aggregate.Controller{
-		Config:     f.cfg,
-		MessageIDs: &f.messageIDs,
+		Config: f.cfg,
 	}
-
-	f.messageIDs.Reset()
 
 	return f
 }
@@ -761,8 +759,7 @@ func TestSnapshotDivergence(t *testing.T) {
 
 		f.cfg = runtimeconfig.FromAggregate(f.handler)
 		f.ctrl = &aggregate.Controller{
-			Config:     f.cfg,
-			MessageIDs: &f.messageIDs,
+			Config: f.cfg,
 		}
 
 		// Seed an instance that records an event, triggering a snapshot.

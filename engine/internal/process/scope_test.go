@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
@@ -196,7 +197,7 @@ func TestScope(t *testing.T) {
 						Root:       &ProcessRootStub{},
 						Envelope:   f.event,
 						CommandEnvelope: f.event.NewCommand(
-							"1",
+							uuid.Nil(),
 							CommandA1,
 							now,
 							envelope.Origin{
@@ -207,6 +208,7 @@ func TestScope(t *testing.T) {
 						),
 					},
 				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 
@@ -352,7 +354,7 @@ func TestScope(t *testing.T) {
 						Root:       &ProcessRootStub{},
 						Envelope:   f.event,
 						DeadlineEnvelope: f.event.NewDeadline(
-							"1",
+							uuid.Nil(),
 							DeadlineA1,
 							now,
 							scheduledFor,
@@ -364,6 +366,7 @@ func TestScope(t *testing.T) {
 						),
 					},
 				},
+				xtesting.IgnoreMessageID,
 			)
 		})
 
@@ -465,6 +468,90 @@ func TestScope(t *testing.T) {
 		})
 	})
 
+	t.Run("MessageID", func(t *testing.T) {
+		t.Run("returns the ID of the event", func(t *testing.T) {
+			f := newProcessTestFixture()
+			called := false
+
+			f.handler.HandleEventFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessEventScope[*ProcessRootStub],
+				_ dogma.Event,
+			) error {
+				called = true
+				xtesting.Expect(t, "unexpected message ID", s.MessageID(), f.event.MessageID)
+				return nil
+			}
+
+			_, err := f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !called {
+				t.Fatal("expected HandleEvent() to be called")
+			}
+		})
+
+		t.Run("returns the ID of the deadline", func(t *testing.T) {
+			f := newProcessTestFixture()
+
+			_, err := f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			deadline := f.event.NewDeadline(
+				uuid.MustParse("9d4f2b7e-1a6c-4e38-b5f0-2c8e7a1d4b96"),
+				DeadlineA1,
+				time.Now(),
+				time.Now(),
+				envelope.Origin{
+					Handler:     f.cfg,
+					HandlerType: config.ProcessHandlerType,
+					InstanceID:  "<instance>",
+				},
+			)
+
+			called := false
+			f.handler.HandleDeadlineFunc = func(
+				_ context.Context,
+				_ *ProcessRootStub,
+				s dogma.ProcessDeadlineScope[*ProcessRootStub],
+				_ dogma.Deadline,
+			) error {
+				called = true
+				xtesting.Expect(t, "unexpected message ID", s.MessageID(), deadline.MessageID)
+				return nil
+			}
+
+			_, err = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				deadline,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !called {
+				t.Fatal("expected HandleDeadline() to be called")
+			}
+		})
+	})
+
 	t.Run("ScheduledFor", func(t *testing.T) {
 		f := newProcessTestFixture()
 
@@ -479,7 +566,7 @@ func TestScope(t *testing.T) {
 		}
 
 		deadline := f.event.NewDeadline(
-			"2000",
+			uuid.MustParse("9d4f2b7e-1a6c-4e38-b5f0-2c8e7a1d4b96"),
 			DeadlineA1,
 			time.Now(),
 			time.Now().Add(10*time.Second),
@@ -660,6 +747,34 @@ func TestMutationDetection(t *testing.T) {
 			)
 		}, func(x panicx.UnexpectedBehavior) {
 			wantPrefix := "modified the process root outside of Mutate(), before call to ExecuteCommand() at"
+			if !strings.HasPrefix(x.Description, wantPrefix) {
+				t.Fatalf("unexpected panic description: %s", x.Description)
+			}
+		})
+	})
+
+	t.Run("panics if the handler modifies the root before calling MessageID", func(t *testing.T) {
+		f := newProcessTestFixture()
+		f.handler.HandleEventFunc = func(
+			_ context.Context,
+			r *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			r.Value = "<mutated>"
+			s.MessageID()
+			return nil
+		}
+
+		xtesting.ExpectPanicMatching(t, func() {
+			_, _ = f.ctrl.Handle(
+				context.Background(),
+				fact.Ignore,
+				time.Now(),
+				f.event,
+			)
+		}, func(x panicx.UnexpectedBehavior) {
+			wantPrefix := "modified the process root outside of Mutate(), before call to MessageID() at"
 			if !strings.HasPrefix(x.Description, wantPrefix) {
 				t.Fatalf("unexpected panic description: %s", x.Description)
 			}
@@ -900,18 +1015,18 @@ func TestNonDeterministicMutate(t *testing.T) {
 }
 
 type processTestFixture struct {
-	messageIDs envelope.MessageIDGenerator
-	handler    *ProcessMessageHandlerStub[*ProcessRootStub]
-	cfg        *config.Process
-	ctrl       *Controller
-	event      *envelope.Envelope
+	handler *ProcessMessageHandlerStub[*ProcessRootStub]
+	cfg     *config.Process
+	ctrl    *Controller
+	event   *envelope.Envelope
 }
 
 func newProcessTestFixture() *processTestFixture {
 	event := envelope.NewEvent(
-		"1000",
+		uuid.MustParse("3c9e6a1f-8b2d-4f57-a0e4-6d1b9c3f2e85"),
 		EventA1,
 		time.Now(),
+		uuid.MustParse("0b6e4f2a-9c1d-4e83-a5f7-3d2b8c6e1f90"),
 	)
 
 	handler := &ProcessMessageHandlerStub[*ProcessRootStub]{
@@ -944,11 +1059,8 @@ func newProcessTestFixture() *processTestFixture {
 	}
 
 	f.ctrl = &Controller{
-		Config:     cfg,
-		MessageIDs: &f.messageIDs,
+		Config: cfg,
 	}
-
-	f.messageIDs.Reset()
 
 	return f
 }
