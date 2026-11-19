@@ -11,6 +11,21 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Added
+
+- Added the `-dogma.trace` test flag and the `fact.Logger.Trace` field.
+
+### Changed
+
+- The test log now shows a heading for each message that the engine delivers,
+  with what each handler did indented below it. It uses words instead of icons.
+- The test log no longer shows causation and correlation IDs, the engine
+  starting each dispatch or tick, loading or creating instances, skipping
+  disabled handlers, or ignoring messages for ended process instances, unless
+  the `-dogma.trace` flag is set.
+
 ## [0.25.1] - 2026-11-13
 
 ### Fixed

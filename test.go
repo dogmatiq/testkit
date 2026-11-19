@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -18,6 +19,13 @@ import (
 	"github.com/dogmatiq/testkit/internal/compare"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+)
+
+// trace is the value of the -dogma.trace flag.
+var trace = flag.Bool(
+	"dogma.trace",
+	false,
+	"also log what the engine does around each handler, such as loading an instance or skipping a disabled handler",
 )
 
 // Test contains the state of a single test.
@@ -69,9 +77,12 @@ func BeginContext(
 			engine.EnableProjections(false),
 			engine.EnableIntegrations(false),
 			engine.WithObserver(
-				fact.NewLogger(func(s string) {
-					log(t, s)
-				}),
+				&fact.Logger{
+					Log: func(s string) {
+						log(t, s)
+					},
+					Trace: *trace,
+				},
 			),
 		},
 	}

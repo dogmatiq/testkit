@@ -3,6 +3,9 @@ package testkit_test
 import (
 	"context"
 	"errors"
+	"flag"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/dogmatiq/dogma"
@@ -378,5 +381,74 @@ func TestTest_Annotate(t *testing.T) {
 			`  |         ValidationError: ""`,
 			`  |     }`,
 		)(t, mt)
+	})
+}
+
+func TestTraceFlag(t *testing.T) {
+	app := &ApplicationStub{
+		ConfigureFunc: func(c dogma.ApplicationConfigurer) {
+			c.Identity("<app>", "5d1f3b6e-0a7c-4e29-8b41-c3f9a2d6e705")
+			c.Routes(
+				dogma.ViaAggregate(&AggregateMessageHandlerStub[*AggregateRootStub]{
+					ConfigureFunc: func(c dogma.AggregateConfigurer) {
+						c.Identity("<aggregate>", "a8e24c71-3f5d-4b90-9e16-7d0b5c3a2f48")
+						c.Routes(
+							dogma.HandlesCommand[*CommandStub[TypeA]](),
+							dogma.RecordsEvent[*EventStub[TypeA]](),
+						)
+					},
+					RouteCommandToInstanceFunc: func(dogma.Command) string {
+						return "<instance>"
+					},
+				}),
+			)
+		},
+	}
+
+	// logsNotFound returns true if a test of app logs the engine not finding
+	// the aggregate instance.
+	logsNotFound := func() bool {
+		mt := &testingmock.T{}
+		Begin(mt, app).Prepare(ExecuteCommand(CommandA1))
+
+		return slices.ContainsFunc(mt.Logs, func(l string) bool {
+			return strings.Contains(l, "not found") &&
+				strings.Contains(l, "<aggregate> <instance>")
+		})
+	}
+
+	t.Run("it does not log what the engine does around each handler if the flag is not set", func(t *testing.T) {
+		setFlag(t, "dogma.trace", "false")
+
+		if logsNotFound() {
+			t.Fatal("did not expect the engine not finding the instance to be logged")
+		}
+	})
+
+	t.Run("it logs what the engine does around each handler if the flag is set", func(t *testing.T) {
+		setFlag(t, "dogma.trace", "true")
+
+		if !logsNotFound() {
+			t.Fatal("expected the engine not finding the instance to be logged")
+		}
+	})
+}
+
+// setFlag sets the command-line flag with the given name to v until t ends.
+//
+// t must not be a parallel test, because other tests read the flag.
+func setFlag(t *testing.T, name, v string) {
+	t.Helper()
+
+	prev := flag.Lookup(name).Value.String()
+
+	if err := flag.Set(name, v); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		if err := flag.Set(name, prev); err != nil {
+			t.Fatal(err)
+		}
 	})
 }

@@ -10,13 +10,66 @@ import (
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/envelope"
-	"github.com/dogmatiq/testkit/fact/internal/logging"
 	"github.com/dogmatiq/testkit/internal/inflect"
 )
 
-// Logger is an observer that logs human-readable messages to a log function.
+// Logger is an observer that describes facts in human-readable text. It calls
+// a log function once for each fact that it describes, and does nothing for
+// the rest.
+//
+// It describes the following facts only if Trace is true:
+//
+//   - the engine beginning to dispatch a message or to tick
+//   - the engine loading an aggregate or process instance
+//   - the engine not finding an aggregate or process instance
+//   - an aggregate instance being created
+//   - a process instance beginning
+//   - the engine skipping a handler
+//   - the engine ignoring a message for a process instance that has ended
+//
+// The engine delivers one message at a time to all of the handlers that route
+// it. The logger writes a heading for each message that the engine delivers,
+// followed by an indented line for each fact about a handler handling that
+// message. For example:
+//
+//	3d2b4e33  OpenAccount command
+//	          aggregate    recorded   account A001 ● *events.AccountOpened ● opened account A001
+//	a0864daf  AccountOpened event
+//	          process      ignored    open-account-for-new-customer ● not routed to any instance
+//
+// A heading is the first 8 hexadecimal digits of the message's ID, followed by
+// the name of the message's type, without its package, and the kind of the
+// message.
+//
+// An indented line has three columns:
+//
+//   - the type of the handler, such as "aggregate" or "process"
+//   - a word or phrase that says what happened, such as "recorded" or "failed"
+//   - the details, starting with the handler's name and, if there is one, the
+//     ID of the instance. A "●" separates the parts of the details.
+//
+// A line about the engine's own work that is not a heading, such as the engine
+// ignoring a duplicate command, is not indented. It starts with the ID of the
+// message that it is about, if there is one, followed by a word that says what
+// happened and the details.
+//
+// If Trace is true, the ID column of each heading and each line about the
+// engine's own work also shows how the message relates to the others. If the
+// message is not the one that started the chain of messages, the column starts
+// with the ID of the message that started the chain (the correlation ID),
+// followed by the ID of the message that caused this one (the causation ID)
+// and an arrow. For example:
+//
+//	                     3d2b4e33  OpenAccount command
+//	3d2b4e33  3d2b4e33 → a0864daf  AccountOpened event
 type Logger struct {
+	// Log is the function that the logger calls with the text of each line.
 	Log func(string)
+
+	// Trace makes the logger also describe the facts that the Logger
+	// documentation lists as described only if Trace is true, such as the
+	// engine loading an instance.
+	Trace bool
 }
 
 // NewLogger returns a new observer that logs human-readable descriptions of
@@ -27,8 +80,13 @@ func NewLogger(log func(string)) *Logger {
 	}
 }
 
-// Notify the observer of a fact.generates the log message for f.
+// Notify logs a line that describes f, unless f is one of the facts that the
+// logger describes only if Trace is true and Trace is false.
 func (l *Logger) Notify(f Fact) {
+	if !l.Trace && isTraceOnly(f) {
+		return
+	}
+
 	switch x := f.(type) {
 	case DispatchCycleBegun:
 		l.dispatchCycleBegun(x)
@@ -87,22 +145,37 @@ func (l *Logger) Notify(f Fact) {
 	}
 }
 
-// dispatchCycleBegun returns the log message for f.
+// isTraceOnly returns true if the logger describes f only when Trace is true.
+func isTraceOnly(f Fact) bool {
+	switch f.(type) {
+	case DispatchCycleBegun,
+		TickCycleBegun,
+		AggregateInstanceLoaded,
+		AggregateInstanceNotFound,
+		AggregateInstanceCreated,
+		ProcessInstanceLoaded,
+		ProcessInstanceNotFound,
+		ProcessInstanceBegun,
+		HandlingSkipped,
+		ProcessEventRoutedToEndedInstance,
+		ProcessDeadlineRoutedToEndedInstance:
+		return true
+	default:
+		return false
+	}
+}
+
+// dispatchCycleBegun logs a line that describes f.
 func (l *Logger) dispatchCycleBegun(f DispatchCycleBegun) {
-	l.log(
+	l.logEngine(
 		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.SystemIcon,
-			"",
-		},
-		"dispatching",
+		"dispatched",
 		formatEngineTime(f.EngineTime),
 		formatEnabledHandlers(f.EnabledHandlerTypes, f.EnabledHandlers),
 	)
 }
 
-// dispatchCycleSkipped returns the log message for f.
+// dispatchCycleSkipped logs a line that describes f.
 func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
 	mt := message.TypeOf(f.Envelope.Message)
 
@@ -110,479 +183,434 @@ func (l *Logger) dispatchCycleSkipped(f DispatchCycleSkipped) {
 
 	switch f.Reason {
 	case UnroutedMessageType:
-		reason = inflect.Sprintf(mt.Kind(), "dispatch skipped because no handlers within the application have routes for the %s <message>", mt)
+		reason = "no handlers within the application have routes for it"
 	case OutboundOnlyMessageType:
-		reason = inflect.Sprintf(mt.Kind(), "dispatch skipped because no handlers within the application have inbound routes for the %s <message>, it is only ever <produced>", mt)
+		reason = inflect.Sprint(mt.Kind(), "no handlers within the application have inbound routes for it, it is only ever <produced>")
 	}
 
-	l.log(
+	l.logEngine(
 		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.SystemIcon,
-			"",
-		},
+		"skipped",
+		formatMessageType(mt),
 		reason,
 	)
 }
 
-// dispatchBegun returns the log message for f.
+// dispatchBegun logs a line that describes f.
 func (l *Logger) dispatchBegun(f DispatchBegun) {
-	mt := message.TypeOf(f.Envelope.Message)
-
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.SystemIcon,
-			"",
-		},
-		mt.String()+mt.Kind().Symbol(),
-		f.Envelope.Message.MessageDescription(),
+	l.Log(
+		l.formatIDColumn(f.Envelope) + "  " +
+			formatMessageType(message.TypeOf(f.Envelope.Message)),
 	)
 }
 
-// commandDeduplicated logs the message for f.
+// commandDeduplicated logs a line that describes f.
 func (l *Logger) commandDeduplicated(f CommandDeduplicated) {
 	mt := message.TypeOf(f.Envelope.Message)
 
-	l.log(
+	l.logEngine(
 		f.Envelope,
-		[]logging.Icon{
-			logging.RetryIcon,
-			logging.SystemIcon,
-			"",
-		},
-		mt.String()+mt.Kind().Symbol(),
-		fmt.Sprintf("command ignored because it's idempotency key %q has already been used", f.Key),
+		"ignored",
+		formatMessageType(mt),
+		fmt.Sprintf("its idempotency key %q has already been used", f.Key),
 	)
 }
 
-// handlingCompleted returns the log message for f.
+// handlingCompleted logs a line that describes f if the handler failed.
 func (l *Logger) handlingCompleted(f HandlingCompleted) {
 	if f.Error != nil {
-		l.log(
-			f.Envelope,
-			[]logging.Icon{
-				logging.InboundErrorIcon,
-				logging.HandlerTypeIcon(f.Handler.HandlerType()),
-				logging.ErrorIcon,
-			},
-			f.Handler.Identity().GetName(),
+		l.logHandler(
+			f.Handler,
+			"",
+			"failed",
 			f.Error.Error(),
 		)
 	}
 }
 
-// handlingSkipped returns the log message for f.
+// handlingSkipped logs a line that describes f.
 func (l *Logger) handlingSkipped(f HandlingSkipped) {
 	var reason string
 
 	switch f.Reason {
 	case HandlerTypeDisabled:
-		reason = fmt.Sprintf("handler skipped because %s handlers are disabled", f.Handler.HandlerType())
+		reason = fmt.Sprintf("%s handlers are disabled", f.Handler.HandlerType())
 	case IndividualHandlerDisabled:
-		reason = "handler skipped because it is disabled during this tick of the test engine"
+		reason = "it is disabled during this tick of the test engine"
 	case IndividualHandlerDisabledByConfiguration:
-		reason = "handler skipped because it is disabled by its Configure() method"
+		reason = "it is disabled by its Configure() method"
 	}
 
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.HandlerTypeIcon(f.Handler.HandlerType()),
-			"",
-		},
-		f.Handler.Identity().GetName(),
+	l.logHandler(
+		f.Handler,
+		"",
+		"skipped",
 		reason,
 	)
 }
 
-// tickCycleBegun returns the log message for f.
+// tickCycleBegun logs a line that describes f.
 func (l *Logger) tickCycleBegun(f TickCycleBegun) {
-	l.log(
-		&envelope.Envelope{},
-		[]logging.Icon{
-			"",
-			logging.SystemIcon,
-			"",
-		},
-		"ticking",
+	l.logEngine(
+		nil,
+		"ticked",
 		formatEngineTime(f.EngineTime),
 		formatEnabledHandlers(f.EnabledHandlerTypes, f.EnabledHandlers),
 	)
 }
 
-// tickCompleted returns the log message for f.
+// tickCompleted logs a line that describes f if the handler failed.
 func (l *Logger) tickCompleted(f TickCompleted) {
 	if f.Error != nil {
-		l.log(
-			&envelope.Envelope{},
-			[]logging.Icon{
-				"",
-				logging.HandlerTypeIcon(f.Handler.HandlerType()),
-				logging.ErrorIcon,
-			},
-			f.Handler.Identity().GetName(),
-			f.Error.Error(),
+		l.logHandler(
+			f.Handler,
+			"",
+			"failed",
+			"while ticking: "+f.Error.Error(),
 		)
 	}
 }
 
-// aggregateInstanceLoaded returns the log message for f.
+// aggregateInstanceLoaded logs a line that describes f.
 func (l *Logger) aggregateInstanceLoaded(f AggregateInstanceLoaded) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"loaded",
 		f.Root.AggregateInstanceDescription(),
-		"loaded an existing instance",
 	)
 }
 
-// aggregateInstanceNotFound returns the log message for f.
+// aggregateInstanceNotFound logs a line that describes f.
 func (l *Logger) aggregateInstanceNotFound(f AggregateInstanceNotFound) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"instance does not yet exist",
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"not found",
 	)
 }
 
-// aggregateInstanceCreated returns the log message for f.
+// aggregateInstanceCreated logs a line that describes f.
 func (l *Logger) aggregateInstanceCreated(f AggregateInstanceCreated) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"created",
 		f.Root.AggregateInstanceDescription(),
-		"instance created",
 	)
 }
 
-// eventRecordedByAggregate returns the log message for f.
+// eventRecordedByAggregate logs a line that describes f.
 func (l *Logger) eventRecordedByAggregate(f EventRecordedByAggregate) {
 	mt := message.TypeOf(f.EventEnvelope.Message)
 
-	l.log(
-		f.EventEnvelope,
-		[]logging.Icon{
-			logging.OutboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"recorded",
 		f.Root.AggregateInstanceDescription(),
-		"recorded an event",
-		mt.String()+mt.Kind().Symbol(),
+		mt.String(),
 		f.EventEnvelope.Message.MessageDescription(),
 	)
 }
 
-// messageLoggedByAggregate returns the log message for f.
+// messageLoggedByAggregate logs a line that describes f.
 func (l *Logger) messageLoggedByAggregate(f MessageLoggedByAggregate) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.AggregateIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"logged",
 		f.Root.AggregateInstanceDescription(),
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
-// processInstanceLoaded returns the log message for f.
+// processInstanceLoaded logs a line that describes f.
 func (l *Logger) processInstanceLoaded(f ProcessInstanceLoaded) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"loaded",
 		f.Root.ProcessInstanceDescription(false),
-		"loaded an existing instance",
 	)
 }
 
-// processEventIgnored returns the log message for f.
+// processEventIgnored logs a line that describes f.
 func (l *Logger) processEventIgnored(f ProcessEventIgnored) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName(),
-		"event ignored because it was not routed to any instance",
+	l.logHandler(
+		f.Handler,
+		"",
+		"ignored",
+		"not routed to any instance",
 	)
 }
 
-// processEventRoutedToEndedInstance returns the log message for f.
+// processEventRoutedToEndedInstance logs a line that describes f.
 func (l *Logger) processEventRoutedToEndedInstance(f ProcessEventRoutedToEndedInstance) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"event ignored because the target instance has ended",
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"ignored",
+		"the instance has ended",
 	)
 }
 
-// processDeadlineRoutedToEndedInstance returns the log message for f.
+// processDeadlineRoutedToEndedInstance logs a line that describes f.
 func (l *Logger) processDeadlineRoutedToEndedInstance(f ProcessDeadlineRoutedToEndedInstance) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"deadline ignored because the target instance has ended",
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"ignored",
+		"the instance has ended",
 	)
 }
 
-// processInstanceNotFound returns the log message for f.
+// processInstanceNotFound logs a line that describes f.
 func (l *Logger) processInstanceNotFound(f ProcessInstanceNotFound) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
-		"instance does not yet exist",
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"not found",
 	)
 }
 
-// processInstanceBegun returns the log message for f.
+// processInstanceBegun logs a line that describes f.
 func (l *Logger) processInstanceBegun(f ProcessInstanceBegun) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"begun",
 		f.Root.ProcessInstanceDescription(false),
-		"instance begun",
 	)
 }
 
-// processInstanceEnded returns the log message for f.
+// processInstanceEnded logs a line that describes f.
 func (l *Logger) processInstanceEnded(f ProcessInstanceEnded) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"ended",
 		f.Root.ProcessInstanceDescription(true),
-		"instance ended",
 	)
 }
 
-// commandExecutedByProcess returns the log message for f.
+// commandExecutedByProcess logs a line that describes f.
 func (l *Logger) commandExecutedByProcess(f CommandExecutedByProcess) {
 	mt := message.TypeOf(f.CommandEnvelope.Message)
 
-	l.log(
-		f.CommandEnvelope,
-		[]logging.Icon{
-			logging.OutboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"executed",
 		f.Root.ProcessInstanceDescription(false),
-		"executed a command",
-		mt.String()+mt.Kind().Symbol(),
+		mt.String(),
 		f.CommandEnvelope.Message.MessageDescription(),
 	)
 }
 
-// deadlineScheduledByProcess returns the log message for f.
+// deadlineScheduledByProcess logs a line that describes f.
 func (l *Logger) deadlineScheduledByProcess(f DeadlineScheduledByProcess) {
 	mt := message.TypeOf(f.DeadlineEnvelope.Message)
 
-	l.log(
-		f.DeadlineEnvelope,
-		[]logging.Icon{
-			logging.OutboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"scheduled",
 		f.Root.ProcessInstanceDescription(false),
-		fmt.Sprintf(
-			"scheduled a deadline for %s",
-			f.DeadlineEnvelope.ScheduledFor.Format(time.RFC3339),
-		),
-		mt.String()+mt.Kind().Symbol(),
+		mt.String(),
+		"due "+f.DeadlineEnvelope.ScheduledFor.Format(time.RFC3339),
 		f.DeadlineEnvelope.Message.MessageDescription(),
 	)
 }
 
-// messageLoggedByProcess returns the log message for f.
+// messageLoggedByProcess logs a line that describes f.
 func (l *Logger) messageLoggedByProcess(f MessageLoggedByProcess) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.ProcessIcon,
-			"",
-		},
-		f.Handler.Identity().GetName()+" "+f.InstanceID,
+	l.logHandler(
+		f.Handler,
+		f.InstanceID,
+		"logged",
 		f.Root.ProcessInstanceDescription(f.Ended),
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
-// eventRecordedByIntegration returns the log message for f.
+// eventRecordedByIntegration logs a line that describes f.
 func (l *Logger) eventRecordedByIntegration(f EventRecordedByIntegration) {
 	mt := message.TypeOf(f.EventEnvelope.Message)
 
-	l.log(
-		f.EventEnvelope,
-		[]logging.Icon{
-			logging.OutboundIcon,
-			logging.IntegrationIcon,
-			"",
-		},
-		f.Handler.Identity().GetName(),
-		"recorded an event",
-		mt.String()+mt.Kind().Symbol(),
+	l.logHandler(
+		f.Handler,
+		"",
+		"recorded",
+		mt.String(),
 		f.EventEnvelope.Message.MessageDescription(),
 	)
 }
 
-// messageLoggedByIntegration returns the log message for f.
+// messageLoggedByIntegration logs a line that describes f.
 func (l *Logger) messageLoggedByIntegration(f MessageLoggedByIntegration) {
-	l.log(
-		f.Envelope,
-		[]logging.Icon{
-			logging.InboundIcon,
-			logging.IntegrationIcon,
-			"",
-		},
-		f.Handler.Identity().GetName(),
+	l.logHandler(
+		f.Handler,
+		"",
+		"logged",
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
-// projectionCompactionCompleted returns the log message for f.
+// projectionCompactionCompleted logs a line that describes f.
 func (l *Logger) projectionCompactionCompleted(f ProjectionCompactionCompleted) {
 	if f.Error == nil {
-		l.log(
-			nil,
-			[]logging.Icon{
-				"",
-				logging.ProjectionIcon,
-				"",
-			},
-			f.Handler.Identity().GetName(),
+		l.logHandler(
+			f.Handler,
+			"",
 			"compacted",
 		)
 	} else {
-		l.log(
-			nil,
-			[]logging.Icon{
-				"",
-				logging.ProjectionIcon,
-				logging.ErrorIcon,
-			},
-			f.Handler.Identity().GetName(),
-			fmt.Sprintf("compaction failed: %s", f.Error),
+		l.logHandler(
+			f.Handler,
+			"",
+			"failed",
+			"while compacting: "+f.Error.Error(),
 		)
 	}
 }
 
-// messageLoggedByProjection returns the log message for f.
+// messageLoggedByProjection logs a line that describes f.
 func (l *Logger) messageLoggedByProjection(f MessageLoggedByProjection) {
-	icons := []logging.Icon{
+	l.logHandler(
+		f.Handler,
 		"",
-		logging.ProjectionIcon,
-		"",
-	}
-
-	if f.Envelope != nil {
-		icons[0] = logging.InboundIcon
-	}
-
-	l.log(
-		f.Envelope,
-		icons,
-		f.Handler.Identity().GetName(),
+		"logged",
 		fmt.Sprintf(f.LogFormat, f.LogArguments...),
 	)
 }
 
-func (l *Logger) log(
+const (
+	// idsWidth is the width of the ID column when Trace is false. It is the
+	// number of characters in an 8-digit message ID.
+	idsWidth = 8
+
+	// traceIDsWidth is the width of the ID column when Trace is true. It is
+	// the number of characters in three 8-digit message IDs, with two spaces
+	// after the first and " → " after the second.
+	traceIDsWidth = 29
+
+	// typeWidth is the width of the column of an indented line that shows the
+	// handler's type. It is the number of characters in "integration", the
+	// longest name of a handler type.
+	typeWidth = 11
+
+	// outcomeWidth is the width of the column of an indented line that says
+	// what happened. It is the number of characters in the longest text that
+	// the logger shows in that column, such as "scheduled".
+	outcomeWidth = 9
+
+	// separator is the text between the parts of the details.
+	separator = " ● "
+)
+
+// logEngine logs a line that describes the engine's own work and is not a
+// heading.
+//
+// env is the envelope of the message that the line is about, or nil if the
+// line is not about a message. outcome is the word that says what happened.
+// details is the parts of the details. Empty parts are left out.
+func (l *Logger) logEngine(
 	env *envelope.Envelope,
-	icons []logging.Icon,
-	text ...string,
+	outcome string,
+	details ...string,
 ) {
-	var messageID, causationID, correlationID uuid.UUID
-	if env != nil {
-		messageID = env.MessageID
-		causationID = env.CausationID
-		correlationID = env.CorrelationID
+	line := l.formatIDColumn(env) + "  " + outcome
+
+	if d := joinDetails(details); d != "" {
+		line += "  " + d
 	}
 
-	l.Log(logging.String(
-		[]logging.IconWithLabel{
-			logging.MessageIDIcon.WithLabel(
-				"%s",
-				formatMessageID(messageID),
-			),
-			logging.CausationIDIcon.WithLabel(
-				"%s",
-				formatMessageID(causationID),
-			),
-			logging.CorrelationIDIcon.WithLabel(
-				"%s",
-				formatMessageID(correlationID),
-			),
-		},
-		icons,
-		text...,
+	l.Log(line)
+}
+
+// logHandler logs an indented line that describes the work of handler h.
+//
+// instanceID is the ID of the instance that the line describes, or an empty
+// string if it does not describe an instance. outcome is the word that says
+// what happened. details is the parts of the details after the handler's name
+// and the instance ID. Empty parts are left out.
+func (l *Logger) logHandler(
+	h config.Handler,
+	instanceID string,
+	outcome string,
+	details ...string,
+) {
+	name := h.Identity().GetName()
+	if instanceID != "" {
+		name += " " + instanceID
+	}
+
+	l.Log(fmt.Sprintf(
+		"%*s  %-*s  %-*s  %s",
+		l.idsWidth(), "",
+		typeWidth, h.HandlerType(),
+		outcomeWidth, outcome,
+		joinDetails(append([]string{name}, details...)),
 	))
 }
 
-// formatMessageID returns the first 8 hexadecimal digits of id, or 8 hyphens
-// if id is the nil UUID, so that log columns line up.
-func formatMessageID(id uuid.UUID) string {
-	if id == uuid.Nil() {
-		return "--------"
+// joinDetails returns the non-empty parts of details, separated by separator.
+func joinDetails(details []string) string {
+	var parts []string
+	for _, d := range details {
+		if d != "" {
+			parts = append(parts, d)
+		}
+	}
+	return strings.Join(parts, separator)
+}
+
+// idsWidth returns the width of the ID column.
+func (l *Logger) idsWidth() int {
+	if l.Trace {
+		return traceIDsWidth
+	}
+	return idsWidth
+}
+
+// formatIDColumn returns the ID column of a line about the message in env,
+// padded to its width. It contains only spaces if env is nil.
+func (l *Logger) formatIDColumn(env *envelope.Envelope) string {
+	var ids string
+
+	if env != nil {
+		ids = formatMessageID(env.MessageID)
+
+		if l.Trace && env.CausationID != env.MessageID {
+			ids = formatMessageID(env.CorrelationID) + "  " +
+				formatMessageID(env.CausationID) + " → " + ids
+		}
 	}
 
+	return fmt.Sprintf("%*s", l.idsWidth(), ids)
+}
+
+// formatMessageType returns the name of mt without its package, followed by
+// the kind of message, such as "OpenAccount command".
+func formatMessageType(mt message.Type) string {
+	name := strings.TrimLeft(mt.String(), "*")
+
+	// Remove the package name, but not from any type arguments, such as in
+	// "pkg.Generic[pkg.Arg]".
+	end := strings.IndexByte(name, '[')
+	if end == -1 {
+		end = len(name)
+	}
+	if i := strings.LastIndexByte(name[:end], '.'); i != -1 {
+		name = name[i+1:]
+	}
+
+	return name + " " + mt.Kind().String()
+}
+
+// formatMessageID returns the first 8 hexadecimal digits of id.
+func formatMessageID(id uuid.UUID) string {
 	return id.String()[:8]
 }
 
