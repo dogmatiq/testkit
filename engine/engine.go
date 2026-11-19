@@ -201,13 +201,13 @@ func (e *Engine) Dispatch(
 		m,
 		func(m dogma.Command) (*envelope.Envelope, error) {
 			return envelope.NewCommand(id, m, oo.now),
-				m.Validate(validation.CommandValidationScope())
+				m.Validate(validation.CommandValidationScope(true, oo.now))
 		},
 		func(m dogma.Event) (*envelope.Envelope, error) {
 			// Each event that doesn't come from a handler is the only event in
 			// its own stream.
 			return envelope.NewEvent(id, m, oo.now, uuid.NewV4()),
-				m.Validate(validation.EventValidationScope())
+				m.Validate(validation.EventValidationScope(true, oo.now))
 		},
 		nil,
 	)
