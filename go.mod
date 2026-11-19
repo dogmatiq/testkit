@@ -19,6 +19,10 @@ require (
 require (
 	github.com/dogmatiq/jumble v0.1.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2 // indirect
 )
 
-tool google.golang.org/protobuf/cmd/protoc-gen-go
+tool (
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	google.golang.org/protobuf/cmd/protoc-gen-go
+)
