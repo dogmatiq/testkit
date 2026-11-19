@@ -35,10 +35,11 @@ The format is based on [Keep a Changelog], and this project adheres to
   point. The engine validates every message that it produces, so validating the
   expected message as well adds little.
 
-  > [!WARNING]
-  > The test report no longer says when an expected message is invalid. If the
-  > expectation isn't met, an invalid message in a test can look like the
-  > application producing the wrong message.
+> [!WARNING]
+> The test report no longer says when the message passed to
+> `ToExecuteCommand()` or `ToRecordEvent()` is invalid. If the expectation isn't
+> met, an invalid message in a test can look like the application producing the
+> wrong message.
 
 ### Fixed
 
