@@ -32,15 +32,13 @@ The format is based on [Keep a Changelog], and this project adheres to
   `AdvanceTime()` changes.
 - `ToExecuteCommand()` and `ToRecordEvent()` no longer validate their message
   when they are called, because the test's virtual time isn't known at that
-  point. The engine validates every message that it produces, so an invalid
-  expected message doesn't match them (unless a custom `MessageComparator` says
-  that it does).
+  point. The engine validates every message that it produces, so validating the
+  expected message as well adds little.
 
   > [!WARNING]
-  > An expectation for an invalid message now fails in the same way as any other
-  > unmet expectation. The test report doesn't say that the expected message is
-  > invalid, so an invalid message in a test can look like the application
-  > producing the wrong message.
+  > The test report no longer says when an expected message is invalid. If the
+  > expectation isn't met, an invalid message in a test can look like the
+  > application producing the wrong message.
 
 ### Fixed
 
