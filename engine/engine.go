@@ -203,11 +203,11 @@ func (e *Engine) Dispatch(
 		m,
 		func(m dogma.Command) (*envelope.Envelope, error) {
 			return envelope.NewCommand(id, m, oo.now),
-				m.Validate(validation.CommandValidationScope())
+				m.Validate(validation.CommandValidationScope(true, oo.now))
 		},
 		func(m dogma.Event) (*envelope.Envelope, error) {
 			return envelope.NewEvent(id, m, oo.now),
-				m.Validate(validation.EventValidationScope())
+				m.Validate(validation.EventValidationScope(true, oo.now))
 		},
 		nil,
 	)

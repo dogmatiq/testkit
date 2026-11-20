@@ -14,6 +14,7 @@ import (
 	. "github.com/dogmatiq/testkit/engine/internal/process"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
@@ -951,4 +952,68 @@ func newProcessTestFixture() *processTestFixture {
 	f.messageIDs.Reset()
 
 	return f
+}
+
+func TestScope_validationScopes(t *testing.T) {
+	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	scheduledFor := now.Add(time.Hour)
+	command := &fixtures.ScopeCapturingCommand{}
+	deadline := &fixtures.ScopeCapturingDeadline{}
+
+	handler := &ProcessMessageHandlerStub[*ProcessRootStub]{
+		ConfigureFunc: func(c dogma.ProcessConfigurer) {
+			c.Identity("<name>", "6901c34c-6e4d-4184-9414-780cb21a791a")
+			c.Routes(
+				dogma.HandlesEvent[*EventStub[TypeA]](),
+				dogma.ExecutesCommand[*fixtures.ScopeCapturingCommand](),
+				dogma.SchedulesDeadline[*fixtures.ScopeCapturingDeadline](),
+			)
+		},
+		RouteEventToInstanceFunc: func(
+			context.Context,
+			dogma.Event,
+		) (string, bool, error) {
+			return "<instance>", true, nil
+		},
+		HandleEventFunc: func(
+			_ context.Context,
+			_ *ProcessRootStub,
+			s dogma.ProcessEventScope[*ProcessRootStub],
+			_ dogma.Event,
+		) error {
+			s.ExecuteCommand(command)
+			s.ScheduleDeadline(deadline, scheduledFor)
+			return nil
+		},
+	}
+
+	ctrl := &Controller{
+		Config:     runtimeconfig.FromProcess(handler),
+		MessageIDs: &envelope.MessageIDGenerator{},
+	}
+
+	_, err := ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		now,
+		envelope.NewEvent(
+			"1000",
+			EventA1,
+			now,
+		),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !command.Scope.IsNew() {
+		t.Error("command: IsNew() should return true")
+	}
+	xtesting.Expect(t, "unexpected ExecutedAt()", command.Scope.ExecutedAt(), now)
+
+	if !deadline.Scope.IsNew() {
+		t.Error("deadline: IsNew() should return true")
+	}
+	xtesting.Expect(t, "unexpected ScheduledAt()", deadline.Scope.ScheduledAt(), now)
+	xtesting.Expect(t, "unexpected ScheduledFor()", deadline.Scope.ScheduledFor(), scheduledFor)
 }

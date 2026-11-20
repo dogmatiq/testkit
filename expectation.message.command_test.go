@@ -282,11 +282,3 @@ func TestToExecuteCommand_NilMessage(t *testing.T) {
 		ToExecuteCommand(nil)
 	})
 }
-
-func TestToExecuteCommand_InvalidMessage(t *testing.T) {
-	xtesting.ExpectPanic(t, "ToExecuteCommand(*stubs.CommandStub[TypeA]): <invalid>", func() {
-		ToExecuteCommand(&CommandStub[TypeA]{
-			ValidationError: "<invalid>",
-		})
-	})
-}

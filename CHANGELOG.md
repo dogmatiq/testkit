@@ -11,6 +11,43 @@ The format is based on [Keep a Changelog], and this project adheres to
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [bc]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 
+## [Unreleased]
+
+### Added
+
+- Added new options for `CommandValidationScope()`, `EventValidationScope()` and
+  `DeadlineValidationScope()`:
+  - `WithIsNew()`
+  - `WithExecutedAt()`
+  - `WithRecordedAt()`
+  - `WithScheduledAt()`
+  - `WithScheduledFor()`
+
+### Changed
+
+- `ExecuteCommand()` and `RecordEvent()` no longer validate their message when
+  they are called. The engine validates messages that it dispatches, so an
+  invalid message now causes a panic when the action is performed, instead of
+  when it is created. The engine validates using the test's virtual time, which
+  `AdvanceTime()` changes.
+- `ToExecuteCommand()` and `ToRecordEvent()` no longer validate their message
+  when they are called, because the test's virtual time isn't known at that
+  point. The engine validates every message that it produces, so validating the
+  expected message as well adds little.
+
+> [!WARNING]
+> The test report no longer says when the message passed to
+> `ToExecuteCommand()` or `ToRecordEvent()` is invalid. If the expectation isn't
+> met, an invalid message in a test can look like the application producing the
+> wrong message.
+
+### Fixed
+
+- Calling a method of a validation scope no longer panics. This affects the
+  scopes that the test engine passes to `Validate()`, and those returned by
+  `CommandValidationScope()`, `EventValidationScope()` and
+  `DeadlineValidationScope()`.
+
 ## [0.24.0] - 2026-11-02
 
 ### Changed

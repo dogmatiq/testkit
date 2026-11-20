@@ -14,6 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
@@ -232,4 +233,51 @@ func TestScope(t *testing.T) {
 			)
 		})
 	})
+}
+
+func TestScope_RecordEvent_validationScope(t *testing.T) {
+	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	event := &fixtures.ScopeCapturingEvent{}
+
+	handler := &IntegrationMessageHandlerStub{
+		ConfigureFunc: func(c dogma.IntegrationConfigurer) {
+			c.Identity("<name>", "24ec3839-5d51-4904-9b45-34b5282e7f24")
+			c.Routes(
+				dogma.HandlesCommand[*CommandStub[TypeA]](),
+				dogma.RecordsEvent[*fixtures.ScopeCapturingEvent](),
+			)
+		},
+		HandleCommandFunc: func(
+			_ context.Context,
+			s dogma.IntegrationCommandScope,
+			_ dogma.Command,
+		) error {
+			s.RecordEvent(event)
+			return nil
+		},
+	}
+
+	ctrl := &Controller{
+		Config:     runtimeconfig.FromIntegration(handler),
+		MessageIDs: &envelope.MessageIDGenerator{},
+	}
+
+	_, err := ctrl.Handle(
+		context.Background(),
+		fact.Ignore,
+		now,
+		envelope.NewCommand(
+			"1000",
+			CommandA1,
+			now,
+		),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !event.Scope.IsNew() {
+		t.Error("IsNew() should return true")
+	}
+	xtesting.Expect(t, "unexpected RecordedAt()", event.Scope.RecordedAt(), now)
 }

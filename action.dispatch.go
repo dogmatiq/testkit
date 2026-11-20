@@ -2,12 +2,10 @@ package testkit
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/message"
 	"github.com/dogmatiq/testkit/internal/inflect"
-	"github.com/dogmatiq/testkit/internal/validation"
 	"github.com/dogmatiq/testkit/location"
 )
 
@@ -15,12 +13,6 @@ import (
 func ExecuteCommand(m dogma.Command) Action {
 	if m == nil {
 		panic("ExecuteCommand(<nil>): message must not be nil")
-	}
-
-	mt := message.TypeOf(m)
-
-	if err := m.Validate(validation.CommandValidationScope()); err != nil {
-		panic(fmt.Sprintf("ExecuteCommand(%s): %s", mt, err))
 	}
 
 	return dispatchAction{
@@ -33,12 +25,6 @@ func ExecuteCommand(m dogma.Command) Action {
 func RecordEvent(m dogma.Event) Action {
 	if m == nil {
 		panic("RecordEvent(<nil>): message must not be nil")
-	}
-
-	mt := message.TypeOf(m)
-
-	if err := m.Validate(validation.EventValidationScope()); err != nil {
-		panic(fmt.Sprintf("RecordEvent(%s): %s", mt, err))
 	}
 
 	return dispatchAction{

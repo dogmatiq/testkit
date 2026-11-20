@@ -117,7 +117,7 @@ func (s *scope) ExecuteCommand(m dogma.Command) {
 		})
 	}
 
-	if err := m.Validate(validation.CommandValidationScope()); err != nil {
+	if err := m.Validate(validation.CommandValidationScope(true, s.now)); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",
@@ -185,7 +185,7 @@ func (s *scope) ScheduleDeadline(m dogma.Deadline, t time.Time) {
 		})
 	}
 
-	if err := m.Validate(validation.DeadlineValidationScope()); err != nil {
+	if err := m.Validate(validation.DeadlineValidationScope(true, s.now, t)); err != nil {
 		panic(panicx.UnexpectedBehavior{
 			Handler:        s.config,
 			Interface:      "ProcessMessageHandler",

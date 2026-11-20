@@ -14,6 +14,7 @@ import (
 	"github.com/dogmatiq/testkit/engine/internal/panicx"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
@@ -590,4 +591,45 @@ func TestNonDeterministicApplyEvent(t *testing.T) {
 			)
 		})
 	})
+}
+
+func TestScope_RecordEvent_validationScope(t *testing.T) {
+	f := newScopeTestFixture()
+	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	event := &fixtures.ScopeCapturingEvent{}
+
+	handler := &stubs.AggregateMessageHandlerStub[*stubs.AggregateRootStub]{
+		ConfigureFunc: func(c dogma.AggregateConfigurer) {
+			c.Identity("<name>", "fd88e430-32fe-49a6-888f-f678dcf924ef")
+			c.Routes(
+				dogma.HandlesCommand[*stubs.CommandStub[stubs.TypeA]](),
+				dogma.RecordsEvent[*fixtures.ScopeCapturingEvent](),
+			)
+		},
+		RouteCommandToInstanceFunc: func(dogma.Command) string {
+			return "<instance>"
+		},
+		HandleCommandFunc: func(
+			_ *stubs.AggregateRootStub,
+			s dogma.AggregateCommandScope[*stubs.AggregateRootStub],
+			_ dogma.Command,
+		) {
+			s.RecordEvent(event)
+		},
+	}
+
+	ctrl := &aggregate.Controller{
+		Config:     runtimeconfig.FromAggregate(handler),
+		MessageIDs: &f.messageIDs,
+	}
+
+	_, err := ctrl.Handle(context.Background(), fact.Ignore, now, f.command)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !event.Scope.IsNew() {
+		t.Error("IsNew() should return true")
+	}
+	xtesting.Expect(t, "unexpected RecordedAt()", event.Scope.RecordedAt(), now)
 }

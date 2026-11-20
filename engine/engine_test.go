@@ -13,6 +13,7 @@ import (
 	. "github.com/dogmatiq/testkit/engine"
 	"github.com/dogmatiq/testkit/envelope"
 	"github.com/dogmatiq/testkit/fact"
+	"github.com/dogmatiq/testkit/internal/fixtures"
 	"github.com/dogmatiq/testkit/internal/x/xtesting"
 )
 
@@ -128,6 +129,36 @@ func TestEngine_Dispatch(t *testing.T) {
 		if !called {
 			t.Fatal("expected HandleCommand to be called")
 		}
+	})
+
+	t.Run("it validates commands with a scope that has the operation time", func(t *testing.T) {
+		fx := newEngineFixture()
+		now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+		m := &fixtures.ScopeCapturingCommand{}
+
+		// The message has no routes, so Dispatch() returns an error. Validation
+		// happens before routing, which is all that this test is concerned with.
+		fx.engine.Dispatch(context.Background(), m, WithCurrentTime(now)) //nolint:errcheck
+
+		if !m.Scope.IsNew() {
+			t.Error("IsNew() should return true")
+		}
+		xtesting.Expect(t, "unexpected ExecutedAt()", m.Scope.ExecutedAt(), now)
+	})
+
+	t.Run("it validates events with a scope that has the operation time", func(t *testing.T) {
+		fx := newEngineFixture()
+		now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+		m := &fixtures.ScopeCapturingEvent{}
+
+		// The message has no routes, so Dispatch() returns an error. Validation
+		// happens before routing, which is all that this test is concerned with.
+		fx.engine.Dispatch(context.Background(), m, WithCurrentTime(now)) //nolint:errcheck
+
+		if !m.Scope.IsNew() {
+			t.Error("IsNew() should return true")
+		}
+		xtesting.Expect(t, "unexpected RecordedAt()", m.Scope.RecordedAt(), now)
 	})
 
 	t.Run("it allows dispatching events", func(t *testing.T) {

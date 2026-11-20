@@ -1,8 +1,6 @@
 package testkit
 
 import (
-	"fmt"
-
 	"github.com/dogmatiq/dogma"
 	"github.com/dogmatiq/enginekit/config"
 	"github.com/dogmatiq/enginekit/message"
@@ -10,7 +8,6 @@ import (
 	"github.com/dogmatiq/testkit/fact"
 	"github.com/dogmatiq/testkit/internal/inflect"
 	"github.com/dogmatiq/testkit/internal/report"
-	"github.com/dogmatiq/testkit/internal/validation"
 )
 
 // ToExecuteCommand returns an expectation that passes if a command is executed
@@ -18,12 +15,6 @@ import (
 func ToExecuteCommand(m dogma.Command) Expectation {
 	if m == nil {
 		panic("ToExecuteCommand(<nil>): message must not be nil")
-	}
-
-	mt := message.TypeOf(m)
-
-	if err := m.Validate(validation.CommandValidationScope()); err != nil {
-		panic(fmt.Sprintf("ToExecuteCommand(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
@@ -36,12 +27,6 @@ func ToExecuteCommand(m dogma.Command) Expectation {
 func ToRecordEvent(m dogma.Event) Expectation {
 	if m == nil {
 		panic("ToRecordEvent(<nil>): message must not be nil")
-	}
-
-	mt := message.TypeOf(m)
-
-	if err := m.Validate(validation.EventValidationScope()); err != nil {
-		panic(fmt.Sprintf("ToRecordEvent(%s): %s", mt, err))
 	}
 
 	return &messageExpectation{
