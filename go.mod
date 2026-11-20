@@ -10,7 +10,7 @@ require (
 	github.com/dogmatiq/linger v1.1.0
 	github.com/dogmatiq/protobuf v0.8.0
 	github.com/google/go-cmp v0.7.0
-	github.com/sergi/go-diff v1.4.0
+	github.com/sergi/go-diff v1.4.5
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.44.0
 	google.golang.org/protobuf v1.36.12
